@@ -1,0 +1,15 @@
+"""
+********************************************************************************
+compas_thrust.algorithms
+********************************************************************************
+
+.. currentmodule:: compas_thrust.algorithms
+
+"""
+from __future__ import absolute_import
+
+from .equilibrium import *
+from .grad_based import *
+from .ind_based import *
+
+__all__ = [name for name in dir() if not name.startswith('_')]
