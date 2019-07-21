@@ -29,9 +29,9 @@ __email__     = 'mricardo@ethz.ch'
 
 __all__ = [
     'replicate',
-    'overwiew_forces',
+    'oveview_forces',
     'check_constraints',
-    'replicate_constraints',
+    'replicate_contraints',
     'interp_surf',
     'null_edges',
     'create_sym',

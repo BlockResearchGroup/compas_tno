@@ -800,8 +800,125 @@ def find_independents(E):
 
     return ind
 
-def initialize_problem(form):
+def initialize_problem(form, indset = None, printout = None):
 
+    # Mapping
+
+    k_i  = form.key_index()
+    i_k  = form.index_key()
+    i_uv = form.index_uv()
+    uv_i = form.uv_index()
+
+    # Vertices and edges
+
+    n     = form.number_of_vertices()
+    m     = form.number_of_edges()
+    fixed = [k_i[key] for key in form.fixed()]
+    rol   = [k_i[key] for key in form.vertices_where({'is_roller': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
+    sym   = [uv_i[uv] for uv in form.edges_where({'is_symmetry': True})]
+    free  = list(set(range(n)) - set(fixed) - set(rol))
+
+    # Constraints
+
+    lb_ind = []
+    ub_ind = []
+    lb = []
+    ub = []
+    for key, vertex in form.vertex.items():
+        if vertex.get('lb', None):
+            lb_ind.append(k_i[key])
+            lb.append(vertex['lb'])
+        if vertex.get('ub', None):
+            ub_ind.append(k_i[key])
+            ub.append(vertex['ub'])
+    lb = array(lb)
+    ub = array(ub)
+    lb.shape = (len(lb),1)
+    ub.shape = (len(ub),1)
+
+    # Co-ordinates and loads
+
+    xyz = zeros((n, 3))
+    x   = zeros((n, 1))
+    y   = zeros((n, 1))
+    z   = zeros((n, 1))
+    s   = zeros((n, 1))
+    px  = zeros((n, 1))
+    py  = zeros((n, 1))
+    pz  = zeros((n, 1))
+    s   = zeros((n, 1))
+    w   = zeros((n, 1))
+
+    for key, vertex in form.vertex.items():
+        i = k_i[key]
+        xyz[i, :] = form.vertex_coordinates(key)
+        x[i]  = vertex.get('x')
+        y[i]  = vertex.get('y')
+        px[i] = vertex.get('px', 0)
+        py[i] = vertex.get('py', 0)
+        pz[i] = vertex.get('pz', 0)
+        s[i]  = vertex.get('target', 0)
+        w[i] = vertex.get('weight', 1.0) # weight used in case of fiting...
+
+    Wfree = diags(w[free].flatten())
+    xy = xyz[:, :2]
+    px = px[free]
+    py = py[free]
+    pz = pz[free]
+
+    # C and E matrices
+
+    C   = connectivity_matrix(edges, 'csr')
+    Ci  = C[:, free]
+    Cf  = C[:, fixed]
+    Cit = Ci.transpose()
+    E   = equilibrium_matrix(C, xy, free, 'csr').toarray()
+    uvw = C.dot(xyz)
+    U   = uvw[:, 0]
+    V   = uvw[:, 1]
+
+    # Independent and dependent branches
+
+    if indset:
+        ind = []
+        for u, v in form.edges():
+            if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
+                ind.append(uv_i[(u, v)])
+    else:
+        _, s, _ = svd(E)
+        ind = []
+        if random_ind is False:
+            # ind = nonpivots(sympy.Matrix(E).rref()[0].tolist())
+            ind = find_independents(E)
+        else:
+            ind = randint(0,m,m - len(s)).tolist()
+
+    k   = len(ind)
+    dep = list(set(range(m)) - set(ind))
+
+    for u, v in form.edges():
+        form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
+
+    if printout:
+        print('Form diagram has {0} (RREF) or {1} (SVD) independent branches '.format(len(ind), m - len(s)))
+        print('Shape Equilibrium Matrix: ', E.shape)
+        print('Found {0} independents'.format(k))
+
+    # Set-up
+
+    try:
+        t = form.attributes['offset']
+    except:
+        t = None
+
+    lh     = normrow(C.dot(xy))**2
+    Edinv  = -csr_matrix(pinv(E[:, dep]))
+    Ei     = E[:, ind]
+    p      = vstack([px, py])
+    q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
+
+    args   = (q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y)
 
     return args
 

@@ -5,9 +5,21 @@ from numpy import array
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 
+__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
+__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
+__license__   = 'MIT License'
+__email__     = 'mricardo@ethz.ch'
+
+
+__all__ = [
+    'plot_form',
+    'plot_force',
+    'plot_grad',
+]
+
 def plot_form(form, radius=0.1, fix_width=False, max_width=10, simple=False):
 
-    """ Extended load-path plotting of a FormDiagram
+    """ Extended plotting of a FormDiagram
 
     Parameters
     ----------
@@ -76,7 +88,7 @@ def plot_form(form, radius=0.1, fix_width=False, max_width=10, simple=False):
 
 def plot_force(force, radius=0.1, fix_width=False, max_width=10, simple=False):
 
-    """ Extended load-path plotting of a ForceDiagram
+    """ Extended plotting of a Formdiagram
 
     Parameters
     ----------
@@ -122,7 +134,7 @@ def plot_force(force, radius=0.1, fix_width=False, max_width=10, simple=False):
 
 def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
 
-    """ Extended load-path plotting of a FormDiagram
+    """ Extended load-path plotting of a the Gradient
 
     Parameters
     ----------
