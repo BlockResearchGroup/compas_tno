@@ -8,6 +8,18 @@ from compas_thrust.plotters.plotters import plot_form
 from compas_thrust.plotters.plotters import plot_force
 from random import shuffle
 
+__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
+__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
+__license__   = 'MIT License'
+__email__     = 'mricardo@ethz.ch'
+
+
+__all__ = [
+    '_form',
+    'adapt_tna',
+    'evaluate_a',
+]
+
 def _form(form, keep_q=False):
 
     """ s the FormDiagram by shuffling the edges.
@@ -84,5 +96,6 @@ def evaluate_a(form, plot=True):
             a_max = a
     if plot is True:
         print('Angle Deviation  Max: {0}'.format(a_max))
+        print('Angle Deviation  Total: {0}'.format(a_total))
 
     return a_max

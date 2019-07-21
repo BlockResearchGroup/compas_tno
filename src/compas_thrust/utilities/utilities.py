@@ -21,6 +21,22 @@ import math
 
 from compas_thrust.plotters.plotters import plot_form
 
+__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
+__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
+__license__   = 'MIT License'
+__email__     = 'mricardo@ethz.ch'
+
+
+__all__ = [
+    'replicate',
+    'overwiew_forces',
+    'check_constraints',
+    'replicate_constraints',
+    'interp_surf',
+    'null_edges',
+    'create_sym',
+]
+
 def replicate(form,file, plot=None):
 
     """ Copy 1/8 form-diagram in a complete structure.
