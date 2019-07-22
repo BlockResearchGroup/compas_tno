@@ -18,6 +18,7 @@ __all__ = [
     '_form',
     'adapt_tna',
     'evaluate_a',
+    'remove_feet',
 ]
 
 def _form(form, keep_q=False):
@@ -50,9 +51,7 @@ def _form(form, keep_q=False):
         if geometric_key(form_.edge_midpoint(u, v)) in sym:
             form_.set_edge_attribute((u, v), 'is_symmetry', True)
         if keep_q:
-            form_.set_edge_attribute((u, v), 'q', qs[geometric_key(form.edge_midpoint(u, v)[:2] + [0])])
-
-
+            form_.set_edge_attribute((u, v), 'q', qs[geometric_key(form_.edge_midpoint(u, v)[:2] + [0])])
 
     # Vertices
 
@@ -80,6 +79,39 @@ def adapt_tna(form, zmax = 5.0, plot = False, delete_face = False):
     if plot:
         plot_form(form).show()
         plot_force(force).show()
+
+    return form
+
+def remove_feet(form, plot = False):
+
+    lines = []
+    qs = {}
+
+    for u, v in form.edges_where({'is_external': False, 'is_edge': True}):
+        s = form.vertex_coordinates(u)
+        e = form.vertex_coordinates(v)
+        lines.append([s,e])
+        qs[geometric_key(form.edge_midpoint(u,v))] = form.get_edge_attribute((u,v), 'q')
+
+    fixed = [geometric_key(form.vertex_coordinates(key)) for key in form.vertices_where({'is_anchor': True })]
+    zs = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.vertex_coordinates(key)[2] for key in form.vertices_where({'is_external': False })}
+
+    form_ = FormDiagram.from_lines(lines)
+    gkey_key = form_.gkey_key()
+
+    for pt in fixed:
+        form_.set_vertex_attribute(gkey_key[pt], name = 'is_fixed', value = True)
+
+    for key, attr in form_.vertices(True):
+        attr['z'] = zs[geometric_key(form_.vertex_coordinates(key))]
+
+    for u, v in form_.edges():
+        form_.set_edge_attribute((u,v), name = 'q', value = qs[geometric_key(form_.edge_midpoint(u,v))])
+    
+    form_.plot()
+
+    if plot:
+        plot_form(form_).show()
 
     return form
 

@@ -10,6 +10,7 @@ from compas_thrust.utilities.utilities import check_constraints
 from compas_thrust.utilities.utilities import oveview_forces
 
 from compas_thrust.diagrams.form import _form
+from compas_thrust.diagrams.form import remove_feet
 
 from compas_thrust.plotters.plotters import plot_form
 
@@ -28,19 +29,25 @@ if __name__ == "__main__":
         print('\n')
         print('Beginning of Optimisation')
 
-        file = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_sym.json'
-        file_save = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_calc.json'
-        file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_complete.json'
-        file_complete_save = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_complete_mint.json'
+        # file = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_sym.json'
+        # file_save = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_calc.json'
+        # file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_complete.json'
+        # file_complete_save = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_complete_mint.json'
 
+        file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_TNA.json'
+        file_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_calc.json'
         form = FormDiagram.from_json(file)
+
+        form = remove_feet(form, plot = False)
+        form = _form(form, keep_q=True)
+        oveview_forces(form)
 
         # Initial parameters
 
-        tmax = form.attributes['tmax']
-        bounds_width = 2.5
-        use_bounds = False
-        qmax = 10
+        tmax = None # form.attributes['tmax']
+        bounds_width = 0.1
+        use_bounds = True
+        qmax = 8.0
         indset = None
         nsol = 9
         sol = 0
@@ -64,25 +71,25 @@ if __name__ == "__main__":
                     qmax = qmax * 1.25
                     print('upgrate on qmax')
                 else:
-                    bounds_width = qmax/2/k
+                    bounds_width = bounds_width/k
                     use_bounds = True
             fopt, qopt = optimise_single(form, qmax=qmax, solver='devo',
                                             polish='slsqp',
-                                            population=600,
-                                            generations=300,
-                                            printout=100,
+                                            population=800,
+                                            generations=600,
+                                            printout=50,
                                             tol=0.01,
                                             t = tmax,
                                             opt_max=False,
                                             tension=False,
                                             use_bounds = use_bounds,
                                             bounds_width = bounds_width,
-                                            objective='min',
+                                            objective='loadpath',
                                             indset=indset)
             q = [attr['q'] for u, v, attr in form.edges(True)]
             qmin  = min(array(q))
             # plot_form(form).show()
-            if qmin > -0.1 and check_constraints(form) < 1.0:
+            if qmin > -0.1: # and check_constraints(form) < 1.0:
                 forms.append(deepcopy(form))
                 sols.append(fopt)
                 form.to_json(file_save)

@@ -402,3 +402,84 @@ def create_sym(form):
 
     plot_form(form_).show()
     form_.to_json(radical + '_sym.json')
+
+    return form_
+
+def create_sym_2(form, keep_q = False):
+
+    plot_form(form).show()
+
+    lines = []
+    symmetry = []
+    pins = []
+    loads = {}
+    tol = 0.001
+
+    for u,v in form.edges():
+        u_coord = form.vertex_coordinates(u)
+        v_coord = form.vertex_coordinates(v)
+        if u_coord[0] <= 0.0 + tol and v_coord[0] <= 0.0 + tol :
+            lines.append([u_coord,v_coord])
+
+    for key in form.vertices():
+        coord = form.vertex_coordinates(key)
+        gkey = geometric_key(coord)
+        loads[gkey] = form.get_vertex_attribute(key, 'pz')
+
+        if 0.0 - tol <= coord[0] <= 0.0 + tol: # Line Vertical at x = 0.0
+            loads[gkey] = 0.5 * loads[gkey]
+            if coord[1] < 10.0 - tol:  # Only if continuously supported
+                ext_pt = [coord[0]+1.0, coord[1], coord[2]]
+                symmetry.append([coord,ext_pt])
+                pins.append(geometric_key(ext_pt))
+                loads[geometric_key(ext_pt)] = 0.0
+
+        if 10 - coord[0] - tol <= coord[1] <= 10 - coord[0] + tol and 10.0 - tol > coord[1] > 5.0 + tol: # Line Diagonal at y = x - 10 without central and corner
+            loads[gkey] = 0.5 * loads[gkey]
+            ext_pt = [coord[0]-sqrt(2)/2,coord[1]-sqrt(2)/2,coord[2]]
+            symmetry.append([coord,ext_pt])
+            pins.append(geometric_key(ext_pt))
+            loads[geometric_key(ext_pt)] = 0.0
+
+        if 5.0 - tol <= coord[0] <= 5.0 + tol and 5.0 - tol <= coord[1] <= 5.0 + tol: # Central Point
+            loads[gkey] = 0.25 * loads[gkey]
+            ext_pt = [coord[0],coord[1]-1.0,coord[2]]
+            symmetry.append([coord,ext_pt])
+            pins.append(geometric_key(ext_pt))
+            loads[geometric_key(ext_pt)] = 0.0
+
+        if form.get_vertex_attribute(key, 'is_fixed') == True and coord[1] > 10.0 - tol and tol <= coord[0] <= 5.0 + tol: # Superior line without corner point
+            pins.append(geometric_key(coord))
+
+        if form.get_vertex_attribute(key, 'is_fixed') == True and coord[1] > 10.0 - tol and -tol <= coord[0] <= tol: # Corner Point
+            pins.append(geometric_key(coord))
+            loads[gkey] = 0.5 * loads[gkey]
+
+    form_ = FormDiagram.from_lines(lines + symmetry, delete_boundary_face=False)
+    form_.update_default_vertex_attributes({'is_roller': False})
+    form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    form_.attributes['loadpath'] = 0
+
+    gkey_key = form_.gkey_key()
+
+    for i in pins:
+        form_.set_vertex_attribute(gkey_key[i], 'is_fixed', value=True)
+
+    for i in symmetry:
+        a, b = i
+        u = gkey_key[geometric_key(a)]
+        v = gkey_key[geometric_key(b)]
+        form_.set_edge_attribute((u, v), name='is_symmetry', value=True)
+
+    # Loads
+
+    pz = 0
+    for key in form_.vertices():
+        gkey = geometric_key(form_.vertex_coordinates(key))
+        form_.vertex[key]['pz'] = loads[gkey]
+        pz += form_.vertex[key]['pz']
+    print('Form: ' + ST)
+    print('Total load: {0}'.format(pz))
+
+    plot_form(form_).show()
+    form_.to_json(radical + '_sym.json')
