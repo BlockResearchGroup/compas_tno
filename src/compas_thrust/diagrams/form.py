@@ -6,6 +6,7 @@ from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import vertical_from_zmax
 from compas_thrust.plotters.plotters import plot_form
 from compas_thrust.plotters.plotters import plot_force
+from compas_thrust.algorithms.equilibrium import z_from_form
 from random import shuffle
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -99,17 +100,37 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
     pz = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'pz') for key in form.vertices_where({'is_external': False })}
 
     form_ = FormDiagram.from_lines(lines)
+    if openings:
+        for key in form.faces():
+            if form.face_area(key) > openings - 1.0 and form.face_area(key) < openings + 1.0:
+                form.delete_face(key)
+                print('Deleted area of face {0}'.format(key))
+                break
     gkey_key = form_.gkey_key()
 
     for pt in fixed:
         form_.set_vertex_attribute(gkey_key[pt], name = 'is_fixed', value = True)
 
+    pzt = 0
     for key, attr in form_.vertices(True):
-        attr['z'] = zs[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
-        attr['pz'] = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        pzi = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        zi = zs[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        attr['pz'] = pzi
+        attr['z'] = zi
+        pzt += pzi
+    print('Load applied: {0}'.format(pzt))
 
     for u, v in form_.edges():
-        form_.set_edge_attribute((u,v), name = 'q', value = qs[geometric_key(form_.edge_midpoint(u,v))])
+        qi = qs[geometric_key(form_.edge_midpoint(u,v))]
+        form_.set_edge_attribute((u,v), name = 'q', value = qi)
+
+    form_ = z_from_form(form_)
+
+    lp = 0
+    for u, v in form_.edges():
+        qi = form_.get_edge_attribute((u,v), name = 'q')
+        lp += qi * form_.edge_length(u,v) ** 2
+    form.attributes['loadpath'] = lp
 
     if plot:
         plot_form(form_).show()

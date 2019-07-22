@@ -37,13 +37,16 @@ if __name__ == "__main__":
         # file_complete_save = '/Users/mricardo/compas_dev/me/minmax/radial/0'+ str(j)+ '_0'+ str(i)+ '_complete_mint.json'
 
         file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_TNA.json'
+        file_ind = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_ind.json'
         file_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_calc.json'
         form = FormDiagram.from_json(file)
+        form.plot()
         plot_form(form).show()
         # form_complete = replicate2(form, '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_comp.json', plot=True)
         # form_complete.to_json(file_save)
-
-        form = remove_feet(form, plot = True)
+        form = remove_feet(form, plot = True, openings= 12.0)
+        form.plot()
+        form.to_json(file_ind)
         form = _form(form, keep_q=True)
         plot_form(form).show()
         form = create_sym_2(form)
