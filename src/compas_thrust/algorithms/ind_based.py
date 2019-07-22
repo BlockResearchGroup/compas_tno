@@ -165,7 +165,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         py[i] = vertex.get('py', 0)
         pz[i] = vertex.get('pz', 0)
         s[i]  = vertex.get('target', 0)
-        w[i] = vertex.get('weight', 1.0) # weight used in case of fiting...
+        w[i] = vertex.get('weight', 1.0)
 
     Wfree = diags(w[free].flatten())
     xy = xyz[:, :2]
@@ -176,12 +176,6 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     # Temporary anchors location
 
     anchors = []
-    for key in form.vertices():
-        coord = form.vertex_coordinates(key)
-        if coord[0] == 0.0:
-            anchors.append(k_i[key])
-
-    print(anchors)
 
     # C and E matrices
 
@@ -194,7 +188,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     U   = uvw[:, 0]
     V   = uvw[:, 1]
 
-    # Independent and dependent branches (Test methodology for doing it step by step)
+    # Independent and dependent branches
 
     if indset:
         ind = []
@@ -277,7 +271,6 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
             fdevo, fslsqp, fieq = fbf, fbf, _fieq
         if objective == 'min':
             fdevo, fslsqp, fieq = fmin, fmin, _fieq_bounds
-            print('object_min')
         if objective=='max':
             fdevo, fslsqp, fieq = fmax, fmax, _fieq_bounds
         if objective=='bounds':
@@ -323,6 +316,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
         # Update FormDiagram
 
+        print(z)
         for i in range(n):
             key = i_k[i]
             form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
@@ -394,9 +388,6 @@ def _fint(qid, *args):
     z, l2, q, q_ = zlq_from_qid(qid, args)
     f = dot(abs(q.transpose()), l2)
 
-    # if opt_max:
-    #     f = 100.0/f
-
     if isnan(f):
         return 10**10
 
@@ -424,20 +415,10 @@ def fmin(qid, *args):
     f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
     # f +=  pz.transpose().dot(z[free])/1000
 
-    # Rx = C.transpose().dot(U * q_.ravel())
-    # Ry = C.transpose().dot(V * q_.ravel())
-    # R = sqrt(Rx**2 + Ry**2)
-    # f0 = sum(R[anchors])
-    # f = dot(abs(q.transpose()), lh) # Give numerical stability
-
     if isnan(f) == True or any(qid) == False:
         return 10**10
 
     else:
-
-        # print('test')
-        # print(qid,t)
-        # print(z[free])
 
         if not tension:
             f += sum((q[q < 0] - 5)**4)
@@ -466,8 +447,6 @@ def fmin(qid, *args):
             diff_ub = z_ub[log_ub] - ub[log_ub]
             pen_ub  = sum(abs(diff_ub) + 5)**4
             f += pen_ub
-
-        # print('f: {0}'.format(f))
 
         return f
 

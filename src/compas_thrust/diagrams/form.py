@@ -82,12 +82,13 @@ def adapt_tna(form, zmax = 5.0, plot = False, delete_face = False):
 
     return form
 
-def remove_feet(form, plot = False):
+def remove_feet(form, plot = False, openings = None): #Flatten Diagram
 
     lines = []
     qs = {}
+    pz = {}
 
-    for u, v in form.edges_where({'is_external': False, 'is_edge': True}):
+    for u, v in form.edges_where({'is_edge': True, 'is_external': False}):
         s = form.vertex_coordinates(u)
         e = form.vertex_coordinates(v)
         lines.append([s,e])
@@ -95,6 +96,7 @@ def remove_feet(form, plot = False):
 
     fixed = [geometric_key(form.vertex_coordinates(key)) for key in form.vertices_where({'is_anchor': True })]
     zs = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.vertex_coordinates(key)[2] for key in form.vertices_where({'is_external': False })}
+    pz = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'pz') for key in form.vertices_where({'is_external': False })}
 
     form_ = FormDiagram.from_lines(lines)
     gkey_key = form_.gkey_key()
@@ -103,17 +105,16 @@ def remove_feet(form, plot = False):
         form_.set_vertex_attribute(gkey_key[pt], name = 'is_fixed', value = True)
 
     for key, attr in form_.vertices(True):
-        attr['z'] = zs[geometric_key(form_.vertex_coordinates(key))]
+        attr['z'] = zs[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        attr['pz'] = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
 
     for u, v in form_.edges():
         form_.set_edge_attribute((u,v), name = 'q', value = qs[geometric_key(form_.edge_midpoint(u,v))])
-    
-    form_.plot()
 
     if plot:
         plot_form(form_).show()
 
-    return form
+    return form_
 
 def evaluate_a(form, plot=True):
 

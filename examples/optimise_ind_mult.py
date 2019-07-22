@@ -8,6 +8,8 @@ from compas_thrust.algorithms.equilibrium import horizontal_check
 
 from compas_thrust.utilities.utilities import check_constraints
 from compas_thrust.utilities.utilities import oveview_forces
+from compas_thrust.utilities.utilities import create_sym_2
+from compas_thrust.utilities.utilities import replicate2
 
 from compas_thrust.diagrams.form import _form
 from compas_thrust.diagrams.form import remove_feet
@@ -37,10 +39,15 @@ if __name__ == "__main__":
         file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_TNA.json'
         file_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_calc.json'
         form = FormDiagram.from_json(file)
+        plot_form(form).show()
+        # form_complete = replicate2(form, '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_comp.json', plot=True)
+        # form_complete.to_json(file_save)
 
-        form = remove_feet(form, plot = False)
+        form = remove_feet(form, plot = True)
         form = _form(form, keep_q=True)
-        oveview_forces(form)
+        plot_form(form).show()
+        form = create_sym_2(form)
+        plot_form(form).show()
 
         # Initial parameters
 

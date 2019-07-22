@@ -74,14 +74,14 @@ def plot_form(form, radius=0.1, fix_width=False, max_width=10, simple=False):
             'end':   form.vertex_coordinates(v),
             'color': ''.join(colour),
             'width': width,
-            # 'text': round(qi, 2),
+            'text': round(qi, 2),
         })
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     # round(form.get_vertex_attribute(i, 'pz'), 2)
     if radius:
         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-        radius=radius, text={i: round(form.vertex_coordinates(i)[2],2) for i in form.vertices()})
+        radius=radius, text={i: round(form.vertex_coordinates(i)[2],1) for i in form.vertices()})
     plotter.draw_lines(lines)
 
     return plotter
