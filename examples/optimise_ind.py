@@ -11,6 +11,7 @@ from compas_thrust.utilities.utilities import oveview_forces
 from compas_thrust.utilities.utilities import replicate
 
 from compas_thrust.diagrams.form import _form
+from compas_thrust.plotters.plotters import plot_form
 
 from compas_thrust.plotters.plotters import plot_form
 import compas_pattern

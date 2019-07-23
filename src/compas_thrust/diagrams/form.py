@@ -65,17 +65,50 @@ def _form(form, keep_q=False):
 
     return form_
 
-def adapt_tna(form, zmax = 5.0, plot = False, delete_face = False):
+def add_feet(form, delete_face = False, plot = False):
 
     if delete_face:
         form.delete_face(0)
     corners = list(form.vertices_where({'is_fixed': True}))
     form.set_vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
     form.update_boundaries(feet=2)
-    form.plot()
+    if plot:
+        form.plot()
+
+    return form
+
+def adapt_tna(form, zmax = 5.0, plot = False, delete_face = False, alpha = 100):
+
+    form = add_feet(form, delete_face = delete_face, plot = plot)
     force  = ForceDiagram.from_formdiagram(form)
-    horizontal(form, force, alpha=100, display=False)
+    
+    horizontal(form, force, alpha=alpha, display=False)
+    k = 0
+    while evaluate_a(form) > 2.5 or k > 50:
+        horizontal(form, force, alpha=alpha, display=False)
+        if k > 10:
+            alpha = 0.70
+        if k > 40:
+            alpha = 0.50
     vertical_from_zmax(form,zmax,display=False)
+
+    if plot:
+        plot_form(form).show()
+        plot_force(force).show()
+    force  = ForceDiagram.from_formdiagram(form)
+
+    horizontal(form, force, alpha=100, display=False)
+    pzt = 0
+    for key, attr in form.vertices(True):
+        pzt += attr['pz']
+    print('Load applied: {0}'.format(pzt))
+
+    vertical_from_zmax(form,zmax,display=False)
+
+    pzt = 0
+    for key, attr in form.vertices(True):
+        pzt += attr['pz']
+    print('Load applied: {0}'.format(pzt))
 
     if plot:
         plot_form(form).show()
@@ -87,7 +120,6 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
 
     lines = []
     qs = {}
-    pz = {}
 
     for u, v in form.edges_where({'is_edge': True, 'is_external': False}):
         s = form.vertex_coordinates(u)
@@ -97,8 +129,8 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
 
     fixed = [geometric_key(form.vertex_coordinates(key)) for key in form.vertices_where({'is_anchor': True })]
     zs = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.vertex_coordinates(key)[2] for key in form.vertices_where({'is_external': False })}
-    pz = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'pz') for key in form.vertices_where({'is_external': False })}
-
+    pz = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'pz') for key in form.vertices()}
+    
     form_ = FormDiagram.from_lines(lines)
     if openings:
         for key in form.faces():
@@ -118,7 +150,7 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
         attr['pz'] = pzi
         attr['z'] = zi
         pzt += pzi
-    print('Load applied: {0}'.format(pzt))
+    print('Load applied at end: {0}'.format(pzt))
 
     for u, v in form_.edges():
         qi = qs[geometric_key(form_.edge_midpoint(u,v))]
@@ -126,11 +158,17 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
 
     form_ = z_from_form(form_)
 
+    pzt = 0
+    for key, attr in form_.vertices(True):
+        pzt += attr['pz']
+    print('Load applied after calculation: {0}'.format(pzt))
+
     lp = 0
     for u, v in form_.edges():
         qi = form_.get_edge_attribute((u,v), name = 'q')
         lp += qi * form_.edge_length(u,v) ** 2
     form.attributes['loadpath'] = lp
+    print('LoadPath for this shape: {0}'.format(lp))
 
     if plot:
         plot_form(form_).show()

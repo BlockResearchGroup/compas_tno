@@ -10,15 +10,15 @@ from compas_rhino.artists import NetworkArtist
 import rhinoscriptsyntax as rs
 
 
-jsonpath = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_comp.json'
+jsonpath = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
 
 # Form
 
-Lines_txt = 'A::Lines_comp_rlx' #_complete
-Symmetry_txt = 'A::Sym_comp_rlx' #_complete
-Pins_txt = 'A::Pins_comp_rlx' #_complete
-Dots_txt = 'A::Dots' #_complete
+Lines_txt = 'C::Lines' #_complete
+Symmetry_txt = 'C::Sym' #_complete
+Pins_txt = 'C::Pins' #_complete
+Dots_txt = 'C::Dots' #_complete
 rollers_txt = 'Rollers'
 inds_layer = 'Inds'
 lb_layer = 'lb'
@@ -44,7 +44,7 @@ rollers = False
 complete = False
 nsym = 2 #8
 ind = False
-openings = True
+openings = None
 
 # Pins
 
@@ -73,8 +73,13 @@ pzt = 0
 
 if openings:
     for key in form.faces():
-        if form.face_area(key) > 12.0 and form.face_area(key) < 12.2 :
+        if form.face_area(key) > openings - 1.0 and form.face_area(key) < openings + 1.0:
             form.delete_face(key)
+            print('Deleted area of face {0}'.format(key))
+            break
+    for key in loads.faces():
+        if loads.face_area(key) > openings - 1.0 and loads.face_area(key) < openings + 1.0:
+            loads.delete_face(key)
             print('Deleted area of face {0}'.format(key))
             break
 

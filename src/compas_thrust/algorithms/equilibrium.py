@@ -205,6 +205,7 @@ def update_tna(form, delete_face=True, plots=True, save=False):
     force = ForceDiagram.from_formdiagram(form)
 
     horizontal(form,force,display=False)
+    # Vertical?
 
     if plots:
         plot_force(force, radius=0.05).show()
