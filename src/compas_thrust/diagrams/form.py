@@ -9,6 +9,8 @@ from compas.numerical import connectivity_matrix
 from compas_thrust.algorithms.equilibrium import z_from_form
 from compas_thrust.algorithms.scale import scale_form
 from compas_thrust.algorithms.scale import evaluate_scale
+from compas_thrust.algorithms.equilibrium import z_update
+
 
 from compas_thrust.plotters.plotters import plot_form
 from compas_thrust.plotters.plotters import plot_force
@@ -40,7 +42,8 @@ __all__ = [
     'evaluate_a',
     'remove_feet',
     'energy',
-    'loadpath'
+    'loadpath',
+    'oveview_forces',
 ]
 
 def _form(form, keep_q=False):
@@ -169,10 +172,13 @@ def adapt_objective(form, zrange = [3.0,8.0], objective = 'loadpath', method = '
 
     return form
 
-def remove_feet(form, plot = False, openings = None): #Flatten Diagram
+def remove_feet(form, plot = False, openings = None, rmax = 0.01): #Flatten Diagram
 
     lines = []
     qs = {}
+
+    if plot:
+        plot_form(form).show()
 
     for u, v in form.edges_where({'is_edge': True, 'is_external': False}):
         s = form.vertex_coordinates(u)
@@ -196,36 +202,22 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
     for pt in fixed:
         form_.set_vertex_attribute(gkey_key[pt], name = 'is_fixed', value = True)
 
-    pzt = 0
     for key, attr in form_.vertices(True):
         pzi = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
         zi = zs[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
         attr['pz'] = pzi
         attr['z'] = zi
-        pzt += pzi
-    print('Load applied Berore Calc: {0}'.format(pzt))
 
     for u, v in form_.edges():
         qi = qs[geometric_key(form_.edge_midpoint(u,v))]
         form_.set_edge_attribute((u,v), name = 'q', value = qi)
 
-    plot_form(form_).show()
+    # form_ = z_from_form(form_) # This moves also x,y a bit...
+    form_ = z_update(form_)
 
-    form_ = z_from_form(form_)
-
-    plot_form(form_).show()
-
-    pzt = 0
-    for key, attr in form_.vertices(True):
-        pzt += attr['pz']
-    print('Load applied after calculation: {0}'.format(pzt))
-
-    lp = 0
-    for u, v in form_.edges():
-        qi = form_.get_edge_attribute((u,v), name = 'q')
-        lp += qi * form_.edge_length(u,v) ** 2
-    form.attributes['loadpath'] = lp
-    print('LoadPath for this shape: {0}'.format(lp))
+    r = residual(form, plot = plot)
+    if r > rmax:
+        print('High residual forces!')
 
     if plot:
         plot_form(form_).show()
@@ -329,3 +321,35 @@ def loadpath(form):
                 lp += qi*li**2
 
     return lp
+
+
+def oveview_forces(form):
+
+    f = []
+    q = []
+    z = []
+    pz = 0
+
+    lp=0
+
+    for u, v in form.edges_where({'is_external': False}):
+        if form.get_edge_attribute((u,v),'is_edge') is True and form.get_edge_attribute((u,v),'is_symmetry') is False:
+            qi = form.get_edge_attribute((u,v),'q')
+            li = form.edge_length(u,v)
+            lp += qi*li**2
+            q.append(qi)
+            f.append(qi*li)
+
+    print('='*20)
+    print('Overview on forces:')
+
+    print('q: {0:.3f} : {1:.3f}'.format(float(min(q)), float(max(q))))
+    print('f: {0:.3f} : {1:.3f}'.format(float(min(f)), float(max(f))))
+    for key in form.vertices():
+        z.append(form.get_vertex_attribute(key,'z'))
+        pz += form.get_vertex_attribute(key,'pz')
+    print('z: {0:.3f} : {1:.3f}'.format(float(min(z)), float(max(z))))
+    print('pz: {0:.3f}'.format(pz))
+    print('lp: {0:.3f}'.format(lp))
+
+    return

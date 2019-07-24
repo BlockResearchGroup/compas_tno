@@ -11,7 +11,9 @@ from compas.geometry import matrix_from_axis_and_angle
 
 from compas.geometry.distance import distance_point_point_xy
 from numpy import argmin
+from numpy import sqrt
 from compas_thrust.algorithms.equilibrium import z_from_form
+from compas_thrust.diagrams.form import oveview_forces
 
 from compas_plotters import MeshPlotter
 
@@ -27,12 +29,9 @@ __email__     = 'mricardo@ethz.ch'
 
 __all__ = [
     'replicate',
-    'oveview_forces',
-    'check_constraints',
-    'replicate_contraints',
-    'interp_surf',
-    'null_edges',
+    'replicate2',
     'create_sym',
+    'create_sym2',
 ]
 
 def replicate(form,file, plot=None):
@@ -148,7 +147,6 @@ def replicate(form,file, plot=None):
             for point in real_points:
                 dist.append(distance_point_point_xy(point,mp))
             point_i = argmin(dist)
-            print(point_i)
             gkey_appx = geometric_key(real_points[point_i])
             form_.set_edge_attribute((u, v), name='q', value = q_i[gkey_appx])
 
@@ -180,7 +178,6 @@ def replicate(form,file, plot=None):
         plot_form(form_, radius=0.05).show()
 
     return form_
-
 
 def replicate2(form, file, plot=None):
 
@@ -284,148 +281,7 @@ def replicate2(form, file, plot=None):
 
     return form_
 
-def oveview_forces(form):
-
-    f = []
-    q = []
-    z = []
-    pz = 0
-
-    lp=0
-
-    for u, v in form.edges_where({'is_external': False}):
-        if form.get_edge_attribute((u,v),'is_edge') is True and form.get_edge_attribute((u,v),'is_symmetry') is False:
-            qi = form.get_edge_attribute((u,v),'q')
-            li = form.edge_length(u,v)
-            lp += qi*li**2
-            q.append(qi)
-            f.append(qi*li)
-
-    print('='*20)
-    print('Overview on forces:')
-
-    print('q: {0:.3f} : {1:.3f}'.format(float(min(q)), float(max(q))))
-    print('f: {0:.3f} : {1:.3f}'.format(float(min(f)), float(max(f))))
-    for key in form.vertices():
-        z.append(form.get_vertex_attribute(key,'z'))
-        pz += form.get_vertex_attribute(key,'pz')
-    print('z: {0:.3f} : {1:.3f}'.format(float(min(z)), float(max(z))))
-    print('pz: {0:.3f}'.format(pz))
-    print('lp: {0:.3f}'.format(lp))
-
-    return
-
-def check_constraints(form, show=False):
-
-    try:
-        t = form.attributes['offset']
-    except:
-        t = 0.0
-    outside = {}
-    penalty = 0
-
-    for key, vertex in form.vertex.items():
-        z = form.vertex_coordinates(key)[2] + t
-        if vertex.get('lb', None):
-            lb = vertex['lb']
-            if z < lb:
-                outside[key] = lb - z
-                penalty += (abs(outside[key])+4)**(4)
-        if vertex.get('ub', None):
-            ub = vertex['ub']
-            if z > ub:
-                outside[key] = z - ub
-                penalty += (abs(outside[key])+4)**(4)
-
-    print('The penalty in the constraints is {0:.3f}'.format(penalty))
-
-    if show:
-        plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-        plotter.draw_vertices(text=outside)
-        plotter.draw_edges()
-        plotter.show()
-
-    return penalty
-
-def replicate_contraints(file, file_constraint):
-
-    form = FormDiagram.from_json(file)
-    form_ = FormDiagram.from_json(file_constraint)
-    gkey_planar = {}
-
-    for key_real in form.vertices():
-        coord = form.vertex_coordinates(key_real)
-        gkey_proj = geometric_key([coord[0],coord[1],0.0])
-        gkey_planar[gkey_proj] = key_real
-
-    for key in form_.vertices():
-        target = form_.vertex[key].get('target', 0.0)
-        if target < 10**(-4):
-            target = 0.00
-        gkey = geometric_key([form_.vertex_coordinates(key)[0],form_.vertex_coordinates(key)[1], 0.0])
-        form.set_vertex_attribute(gkey_planar[gkey], 'target', target)
-
-    return form
-
-def interp_surf(form):
-
-    x = []
-    y = []
-    s = []
-
-    for key, vertex in form.vertex.items():
-        if vertex.get('is_external') == False:
-            x.append(vertex.get('x'))
-            y.append(vertex.get('y'))
-            s.append(vertex.get('target'))
-
-    from scipy import interpolate
-
-    surf = interpolate.interp2d(x, y, s, kind = 'linear')
-
-    return surf
-
-def null_edges(form, plot=False):
-
-    null_edges = []
-    all_edges = []
-
-    for u, v in form.edges():
-        if form.get_edge_attribute((u,v), 'is_external') == False and form.get_edge_attribute((u,v), 'is_edge') == True:
-            activ = 0
-            coord_u = form.vertex_coordinates(u)
-            coord_v = form.vertex_coordinates(v)
-            ux = round(coord_u[0],3)
-            uy = round(coord_u[1],3)
-            vx = round(coord_v[0],3)
-            vy = round(coord_v[1],3)
-            mid_x, mid_y, _ = form.edge_midpoint(u,v)
-            if uy == vy and ((uy is not 10.0 and vy is not 10.0) or (uy is not 0.0 and vy is not 0.0)):
-                if (mid_y > mid_x and mid_y < 10 - mid_x) or (mid_y < mid_x and mid_y > 10 - mid_x):
-                    if uy == 5.0 and vy == 5.0 and ux > 0.01 and vx > 0.01 and ux < 9.99 and vx < 9.99: # Special for TOP 2
-                        pass
-                    else:
-                        null_edges.append((u,v))
-                        activ += 1
-            if ux == vx and ((ux is not 10.0 and vx is not 10.0) or (ux is not 0.0 and vx is not 0.0)):
-                if (mid_y > mid_x and mid_y > 10 - mid_x) or (mid_y < mid_x and mid_y < 10 - mid_x):
-                    if ux == 5.0 and vx == 5.0 and uy > 0.01 and vy > 0.01 and uy < 9.99 and vy < 9.99: # Special for TOP 2
-                        pass
-                    else:
-                        null_edges.append((u,v))
-                        activ += 1
-            if activ == 0:
-                all_edges.append((u,v))
-
-    if plot:
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges(all_edges)
-        plotter.draw_edges(null_edges, color='ff0000')
-        plotter.show()
-
-    return null_edges
-
-def create_sym(form):
+def create_sym(form, keep_q = True):
 
     plot_form(form).show()
 
@@ -433,37 +289,49 @@ def create_sym(form):
     symmetry = []
     pins = []
     loads = {}
+    qs = {}
     tol = 0.001
 
+    pz = 0
+    for key in form.vertices():
+        pz += form.vertex[key]['pz']
+    print('Load Before Sym: {0}'.format(pz))
+
     for u,v in form.edges():
-        u_coord = form.vertex_coordinates(u)
-        v_coord = form.vertex_coordinates(v)
+        u_coord = form.vertex_coordinates(u)[:2] + [0]
+        v_coord = form.vertex_coordinates(v)[:2] + [0]
+        mid_gkey = geometric_key(form.edge_midpoint(u,v)[:2] + [0])
+        qs[mid_gkey] = form.get_edge_attribute((u,v), 'q')
         if u_coord[1] >= 10 - u_coord[0] - tol and u_coord[0] <= 5.0 + tol and v_coord[1] >= 10 - v_coord[0] - tol and v_coord[0] <= 5.0 + tol :
             lines.append([u_coord,v_coord])
+        if 5.0 - tol <= u_coord[0] <= 5.0 + tol and 5.0 - tol <= v_coord[0] <= 5.0 + tol: # Line Vertical at x = 5.0 and y > 5.0
+            qs[mid_gkey] *= 0.5
+        if 10 - u_coord[0] - tol <= u_coord[1] <= 10 - u_coord[0] + tol and 10 - v_coord[0] - tol <= v_coord[1] <= 10 - v_coord[0] + tol: # Line Diagonal at y = x 
+            qs[mid_gkey] *= 0.5
 
     for key in form.vertices():
-        coord = form.vertex_coordinates(key)
+        coord = form.vertex_coordinates(key)[:2] + [0]
         gkey = geometric_key(coord)
         loads[gkey] = form.get_vertex_attribute(key, 'pz')
 
         if 5.0 - tol <= coord[0] <= 5.0 + tol and coord[1] > 5.0 - tol: # Line Vertical at x = 5.0 and y > 5.0
             loads[gkey] = 0.5 * loads[gkey]
-            if coord[1] < 10.0 - tol:  # Only if continuously supported
-                ext_pt = [coord[0]+1.0, coord[1], coord[2]]
+            if form.get_vertex_attribute(key, 'is_fixed') == False:
+                ext_pt = [coord[0]+1.0, coord[1], 0.0]
                 symmetry.append([coord,ext_pt])
                 pins.append(geometric_key(ext_pt))
                 loads[geometric_key(ext_pt)] = 0.0
 
         if 10 - coord[0] - tol <= coord[1] <= 10 - coord[0] + tol and 10.0 - tol > coord[1] > 5.0 + tol: # Line Diagonal at y = x - 10 without central and corner
             loads[gkey] = 0.5 * loads[gkey]
-            ext_pt = [coord[0]-sqrt(2)/2,coord[1]-sqrt(2)/2,coord[2]]
+            ext_pt = [coord[0]-sqrt(2)/2,coord[1]-sqrt(2)/2,0.0]
             symmetry.append([coord,ext_pt])
             pins.append(geometric_key(ext_pt))
             loads[geometric_key(ext_pt)] = 0.0
 
         if 5.0 - tol <= coord[0] <= 5.0 + tol and 5.0 - tol <= coord[1] <= 5.0 + tol: # Central Point
             loads[gkey] = 0.25 * loads[gkey]
-            ext_pt = [coord[0],coord[1]-1.0,coord[2]]
+            ext_pt = [coord[0],coord[1]-1.0,0.0]
             symmetry.append([coord,ext_pt])
             pins.append(geometric_key(ext_pt))
             loads[geometric_key(ext_pt)] = 0.0
@@ -482,6 +350,8 @@ def create_sym(form):
 
     gkey_key = form_.gkey_key()
 
+    plot_form(form_).show()
+
     for i in pins:
         form_.set_vertex_attribute(gkey_key[i], 'is_fixed', value=True)
 
@@ -491,22 +361,24 @@ def create_sym(form):
         v = gkey_key[geometric_key(b)]
         form_.set_edge_attribute((u, v), name='is_symmetry', value=True)
 
-    # Loads
+    # Loads and Qs
 
     pz = 0
     for key in form_.vertices():
         gkey = geometric_key(form_.vertex_coordinates(key))
         form_.vertex[key]['pz'] = loads[gkey]
         pz += form_.vertex[key]['pz']
-    print('Form: ' + ST)
-    print('Total load: {0}'.format(pz))
+    print('Load After Sym: {0}'.format(pz))
+
+    for u, v in form_.edges_where({'is_symmetry': False}):
+        qi = qs[geometric_key(form_.edge_midpoint(u,v))]
+        form_.set_edge_attribute((u, v), name = 'q', value = qi)
 
     plot_form(form_).show()
-    form_.to_json(radical + '_sym.json')
 
     return form_
 
-def create_sym_2(form, keep_q = False):
+def create_sym2(form, keep_q = True):
 
     lines = []
     symmetry = []
@@ -523,7 +395,7 @@ def create_sym_2(form, keep_q = False):
         v_coord = form.vertex_coordinates(v)
         qs[geometric_key(form.edge_midpoint(u,v))] = form.get_edge_attribute((u,v), 'q')
         if u_coord[0] <= 0.0 + tol and v_coord[0] <= 0.0 + tol: # Line Vertical at x = 0.0
-            qs[geometric_key(form.edge_midpoint(u,v))] *= 0.5
+            qs[geometric_key(form.edge_midpoint(u,v))] *= 0.5 # isn't it changing all q's for half? VERIFY
             lines.append([u_coord,v_coord])
 
     for key in form.vertices():

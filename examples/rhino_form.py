@@ -17,7 +17,8 @@ i = 0
 # fnm = '/Users/mricardo/compas_dev/me/bestfit/pillowRV_ind_calc.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/barrel/3D_min_ind.json'
 # fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
-fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C4_calc.json'
+# fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp_calc.json'
+fnm = '/Users/mricardo/compas_dev/me/minmax/barrel/2D_min.json'
 # radical = '/Users/mricardo/compas_dev/me/loadpath/Fix/' + ST
 # fnm = radical + '_lp.json'
 form = FormDiagram.from_json(fnm)
@@ -30,13 +31,13 @@ except:
     t = 0.0
     print('No offset!')
 
-thrust_layer = 'C4::Thrust_lp'
+thrust_layer = 'TEST'
 # thrust_layer = 'Thrust'
-# reactions_layer = 'Reactions'
+reactions_layer = 'TEST-REAC'
 
 # thrust_layer = 'Thrust'
 rs.AddLayer(thrust_layer)
-# rs.AddLayer(reactions_layer)
+rs.AddLayer(reactions_layer)
 
 # i += 1
 
@@ -58,7 +59,6 @@ rs.CurrentLayer(thrust_layer)
 for uv in form.edges():
     u, v = uv
     q = form.get_edge_attribute(uv, 'q')
-    print(q)
     l = form.edge_length(u,v)
     if form.get_edge_attribute((u,v), 'is_symmetry') == False and form.get_edge_attribute((u,v), 'is_edge') == True and form.get_edge_attribute((u,v), 'is_external') == False :
         lp += q * l * l
@@ -72,22 +72,37 @@ for uv in form.edges():
         rs.ObjectName(id, str(q))
         # rs.ObjectColor(id, (255,255*(1002-i)/1002,0))
 
-rs.AddTextDot('{0:.1f}'.format(lp),[-10.0,-1.0,0.0])
+rs.AddTextDot('{0:.1f}'.format(lp),[-1.0,-1.0,0.0])
 
-# artist = NetworkArtist(form, layer=reactions_layer)
-# artist.clear_layer()
-# rs.CurrentLayer(reactions_layer)
+artist = NetworkArtist(form, layer=reactions_layer)
+artist.clear_layer()
+rs.CurrentLayer(reactions_layer)
 
-# pzt=0
-# for key in form.vertices():
-#     pz = form.get_vertex_attribute(key,'pz')
-#     pzt+= pz
-#     if form.vertex[key]['is_fixed'] is True:
-#         node = form.vertex_coordinates(key)
-#         node[2] += t
-#         ry = form.get_vertex_attribute(key, 'ry')
-#         rx = form.get_vertex_attribute(key, 'rx')
-#         rs.AddTextDot('ry: {0:.1f} / rx: {0:.1f}'.format(ry,rx),node)
+pzt=0
+for key in form.vertices():
+    pz = form.get_vertex_attribute(key,'pz')
+    pzt+= pz
+    if form.vertex[key]['is_fixed'] is True:
+        node = form.vertex_coordinates(key)
+        node[2] += t
+        ry = form.get_vertex_attribute(key, 'ry')
+        rx = form.get_vertex_attribute(key, 'rx')
+        rz = form.get_vertex_attribute(key, 'rz', 0.0)
+        norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
+        print(rx,ry,rz)
+        print(norm)
+        if rz < 0.0 and norm > 0.0:
+            sp = node
+            print(sp)
+            dz = rz/norm
+            mult = node[2]/dz
+            dz *= mult
+            dx = mult* rx/norm
+            dy = mult* ry/norm
+            ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
+            id = rs.AddLine(sp, ep)
+            rs.ObjectName(id, str(norm))
+            # rs.AddTextDot('ry: {0:.1f} / rx: {0:.1f}'.format(ry,rx),node)
 
 # print(pzt)
 

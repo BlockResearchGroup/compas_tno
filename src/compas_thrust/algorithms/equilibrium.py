@@ -31,6 +31,7 @@ from compas.numerical import normalizerow
 from compas_tna.utilities import apply_bounds
 from compas_tna.utilities import parallelise_sparse
 from compas_tna.utilities import parallelise_nodal
+from compas.numerical import fd_numpy
 
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
@@ -64,6 +65,7 @@ __email__     = 'mricardo@ethz.ch'
 
 __all__ = [
     'zlq_from_qid',
+    'z_update',
     'z_from_form',
     'horizontal_check',
     'update_tna',
@@ -74,7 +76,19 @@ __all__ = [
 
 def z_from_form(mesh):
 
-    from compas.numerical import fd_numpy
+    """ Relaxation of Form-Diagram. FDM with 'q's stored in the form (All coordinates can change).
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+
+    Returns
+    -------
+    form : obj
+        The relaxed form diagram.
+
+    """
 
     # preprocess
 
@@ -101,6 +115,30 @@ def z_from_form(mesh):
 
 def zlq_from_qid(qid, args):
 
+    """ Calculate z's from independent edges.
+
+    Parameters
+    ----------
+    qid : list
+        Force densities of the independent edges.
+    args : tuple
+        Arrays and matrices relevant to the operation.
+
+
+    Returns
+    -------
+    z : array
+        Heights of the nodes
+    l2 : array
+        Lenghts squared
+    q : array
+        Force densities without symetrical edges (q[sym] = 0)
+    q_ : array
+        Force densities with symetrical edges 
+
+    """
+
+
     q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
     # q, ind, dep, Edinv, Ei, C, Ci, Cit, U, V, p, px, py, pz, tol, z, free, planar, lh, sym, *_ = args
     # q, ind, dep, Edinv, Ei, C, Ci, Cit, p, pz, z, free, planar, lh2, sym = args[:-5]
@@ -115,7 +153,54 @@ def zlq_from_qid(qid, args):
 
     return z, l2, q, q_
 
-def horizontal_check(form, plot = False):
+def z_update(form):
+
+    """ Built-in update of the heights in the Form-Diagram (only z-coordinates can change).
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+
+    Returns
+    -------
+    form : obj
+        The scaled form diagram.
+
+    """
+
+    k_i     = form.key_index()
+    uv_i    = form.uv_index()
+    vcount  = len(form.vertex)
+    anchors = list(form.anchors())
+    fixed   = list(form.fixed())
+    fixed   = set(anchors + fixed)
+    fixed   = [k_i[key] for key in fixed]
+    free    = list(set(range(vcount)) - set(fixed))
+    edges   = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
+    xyz     = array(form.get_vertices_attributes('xyz'), dtype=float64)
+    p       = array(form.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
+    q       = [attr.get('q', 1.0) for u, v, attr in form.edges_where({'is_edge': True}, True)]
+    q       = array(q, dtype=float64).reshape((-1, 1))
+    C       = connectivity_matrix(edges, 'csr')
+    Ci      = C[:, free]
+    Cf      = C[:, fixed]
+    Cit     = Ci.transpose()
+
+    Q = diags([q.ravel()], [0])
+
+    A       = Cit.dot(Q).dot(Ci)
+    B       = Cit.dot(Q).dot(Cf)
+
+    xyz[free, 2] = spsolve(A,p[free, 2] - B.dot(xyz[fixed, 2]))
+
+    for key, attr in form.vertices(True):
+        index = k_i[key]
+        attr['z']  = xyz[index, 2]
+    
+    return form
+
+def horizontal_check(form, plot = False): # Duplicated Function (Decide this or .diagrams.form residual)
 
     # Mapping
 
@@ -414,39 +499,65 @@ def paralelise_form(form, force, q, alpha = 1.0, kmax = 100, plot = None, displa
 
     return form, force
 
-def reactions(form, show=False):
+def reactions(form, plot=False): 
 
-    from compas.geometry.basic import scale_vector
-    from compas.geometry.basic import normalize_vector
-    from compas.geometry.basic import sum_vectors
-    from compas.geometry.basic import norm_vector
-    from compas.geometry.distance import distance_point_point_xy
+# Mapping
 
-    eq_node = {}
-    sum_res = 0
+    k_i  = form.key_index()
+    i_k  = form.index_key()
+    uv_i = form.uv_index()
 
-    for key, nbrs in iter(form.halfedge.items()):
-        if form.vertex[key]['is_fixed'] is True:
-            vectors = []
-            for nbr, face in iter(nbrs.items()):
-                qi = form.get_edge_attribute((key, nbr), 'q')
-                a = form.vertex_coordinates(key)
-                b = form.vertex_coordinates(nbr)
-                f = distance_point_point_xy(a,b)*qi
-                vectors.append(scale_vector(normalize_vector([a[0]-b[0],a[1]-b[1],0]),f))
-            sum_vec = sum_vectors(vectors)
-            eq_node[key] = norm_vector(sum_vec)
-            sum_res += eq_node[key]
-            form.set_vertex_attribute(key, 'rx', value=sum_vec[0])
-            form.set_vertex_attribute(key, 'ry', value=sum_vec[1])
-            form.set_vertex_attribute(key, 'r', value=norm_vector(sum_vec))
-            # if len(vectors) > 1:
-            rx = sum_vec[0]
-            ry = sum_vec[1]
-            r = norm_vector(sum_vec)
+    # Vertices and edges
 
-    # print('Reaction forces are rx: {0:.3f} and ry: {1:.3f} - Total: {2:.3f}'.format(rx,ry, r))
-    if show:
+    n     = form.number_of_vertices()
+    fixed = [k_i[key] for key in form.fixed()]
+    rol   = [k_i[key] for key in form.vertices_where({'is_roller': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
+    free  = list(set(range(n)) - set(fixed) - set(rol))
+
+    # Co-ordinates and loads
+
+    xyz = zeros((n, 3))
+    px  = zeros((n, 1))
+    py  = zeros((n, 1))
+    pz  = zeros((n, 1))
+
+    for key, vertex in form.vertex.items():
+        i = k_i[key]
+        xyz[i, :] = form.vertex_coordinates(key)
+        px[i] = vertex.get('px', 0)
+        py[i] = vertex.get('py', 0)
+        pz[i] = vertex.get('pz', 0)
+
+    xy = xyz[:, :2]
+
+    # C and E matrices
+
+    C   = connectivity_matrix(edges, 'csr')
+    Ci  = C[:, free]
+    uvw = C.dot(xyz)
+    U   = uvw[:, 0]
+    V   = uvw[:, 1]
+    W   = uvw[:, 2]
+    q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
+
+    # Horizontal checks
+
+    Rx = C.transpose().dot(U * q.ravel()) - px.ravel()
+    Ry = C.transpose().dot(V * q.ravel()) - py.ravel()
+    Rz = C.transpose().dot(W * q.ravel()) - pz.ravel()
+    
+    for i in fixed:
+        key = i_k[i]
+        form.set_vertex_attribute(key, 'rx', value = Rx[i])
+        form.set_vertex_attribute(key, 'ry', value = Ry[i])
+        form.set_vertex_attribute(key, 'rz', value = Rz[i])
+        if plot:
+            print('Reactions in key: {0} are:'.format(key))
+            print(Rx[i], Ry[i], Rz[i])
+
+    if plot:
+        eq_node = {key: [round(Rx[k_i[key]],1),round(Ry[k_i[key]],1)] for key in form.vertices_where({'is_fixed': True})}
         plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
         plotter.draw_vertices(text=eq_node)
         plotter.draw_edges()

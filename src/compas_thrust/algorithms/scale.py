@@ -17,6 +17,7 @@ from copy import deepcopy
 from compas_thrust.algorithms.equilibrium import z_from_form
 from compas_thrust.algorithms.equilibrium import update_form
 from compas_thrust.algorithms.equilibrium import paralelise_form
+from compas_thrust.algorithms.equilibrium import z_update
 
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
@@ -29,6 +30,24 @@ __all__ =[
 ]
 
 def lagrangian_scale(form):
+
+    """ Finds the best scale for the force-densities so it minimises the distance to a target surface.
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+
+    Returns
+    -------
+    form : obj
+        The scaled form diagram.
+
+    Reference
+    -------
+    2014 - Shell structures for architecture....
+
+    """
 
     # Mapping
 
@@ -133,6 +152,28 @@ def lagrangian_scale(form):
 
 def evaluate_scale(form, function, bounds, n = 100, plot = True):
 
+    """ Evaluate a given objective function by scaling the form-diagram in the bounds specified.
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+    function : method
+        The objective function.
+    bounds : list
+        the lower and upper bound of the force densities.
+    n : int
+        Thenumbers of divisions inside the interval (bounds).
+    plot : bool
+        Plot form and force if desired.
+
+    Returns
+    -------
+    form : obj
+        The scaled form diagram.
+
+    """
+
     r0 = bounds[0]
     stp = (bounds[1]-bounds[0])/n
     x = []
@@ -186,6 +227,22 @@ def evaluate_scale(form, function, bounds, n = 100, plot = True):
 
 def scale_fdm(form, r):
 
+    """ scale the FormDiagram of a factor r using FDM (all coordinates can change).
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+    r : float
+        The scaling factor on force densities.
+
+    Returns
+    -------
+    form : obj
+        The scaled form diagram.
+
+    """
+
     uv_i = form.uv_index()
     q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
     q = q * r
@@ -201,6 +258,22 @@ def scale_fdm(form, r):
     return form
 
 def scale_form(form,r):
+
+    """ Scale the FormDiagram of a factor r using built-in FDM (only z-coordinates can change).
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+    r : float
+        The scaling factor on force densities.
+
+    Returns
+    -------
+    form : obj
+        The scaled form diagram.
+
+    """
 
     k_i     = form.key_index()
     uv_i    = form.uv_index()
@@ -219,7 +292,6 @@ def scale_form(form,r):
     Ci      = C[:, free]
     Cf      = C[:, fixed]
     Cit     = Ci.transpose()
-    Ct      = C.transpose()
 
     q = q * r
     Q = diags([q.ravel()], [0])
