@@ -17,9 +17,12 @@ from compas_thrust.diagrams.form import _form
 from compas_thrust.diagrams.form import remove_feet
 
 from compas_thrust.diagrams.form import adapt_tna
+from compas_thrust.diagrams.form import adapt_objective
 from compas_thrust.diagrams.form import remove_feet
 
 from compas_thrust.plotters.plotters import plot_form
+
+from compas_viewers.meshviewer import MeshViewer
 
 from copy import deepcopy
 from numpy import array
@@ -42,40 +45,49 @@ if __name__ == "__main__":
     # file_complete = '/Users/mricardo/compas_dev/me/minmax/fan/0'+ str(j)+ '_0'+ str(i)+ '_complete.json'
     # file_complete_save = '/Users/mricardo/compas_dev/me/minmax/fan/0'+ str(j)+ '_0'+ str(i)+ '_complete_min.json'
 
-    file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C2_comp.json'
-    file_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C2_sym.json'
-    file_complete_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C2_calc.json'
+    file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp.json'
+    file_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_sym.json'
+    file_complete_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_calc.json'
 
-
-    # form = FormDiagram.from_json(file)
+    form = FormDiagram.from_json(file)
     # form = _form(form)
-    # # form.plot()
-    # plot_form(form).show()
-    # form = adapt_tna(form, zmax = 7.0, plot = False, delete_face = True)
-    # # form_complete = replicate2(form, '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_comp.json', plot=True)
-    # # form_complete.to_json(file_save)
-    # form = remove_feet(form, plot = True)
     # form.plot()
-    # # form = _form(form, keep_q=True)
-    # # plot_form(form).show()
+    # plot_form(form).show()
+    adapt_objective(form, objective = 'loadpath', plot = False, delete_face = True)
+    # form.plot()
+    # form = adapt_tna(form, zmax = 7.0, plot = False, delete_face = True)
+    # plot_form(form).show()
+    # form_complete = replicate2(form, '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_comp.json', plot=True)
+    # form_complete.to_json(file_save)
+    form = remove_feet(form, plot = True)
+    # form.plot()
+    # form = _form(form, keep_q=True)
+    # plot_form(form).show()
     # form = create_sym_2(form)
     # plot_form(form).show()
 
-    # # # Initial parameters
+    viewer = MeshViewer()
+    viewer.mesh = form
+    viewer.show()
 
-    # tmax = None #3.0 # form.attributes['tmax']
-    # bounds_width = 4
-    # use_bounds = True
-    # qmax = 10
-    # indset = None
-    # nsol = 4
-    # sol = 0
-    # sols = []
-    # forms = []
+    form = create_sym(form)
+    plot_form(form).show()
 
-    # plot_form(form,radius=0.04).show()
+    # Initial parameters
 
-    # # Optimisation Routine - Many trials and Many solutions
+    tmax = None #3.0 # form.attributes['tmax']
+    bounds_width = 4
+    use_bounds = True
+    qmax = 10
+    indset = None
+    nsol = 4
+    sol = 0
+    sols = []
+    forms = []
+
+    plot_form(form,radius=0.04).show()
+
+    # Optimisation Routine - Many trials and Many solutions
 
     # for k in range(100):
     #     print('Optimisation trial {0}.'.format(k))
@@ -108,7 +120,7 @@ if __name__ == "__main__":
     #     q = [attr['q'] for u, v, attr in form.edges(True)]
     #     qmin  = min(array(q))
     #     # plot_form(form).show()
-    #     if qmin > -0.1 and check_constraints(form, show= False) < 500.0:
+    #     if qmin > -0.1 and check_constraints(form, show= False) < 0.1:
     #         forms.append(deepcopy(form))
     #         sols.append(fopt)
     #         form.to_json(file_save)
@@ -119,7 +131,7 @@ if __name__ == "__main__":
 
     # # Printing Results
 
-    # print('Solutions for example: {0}'.format(i))
+    # print('Solutions for example:') # {0}'.format(i))
     # print(sols)
     # n = argmin(sols)
     # print('Optimum Solution: {0}'.format(n))
@@ -130,11 +142,11 @@ if __name__ == "__main__":
     # oveview_forces(form)
     # form.to_json(file_save)
 
-    # Replicate and Save Complete
+    # # Replicate and Save Complete
 
-    form = FormDiagram.from_json(file_save)
-    form_ = replicate2(form, file)
-    reactions(form_)
-    check_constraints(form_)
-    form_.to_json(file_complete_save)
+    # form = FormDiagram.from_json(file_save)
+    # form_ = replicate2(form, file)
+    # reactions(form_)
+    # check_constraints(form_)
+    # form_.to_json(file_complete_save)
 

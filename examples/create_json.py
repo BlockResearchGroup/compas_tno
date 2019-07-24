@@ -10,15 +10,15 @@ from compas_rhino.artists import NetworkArtist
 import rhinoscriptsyntax as rs
 
 
-jsonpath = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
+jsonpath = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp.json'
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
 
 # Form
 
-Lines_txt = 'C::Lines' #_complete
-Symmetry_txt = 'C::Sym' #_complete
-Pins_txt = 'C::Pins' #_complete
-Dots_txt = 'C::Dots' #_complete
+Lines_txt = 'SQ::Lines' #_complete
+Symmetry_txt = 'SQ::Sym' #_complete
+Pins_txt = 'SQ::Pins' #_complete
+Dots_txt = 'SQ::Dots' #_complete
 rollers_txt = 'Rollers'
 inds_layer = 'Inds'
 lb_layer = 'lb'
@@ -44,7 +44,7 @@ rollers = False
 complete = False
 nsym = 2 #8
 ind = False
-openings = None
+openings = 12.0
 
 # Pins
 

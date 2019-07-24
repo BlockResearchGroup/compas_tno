@@ -52,6 +52,9 @@ from compas.utilities import geometric_key
 from copy import deepcopy
 from compas.geometry.distance import distance_point_point_xy
 
+from compas_thrust.plotters.plotters import plot_form
+from compas_thrust.plotters.plotters import plot_force
+
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -64,8 +67,6 @@ __all__ = [
     'z_from_form',
     'horizontal_check',
     'update_tna',
-    'scale_fdm',
-    'scale_form',
     'update_form',
     'paralelise_form',
     'reactions'
@@ -220,61 +221,6 @@ def update_tna(form, delete_face=True, plots=True, save=False):
 
     return form, force
 
-def scale_fdm(form, r):
-
-    uv_i = form.uv_index()
-    q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
-    q = q * r
-
-    for u, v in form.edges_where({'is_external': False}):
-        if form.get_edge_attribute((u,v),'is_edge') is True:
-            i = uv_i[(u,v)]
-            [qi] = q[i]
-            form.set_edge_attribute((u,v),'q',value=qi)
-
-    form = z_from_form(form)
-
-    return form
-
-def scale_form(form,r):
-
-    k_i     = form.key_index()
-    uv_i    = form.uv_index()
-    vcount  = len(form.vertex)
-    anchors = list(form.anchors())
-    fixed   = list(form.fixed())
-    fixed   = set(anchors + fixed)
-    fixed   = [k_i[key] for key in fixed]
-    free    = list(set(range(vcount)) - set(fixed))
-    edges   = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
-    xyz     = array(form.get_vertices_attributes('xyz'), dtype=float64)
-    p       = array(form.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-    q       = [attr.get('q', 1.0) for u, v, attr in form.edges_where({'is_edge': True}, True)]
-    q       = array(q, dtype=float64).reshape((-1, 1))
-    C       = connectivity_matrix(edges, 'csr')
-    Ci      = C[:, free]
-    Cf      = C[:, fixed]
-    Cit     = Ci.transpose()
-    Ct      = C.transpose()
-
-    q = q * r
-    Q = diags([q.ravel()], [0])
-
-    A       = Cit.dot(Q).dot(Ci)
-    B       = Cit.dot(Q).dot(Cf)
-
-    xyz[free, 2] = spsolve(A,p[free, 2] - B.dot(xyz[fixed, 2]))
-
-    for key, attr in form.vertices(True):
-        index = k_i[key]
-        attr['z']  = xyz[index, 2]
-
-    for u, v, attr in form.edges_where({'is_edge': True}, True):
-        index = uv_i[(u, v)]
-        attr['q'] = q[index, 0]
-
-    return form
-
 def update_form(form,q):
 
     k_i     = form.key_index()
@@ -334,7 +280,7 @@ def paralelise_form(form, force, q, alpha = 1.0, kmax = 100, plot = None, displa
 
     if plot:
         plot_form(form).show()
-        plot_force(force).show()
+        plot_force(force, form).show()
 
     # Initialize
 
@@ -425,7 +371,6 @@ def paralelise_form(form, force, q, alpha = 1.0, kmax = 100, plot = None, displa
         attr['l'] = l[i, 0]
         attr['a'] = a[i]
 
-
     for key, attr in force.vertices(True):
         i = _k_i[key]
         attr['x'] = _xy[i, 0]
@@ -465,7 +410,7 @@ def paralelise_form(form, force, q, alpha = 1.0, kmax = 100, plot = None, displa
 
     if plot:
         plot_form(form).show()
-        plot_force(force).show()
+        plot_force(force,form).show()
 
     return form, force
 

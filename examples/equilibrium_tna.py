@@ -33,26 +33,28 @@ if __name__ == "__main__":
 
     file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
     file_tna = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_tna.json'
+    file_init = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_init.json'
 
-    form = FormDiagram.from_json(file)
-    form = adapt_tna(form, zmax = 5.0, plot = False, delete_face = True, alpha = 0.9)
-    print('Solution test')
-    evaluate_a(form)
-
-    f_init = loadpath(form)
-    print('Initial Loadpath after scaling {0}'.format(f_init))
-
-    # form = optimise_tna(form, plot=False, it_max=5, alpha=1.0, a_max = 2.0, steplength=None, null=None, save_steps=False)
-
+    # form = FormDiagram.from_json(file)
+    # form = adapt_tna(form, zmax = 5.0, method = 'geometric', plot = False, delete_face = True, alpha = 100.0, kmax = 1000)
+    # print('Solution test')
+    # evaluate_a(form)
     # plot_form(form).show()
-    # form.to_json('/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_tna.json')
+    # form.to_json(file_tna)
 
     # Inverse
 
+    form = FormDiagram.from_json(file_tna)
     # form.plot()
-    form = FormDiagram.to_json(file_tna)
-    form = remove_feet(form, plot = True)
 
+    # pzt = 0
+    # for key, attr in form.vertices(True):
+    #     pzt += attr['pz']
+    # print('Load applied before calculation: {0}'.format(pzt))
+
+    form = remove_feet(form, plot = True)
+    form.to_json(file_init)
+    
     
 
 

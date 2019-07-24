@@ -1,13 +1,31 @@
-
 from compas.utilities import geometric_key
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 from compas_tna.equilibrium import horizontal
+from compas_tna.equilibrium import horizontal_nodal
 from compas_tna.equilibrium import vertical_from_zmax
+from compas.numerical import connectivity_matrix
+
+from compas_thrust.algorithms.equilibrium import z_from_form
+from compas_thrust.algorithms.scale import scale_form
+from compas_thrust.algorithms.scale import evaluate_scale
+
 from compas_thrust.plotters.plotters import plot_form
 from compas_thrust.plotters.plotters import plot_force
-from compas_thrust.algorithms.equilibrium import z_from_form
+
 from random import shuffle
+from copy import copy
+from compas_tna.utilities import parallelise_sparse
+
+from numpy import array
+from numpy import float64
+from numpy import zeros
+from numpy import max
+from numpy import min
+from numpy import newaxis
+from numpy import sqrt
+from numpy import sum
+
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -18,8 +36,11 @@ __email__     = 'mricardo@ethz.ch'
 __all__ = [
     '_form',
     'adapt_tna',
+    'adapt_objective',
     'evaluate_a',
     'remove_feet',
+    'energy',
+    'loadpath'
 ]
 
 def _form(form, keep_q=False):
@@ -77,42 +98,74 @@ def add_feet(form, delete_face = False, plot = False):
 
     return form
 
-def adapt_tna(form, zmax = 5.0, plot = False, delete_face = False, alpha = 100):
+def adapt_tna(form, zmax = 5.0, method = 'nodal', plot = False, delete_face = False, alpha = 100.0, kmax = 100, display = False):
 
     form = add_feet(form, delete_face = delete_face, plot = plot)
     force  = ForceDiagram.from_formdiagram(form)
-    
-    horizontal(form, force, alpha=alpha, display=False)
-    k = 0
-    while evaluate_a(form) > 2.5 or k > 50:
-        horizontal(form, force, alpha=alpha, display=False)
-        if k > 10:
-            alpha = 0.70
-        if k > 40:
-            alpha = 0.50
-    vertical_from_zmax(form,zmax,display=False)
 
+    if method == 'nodal':
+        horizontal_nodal(form, force, alpha = alpha, kmax = kmax, display = False)
+    else:
+        horizontal(form, force, alpha=alpha, kmax = kmax, display = False)
+
+    # Vertical Equilibrium with no updated loads
+
+    form0 = copy(form)
+    form_ = scale_form(form0, 1.0)
+    z = [form_.get_vertex_attribute(key, 'z') for key in form_.vertices()]
+    z_ = max(z)
+    scale = (z_ / zmax)
+    form = scale_form(form0, scale)
+    
     if plot:
         plot_form(form).show()
-        plot_force(force).show()
+        plot_force(force, form).show()
+        force.plot()
+
+    return form
+
+def adapt_objective(form, zrange = [3.0,8.0], objective = 'loadpath', method = 'nodal', discr = 100, plot = False, 
+                    delete_face = False, alpha = 100.0, kmax = 100, display = False, amax = 2.0, rmax = 0.01):
+
+    form = add_feet(form, delete_face = delete_face, plot = plot)
     force  = ForceDiagram.from_formdiagram(form)
 
-    horizontal(form, force, alpha=100, display=False)
-    pzt = 0
-    for key, attr in form.vertices(True):
-        pzt += attr['pz']
-    print('Load applied: {0}'.format(pzt))
+    if method == 'nodal':
+        horizontal_nodal(form, force, alpha = alpha, kmax = kmax, display = False)
+    else:
+        horizontal(form, force, alpha=alpha, kmax = kmax, display = False)
 
-    vertical_from_zmax(form,zmax,display=False)
+    a = evaluate_a(form, plot = plot)
+    if a > amax:
+        print('High Angle deviations!')
 
-    pzt = 0
-    for key, attr in form.vertices(True):
-        pzt += attr['pz']
-    print('Load applied: {0}'.format(pzt))
+    # Vertical Equilibrium with no updated loads
 
+    if objective == 'loadpath':
+        f = loadpath
+    if objective == 'target':
+        f = energy
+    
+    scale = []
+    form0 = scale_form(form, 1.0)
+    z = [form0.get_vertex_attribute(key, 'z') for key in form0.vertices()]
+    z_ = max(z)
+    scale.append(z_ / zrange[1])
+    scale.append(z_ / zrange[0])
+    print(scale)
+
+    best_scl = evaluate_scale(form0,f,scale,n=discr, plot = plot)
+    
+    print('Best Scale is: {0}'.format(best_scl))
+    form = scale_form(form0, best_scl)
+
+    r = residual(form, plot = plot)
+    if r > rmax:
+        print('High residual forces!')
+    
     if plot:
         plot_form(form).show()
-        plot_force(force).show()
+        plot_force(force, form).show()
 
     return form
 
@@ -150,13 +203,17 @@ def remove_feet(form, plot = False, openings = None): #Flatten Diagram
         attr['pz'] = pzi
         attr['z'] = zi
         pzt += pzi
-    print('Load applied at end: {0}'.format(pzt))
+    print('Load applied Berore Calc: {0}'.format(pzt))
 
     for u, v in form_.edges():
         qi = qs[geometric_key(form_.edge_midpoint(u,v))]
         form_.set_edge_attribute((u,v), name = 'q', value = qi)
 
+    plot_form(form_).show()
+
     form_ = z_from_form(form_)
+
+    plot_form(form_).show()
 
     pzt = 0
     for key, attr in form_.vertices(True):
@@ -191,3 +248,84 @@ def evaluate_a(form, plot=True):
         print('Angle Deviation  Total: {0}'.format(a_total))
 
     return a_max
+
+def residual(form, plot = False):
+
+    # Mapping
+
+    k_i  = form.key_index()
+
+    # Vertices and edges
+
+    n     = form.number_of_vertices()
+    fixed = [k_i[key] for key in form.fixed()]
+    rol   = [k_i[key] for key in form.vertices_where({'is_roller': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
+    free  = list(set(range(n)) - set(fixed) - set(rol))
+    
+
+    # Co-ordinates and loads
+
+    xyz = zeros((n, 3))
+    px  = zeros((n, 1))
+    py  = zeros((n, 1))
+    pz  = zeros((n, 1))
+
+    for key, vertex in form.vertex.items():
+        i = k_i[key]
+        xyz[i, :] = form.vertex_coordinates(key)
+        px[i] = vertex.get('px', 0)
+        py[i] = vertex.get('py', 0)
+        pz[i] = vertex.get('pz', 0)
+
+    xy = xyz[:, :2]
+    px = px[free]
+    py = py[free]
+    pz = pz[free]
+
+    # C and E matrices
+
+    C   = connectivity_matrix(edges, 'csr')
+    Ci  = C[:, free]
+    Cit = Ci.transpose()
+    uvw = C.dot(xyz)
+    U   = uvw[:, 0]
+    V   = uvw[:, 1]
+    q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
+
+    # Horizontal checks
+
+    Rx = Cit.dot(U * q.ravel()) - px.ravel()
+    Ry = Cit.dot(V * q.ravel()) - py.ravel()
+    R = sqrt(Rx**2 + Ry**2)
+    Rmax  = max(R)
+    Rs = sum(R)
+
+    if plot:
+        print('Residual Total: {0}'.format(Rs))
+        print('Residual Max: {0}'.format(Rmax))
+    
+    return Rmax 
+
+def energy(form):
+
+    f = 0
+    for key, vertex in form.vertex.items():
+            if vertex.get('is_external') == False:
+                z  = vertex.get('z')
+                s  = vertex.get('target')
+                w = vertex.get('weight', 1.0)
+                f += w * (z - s)**2
+
+    return f
+
+def loadpath(form):
+
+    lp = 0
+    for u, v in form.edges_where({'is_external': False}):
+            if form.get_edge_attribute((u,v),'is_edge') is True and form.get_edge_attribute((u,v),'is_symmetry') is False:
+                qi = form.get_edge_attribute((u,v),'q')
+                li = form.edge_length(u,v)
+                lp += qi*li**2
+
+    return lp

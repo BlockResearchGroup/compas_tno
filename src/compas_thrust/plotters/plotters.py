@@ -86,7 +86,7 @@ def plot_form(form, radius=0.1, fix_width=False, max_width=10, simple=False):
 
     return plotter
 
-def plot_force(force, radius=0.1, fix_width=False, max_width=10, simple=False):
+def plot_force(force, form, show_length = False, radius=0.1, fix_width=False, max_width=10, simple=False):
 
     """ Extended plotting of a Formdiagram
 
@@ -128,7 +128,10 @@ def plot_force(force, radius=0.1, fix_width=False, max_width=10, simple=False):
     color = {key: '#00ff00' for key in force.edges() if force.get_form_edge_attribute(form, key, 'is_external')}
     width = {key: 2.0 for key in force.edges() if force.get_form_edge_attribute(form, key, 'is_external')}
 
-    plotter.draw_edges(color=color, width=width, text=lengths)
+    if show_length:
+        plotter.draw_edges(color=color, width=width, text=lengths)
+    else:
+        plotter.draw_edges(color=color, width=width)
 
     return plotter
 

@@ -6,12 +6,15 @@ from compas_thrust.algorithms.grad_based import lagrangian_scale
 from compas_thrust.algorithms.grad_based import energy
 
 from compas_thrust.algorithms.equilibrium import scale_form
+from compas_thrust.algorithms.equilibrium import z_from_form
 
 from compas_thrust.utilities.utilities import check_constraints
 from compas_thrust.utilities.utilities import oveview_forces
 from compas_thrust.utilities.utilities import replicate
 
 from compas_thrust.diagrams.form import adapt_tna
+from compas_thrust.diagrams.form import evaluate_a
+
 
 from compas_thrust.plotters.plotters import plot_form
 
@@ -25,18 +28,23 @@ from numpy import argmin
 
 if __name__ == "__main__":
 
-    file = '/Users/mricardo/compas_dev/me/bestfit/pillowRV_grad.json'
-    file_save = '/Users/mricardo/compas_dev/me/bestfit/pillowRV_grad.json'
+    file = '/Users/mricardo/compas_dev/me/minmax/fan/01_05_complete.json'
+    # file_save = '/Users/mricardo/compas_dev/me/minmax/fan/01_05_target.json'
 
     form = FormDiagram.from_json(file)
+    form = z_from_form(form)
+    plot_form(form).show()
 
-    form = adapt_tna(form, zmax = 5.0, plot = False, delete_face = True)
+    form = adapt_tna(form, zmax = 5.0, method = 'nodal', plot = True, delete_face = True, kmax = 1000)
+    form = z_from_form(form)
+    plot_form(form).show()
 
     r = evaluate_scale(form, energy, [0.5,5.5], plot = True)
     print('Scaling of {0}'.format(r))
     form = scale_form(form,r)
     f_init = energy(form)
     print('Initial ENERGY after scaling {0}'.format(f_init))
+    evaluate_a(form)
 
     form = optimise_tna(form, plot=False, it_max=5, alpha=1.0, a_max = 2.0, steplength=None, null=None, save_steps=False)
 

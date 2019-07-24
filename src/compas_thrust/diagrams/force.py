@@ -37,6 +37,7 @@ from compas.numerical import nonpivots
 from compas.numerical.linalg import _chofactor
 from compas_plotters import MeshPlotter
 from compas.utilities import geometric_key
+from compas.numerical.linalg import spsolve_with_known
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -51,8 +52,6 @@ __all__ = [
 
 def update_forcediagram(form,force):
 
-    from compas.numerical.linalg import spsolve_with_known
-
     n = form.number_of_vertices()
     print('Vertices on form {0}'.format(n))
     k_i = form.key_index()
@@ -65,7 +64,6 @@ def update_forcediagram(form,force):
 
     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
     # edges = [[k_i[u], k_i[v]] for u, v in form.edges()]
-    print('NUmber of edges in the form {0}'.format(len(edges)))
     C	 = connectivity_matrix(edges, 'csr')
     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
     # q = [attr['q'] for u, v, attr in form.edges(True)]
@@ -79,7 +77,6 @@ def update_forcediagram(form,force):
         _known.append(_k_i[x])
 
     _n = force.number_of_vertices()
-    print('Vertices on force {0}'.format(_n))
     _xyz = zeros((_n, 3))
     for key in force.vertices():
         i = _k_i[key]
@@ -87,31 +84,17 @@ def update_forcediagram(form,force):
     _xy = _xyz[:, :2]
 
     _edges = force.ordered_edges(form)
-    print('Number of edges in the force {0}'.format(len(_edges)))
     _C = connectivity_matrix(_edges, 'csr')
     _Ct = _C.transpose()
 
-
-    print(_Ct.shape)
-    print(_C.shape)
-    print(Q.shape)
-    print(uv.shape)
-    print(_xy.shape)
-    print(_known)
-    # print(_C)
-    # print(_n)
-
     _xy = spsolve_with_known(_Ct.dot(_C), _Ct.dot(Q).dot(uv), _xy, _known)
-
-    print('exit calc')
-    print(_xy)
 
     for key, attr in force.vertices(True):
         i = _k_i[key]
         attr['x'] = _xy[i, 0]
         attr['y'] = _xy[i, 1]
 
-    return
+    return force
 
 def recalculate_qs(form,force):
 

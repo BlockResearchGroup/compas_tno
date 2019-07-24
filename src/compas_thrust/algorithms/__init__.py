@@ -11,5 +11,6 @@ from __future__ import absolute_import
 from .equilibrium import *
 from .grad_based import *
 from .ind_based import *
+from .scale import *
 
 __all__ = [name for name in dir() if not name.startswith('_')]

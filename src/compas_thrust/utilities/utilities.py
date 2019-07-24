@@ -229,7 +229,7 @@ def replicate2(form, file, plot=None):
             q_i[gkey_mirror] = q_i[gkey_mid]
             
             if -tol <= sp[0] <= tol and -tol <= ep[0] <= tol:
-                q_i[gkey_mirror] *= 0.5
+                q_i[gkey_mirror] *= 2
 
         if form.get_edge_attribute((u,v),'is_ind') == True:
             sp, ep = form.vertex_coordinates(u), form.vertex_coordinates(v)

@@ -316,7 +316,6 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
         # Update FormDiagram
 
-        print(z)
         for i in range(n):
             key = i_k[i]
             form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
