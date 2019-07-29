@@ -8,8 +8,11 @@ from compas_thrust.utilities.symmetry import replicate
 from compas_thrust.diagrams.form import remove_feet
 from compas_thrust.diagrams.form import oveview_forces
 from compas_thrust.diagrams.form import adapt_objective
+from compas_thrust.diagrams.form import adapt_tna
 
 from compas_thrust.plotters.plotters import plot_form
+
+from compas_viewers.meshviewer import MeshViewer
 
 
 # ==============================================================================
@@ -18,21 +21,25 @@ from compas_thrust.plotters.plotters import plot_form
 
 if __name__ == "__main__":
 
-    file = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp.json'
-    file_scaled = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_scaled.json'
-    file_sym = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_sym.json'
+    file = '/Users/mricardo/compas_dev/me/loadpath/prototype/prot_complete.json'
+    file_scaled = '/Users/mricardo/compas_dev/me/loadpath/prototype/prot_scaled.json'
+    # file_sym = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_sym.json'
 
     form = FormDiagram.from_json(file)
 
     # Scale to get an initial best-value for the objective with TNA
 
-    form = adapt_objective(form, zrange = [3.0,8.0], objective = 'loadpath', plot = False, delete_face = True)
+    form = adapt_tna(form)
+
+    # form = adapt_objective(form, zrange = [3.0,8.0], kmax = 1000, objective = 'loadpath', plot = True, delete_face = False)
     form.to_json(file_scaled)
-    oveview_forces(form)
 
     # Prepare Symmetrical part for optimisation with independents
     
-    form = remove_feet(form, plot = False, openings = 12.0)
+    form = remove_feet(form, plot = True)
+    form = FormDiagram.from_json(file)
+    z_fromform
+    oveview_forces(form)
 
     # If form has 1 axis of symmetry
 
@@ -41,6 +48,12 @@ if __name__ == "__main__":
 
     # If form has 3 axis of Symmetry
 
-    form = create_sym(form)
-    form.to_json(file_sym)
-    oveview_forces(form)
+    # form = create_sym(form)
+    # form.to_json(file_sym)
+    # oveview_forces(form)
+
+    # Viewer
+
+    viewer = MeshViewer()
+    viewer.mesh = form
+    viewer.show()

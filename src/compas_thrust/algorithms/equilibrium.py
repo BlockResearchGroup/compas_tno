@@ -139,7 +139,7 @@ def zlq_from_qid(qid, args):
     """
 
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
     # q, ind, dep, Edinv, Ei, C, Ci, Cit, U, V, p, px, py, pz, tol, z, free, planar, lh, sym, *_ = args
     # q, ind, dep, Edinv, Ei, C, Ci, Cit, p, pz, z, free, planar, lh2, sym = args[:-5]
     q[ind, 0] = qid
@@ -148,7 +148,7 @@ def zlq_from_qid(qid, args):
     q[sym] *= 0
 
     if not planar:
-        z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz)
+        z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
     l2 = lh + C.dot(z)**2
 
     return z, l2, q, q_

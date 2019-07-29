@@ -34,7 +34,10 @@ from compas.numerical import normrow
 from compas.numerical import nonpivots
 from compas.utilities import geometric_key
 
+from compas_thrust.plotters.plotters import plot_form
+
 from compas_thrust.algorithms.equilibrium import zlq_from_qid
+from compas_thrust.algorithms.equilibrium import reactions
 
 from multiprocessing import Pool
 from random import shuffle
@@ -59,7 +62,7 @@ __all__ = [
 def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, population=300, generations=500,
                     printout=10, tol=0.01, plot=False, frange=[], indset=None, tension=False, planar=False,
                     opt_max=False, t=None, random_ind=False, target=False, use_bounds=None, bounds_width = 5.0,
-                    summary = True, objective='loadpath'):
+                    summary = True, objective='loadpath', buttress = False):
 
     """ Finds the optimised load-path for a FormDiagram.
 
@@ -169,9 +172,6 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
     Wfree = diags(w[free].flatten())
     xy = xyz[:, :2]
-    px = px[free]
-    py = py[free]
-    pz = pz[free]
 
     # Temporary anchors location
 
@@ -182,6 +182,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     C   = connectivity_matrix(edges, 'csr')
     Ci  = C[:, free]
     Cf  = C[:, fixed]
+    Ct = C.transpose()
     Cit = Ci.transpose()
     E   = equilibrium_matrix(C, xy, free, 'csr').toarray()
     uvw = C.dot(xyz)
@@ -223,10 +224,19 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     lh     = normrow(C.dot(xy))**2
     Edinv  = -csr_matrix(pinv(E[:, dep]))
     Ei     = E[:, ind]
-    p      = vstack([px, py])
+    p      = vstack([px[free], py[free]])
     q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
 
-    args   = (q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y)
+    if buttress:
+        b = {}
+        for key in form.vertices_where({'is_fixed': True}):
+            try:
+                b[k_i[key]] = form.get_vertex_attributes(key, 'b')
+            except:
+                pass
+                print(b)
+
+    args   = (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b)
 
     if use_bounds:
         bounds = []
@@ -245,6 +255,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     if t:
         bounds.append([-10.0,t])
         # bounds.append([-10.0,1.00])
+    
 
     # Horizontal checks
 
@@ -254,14 +265,16 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         for i in range(10**3):
             q[ind, 0] = rand(k) * qmax
             q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
-            Rx = Cit.dot(U * q.ravel()) - px.ravel()
-            Ry = Cit.dot(V * q.ravel()) - py.ravel()
+            Rx = Cit.dot(U * q.ravel()) - px[free].ravel()
+            Ry = Cit.dot(V * q.ravel()) - py[free].ravel()
             R  = max(sqrt(Rx**2 + Ry**2))
             if R > tol:
                 checked = False
                 break
 
     if checked:
+
+        plot_form(form).show()
 
         # Define Objective
 
@@ -358,8 +371,9 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
         if objective == 'max':
             fopt = 1 / (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])[0][0]
+            [[fopt]] = fopt
 
-        print(fopt)
+        reactions(form, plot = plot)
 
         if summary:
             print('\n' + '-' * 50)
@@ -381,7 +395,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
 def _fint(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -395,8 +409,8 @@ def _fint(qid, *args):
         if not tension:
             f += sum((q[q < 0] - 5)**4)
 
-        Rx = Cit.dot(U * q_.ravel()) - px.ravel()
-        Ry = Cit.dot(V * q_.ravel()) - py.ravel()
+        Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
+        Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
         Rh = Rx**2 + Ry**2
         Rm = max(sqrt(Rh))
         if Rm > tol:
@@ -406,7 +420,7 @@ def _fint(qid, *args):
 
 def fmin(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -421,11 +435,12 @@ def fmin(qid, *args):
 
         if not tension:
             f += sum((q[q < 0] - 5)**4)
-
-        Rx = Cit.dot(U * q_.ravel()) - px.ravel()
-        Ry = Cit.dot(V * q_.ravel()) - py.ravel()
+        W = C.dot(z)[:,0]
+        Rx = Ct.dot(U * q_.ravel()) - px.ravel()
+        Ry = Ct.dot(V * q_.ravel()) - py.ravel()
+        Rz = Ct.dot(W * q_.ravel()) - pz.ravel()
         Rh = Rx**2 + Ry**2
-        Rm = max(sqrt(Rh))
+        Rm = max(sqrt(Rh[free]))
         if Rm > tol:
             f += sum(Rh - tol + 5)**4
 
@@ -447,11 +462,22 @@ def fmin(qid, *args):
             pen_ub  = sum(abs(diff_ub) + 5)**4
             f += pen_ub
 
+        if b:
+            for key in b:
+                scl = t/Rz[key]
+                x_comp = abs(scl * Rx[key])
+                y_comp = abs(scl * Ry[key])
+                # print(b[key],scl,x_comp, y_comp)
+                if x_comp > abs(b[key][0][0]):
+                    f += (x_comp - b[key][0][0] + 5) **2
+                if y_comp > abs(b[key][0][1]):
+                    f += (y_comp - b[key][0][1] + 5) **2
+
         return f
 
 def _fmin(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -464,7 +490,7 @@ def _fmin(qid, *args):
 
 def fbounds(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -478,8 +504,8 @@ def fbounds(qid, *args):
         if not tension:
             f += sum((q[q < 0] - 5)**4)
 
-        Rx = Cit.dot(U * q_.ravel()) - px.ravel()
-        Ry = Cit.dot(V * q_.ravel()) - py.ravel()
+        Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
+        Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
         Rh = Rx**2 + Ry**2
         Rm = max(sqrt(Rh))
         if Rm > tol:
@@ -507,7 +533,7 @@ def fbounds(qid, *args):
 
 def fmax(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -521,11 +547,12 @@ def fmax(qid, *args):
 
         if not tension:
             f += sum((q[q < 0] - 5)**4)
-
-        Rx = Cit.dot(U * q_.ravel()) - px.ravel()
-        Ry = Cit.dot(V * q_.ravel()) - py.ravel()
+        W = C.dot(z)[:,0]
+        Rx = Ct.dot(U * q_.ravel()) - px.ravel()
+        Ry = Ct.dot(V * q_.ravel()) - py.ravel()
+        Rz = Ct.dot(W * q_.ravel()) - pz.ravel()
         Rh = Rx**2 + Ry**2
-        Rm = max(sqrt(Rh))
+        Rm = max(sqrt(Rh[free]))
         if Rm > tol:
             f += sum(Rh - tol + 5)**4
 
@@ -547,11 +574,22 @@ def fmax(qid, *args):
             pen_ub  = sum(abs(diff_ub) + 2)**4
             f += pen_ub
 
+        if b:
+            for key in b:
+                scl = t/Rz[key]
+                x_comp = abs(scl * Rx[key])
+                y_comp = abs(scl * Ry[key])
+                # print(b[key],scl,x_comp, y_comp)
+                if x_comp > abs(b[key][0][0]):
+                    f += (x_comp - b[key][0][0] + 5) **2
+                if y_comp > abs(b[key][0][1]):
+                    f += (y_comp - b[key][0][1] + 5) **2
+
         return f
 
 def fbf(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -581,15 +619,15 @@ def _fint_(qid, *args):
 
 def _fieq(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     q[ind, 0], t = qid[:k], qid[-1]
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
 
-    Rx = Cit.dot(U * q_.ravel()) - px.ravel()
-    Ry = Cit.dot(V * q_.ravel()) - py.ravel()
+    Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
+    Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
     Rh = Rx**2 + Ry**2
     Rm = max(sqrt(Rh))
 
@@ -603,17 +641,21 @@ def _fieq(qid, *args):
 
 def _fieq_bounds(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     q[ind, 0], t = qid[:k], qid[-1]
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
+    
+    rbut = 0.0
 
-    Rx = Cit.dot(U * q_.ravel()) - px.ravel()
-    Ry = Cit.dot(V * q_.ravel()) - py.ravel()
+    W = C.dot(z)[:,0]
+    Rx = Ct.dot(U * q_.ravel()) - px.ravel()
+    Ry = Ct.dot(V * q_.ravel()) - py.ravel()
+    Rz = Ct.dot(W * q_.ravel()) - pz.ravel()
     Rh = Rx**2 + Ry**2
-    Rm = max(sqrt(Rh))
+    Rm = max(sqrt(Rh[free]))
 
     pen_lb = 0.0
     pen_ub = 0.0
@@ -634,11 +676,21 @@ def _fieq_bounds(qid, *args):
         diff_ub = z_ub[log_ub] - ub[log_ub]
         pen_ub  = sum(abs(diff_ub) + 2)**4
 
+    if b:
+            for key in b:
+                scl = t/Rz[key]
+                x_comp = abs(scl * Rx[key])
+                y_comp = abs(scl * Ry[key])
+                if x_comp > abs(b[key][0][0]):
+                    rbut += (x_comp - b[key][0][0] + 5) **2
+                if y_comp > abs(b[key][0][1]):
+                    rbut += (y_comp - b[key][0][1] + 5) **2
+
     if not tension:
         return hstack([Rm + pen_lb + pen_ub])
         # return hstack([q.ravel() + 10**(-5), tol - Rm - pen_lb - pen_ub])
         # return hstack([Rm + pen_lb + pen_ub])
-    return [tol - Rm - pen_lb - pen_ub]
+    return [tol - Rm - pen_lb - pen_ub - rbut]
 
 def _slsqp(fn, qid0, bounds, printout, fieq, args):
 
@@ -841,9 +893,7 @@ def initialize_problem(form, indset = None, printout = None):
 
     Wfree = diags(w[free].flatten())
     xy = xyz[:, :2]
-    px = px[free]
-    py = py[free]
-    pz = pz[free]
+    z = xyz[:, 2]
 
     # C and E matrices
 
@@ -865,12 +915,7 @@ def initialize_problem(form, indset = None, printout = None):
                 ind.append(uv_i[(u, v)])
     else:
         _, s, _ = svd(E)
-        ind = []
-        if random_ind is False:
-            # ind = nonpivots(sympy.Matrix(E).rref()[0].tolist())
-            ind = find_independents(E)
-        else:
-            ind = randint(0,m,m - len(s)).tolist()
+        ind = find_independents(E)
 
     k   = len(ind)
     dep = list(set(range(m)) - set(ind))
@@ -893,8 +938,15 @@ def initialize_problem(form, indset = None, printout = None):
     lh     = normrow(C.dot(xy))**2
     Edinv  = -csr_matrix(pinv(E[:, dep]))
     Ei     = E[:, ind]
-    p      = vstack([px, py])
+    p      = vstack([px[free], py[free]])
     q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
+
+    tol = 0.01
+    opt_max = False
+    planar = False
+    tension = False
+    target = False
+    anchors = []
 
     args   = (q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y)
 

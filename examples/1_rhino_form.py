@@ -18,7 +18,7 @@ i = 0
 # fnm = '/Users/mricardo/compas_dev/me/minmax/barrel/3D_min_ind.json'
 # fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
 # fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp_calc.json'
-fnm = '/Users/mricardo/compas_dev/me/minmax/barrel/2D_min.json'
+fnm = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02_max.json'
 # radical = '/Users/mricardo/compas_dev/me/loadpath/Fix/' + ST
 # fnm = radical + '_lp.json'
 form = FormDiagram.from_json(fnm)
@@ -31,9 +31,9 @@ except:
     t = 0.0
     print('No offset!')
 
-thrust_layer = 'TEST'
+thrust_layer = 'Thrust_max'
 # thrust_layer = 'Thrust'
-reactions_layer = 'TEST-REAC'
+reactions_layer = 'Reaction_max'
 
 # thrust_layer = 'Thrust'
 rs.AddLayer(thrust_layer)

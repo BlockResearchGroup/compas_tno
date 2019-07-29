@@ -51,12 +51,12 @@ if __name__ == "__main__":
     file_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_calc.json'
     file_complete_save = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp_calc.json'
 
-    # form = FormDiagram.from_json(file_scaled)
+    form = FormDiagram.from_json(file_complete_save)
     # form = _form(form)
     # form.plot()
-    # plot_form(form).show()
+    plot_form(form).show()
 
-    # adapt_objective(form, objective = 'loadpath', plot = False, delete_face = True)
+    # adapt_objective(form, objective = 'loadpath', plot = True, delete_face = True)
     # form.to_json(file_scaled)
     
     # form.plot()
@@ -78,15 +78,15 @@ if __name__ == "__main__":
 
     # Initial parameters
 
-    # tmax = None #3.0 # form.attributes['tmax']
-    # bounds_width = 2
-    # use_bounds = True
-    # qmax = 10
-    # indset = None
-    # nsol = 4
-    # sol = 0
-    # sols = []
-    # forms = []
+    tmax = None #3.0 # form.attributes['tmax']
+    bounds_width = 2
+    use_bounds = True
+    qmax = 10
+    indset = None
+    nsol = 4
+    sol = 0
+    sols = []
+    forms = []
 
     # plot_form(form,radius=0.04).show()
 
@@ -153,5 +153,5 @@ if __name__ == "__main__":
     form_ = replicate(form, file, plot=True)
     reactions(form_)
     check_constraints(form_)
-    form_.to_json(file_complete_save)
+    # form_.to_json(file_complete_save)
 

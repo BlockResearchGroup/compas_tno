@@ -133,10 +133,14 @@ def adapt_objective(form, zrange = [3.0,8.0], objective = 'loadpath', method = '
     form = add_feet(form, delete_face = delete_face, plot = plot)
     force  = ForceDiagram.from_formdiagram(form)
 
+    plot_force(force, form).show()
+
     if method == 'nodal':
         horizontal_nodal(form, force, alpha = alpha, kmax = kmax, display = False)
     else:
         horizontal(form, force, alpha=alpha, kmax = kmax, display = False)
+
+    plot_force(force, form).show()
 
     a = evaluate_a(form, plot = plot)
     if a > amax:

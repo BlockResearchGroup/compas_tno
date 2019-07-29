@@ -10,21 +10,22 @@ from compas_rhino.artists import NetworkArtist
 import rhinoscriptsyntax as rs
 
 
-jsonpath = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp.json'
+jsonpath = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02.json'
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
 
 # Form
 
-Lines_txt = 'SQ::Lines' #_complete
-Symmetry_txt = 'SQ::Sym' #_complete
-Pins_txt = 'SQ::Pins' #_complete
-Dots_txt = 'SQ::Dots' #_complete
+Lines_txt = 'Lines' #_complete
+Symmetry_txt = 'Sym' #_complete
+Pins_txt = 'Pins' #_complete
+Dots_txt = 'Dots' #_complete
 rollers_txt = 'Rollers'
 inds_layer = 'Inds'
 lb_layer = 'lb'
 ub_layer = 'ub'
-target_layer = '3DPoints'
+target_layer = 'target'
 dots_3D = 'Dots_3D'
+buttress_Layer = 'Buttress'
 
 guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Symmetry_txt)
 lines = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids if rs.IsCurve(i)]
@@ -38,13 +39,15 @@ form.attributes['indset'] = []
 gkey_key = form.gkey_key()
 
 Loads3d = False
-lb_ub = False
+lb_ub = True
 scale = None
 rollers = False
 complete = False
+writepz = False
 nsym = 2 #8
 ind = False
-openings = 12.0
+openings = False
+buttress = True
 
 # Pins
 
@@ -88,6 +91,25 @@ for key in form.vertices():
     pzt += form.vertex[key]['pz']
 print('Planar load - pzt = {0}'.format(pzt))
 
+# Butress - if Any
+
+if buttress:
+    for i in rs.ObjectsByLayer(buttress_Layer):
+        sp = rs.CurveStartPoint(i)
+        ep = rs.CurveEndPoint(i)
+        if rs.IsCurve(i):
+            try:
+                key = gkey_key[geometric_key(sp)]
+                b = ep - sp
+            except:
+                key = gkey_key[geometric_key(ep)]
+                b = sp - ep
+            form.set_vertex_attribute(key, name = 'b', value = [b[0], b[1]])
+            print('Butress for key: {0}'.format(key))
+            print([b[0], b[1]])
+            print(form.vertex_coordinates(key))
+            
+
 if Loads3d == True:
    
    for i in rs.ObjectsByLayer(target_layer):
@@ -111,6 +133,7 @@ if Loads3d == True:
 
 lb_constraints = 0
 ub_constraints = 0
+targets = 0
 
 if lb_ub == True:
 
@@ -131,7 +154,15 @@ if lb_ub == True:
        form.set_vertex_attribute(gkey_key[gkey], 'ub', z_target)
        ub_constraints += 1
 
-    print('Got {0} lb contraints and {1} ub constraints'.format(lb_constraints,ub_constraints))
+    for i in rs.ObjectsByLayer(target_layer):
+       point_target = rs.PointCoordinates(i)
+       point_ground = [point_target[0],point_target[1],0.0]
+       gkey = geometric_key(point_ground)
+       z_target = point_target[2]
+       form.set_vertex_attribute(gkey_key[gkey], 'target', z_target)
+       targets += 1
+
+    print('Got {0} lb contraints {1} ub and {2} target constraints'.format(lb_constraints,ub_constraints,targets))
 
 # Symmetry
 
@@ -141,11 +172,16 @@ for i in rs.ObjectsByLayer(Symmetry_txt):
         u = gkey_key[geometric_key(rs.CurveStartPoint(i))]
         v = gkey_key[geometric_key(rs.CurveEndPoint(i))]
         form.set_edge_attribute((u, v), name='is_symmetry', value=True)
-        
-    elif rs.IsPoint(i):
-        u = gkey_key[geometric_key(rs.PointCoordinates(i))]
-        name = rs.ObjectName(i)
-        form.set_vertex_attribute(u, name='pz', value=float(name))
+    if writepz == False:        
+        if rs.IsPoint(i):
+            u = gkey_key[geometric_key(rs.PointCoordinates(i))]
+            name = rs.ObjectName(i)
+            form.set_vertex_attribute(u, name='pz', value=float(name))
+    else:
+        if rs.IsPoint(i):
+            u = gkey_key[geometric_key(rs.PointCoordinates(i))]
+            pz = form.get_vertex_attribute(u,'pz')
+            rs.ObjectName(i, str(pz))
 
 # Inds
 
