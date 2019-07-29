@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
 
     file = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02.json'
-    file_save = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02_max.json'
+    file_save = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02_lp.json'
     # file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/02_06_complete.json'
 
     form = FormDiagram.from_json(file)
@@ -57,7 +57,7 @@ if __name__ == "__main__":
                                         tension=False,
                                         use_bounds = use_bounds,
                                         bounds_width = bounds_width,
-                                        objective='max',
+                                        objective='loadpath',
                                         indset=indset,
                                         buttress = True)
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
     q = [attr['q'] for u, v, attr in form.edges(True)]
     qmin  = min(array(q))
-    if qmin > -0.1 and check_constraints(form) < 1.0:
+    if qmin > -0.1: # and check_constraints(form) < 1.0:
         oveview_forces(form)
         reactions(form, plot=False)
         print('Optimisation completed')

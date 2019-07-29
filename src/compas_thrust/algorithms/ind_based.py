@@ -395,7 +395,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
 def _fint(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -619,7 +619,7 @@ def _fint_(qid, *args):
 
 def _fieq(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
 
     q[ind, 0], t = qid[:k], qid[-1]
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
