@@ -63,7 +63,6 @@ __email__     = 'mricardo@ethz.ch'
 __all__ = [
     'optimise_fdm',
     'optimise_tna',
-    'optimise_loadpath',
 ]
 
 def optimise_fdm(form, plot= True, surf=False):
@@ -273,8 +272,19 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
     Ci  = C[:, free]
     Cit = Ci.transpose()
 
-    f = energy(form)
-    print('Energy is f: {0}'.format(f))
+    if objective == 'target':
+        grad_exp = grad_target
+        f_exp = energy
+        print('Optimisation takes as objective minimise distance to target')
+    if objective == 'loadpath':
+        grad_exp = grad_lp
+        f_exp = loadpath
+        print('Optimisation takes as objective minimise loadpath')
+
+    args = (C, Ci, Cit, x, y, Wfree, s, free)
+
+    f = f_exp(form)
+    print('Objective Initial is f: {0}'.format(f))
 
     it = 0
     step = 100
@@ -285,15 +295,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
         print('\n','-'*20,'\n',' Iteration {0}'.format(it))
 
-        D = Cit.dot(diags(q.flatten())).dot(C)
-        Di = D[:, free]
-
-        # Grad Calculation
-
-        W = diags(C.dot(z).flatten())  # dimension m x m
-        J = spsolve(Di, Cit.dot(W)) # dimension ni x m
-        grad = ( ( Wfree * - 2 * (z[free] - s[free]) ).transpose() * J).transpose()
-        print(grad.shape)
+        grad = grad_exp(q, z, args)
 
         print('grad range   : {0:.3f} : {1:.3f}'.format(min(grad), max(grad)))
         print('q start iteration range   : {0:.3f} : {1:.3f}'.format(min(q), max(q)))
@@ -316,7 +318,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
         k = 0
         kmax = 200
         q0 = deepcopy(q)
-        f0 = energy(form)
+        f0 = f_exp(form)
         print('Value of Energy - start: {0:.1f}'.format(f0))
         form_ = deepcopy(form)
         force_ = ForceDiagram.from_formdiagram(form_)
@@ -345,7 +347,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
             form_, force = paralelise_form(form_,force_, q.flatten(), alpha=alpha) #, plot=True)
             a = evaluate_a(form_, plot=False)
 
-            f = energy(form_)
+            f = f_exp(form_)
             # print('f = {0:.2f}'.format(f))
             if a > a_limit:
                 f += 10*a
@@ -411,209 +413,39 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
                 plot_form(form).show()
                 plot_force(force, form).show()
 
-            # print('grad is')
-            # print(grad)
-            # print('q is')
-            # print(q[free])
-            # form_ = paralelise_form(form_, q0, plot=True)
-
     return form
 
-def optimise_loadpath(form, plot= None, it_max=20, alpha=1.0, a_max = 2.5, steplength=None):
+def grad_target(q, z, args):
 
-    # Mapping
+    C, Ci, Cit, x, y, Wfree, s, free = args
 
-    k_i  = form.key_index()
-    uv_i = form.uv_index()
+    D = Cit.dot(diags(q.flatten())).dot(C)
+    Di = D[:, free]
 
-    # Vertices and edges
+    # Grad Calculation
 
-    vertices = [k_i[key] for key in form.vertices()]
-    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
-    fixed = [k_i[key] for key in form.vertices_where({'is_anchor': True})]
-    free  = list(set(vertices) - set(fixed))
+    W = diags(C.dot(z).flatten())  # dimension m x m
+    J = spsolve(Di, Cit.dot(W)) # dimension ni x m
+    grad = ( ( Wfree * - 2 * (z[free] - s[free]) ).transpose() * J).transpose()
 
-    n = len(vertices)
-
-    # Co-ordinates and loads
-
-    xyz = zeros((n, 3))
-    x   = zeros((n, 1))
-    y   = zeros((n, 1))
-    z   = zeros((n, 1))
-    s   = zeros((n, 1))
-    px  = zeros((n, 1))
-    py  = zeros((n, 1))
-    pz  = zeros((n, 1))
-
-    for key, vertex in form.vertex.items():
-        i = k_i[key]
-        xyz[i, :] = form.vertex_coordinates(key)
-        x[i]  = vertex.get('x')
-        y[i]  = vertex.get('y')
-        z[i]  = vertex.get('z')
-        s[i]  = vertex.get('target', 0)
-        px[i] = vertex.get('px', 0)
-        py[i] = vertex.get('py', 0)
-        pz[i] = vertex.get('pz', 0)
-
-    q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
-
-    C   = connectivity_matrix(edges, 'csr')
-    Ci  = C[:, free]
-    Cit = Ci.transpose()
-
-    f = loadpath(form)
-    print('Loadpath is f: {0}'.format(f))
-
-    it = 0
-    step = 100
-    form.update_default_edge_attributes({'dq': 0.0})
-
-    while it < it_max:
-
-        print('\n','-'*20,'\n',' Iteration {0}'.format(it))
-
-        D = Cit.dot(diags(q.flatten())).dot(C)
-        Di = D[:, free]
-
-        # Grad Calculation
-
-        grad1 = (C.dot(x))**2 + (C.dot(y))**2 + (C.dot(z))**2
-
-        W = diags(C.dot(z).flatten())  # dimension m x m
-        J = spsolve(Di, Cit.dot(W)) # dimension ni x m
-        M = Ci.dot(J) # dimension m x m verify
-        K = W.dot(M) # Shape m x 1
-        grad2 = ( 2 * q.transpose() * K ).transpose()
-
-        print(grad2.shape)
-        print(grad1.shape)
-
-        grad = grad1 + grad2
-
-        print(grad.shape)
-
-        print('grad range   : {0:.3f} : {1:.3f}'.format(min(grad), max(grad)))
-        print('q start iteration range   : {0:.3f} : {1:.3f}'.format(min(q), max(q)))
-
-        if steplength is not None:
-            step = steplength
-        else:
-            for i in range(len(q)):
-                if q[i] < 0:
-                    print('FD something in tension')
-                [t] = q[i]/grad[i]
-                if t > 0:
-                    if t < step:
-                        step = t
-        incr = step/10
-
-        print('Iterations start with steplength: {0}'.format(step))
-
-        k = 0
-        kmax = 200
-        q0 = deepcopy(q)
-        f0 = loadpath(form)
-        print('Value of Loadpath - start: {0:.1f}'.format(f0))
-        form_ = deepcopy(form)
-        force_ = ForceDiagram.from_formdiagram(form_)
-        cont = True
-        a_limit = 2.5
-
-        print('-'*20)
-
-        # Define steplength
-
-        while cont:
-
-            q = q0 + step * grad
-            k += 1
-
-            form_ = z_from_form(form_)
-            # print('q range step_it  : {0:.3f} : {1:.3f}'.format(min(q), max(q)))
-
-            if plot:
-                if k == 1:
-                    for u, v in form_.edges_where({'is_edge': True}):
-                        [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
-                        form_.set_edge_attribute((u,v),'dq',value = dq)
-
-                    plot_grad(form_).show()
-
-            form_, force = paralelise_form(form_,force_, q.flatten(), alpha=alpha) #, plot=True)
-            a = evaluate_a(form_, plot=False)
-
-            f = loadpath(form_)
-            # print('f = {0:.2f}'.format(f))
-            if a > a_limit:
-                f += 10*a
-                # print('f penalized = {0:.2f}'.format(f))
-
-            # qout = array([form_.get_edge_attribute((u,v),'q') for u, v in form_.edges_where({'is_edge': True})])[:, newaxis]
-            # print('q range after grad  : {0:.3f} : {1:.3f}'.format(min(qout), max(qout)))
-
-            # plot_form(form_).show()
-
-            if f < f0:
-                break
-            else:
-                if step/10 <incr:
-                    incr = incr/2
-
-                step = step - incr
-
-                if k%10 == 0:
-                    print('Iteration steplength: {0} / Stepsize: {1} / Angle Deviation: {2} / Energy Var: {3:.1f}%'.format(k, step, a, (f-f0)/f0*100))
-
-                if k>kmax:
-                    print('Iterations on steplength reached the maximum {0}'.format(kmax))
-                    break
-
-        # Verify Deviations
-
-        # a = evaluate_a(form, print=False)
-
-        for u, v in form_.edges_where({'is_edge': True}):
-                [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
-                form_.set_edge_attribute((u,v),'dq',value = dq)
-
-        for key, vertex in form_.vertex.items():
-            i = k_i[key]
-            x[i]  = vertex.get('x')
-            y[i]  = vertex.get('y')
-            z[i]  = vertex.get('z')
+    return grad
 
 
-        # Update Function
+def grad_lp(q, z, args):
 
-        if f < f0:
-            form = form_
-            q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
-            # stepsave = step
-            # incrsave = incr
-            print('End of Iteration {0} / Step number: {1} / Stepsize: {2:.5f} / Evergy Var: {3:.1f}% / Energy: {4:.1f} / Angle Dev: {5:.3f}'.format(it, k, step, (f-f0)/f0*100, f, a))
-            # form = paralelise_form(form,q)
+    C, Ci, Cit, x, y, Wfree, s, free = args
 
-        else:
-            print('Optimisation not found - Iteration {0} / Stepsize: {1:.5f} / Energy: {2:.1f} / Angle Dev: {3}'.format(it, step, f, a))
-            plot_form(form_).show()
-            plot_force(force).show()
-            break
+    D = Cit.dot(diags(q.flatten())).dot(C)
+    Di = D[:, free]
 
-        it += 1
+    # Grad Calculation
 
-        if plot:
-            if it%5 == 0:
-                plot_form(form).show()
-                plot_force(force).show()
+    grad1 = (C.dot(x))**2 + (C.dot(y))**2 + (C.dot(z))**2
+    W = diags(C.dot(z).flatten())  # dimension m x m
+    J = spsolve(Di, Cit.dot(W)) # dimension ni x m
+    M = Ci.dot(J) # dimension m x m verify
+    K = W.dot(M) # Shape m x 1
+    grad2 = ( 2 * q.transpose() * K ).transpose()
+    grad = grad1 + grad2
 
-            # print('grad is')
-            # print(grad)
-            # print('q is')
-            # print(q[free])
-            # form_ = paralelise_form(form_, q0, plot=True)
-
-    return form
-
-
+    return grad

@@ -10,7 +10,8 @@ from compas_rhino.artists import NetworkArtist
 import rhinoscriptsyntax as rs
 
 
-jsonpath = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02.json'
+# jsonpath = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints.json'
+jsonpath = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_complete.json'
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
 
 # Form
@@ -26,6 +27,7 @@ ub_layer = 'ub'
 target_layer = 'target'
 dots_3D = 'Dots_3D'
 buttress_Layer = 'Buttress'
+joints_layer = 'Joint_Segments'
 
 guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Symmetry_txt)
 lines = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids if rs.IsCurve(i)]
@@ -38,16 +40,17 @@ form.attributes['indset'] = []
 
 gkey_key = form.gkey_key()
 
-Loads3d = False
+Loads3d = True
 lb_ub = True
-scale = None
+target = True
+scale = 100
 rollers = False
-complete = False
 writepz = False
-nsym = 2 #8
+nsym = 1 #8
 ind = False
 openings = False
-buttress = True
+buttress = False
+joints = False
 
 # Pins
 
@@ -108,7 +111,25 @@ if buttress:
             print('Butress for key: {0}'.format(key))
             print([b[0], b[1]])
             print(form.vertex_coordinates(key))
-            
+
+# Joints if desired
+
+if joints:
+    from compas.geometry import is_point_on_segment
+    joints_list = []
+    for i in rs.ObjectsByLayer(joints_layer):
+        sp = rs.CurveStartPoint(i)
+        ep = rs.CurveEndPoint(i)
+        mid = rs.CurveMidPoint(i)
+        mid.Z = 0.0
+        # mid = 0.5 * [float(sp.X) + float(ep.X), float(sp.Y) + float(ep.Y), 0.0]
+        for u,v in form.edges():
+            edge = [form.vertex_coordinates(u),form.vertex_coordinates(v)]
+            if is_point_on_segment(mid,edge,tol=1e-6) == True:
+                joints_list.append([[sp.X,sp.Y,sp.Z],[ep.X,ep.Y,ep.Z],(u,v)])
+    form.attributes['joints'] = joints_list
+    print(joints_list)
+
 
 if Loads3d == True:
    
@@ -154,6 +175,7 @@ if lb_ub == True:
        form.set_vertex_attribute(gkey_key[gkey], 'ub', z_target)
        ub_constraints += 1
 
+if target == True:
     for i in rs.ObjectsByLayer(target_layer):
        point_target = rs.PointCoordinates(i)
        point_ground = [point_target[0],point_target[1],0.0]
@@ -200,7 +222,6 @@ if ind:
 # Scale
 
 if scale:
-
     scl = scale/nsym/pvt
     for key in form.vertices():
         form.vertex[key]['pz'] *= scl
@@ -230,116 +251,3 @@ rs.CurrentLayer('Default')
 print(form.number_of_edges())
 form.to_json(jsonpath)
 print(jsonpath)
-
-# -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-# ------------------ COMPLETE TOPOLOGY ------------------------------------
-# -------------------------------------------------------------------------
-# -------------------------------------------------------------------------
-
-
-if complete:
-    
-    Lines_txt = 'Lines_complete' #_complete
-    Symmetry_txt = 'Sym_complete' #_complete
-    Pins_txt = 'Pins_complete' #_complete
-
-    target_layer = '3DPoints_complete'
-
-    guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Symmetry_txt)
-    lines = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids if rs.IsCurve(i)]
-    form = FormDiagram.from_lines(lines, delete_boundary_face=False)
-
-    form.update_default_vertex_attributes({'is_roller': False})
-    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
-    form.attributes['loadpath'] = 0
-    form.attributes['indset'] = []
-
-    gkey_key = form.gkey_key()
-
-    # Pins
-
-    for i in rs.ObjectsByLayer(Pins_txt):
-        gkey = geometric_key(rs.PointCoordinates(i))
-        form.set_vertex_attribute(gkey_key[gkey], 'is_fixed', True)
-
-    # Rollers
-
-    if rollers:
-        for i in rs.ObjectsByLayer(rollers_txt):
-            gkey = geometric_key(rs.PointCoordinates(i))
-            form.set_vertex_attributes(gkey_key[gkey], {'is_roller': True})
-
-    # Loads
-
-    loads = FormDiagram.from_lines(lines, delete_boundary_face=True)
-    pzt = 0
-    for key in form.vertices():
-        form.vertex[key]['pz'] = loads.vertex_area(key=key)
-        pzt += form.vertex[key]['pz']
-    print('Planar load - pzt = {0}'.format(pzt))
-
-    if Loads3d == True:
-    
-        for i in rs.ObjectsByLayer(target_layer):
-            point_target = rs.PointCoordinates(i)
-            point_ground = [point_target[0],point_target[1],0.0]
-            gkey = geometric_key(point_ground)
-            z_target = point_target[2]
-            loads.set_vertex_attribute(gkey_key[gkey], 'z', z_target)
-        
-        pvt = 0
-        for key in form.vertices():
-                pz = loads.vertex_area(key=key)
-                form.vertex[key]['pz'] = pz
-                rs.CurrentLayer(dots_3D)
-                rs.AddTextDot('{0:.2f}'.format(pz), loads.vertex_coordinates(key))
-                pvt += pz
-
-        print('3D load - pzt = {0}'.format(pvt))
-
-    # Symmetry
-
-    for i in rs.ObjectsByLayer(Symmetry_txt):
-        
-        if rs.IsCurve(i):
-            u = gkey_key[geometric_key(rs.CurveStartPoint(i))]
-            v = gkey_key[geometric_key(rs.CurveEndPoint(i))]
-            form.set_edge_attribute((u, v), name='is_symmetry', value=True)
-            
-        elif rs.IsPoint(i):
-            u = gkey_key[geometric_key(rs.PointCoordinates(i))]
-            name = rs.ObjectName(i)
-            form.set_vertex_attribute(u, name='pz', value=float(name))
-
-    # Scale
-
-    if scale:
-
-        scl = scale/pvt
-        for key in form.vertices():
-            form.vertex[key]['pz'] *= scl
-
-        print('Loads Scaled to: {0} / Scale Factor: {1}'.format(scale/nsym,scl))
-
-    # TextDots
-
-    rs.EnableRedraw(False)
-    rs.DeleteObjects(rs.ObjectsByLayer(Dots_txt))
-    rs.CurrentLayer(Dots_txt)
-
-    pzt = 0
-    for key in form.vertices():
-        pz = form.vertex[key].get('pz', 0)
-        form.set_vertex_attribute(key, 'z', 0.0)
-        pzt += pz
-        if pz:
-            rs.AddTextDot('{0:.2f}'.format(pz), form.vertex_coordinates(key))
-    print('Total load: {0}'.format(pzt))
-
-    rs.EnableRedraw(True)
-    rs.CurrentLayer('Default')
-
-    # Save
-
-    form.to_json(jsonpath_complete)

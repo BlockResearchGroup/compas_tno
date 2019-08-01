@@ -17,7 +17,7 @@ __all__ = [
     'plot_grad',
 ]
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False):
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True):
 
     """ Extended plotting of a FormDiagram
 
@@ -42,7 +42,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False):
     """
 
     q = [attr['q'] for u, v, attr in form.edges(True)]
-    qmax  = max(abs(array(q)))
+    qmax  = 1 #max(abs(array(q)))
     lines = []
 
     for u, v in form.edges():
@@ -59,7 +59,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False):
                 colour = ['aa', 'aa', 'aa']
 
         else:
-            colour = ['00', '00', '00']
+            colour = ['ff', '00', '00']
             if qi > 0:
                 colour[0] = 'ff'
             if form.get_edge_attribute((u, v), 'is_symmetry'):
@@ -69,12 +69,17 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False):
 
         width = max_width if fix_width else (qi / qmax) * max_width
 
+        if show_q:
+            text = round(qi, 2)
+        else:
+            text = ''
+
         lines.append({
             'start': form.vertex_coordinates(u),
             'end':   form.vertex_coordinates(v),
             'color': ''.join(colour),
             'width': width,
-            # 'text': round(qi, 2),
+            'text': text,
         })
 
     plotter = MeshPlotter(form, figsize=(10, 10))
@@ -120,15 +125,20 @@ def plot_force(force, form, show_length = False, radius=0.1, fix_width=False, ma
     radius.update({key: 0.1 for key in force.vertices() if not form.get_face_attribute(key, 'is_loaded')})
 
     lengths = {}
+    color = {}
+    width = {}
     for key in force.edges():
         u,v = key
         lengths[key] = '{0:.2f}'.format(force.get_form_edge_attribute(form,key,'q'))
+        if force.get_form_edge_attribute(form, key, 'is_external'):
+            color[key] = '#00ff00' 
+            width[key] = 2.0
+        if force.get_form_edge_attribute(form, key, 'is_ind'):
+            color[key] = '#ff0000' 
+            width[key] = 3.0
+
 
     plotter.draw_vertices(facecolor=vertexcolor, radius=radius)
-
-    color = {key: '#00ff00' for key in force.edges() if force.get_form_edge_attribute(form, key, 'is_external')}
-    width = {key: 2.0 for key in force.edges() if force.get_form_edge_attribute(form, key, 'is_external')}
-
     if show_length:
         plotter.draw_edges(color=color, width=width, text=lengths)
     else:

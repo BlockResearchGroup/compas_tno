@@ -1,13 +1,33 @@
 """
 ********************************************************************************
-compas_thrust.viewers
+Viewers
 ********************************************************************************
 
 .. currentmodule:: compas_thrust.viewers
 
+
+Classes
+=======
+
+.. autosummary::
+    :toctree: generated/
+    :nosignatures:
+
+    Viewer
+    MeshViewer
+
 """
-# from __future__ import absolute_import
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
-# from .viewers import *
+from .core import *
+from .viewer import *
+from .meshviewer import *
 
-# __all__ = [name for name in dir() if not name.startswith('_')]
+try:
+    from .vtkviewer import *
+except:
+    pass
+
+__all__ = [name for name in dir() if not name.startswith('_')]

@@ -28,36 +28,36 @@ from numpy import argmin
 if __name__ == "__main__":
 
 
-    file = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02.json'
-    file_save = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02_lp.json'
+    file = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints.json'
+    file_save = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints_min.json'
     # file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/02_06_complete.json'
 
     form = FormDiagram.from_json(file)
 
     # Initial parameters
 
-    tmax = 0.48 # form.attributes['tmax']
+    tmax = 0.5 # form.attributes['tmax']
     bounds_width = 2.5
     use_bounds = False
     qmax = 120
     indset = None
 
-    # plot_form(form,radius=0.05).show()
+    # plot_form(form,radius=0.005).show()
 
     # Optimisation
 
     fopt, qopt = optimise_single(form, qmax=qmax, solver='devo',
                                         polish='slsqp',
                                         population=100,
-                                        generations=100,
-                                        printout=100,
+                                        generations=50,
+                                        printout=50,
                                         tol=0.01,
                                         t = tmax,
                                         opt_max=False,
                                         tension=False,
                                         use_bounds = use_bounds,
                                         bounds_width = bounds_width,
-                                        objective='loadpath',
+                                        objective='min',
                                         indset=indset,
                                         buttress = True)
 

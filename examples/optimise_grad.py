@@ -10,6 +10,7 @@ from compas_thrust.utilities.constraints import check_constraints
 from compas_thrust.utilities.symmetry import replicate
 
 from compas_thrust.diagrams.form import energy
+from compas_thrust.diagrams.form import loadpath
 from compas_thrust.diagrams.form import oveview_forces
 from compas_thrust.diagrams.form import adapt_tna
 from compas_thrust.diagrams.form import evaluate_a
@@ -27,28 +28,28 @@ from numpy import argmin
 
 if __name__ == "__main__":
 
-    file = '/Users/mricardo/compas_dev/me/minmax/fan/01_05_complete.json'
-    # file_save = '/Users/mricardo/compas_dev/me/minmax/fan/01_05_target.json'
+    file = '/Users/mricardo/compas_dev/me/bestfit/pillow/pillow3_init.json'
+    file_save = '/Users/mricardo/compas_dev/me/bestfit/pillow/pillowRV_calc.json'
 
-    form = FormDiagram.from_json(file)
-    form = z_from_form(form)
+    form = FormDiagram.from_json(file_save)
+    # form = z_from_form(form)
     plot_form(form).show()
 
-    form = adapt_tna(form, zmax = 5.0, method = 'nodal', plot = True, delete_face = True, kmax = 1000)
-    form = z_from_form(form)
-    plot_form(form).show()
+    # form = adapt_tna(form, zmax = 5.0, method = 'nodal', plot = False, delete_face = False, kmax = 100)
+    # form = z_from_form(form)
+    # plot_form(form).show()
 
-    r = evaluate_scale(form, energy, [0.5,5.5], plot = True)
+    r = evaluate_scale(form, loadpath, [0.5,5.5], plot = False)
     print('Scaling of {0}'.format(r))
     form = scale_form(form,r)
-    f_init = energy(form)
+    f_init = loadpath(form)
     print('Initial ENERGY after scaling {0}'.format(f_init))
     evaluate_a(form)
 
-    form = optimise_tna(form, plot=False, it_max=5, alpha=1.0, a_max = 2.0, steplength=None, null=None, save_steps=False)
+    form = optimise_tna(form, objective='loadpath', plot=False, it_max=500, alpha=1.0, a_max = 2.0, steplength=None, null=None, save_steps=False)
 
     plot_form(form).show()
-    f = energy(form)
+    f = loadpath(form)
     print('Final energy {0}'.format(f))
     
     if f < f_init:

@@ -18,7 +18,9 @@ i = 0
 # fnm = '/Users/mricardo/compas_dev/me/minmax/barrel/3D_min_ind.json'
 # fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
 # fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp_calc.json'
-fnm = '/Users/mricardo/compas_dev/me/minmax/2D_arch/02_lp.json'
+# fnm = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints_min.json'
+fnm = '/Users/mricardo/compas_dev/me/bestfit/pillow/pillowRV_calc.json'
+# fnm = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_scaled.json'
 # radical = '/Users/mricardo/compas_dev/me/loadpath/Fix/' + ST
 # fnm = radical + '_lp.json'
 form = FormDiagram.from_json(fnm)
@@ -31,15 +33,13 @@ except:
     t = 0.0
     print('No offset!')
 
-t = 0.18
-
-thrust_layer = 'Thrust_lp'
+thrust_layer = 'Thrust_grad_lp'
 # thrust_layer = 'Thrust'
-reactions_layer = 'Reaction_lp'
+# reactions_layer = 'Thrust_grad_lp'
 
 # thrust_layer = 'Thrust'
 rs.AddLayer(thrust_layer)
-rs.AddLayer(reactions_layer)
+# rs.AddLayer(reactions_layer)
 
 # i += 1
 
@@ -66,12 +66,14 @@ for uv in form.edges():
         lp += q * l * l
         sp = form.vertex_coordinates(u)
         ep = form.vertex_coordinates(v)
+        pz = form.get_vertex_attribute(u, 'pz')
         # sp[2] = form.get_vertex_attribute(u, 'target')
         # ep[2] = form.get_vertex_attribute(v, 'target')
-        sp[2] += t
-        ep[2] += t
+        # sp[2] += t
+        # ep[2] += t
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(q))
+        # rs.AddTextDot(str(round(pz,2)),sp)
         # rs.ObjectColor(id, (255,255*(1002-i)/1002,0))
 
 rs.AddTextDot('{0:.1f}'.format(lp),[-1.0,-1.0,0.0])

@@ -290,6 +290,9 @@ def create_sym(form, keep_q = True):
     pins = []
     loads = {}
     qs = {}
+    target = {}
+    lb = {}
+    ub = {}
     tol = 0.001
 
     pz = 0
@@ -313,6 +316,9 @@ def create_sym(form, keep_q = True):
         coord = form.vertex_coordinates(key)[:2] + [0]
         gkey = geometric_key(coord)
         loads[gkey] = form.get_vertex_attribute(key, 'pz')
+        target[gkey] = form.get_vertex_attribute(key, 'target')
+        lb[gkey] = form.get_vertex_attribute(key, 'lb')
+        ub[gkey] = form.get_vertex_attribute(key, 'ub')
 
         if 5.0 - tol <= coord[0] <= 5.0 + tol and coord[1] > 5.0 - tol: # Line Vertical at x = 5.0 and y > 5.0
             loads[gkey] = 0.5 * loads[gkey]
@@ -368,6 +374,12 @@ def create_sym(form, keep_q = True):
         gkey = geometric_key(form_.vertex_coordinates(key))
         form_.vertex[key]['pz'] = loads[gkey]
         pz += form_.vertex[key]['pz']
+        try:
+            form_.set_vertex_attribute(key, name = 'target', value = target[gkey])
+            form_.set_vertex_attribute(key, name = 'lb', value = lb[gkey])
+            form_.set_vertex_attribute(key, name = 'ub', value = ub[gkey])
+        except:
+            pass
     print('Load After Sym: {0}'.format(pz))
 
     for u, v in form_.edges_where({'is_symmetry': False}):

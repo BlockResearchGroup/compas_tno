@@ -139,7 +139,7 @@ def zlq_from_qid(qid, args):
     """
 
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym = args[:23]
     # q, ind, dep, Edinv, Ei, C, Ci, Cit, U, V, p, px, py, pz, tol, z, free, planar, lh, sym, *_ = args
     # q, ind, dep, Edinv, Ei, C, Ci, Cit, p, pz, z, free, planar, lh2, sym = args[:-5]
     q[ind, 0] = qid
@@ -152,6 +152,45 @@ def zlq_from_qid(qid, args):
     l2 = lh + C.dot(z)**2
 
     return z, l2, q, q_
+
+def update_qid(file, value, ind_i = 0):
+
+    from compas_thrust.algorithms.ind_based import initialize_problem
+
+    form = FormDiagram.from_json(file)
+    args = initialize_problem(form, indset = form.attributes['indset'])
+
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    k_i = form.key_index()
+    i_uv = form.index_uv()
+    ind = args[1]
+    
+    print(ind)
+    
+    q0 = []
+    for i in ind:
+        key = i_uv[i]
+        q0.append(form.get_edge_attribute(key, 'q'))
+    
+    print(q0)
+
+    # Modify via Sliding
+    q0[ind_i] = value
+
+    print(q0)
+
+    q[ind, 0] = q0
+    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
+    q[sym] *= 0
+    z[free] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
+
+    for key, attr in form.vertices(True):
+        index = k_i[key]
+        attr['z']  = z[index]
+    
+    form.to_json(file)
+
+    return form
 
 def z_update(form):
 
@@ -289,12 +328,11 @@ def update_tna(form, delete_face=True, plots=True, save=False):
         form.set_edge_attribute((u,v),'lmax',value=lh)
 
     force = ForceDiagram.from_formdiagram(form)
-
     horizontal(form,force,display=False)
     # Vertical?
 
     if plots:
-        plot_force(force, radius=0.05).show()
+        plot_force(force, form, radius=0.05).show()
         plot_form(form, radius=0.05).show()
 
     st = 'discretize/02_complete_1div_complete'

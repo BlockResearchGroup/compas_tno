@@ -176,7 +176,7 @@ def adapt_objective(form, zrange = [3.0,8.0], objective = 'loadpath', method = '
 
     return form
 
-def remove_feet(form, plot = False, openings = None, rmax = 0.01): #Flatten Diagram
+def remove_feet(form, plot = False, openings = None, rmax = 0.01): # Flatten Diagram
 
     lines = []
     qs = {}
@@ -193,8 +193,14 @@ def remove_feet(form, plot = False, openings = None, rmax = 0.01): #Flatten Diag
     fixed = [geometric_key(form.vertex_coordinates(key)) for key in form.vertices_where({'is_anchor': True })]
     zs = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.vertex_coordinates(key)[2] for key in form.vertices_where({'is_external': False })}
     pz = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'pz') for key in form.vertices()}
+    target = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'target') for key in form.vertices()}
+    lb = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'ub') for key in form.vertices()}
+    ub = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'lb') for key in form.vertices()}
     
     form_ = FormDiagram.from_lines(lines)
+    form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False, 'is_edge': True})
+    form_.update_default_vertex_attributes({'is_roller': False})
+
     if openings:
         for key in form.faces():
             if form.face_area(key) > openings - 1.0 and form.face_area(key) < openings + 1.0:
@@ -209,12 +215,19 @@ def remove_feet(form, plot = False, openings = None, rmax = 0.01): #Flatten Diag
     for key, attr in form_.vertices(True):
         pzi = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
         zi = zs[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        ti = target[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        ub_i = ub[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
+        lb_i = lb[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
         attr['pz'] = pzi
         attr['z'] = zi
+        attr['target'] = ti
+        attr['lb'] = lb_i
+        attr['ub'] = ub_i
 
     for u, v in form_.edges():
         qi = qs[geometric_key(form_.edge_midpoint(u,v))]
         form_.set_edge_attribute((u,v), name = 'q', value = qi)
+        print(qi)
 
     # form_ = z_from_form(form_) # This moves also x,y a bit...
     form_ = z_update(form_)
@@ -341,6 +354,7 @@ def oveview_forces(form):
             qi = form.get_edge_attribute((u,v),'q')
             li = form.edge_length(u,v)
             lp += qi*li**2
+            print(qi)
             q.append(qi)
             f.append(qi*li)
 
