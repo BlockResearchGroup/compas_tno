@@ -45,11 +45,13 @@ if __name__ == "__main__":
 
     # file = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_complete.json'
     file = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_init.json'
-    file_save = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_save.json'
-    # file_complete_save = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_min.json'
+    file_save = '/Users/mricardo/compas_dev/me/minmax/radial/test.json'
+    # file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_complete.json'
+    # file_complete_save = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_lp.json'
 
     form = FormDiagram.from_json(file)
     plot_form(form).show()
+    oveview_forces(form)
 
     # viewer = MeshViewer()
     # viewer.mesh = form
@@ -60,16 +62,16 @@ if __name__ == "__main__":
     form = _form(form, keep_q=True)
 
     tmax = 1.6 # form.attributes['tmax']
-    bounds_width = 3.0
-    use_bounds = True
-    qmax = 50
+    bounds_width = 3
+    use_bounds = False
+    qmax = 40
     indset = None
     nsol = 5
     sol = 0
     sols = []
     forms = []
 
-    # plot_form(form,radius=0.04).show()
+    plot_form(form,radius=0.04).show()
 
     # Optimisation Routine - Many trials and Many solutions
 
@@ -128,7 +130,7 @@ if __name__ == "__main__":
     # Replicate and Save Complete
 
     # form = FormDiagram.from_json(file_save)
-    # form_ = replicate2(form, file)
+    # form_ = replicate(form, file_complete)
     # reactions(form_)
     # check_constraints(form_)
     # form_.to_json(file_complete_save)

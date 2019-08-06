@@ -33,17 +33,21 @@ if __name__ == "__main__":
     form = FormDiagram.from_json(file_complete)
     plot_form(form).show()
 
+    # viewer = MeshViewer()
+    # viewer.mesh = form
+    # viewer.show()
+
     # Scale to get an initial best-value for the objective with TNA
 
-    # form = adapt_objective(form, zrange = [3.0,9.0], kmax = 5000, objective = 'target', plot = True, delete_face = True)
-    # form.to_json(file_scaled)
-    # plot_form(form).show()
+    form = adapt_objective(form, zrange = [3.0,9.0], kmax = 500, objective = 'target', plot = True, delete_face = False)
+    form.to_json(file_scaled)
+    plot_form(form).show()
 
     # Prepare Symmetrical part for optimisation with independents
     
-    # form = remove_feet(form, plot = True)
-    # oveview_forces(form)
-    # form.to_json(file_scaled)
+    form = remove_feet(form, plot = True)
+    oveview_forces(form)
+    form.to_json(file_scaled)
 
     # for key in form.vertices():
     #     print(form.get_vertex_attribute(key, 'target'))
@@ -60,8 +64,9 @@ if __name__ == "__main__":
     plot_form(form).show()
     oveview_forces(form)
 
-    # Viewer
+    # Viewer Complete
 
+    form = FormDiagram.from_json(file_scaled)
     viewer = MeshViewer()
     viewer.mesh = form
     viewer.show()

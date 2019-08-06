@@ -442,17 +442,15 @@ def fmin(qid, *args):
 
     if isnan(f) == True or any(qid) == False:
         return 10**10
-
     else:
 
         if not tension:
             f += sum((q[q < 0] - 10)**4)
-        W = C.dot(z)[:,0]
         Rx = Ct.dot(U * q_.ravel()) - px.ravel()
         Ry = Ct.dot(V * q_.ravel()) - py.ravel()
-        Rz = Ct.dot(W * q_.ravel()) - pz.ravel()
         Rh = Rx**2 + Ry**2
         Rm = max(sqrt(Rh[free]))
+        
         if Rm > tol:
             f += sum(Rh - tol + 5)**4
 
@@ -475,6 +473,8 @@ def fmin(qid, *args):
             f += pen_ub
 
         if b:
+            W = C.dot(z)[:,0]
+            Rz = Ct.dot(W * q_.ravel()) - pz.ravel()
             for key in b:
                 scl = t/Rz[key]
                 x_comp = abs(scl * Rx[key])
