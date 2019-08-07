@@ -54,7 +54,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             if qi > 0:
                 colour = ['ff', '00', '00']
             elif qi < 0:
-                colour = ['00', '00', 'ff']
+                colour = ['ff', '00', '00'] # ['00', '00', 'ff']
             else:
                 colour = ['aa', 'aa', 'aa']
 
@@ -86,7 +86,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     # round(form.get_vertex_attribute(i, 'pz'), 2)
     if radius:
         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-        radius=radius)
+        radius=radius,)
         #text={i: round(form.vertex_coordinates(i)[2],1) for i in form.vertices()})
     plotter.draw_lines(lines)
 

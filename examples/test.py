@@ -10,6 +10,7 @@ from compas.geometry import is_point_on_segment
 from compas.geometry import intersection_segment_segment
 from compas.geometry import is_intersection_line_line
 from compas.geometry import intersection_line_line
+from numpy import shape
 
 
 # ==============================================================================
@@ -33,52 +34,39 @@ if __name__ == "__main__":
     # reactions(form, plot=True)
     # form.to_json(file)
 
-    lines = [
-            [   [0.0,0.0,0.0],[0.0,2.0,0.0]     ],
-            [   [0.0,0.0,0.0],[0.0,-2.0,0.0]    ],
-            [   [0.0,0.0,0.0],[2.0,0.0,0.0]     ],
-            [   [0.0,0.0,0.0],[-2.0,0.0,0.0]    ]
-            ]
-    form = FormDiagram.from_lines(lines, delete_boundary_face=False)
-    form.update_default_vertex_attributes({'is_roller': False})
-    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    # lines = [
+    #         [   [0.0,0.0,0.0],[0.0,2.0,0.0]     ],
+    #         [   [0.0,0.0,0.0],[0.0,-2.0,0.0]    ],
+    #         [   [0.0,0.0,0.0],[2.0,0.0,0.0]     ],
+    #         [   [0.0,0.0,0.0],[-2.0,0.0,0.0]    ]
+    #         ]
+    # form = FormDiagram.from_lines(lines, delete_boundary_face=False)
+    # form.update_default_vertex_attributes({'is_roller': False})
+    # form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    # print(form.number_of_edges())
+    # for key in form.vertices():
+    #     if form.vertex_coordinates(key) == [0,0,0]:
+    #         pass
+    #     else:
+    #         form.set_vertex_attribute(key, 'is_fixed', True)
+    #         form.set_vertex_attribute(key, 'is_anchored', True)
+    # form.plot()
+    # plot_form(form, fix_width= 0.1, simple=True).show()
+    # force = ForceDiagram.from_formdiagram(form)
+    # plot_force(force,form)
+
+    file = '/Users/mricardo/compas_dev/me/minmax/radial/02_02_complete.json'
+    form = ForceDiagram.from_json(file)
     print(form.number_of_edges())
-    for key in form.vertices():
-        if form.vertex_coordinates(key) == [0,0,0]:
-            pass
-        else:
-            form.set_vertex_attribute(key, 'is_fixed', True)
-            form.set_vertex_attribute(key, 'is_anchored', True)
-    form.plot()
-    plot_form(form, fix_width= 0.1, simple=True).show()
-    force = ForceDiagram.from_formdiagram(form)
-    plot_force(force,form)
+    # form.plot()
+    # plot_form(form, fix_width=True, max_width=5, show_q=False, simple=True).show()
+    # plot_form(form).show()
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = initialize_problem(form)
 
-    # file = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints_min.json'
-    # form = ForceDiagram.from_json(file)
-    # file_jt = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints.json'
-    # joints = ForceDiagram.from_json(file_jt).attributes['joints']
-    # i_uv = form.index_uv()
-    # t = -0.25
-    # jt = joints[8]
-    # print(jt)
-    # for u,v in form.edges():
-    #     edge = [form.vertex_coordinates(u),form.vertex_coordinates(v)]
-    #     print(u,v)
-    #     edge[0][2] += t
-    #     edge[1][2] += t
-    #     inter = intersection_line_line(jt,edge)
-    #     print(inter)
-    #     print(is_point_on_segment(inter[0],jt,tol=1e-6))
+    print(ind)
+    C = C.todense()
 
-
-
-    # print(jt)
-    # inter = intersection_line_line(jt,edge)
-    # print(inter)
-    # print(is_point_on_segment(inter[0],jt,tol=1e-6))
-    # for u,v in form.edges():
-    #     print(u,v)
-    #     print([form.vertex_coordinates(u),form.vertex_coordinates(v)])
+    for i in range(C.shape[0]):
+        print(C[i,])
 
 
