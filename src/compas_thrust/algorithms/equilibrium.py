@@ -301,12 +301,13 @@ def horizontal_check(form, plot = False): # Duplicated Function (Decide this or 
 
     return Rmax
 
-def update_tna(form, delete_face=True, plots=True, save=False):
+def update_tna(form, delete_face=True, plots=False, save=False):
 
     if delete_face:
         form.delete_face(0)
 
     corners = list(form.vertices_where({'is_fixed': True}))
+    print(form)
     form.set_vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
     form.update_boundaries(feet=2)
 

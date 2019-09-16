@@ -43,7 +43,7 @@ __all__ = [
     'remove_feet',
     'energy',
     'loadpath',
-    'oveview_forces',
+    'overview_forces',
 ]
 
 def _form(form, keep_q=False):
@@ -340,7 +340,7 @@ def loadpath(form):
     return lp
 
 
-def oveview_forces(form):
+def overview_forces(form):
 
     f = []
     q = []

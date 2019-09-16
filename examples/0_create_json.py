@@ -11,7 +11,7 @@ import rhinoscriptsyntax as rs
 
 
 # jsonpath = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints.json'
-jsonpath = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_complete.json'
+jsonpath = '/Users/mricardo/compas_dev/me/lsm/form/dome.json'
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
 
 # Form
@@ -40,10 +40,10 @@ form.attributes['indset'] = []
 
 gkey_key = form.gkey_key()
 
-Loads3d = True
-lb_ub = True
-target = True
-scale = 100
+Loads3d = False # Change
+lb_ub = False # Change
+target = False # Change
+scale = False
 rollers = False
 writepz = False
 nsym = 1 #8

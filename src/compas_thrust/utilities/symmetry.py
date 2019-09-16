@@ -13,7 +13,7 @@ from compas.geometry.distance import distance_point_point_xy
 from numpy import argmin
 from numpy import sqrt
 from compas_thrust.algorithms.equilibrium import z_from_form
-from compas_thrust.diagrams.form import oveview_forces
+from compas_thrust.diagrams.form import overview_forces
 
 from compas_plotters import MeshPlotter
 
@@ -172,7 +172,7 @@ def replicate(form,file, plot=None):
         ql2 += form_.get_edge_attribute((u,v),'q') * form_.edge_length(u,v) ** 2
 
     form_.attributes['loadpath'] = ql2
-    oveview_forces(form_)
+    overview_forces(form_)
 
     if plot:
         plot_form(form_, radius=0.05).show()
@@ -274,7 +274,7 @@ def replicate2(form, file, plot=None):
         ql2 += form_.get_edge_attribute((u,v),'q') * form_.edge_length(u,v) ** 2
 
     form_.attributes['loadpath'] = ql2
-    oveview_forces(form_)
+    overview_forces(form_)
 
     if plot:
         plot_form(form_, radius=0.05).show()

@@ -407,7 +407,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
 def _fint(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -437,8 +437,11 @@ def fmin(qid, *args):
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
     CfQ = Cf.transpose().dot(diags(q.flatten()))
-    f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
+    # f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
     # f +=  pz.transpose().dot(z[free])/1000
+    print( (CfQ.dot(U[:,newaxis])) )
+    print( (CfQ.dot(V[:,newaxis])) )
+    f = (CfQ.dot(U[:,newaxis])).transpose() + (CfQ.dot(V[:,newaxis])).transpose()
 
     if isnan(f) == True or any(qid) == False:
         return 10**10
@@ -514,7 +517,7 @@ def _fmin(qid, *args):
 
 def fbounds(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
     f = 0
@@ -567,8 +570,8 @@ def fbounds(qid, *args):
 
 def fmax(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints = args
-
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
+    
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
     CfQ = Cf.transpose().dot(diags(q_.flatten()))
@@ -623,7 +626,7 @@ def fmax(qid, *args):
 
 def fbf(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
@@ -653,7 +656,7 @@ def _fint_(qid, *args):
 
 def _fieq(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints = args
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
 
     q[ind, 0], t = qid[:k], qid[-1]
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
@@ -676,7 +679,7 @@ def _fieq(qid, *args):
 def _fieq_bounds(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
-
+    
     q[ind, 0], t = qid[:k], qid[-1]
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
@@ -877,6 +880,99 @@ def find_independents(E):
 
     return ind
 
+def independents_exclude(E, outs):
+
+    _, m = E.shape
+    possible = list(set(range(m)) - set(outs))
+    Eouts = E[:,outs]
+    if matrix_rank(Eouts) == Eouts.shape[1]:
+        Etemp = Eouts
+        ind = []
+    else:
+        print('Warning, could not exclude all')
+        return find_independents(E)
+
+    for i in possible:
+        Etest = hstack([Etemp,E[:,[i]]])
+        _ , ncol = Etest.shape
+        if matrix_rank(Etest) < ncol:
+            ind.append(i)
+        else:
+            Etemp = Etest
+
+    return ind
+
+def independents_include(E, ins):
+
+    n, m = E.shape
+    if len(ins) > (m-n):
+        print('Too many included edges - limit to number of independents: {0}'.format((m-n)))
+        ins = ins[:(m-n)]
+    not_in = list(set(range(m)) - set(ins))
+    Ein = E[:,ins]
+    while matrix_rank(Ein) < Ein.shape[1]:
+        print('Warning, edges are dependent among each other')
+        ins = ins[matrix_rank(Ein)]
+    if len(ins) == (m-n):
+        Enot_in = E[:,not_in]
+        if matrix_rank(Enot_in) == Enot_in.shape[1]:
+            return ins
+        else:
+            print('Warning, edges do not form an independent set')
+            return find_independents(E)
+    ind = ins
+    Etemp = E[:,[not_in[0]]]
+    Etemp.shape
+
+    for i in not_in[1:]:
+        Etest = hstack([Etemp,E[:,[i]]])
+        _ , ncol = Etest.shape
+        if matrix_rank(Etest) < ncol:
+            ind.append(i)
+        else:
+            Etemp = Etest
+
+    return ind
+
+def inds_incl_excl(E, ins, outs):
+
+    n, m = E.shape
+    if len(ins) > (m-n):
+        print('Too many included edges - limit to number of independents: {0}'.format((m-n)))
+        ins = ins[:(m-n)]
+    not_in = list(set(range(m)) - set(ins))
+    possible = list(set(not_in)-set(outs))
+    Ein = E[:,ins]
+    Eouts = E[:,outs]
+    while matrix_rank(Ein) < Ein.shape[1]:
+        print('Warning, included edges are dependent among each other')
+        ins = ins[matrix_rank(Ein)]
+    if len(ins) == (m-n):
+        Enot_in = E[:,not_in]
+        if matrix_rank(Enot_in) == Enot_in.shape[1]:
+            return ins
+        else:
+            print('Warning, edges do not form an independent set')
+            return find_independents(E)
+    if matrix_rank(Eouts) == Eouts.shape[1]:
+        Etemp = Eouts
+        ind = ins
+    else:
+        print('Warning, could not exclude all')
+        ind = ins
+        Etemp = E[:,[not_in[0]]]
+        possible = not_in[1:]
+    
+    for i in possible:
+        Etest = hstack([Etemp,E[:,[i]]])
+        _ , ncol = Etest.shape
+        if matrix_rank(Etest) < ncol:
+            ind.append(i)
+        else:
+            Etemp = Etest
+
+    return ind
+
 def initialize_problem(form, indset = None, printout = None):
 
     # Mapping
@@ -966,10 +1062,8 @@ def initialize_problem(form, indset = None, printout = None):
                 ind.append(uv_i[(u, v)])
     else:
         _, s, _ = svd(E)
-        ind = find_independents(E)
-
-
-
+        ind = independents_exclude(E, sym)
+    
     k   = len(ind)
     dep = list(set(range(m)) - set(ind))
     elapsed_time = time.time() - start_time
