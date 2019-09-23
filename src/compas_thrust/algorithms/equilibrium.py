@@ -336,7 +336,7 @@ def update_tna(form, delete_face=True, plots=False, save=False):
         plot_force(force, form, radius=0.05).show()
         plot_form(form, radius=0.05).show()
 
-    st = 'discretize/02_complete_1div_complete'
+    # st = 'discretize/02_complete_1div_complete'
 
     if save:
         force.to_obj('/Users/mricardo/compas_dev/compas_loadpath/data/'+ st +'_force.obj')

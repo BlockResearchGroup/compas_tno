@@ -30,38 +30,57 @@ __all__ = [
     'replicate_contraints',
     'interp_surf',
     'null_edges',
+    'set_height_constraint',
 ]
 
 
-def check_constraints(form, show=False):
+def check_constraints(form, show=False, lb_show=False, ub_show=False):
 
     try:
         t = form.attributes['offset']
     except:
         t = 0.0
     outside = {}
+    lbs = {}
+    ubs = {}
     penalty = 0
 
     for key, vertex in form.vertex.items():
         z = form.vertex_coordinates(key)[2] + t
         if vertex.get('lb', None):
             lb = vertex['lb']
+            lbs[key] = lb
             if z < lb:
                 outside[key] = lb - z
                 penalty += (abs(outside[key])+4)**(4)
         if vertex.get('ub', None):
             ub = vertex['ub']
+            ubs[key] = ub
             if z > ub:
                 outside[key] = z - ub
                 penalty += (abs(outside[key])+4)**(4)
 
     print('The penalty in the constraints is {0:.3f}'.format(penalty))
 
-    if show:
-        plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-        plotter.draw_vertices(text=outside)
-        plotter.draw_edges()
-        plotter.show()
+    if penalty > 0.1:
+        if show:
+            plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
+            plotter.draw_vertices(text=outside)
+            plotter.draw_edges()
+            plotter.show()
+
+        if lb_show:
+            plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
+            plotter.draw_vertices(text=lbs)
+            plotter.draw_edges()
+            plotter.show()
+
+        if ub_show:
+            plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
+            plotter.draw_vertices(text=ubs)
+            plotter.draw_edges()
+            plotter.show()
+
 
     return penalty
 
@@ -142,3 +161,10 @@ def null_edges(form, plot=False):
         plotter.show()
 
     return null_edges
+
+def set_height_constraint(form, zmax = 1.0):
+
+    for key in form.vertices():
+        form.set_vertex_attribute(key, 'ub', value = zmax)
+
+    return form

@@ -11,7 +11,7 @@ from compas_thrust.utilities.symmetry import replicate
 
 from compas_thrust.diagrams.form import energy
 from compas_thrust.diagrams.form import loadpath
-from compas_thrust.diagrams.form import oveview_forces
+from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.diagrams.form import adapt_tna
 from compas_thrust.diagrams.form import evaluate_a
 

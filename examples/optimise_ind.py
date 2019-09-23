@@ -8,8 +8,10 @@ from compas_thrust.algorithms.equilibrium import reactions
 from compas_thrust.algorithms.equilibrium import horizontal_check
 
 from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.diagrams.form import oveview_forces
+from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.utilities.symmetry import replicate
+
+from compas_viewers.meshviewer import MeshViewer
 
 from compas_thrust.diagrams.form import _form
 from compas_thrust.plotters.plotters import plot_form
@@ -28,28 +30,35 @@ from numpy import argmin
 if __name__ == "__main__":
 
 
-    file = '/Users/mricardo/compas_dev/me/minmax/radial/02_02_complete.json'
-    # file_save = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_temp.json'
-    # file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/02_06_complete.json'
+    # file = '/Users/mricardo/compas_dev/me/minmax/radial/01_05_sym.json'
+    file = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_sym.json'
+    file_save = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_calc.json'
+    file_complete = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_complete.json'
 
     form = FormDiagram.from_json(file)
+    check_constraints(form, show=True, lb_show=True, ub_show=True)
+
+    form = _form(form)
+
+    # for key in form.vertices():
+    #     print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
 
     # Initial parameters
 
-    tmax = 0.5 #form.attributes['tmax']
-    bounds_width = 2.5
+    tmax = 3.25
+    bounds_width = 5.0
     use_bounds = False
-    qmax = 120
+    qmax = 60
     indset = None
 
-    plot_form(form,radius=0.005).show()
+    plot_form(form,radius=0.1, heights=True, show_q=False).show()
 
     # # Optimisation
 
-    fopt, qopt = optimise_single(form, qmax=qmax, solver='devo',
+    fopt, qopt = optimise_single(form,  qmax=qmax, solver='devo',
                                         polish='slsqp',
-                                        population=100,
-                                        generations=50,
+                                        population=800,
+                                        generations=500,
                                         printout=50,
                                         tol=0.01,
                                         t = tmax,
@@ -57,28 +66,32 @@ if __name__ == "__main__":
                                         tension=False,
                                         use_bounds = use_bounds,
                                         bounds_width = bounds_width,
-                                        objective='loadpath',
+                                        objective='min',
                                         indset=indset,
-                                        buttress = True)
+                                        buttress = False)
 
     # Check compression and Save
 
     q = [attr['q'] for u, v, attr in form.edges(True)]
     qmin  = min(array(q))
-    if qmin > -0.1: # and check_constraints(form) < 1.0:
-        oveview_forces(form)
+    if qmin > -0.1 and check_constraints(form) < 1.0:
+        overview_forces(form)
         reactions(form, plot=False)
         print('Optimisation completed')
-        # form.to_json(file_save)
-
+        form.to_json(file_save)
+    
     # Replicate-sym and Print Results
 
     print('Horizontal checks: {0}'.format(horizontal_check(form)))
-    oveview_forces(form)
+    overview_forces(form)
 
-    # form_ = replicate(form, file_complete)
-    reactions(form)
-    check_constraints(form)
+    form_ = replicate(form, file_complete)
+    reactions(form_)
+    check_constraints(form_, show=True)
     # form.to_json(file)
     # oveview_forces(form_)
-    # plot_form(form_)
+    plot_form(form_)
+
+    viewer = MeshViewer()
+    viewer.mesh = form_
+    viewer.show()

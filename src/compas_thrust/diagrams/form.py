@@ -194,8 +194,8 @@ def remove_feet(form, plot = False, openings = None, rmax = 0.01): # Flatten Dia
     zs = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.vertex_coordinates(key)[2] for key in form.vertices_where({'is_external': False })}
     pz = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'pz') for key in form.vertices()}
     target = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'target') for key in form.vertices()}
-    lb = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'ub') for key in form.vertices()}
-    ub = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'lb') for key in form.vertices()}
+    lb = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'lb') for key in form.vertices()}
+    ub = {geometric_key(form.vertex_coordinates(key)[:2] + [0]): form.get_vertex_attribute(key, 'ub') for key in form.vertices()}
     
     form_ = FormDiagram.from_lines(lines)
     form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False, 'is_edge': True})
@@ -354,7 +354,6 @@ def overview_forces(form):
             qi = form.get_edge_attribute((u,v),'q')
             li = form.edge_length(u,v)
             lp += qi*li**2
-            print(qi)
             q.append(qi)
             f.append(qi*li)
 

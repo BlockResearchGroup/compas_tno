@@ -6,9 +6,9 @@ from compas_thrust.algorithms.ind_based import optimise_single
 from compas_thrust.algorithms.equilibrium import reactions
 from compas_thrust.algorithms.equilibrium import horizontal_check
 
-from compas_thrust.utilities.utilities import check_constraints
-from compas_thrust.utilities.utilities import oveview_forces
-from compas_thrust.utilities.utilities import replicate
+from compas_thrust.utilities.constraints import check_constraints
+from compas_thrust.diagrams.form import overview_forces
+from compas_thrust.utilities.symmetry import replicate
 
 from compas_thrust.diagrams.form import _form
 
@@ -36,12 +36,13 @@ if __name__ == "__main__":
     maxs = []
     i_s = []
     
-    for i in range(1,9):
+    for i in range(2,9):
         j = 2
         # file = '/Users/mricardo/compas_dev/me/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
-        # file_compare = '/Users/mricardo/compas_dev/me/discretize/01_013_complete.json'
+        file_compare = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_09_complete.json'
         # file_compare = '/Users/mricardo/compas_dev/me/discretize/02_09_complete.json'
-        file_dist = '/Users/mricardo/compas_dev/me/discretize/dists/0'+str(j)+'_0'+str(i)+'_dist.json'
+        file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
+        file_dist = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_dist.json'
         
         form = FormDiagram.from_json(file_dist)
         # form = FormDiagram.from_json(file)
@@ -69,12 +70,14 @@ if __name__ == "__main__":
         #         dists.append(dist)
         #         form.set_vertex_attribute(key, name = 'dist', value = dist)
         #     except:
+                
         #         dist, closest, _ = closest_point_in_cloud(point,points_base)
         #         form.set_vertex_attribute(key, name = 'dist', value = dist)
         #         dists.append(dist)
 
         for key in form.vertices():
-            dists.append(form.get_vertex_attribute(key,'dist'))
+            if form.get_vertex_attribute(key, 'is_fixed') == False:
+                dists.append(form.get_vertex_attribute(key,'dist'))
 
         print('Form Optimised: {0}'.format(i))
         dist_max = max(dists)
@@ -84,21 +87,22 @@ if __name__ == "__main__":
         averages.append(average)
         maxs.append(dist_max)
 
-        # plotter = MeshPlotter(form, figsize=(12, 8), tight=True)
+        plotter = MeshPlotter(form, figsize=(12, 8), tight=True)
 
-        # plotter.draw_vertices(
-        #     keys=list(form.vertices_where({'is_external': False})),
-        #     facecolor={key: i_to_white((attr['dist'] - 0) / (dist_max - 0)) for key, attr in form.vertices_where({'is_external': False}, True)},
-        #     radius={key: 2 * attr['dist'] for key, attr in form.vertices_where({'is_external': False}, True)}
-        # )
+        plotter.draw_vertices(
+            keys=list(form.vertices_where({'is_external': False})),
+            facecolor={key: i_to_white((attr['dist'] - 0) / (dist_max - 0)) for key, attr in form.vertices_where({'is_external': False}, True)},
+            radius={key: 2 * attr['dist'] for key, attr in form.vertices_where({'is_external': False}, True)}
+        )
 
-        # plotter.draw_edges(
-        #     keys=list(form.edges_where({'is_edge': True})),
-        #     color={key: '#00ff00' for key in form.edges_where({'is_external': True})},
-        #     width={key: 2.0 for key in form.edges_where({'is_external': True})}
-        # )
+        plotter.draw_edges(
+            keys=list(form.edges_where({'is_edge': True})),
+            color={key: '#00ff00' for key in form.edges_where({'is_external': True})},
+            width={key: 2.0 for key in form.edges_where({'is_external': True})}
+        )
 
-        # plotter.draw_faces(keys=list(form.faces_where({'is_loaded': True})))
+        plotter.draw_faces(keys=list(form.faces_where({'is_loaded': True})))
+        plotter.show()
         # plotter.save('/Users/mricardo/compas_dev/me/discretize/dists/img/0'+str(j)+'_0'+str(i)+'_dist.jpg')
 
     import matplotlib
@@ -114,8 +118,7 @@ if __name__ == "__main__":
     ax.set(xlabel='Discretization Level', ylabel='Average Distance (m)',
         title='Average Distance for Pattern 02')
     ax.grid()
-    ax.set_xlim([0,9])
+    ax.set_xlim([0,10])
     ax.set_ylim([0,0.5])
-
-    fig.savefig("/Users/mricardo/compas_dev/me/discretize/dists/img/02_Average.png")
+    # fig.savefig("/Users/mricardo/compas_dev/me/discretize/dists/img/02_Average.png")
     plt.show()

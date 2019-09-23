@@ -8,7 +8,7 @@ from compas_thrust.utilities.symmetry import replicate
 from compas.utilities import geometric_key
 
 from compas_thrust.diagrams.form import remove_feet
-from compas_thrust.diagrams.form import oveview_forces
+from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.diagrams.form import adapt_objective
 from compas_thrust.diagrams.form import adapt_tna
 
@@ -23,15 +23,17 @@ from compas_viewers.meshviewer import MeshViewer
 
 if __name__ == "__main__":
 
-    file_complete = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_complete.json'
+    file_complete = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_complete.json'
     # file = '/Users/mricardo/compas_dev/me/loadpath/prototype/prot_complete.json'
-    file_scaled = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_scaled.json'
+    file_scaled = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_scaled.json'
     # file_scaled = '/Users/mricardo/compas_dev/me/loadpath/prototype/prot_scaled.json'
-    file_sym = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_init.json'
+    file_sym = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_sym.json'
     # file_real = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_sym.json'
 
     form = FormDiagram.from_json(file_complete)
     plot_form(form).show()
+    tmax = form.attributes['tmax']
+    print('TMAX',tmax)
 
     # viewer = MeshViewer()
     # viewer.mesh = form
@@ -39,14 +41,14 @@ if __name__ == "__main__":
 
     # Scale to get an initial best-value for the objective with TNA
 
-    form = adapt_objective(form, zrange = [3.0,9.0], kmax = 500, objective = 'target', plot = True, delete_face = False)
+    form = adapt_objective(form, zrange = [3.0,9.0], kmax = 500, objective = 'target', plot = True, delete_face = True)
     form.to_json(file_scaled)
     plot_form(form).show()
 
     # Prepare Symmetrical part for optimisation with independents
     
     form = remove_feet(form, plot = True)
-    oveview_forces(form)
+    overview_forces(form)
     form.to_json(file_scaled)
 
     # for key in form.vertices():
@@ -60,13 +62,19 @@ if __name__ == "__main__":
     # If form has 3 axis of Symmetry
 
     form = create_sym(form)
+    form.attributes['tmax'] = tmax
+    print('TMAX',form.attributes['tmax'])
     form.to_json(file_sym)
     plot_form(form).show()
-    oveview_forces(form)
+    overview_forces(form)
+
+    for key in form.vertices():
+        print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
+
 
     # Viewer Complete
 
-    form = FormDiagram.from_json(file_scaled)
+    # form = FormDiagram.from_json(file_scaled)
     viewer = MeshViewer()
     viewer.mesh = form
     viewer.show()

@@ -1,6 +1,8 @@
 from compas_tna.diagrams import FormDiagram
 from compas_rhino.artists import NetworkArtist
 from compas.utilities import geometric_key
+from compas.geometry import distance_point_point
+# from compas_thrust.diagrams.form import overview_forces
 # from compas.utilities import XFunc
 
 import rhinoscriptsyntax as rs
@@ -10,151 +12,108 @@ import json
 # Plot Thrust Network
 i = 0
 
-# for i in range(1,1003):
+for i in range(5,6):
 
-# fnm = '/Users/mricardo/compas_dev/me/discretize/02_0'+str(i)+'_complete.json'
-# fnm = '/Users/mricardo/compas_dev/me/bestfit/pillow3_lp.json'
-# fnm = '/Users/mricardo/compas_dev/me/bestfit/pillowRV_ind_calc.json'
-# fnm = '/Users/mricardo/compas_dev/me/minmax/barrel/3D_min_ind.json'
-# fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/C_comp.json'
-# fnm = '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/SQ_comp_calc.json'
-# fnm = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints_min.json'
-fnm = '/Users/mricardo/compas_dev/me/bestfit/pillow/pillowRV_calc.json'
-# fnm = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_scaled.json'
-# radical = '/Users/mricardo/compas_dev/me/loadpath/Fix/' + ST
-# fnm = radical + '_lp.json'
-form = FormDiagram.from_json(fnm)
+    j = 1
+    fnm = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete_maxz.json'
 
-lp = 0
-try:
-    t = form.attributes['offset']
-    print('Translation of {0:.2f}'.format(t))
-except:
-    t = 0.0
-    print('No offset!')
+    form = FormDiagram.from_json(fnm)
+    # overview_forces(form)
 
-thrust_layer = 'Thrust_grad_lp'
-# thrust_layer = 'Thrust'
-# reactions_layer = 'Thrust_grad_lp'
+    lp = 0
+    try:
+        t = form.attributes['offset']
+        print('Translation of {0:.2f}'.format(t))
+    except:
+        t = 0.0
+        print('No offset!')
 
-# thrust_layer = 'Thrust'
-rs.AddLayer(thrust_layer)
-# rs.AddLayer(reactions_layer)
+    # thrust_layer = 'Thrust_grad_lp'
+    thrust_layer = str(j)+'_Thrust-zmax-'+str(i)
+    # thrust_layer = str(j)+'_midsupport::Mesh_final'
+    # reactions_layer = 'Thrust_grad_lp'
+    # points_layer = '1_Fix::Points'
 
-# i += 1
+    # thrust_layer = 'Thrust'
+    rs.AddLayer(thrust_layer)
+    # rs.AddLayer(reactions_layer)
 
-# print(lp)
+    # i += 1
 
-artist = NetworkArtist(form, layer=thrust_layer)
-artist.clear_layer()
+    # print(lp)
 
-#form.set_vertices_attributes(form.vertices(), {'z': 0})
+    # artist = NetworkArtist(form, layer=thrust_layer)
+    # artist.clear_layer()
 
-#for key, attr in form.vertices(True):
-#    form.vertex[key]['z'] = 0.0
-#    coord = form.vertex_coordinates(key)
-#    point = rs.AddPoint(coord)
-#    rs.ObjectName(point, str(form.vertex[key]['pz']))
+    #form.set_vertices_attributes(form.vertices(), {'z': 0})
 
-rs.CurrentLayer(thrust_layer)
+    #for key, attr in form.vertices(True):
+    #    form.vertex[key]['z'] = 0.0
+    #    coord = form.vertex_coordinates(key)
+    #    point = rs.AddPoint(coord)
+    #    rs.ObjectName(point, str(form.vertex[key]['pz']))
 
-for uv in form.edges():
-    u, v = uv
-    q = form.get_edge_attribute(uv, 'q')
-    l = form.edge_length(u,v)
-    if form.get_edge_attribute((u,v), 'is_symmetry') == False and form.get_edge_attribute((u,v), 'is_edge') == True and form.get_edge_attribute((u,v), 'is_external') == False :
-        lp += q * l * l
-        sp = form.vertex_coordinates(u)
-        ep = form.vertex_coordinates(v)
-        pz = form.get_vertex_attribute(u, 'pz')
-        # sp[2] = form.get_vertex_attribute(u, 'target')
-        # ep[2] = form.get_vertex_attribute(v, 'target')
-        # sp[2] += t
-        # ep[2] += t
-        id = rs.AddLine(sp, ep)
-        rs.ObjectName(id, str(q))
-        # rs.AddTextDot(str(round(pz,2)),sp)
-        # rs.ObjectColor(id, (255,255*(1002-i)/1002,0))
+    rs.CurrentLayer(thrust_layer)
+    # rs.CurrentLayer(points_layer)
 
-rs.AddTextDot('{0:.1f}'.format(lp),[-1.0,-1.0,0.0])
+    dx = (i-1)*15
+    dy = +40 #-20 * 4
 
-artist = NetworkArtist(form, layer=reactions_layer)
-artist.clear_layer()
-rs.CurrentLayer(reactions_layer)
-
-pzt=0
-for key in form.vertices():
-    pz = form.get_vertex_attribute(key,'pz')
-    pzt+= pz
-    if form.vertex[key]['is_fixed'] is True:
-        node = form.vertex_coordinates(key)
-        node[2] += t
-        ry = form.get_vertex_attribute(key, 'ry')
-        rx = form.get_vertex_attribute(key, 'rx')
-        rz = form.get_vertex_attribute(key, 'rz', 0.0)
-        norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
-        print(rx,ry,rz)
-        print(norm)
-        if rz < 0.0 and norm > 0.0:
-            sp = node
-            print(sp)
-            dz = rz/norm
-            mult = node[2]/dz
-            dz *= mult
-            dx = mult* rx/norm
-            dy = mult* ry/norm
-            ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
+    for uv in form.edges():
+        u, v = uv
+        q = form.get_edge_attribute(uv, 'q')
+        l = form.edge_length(u,v)
+        if form.get_edge_attribute((u,v), 'is_symmetry') == False and form.get_edge_attribute((u,v), 'is_edge') == True and form.get_edge_attribute((u,v), 'is_external') == False :
+            lp += q * l * l
+            sp = form.vertex_coordinates(u)
+            sp[0] += dx
+            sp[1] += dy
+            ep = form.vertex_coordinates(v)
+            ep[0] += dx
+            ep[1] += dy
+            pz = form.get_vertex_attribute(u, 'pz')
+            # sp[2] = form.get_vertex_attribute(u, 'target')
+            # ep[2] = form.get_vertex_attribute(v, 'target')
+            # sp[2] += t
+            # ep[2] += t
             id = rs.AddLine(sp, ep)
-            rs.ObjectName(id, str(norm))
-            # rs.AddTextDot('ry: {0:.1f} / rx: {0:.1f}'.format(ry,rx),node)
+            rs.ObjectName(id, str(q))
+            # rs.AddTextDot(str(round(pz,2)),sp)
+            # rs.ObjectColor(id, (255,255*(1002-i)/1002,0))
 
-# print(pzt)
+    rs.AddTextDot('{0:.1f}'.format(lp),[dx - 1.0, dy - 1.0, 0.0 ])
 
-#rs.LayerVisible('Dots', False)
-#rs.LayerVisible('Thrust', False)
+    # artist = NetworkArtist(form, layer=reactions_layer)
+    # artist.clear_layer()
+    # rs.CurrentLayer(reactions_layer)
 
+    # pzt=0
+    # for key in form.vertices():
+    #     pz = form.get_vertex_attribute(key,'pz')
+    #     pzt+= pz
+    #     if form.vertex[key]['is_fixed'] is True:
+    #         node = form.vertex_coordinates(key)
+    #         node[2] += t
+    #         ry = form.get_vertex_attribute(key, 'ry')
+    #         rx = form.get_vertex_attribute(key, 'rx')
+    #         rz = form.get_vertex_attribute(key, 'rz', 0.0)
+    #         norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
+    #         print(rx,ry,rz)
+    #         print(norm)
+    #         if rz < 0.0 and norm > 0.0:
+    #             sp = node
+    #             print(sp)
+    #             dz = rz/norm
+    #             mult = node[2]/dz
+    #             dz *= mult
+    #             dx = mult* rx/norm
+    #             dy = mult* ry/norm
+    #             ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
+    #             id = rs.AddLine(sp, ep)
+    #             rs.ObjectName(id, str(norm))
+    #             rs.AddTextDot('ry: {0:.1f} / rx: {0:.1f}'.format(ry,rx),node)
 
-# Copy Form
+    # print(pzt)
 
-#rs.EnableRedraw(False)
-#rs.CurrentLayer('Copy')
-#rs.DeleteObjects(rs.ObjectsByLayer('Copy'))
-#
-#for uv in form.edges():
-#    u, v = uv
-#    q = form.get_edge_attribute(uv, 'q')
-#    sp = form.vertex_coordinates(u)
-#    ep = form.vertex_coordinates(v)
-#    id = rs.AddLine(sp, ep)
-#    rs.ObjectName(id, str(q))
-#    
-#rs.EnableRedraw(True)
-
-# Analyse
-
-#fnm = 'C:/compas-dev/compas_ags/data/loadpath/Ex03_nosym.json'
-#form = FormDiagram.from_json(fnm)
-
-#gkey_key = form.gkey_key()
-#for guid in rs.ObjectsByLayer('Plan'):
-#    q = float(rs.ObjectName(guid))
-#    sp = rs.CurveStartPoint(guid)
-#    ep = rs.CurveEndPoint(guid)
-#    centroid = geometric_key([(sp[0] + ep[0])*0.5,(sp[1] + ep[1])*0.5,0.0])
-#    print(centroid)
-#    rs.AddPoint(centroid)
-#    for uv in form.edges():
-#        u, v = uv
-#        if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) == centroid:
-#            form.edge[u][v]['q'] = q
-#            print('ok')
-#
-#form = XFunc('compas_ags.ags.loadpath3.z_from_form')(form)
-#
-#artist = NetworkArtist(form, layer='Analysis')
-#artist.clear_layer()
-#artist.draw_vertices()
-#artist.draw_edges()
-#
-#fnm = 'C:/compas-dev/compas_ags/data/Euler/Ex03_sym_Euler_opt2-x2.json'
-#form.to_json(fnm)
+    #rs.LayerVisible('Dots', False)
+    #rs.LayerVisible('Thrust', False)

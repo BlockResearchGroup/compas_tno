@@ -15,6 +15,7 @@ from numpy import sqrt
 from compas_thrust.algorithms.equilibrium import z_from_form
 from compas_thrust.diagrams.form import overview_forces
 
+from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 
 import math
@@ -32,9 +33,14 @@ __all__ = [
     'replicate2',
     'create_sym',
     'create_sym2',
+    'fix_boundaries_sym',
+    'fix_boundaries_complete',
+    'fix_mid_sym',
+    'fix_mid_complete',
+    'not_sym_load',
 ]
 
-def replicate(form,file, plot=None):
+def replicate(form,file, plot=False):
 
     """ Copy 1/8 form-diagram in a complete structure.
 
@@ -156,8 +162,6 @@ def replicate(form,file, plot=None):
             form_.set_edge_attribute((u, v), name='is_ind', value = False)
 
 
-    # plot_form(form_, radius=0.05).show()
-
     try:
         t = form.attributes['offset']
     except:
@@ -172,7 +176,8 @@ def replicate(form,file, plot=None):
         ql2 += form_.get_edge_attribute((u,v),'q') * form_.edge_length(u,v) ** 2
 
     form_.attributes['loadpath'] = ql2
-    overview_forces(form_)
+    if plot:
+        overview_forces(form_)
 
     if plot:
         plot_form(form_, radius=0.05).show()
@@ -251,7 +256,6 @@ def replicate2(form, file, plot=None):
             for point in real_points:
                 dist.append(distance_point_point_xy(point,mp))
             point_i = argmin(dist)
-            print(point_i)
             gkey_appx = geometric_key(real_points[point_i])
             form_.set_edge_attribute((u, v), name='q', value = q_i[gkey_appx])
 
@@ -459,3 +463,79 @@ def create_sym2(form, keep_q = True):
     print('Total load: {0}'.format(pz))
 
     return form_
+
+def fix_boundaries_sym(form, plot = False):
+
+    tol = 0.001
+
+    for key in form.vertices():
+        _, y, _ = form.vertex_coordinates(key)
+        if y > 10.0 - tol and y < 10.0 + tol:
+            form.set_vertex_attribute(key, 'is_fixed', True)
+            form.set_vertex_attribute(key, 'z', 0.0)
+
+    if plot:
+        plot_form(form).show()
+
+    return form
+
+def fix_boundaries_complete(form, plot = False):
+
+    for key in form.vertices_on_boundary():
+        form.set_vertex_attribute(key, 'is_fixed', True)
+        form.set_vertex_attribute(key, 'z', 0.0)
+
+    if plot:
+        plot_form(form).show()
+
+    return form
+
+def fix_mid_sym(form, plot = False):
+
+    tol = 0.001
+
+    for key in form.vertices():
+        x, y, _ = form.vertex_coordinates(key)
+        if y > 10.0 - tol and y < 10.0 + tol and x > 5.0 - tol and x < 5.0 + tol:
+            form.set_vertex_attribute(key, 'is_fixed', True)
+            form.set_vertex_attribute(key, 'z', 0.0)
+
+    if plot:
+        plot_form(form, show_q=False, fix_width=True).show()
+
+    return form
+
+def fix_mid_complete(form, plot = False):
+
+    tol = 0.001
+
+    for key in form.vertices_on_boundary():
+        x, y, _ = form.vertex_coordinates(key)
+        if ( (y > 10.0 - tol and y < 10.0 + tol) or  (y > 0.0 - tol and y < 0.0 + tol) ) and (x > 5.0 - tol and x < 5.0 + tol):
+            form.set_vertex_attribute(key, 'is_fixed', True)
+            form.set_vertex_attribute(key, 'z', 0.0)
+        if ( (x > 10.0 - tol and x < 10.0 + tol) or  (x > 0.0 - tol and x < 0.0 + tol) ) and (y > 5.0 - tol and y < 5.0 + tol):
+            form.set_vertex_attribute(key, 'is_fixed', True)
+            form.set_vertex_attribute(key, 'z', 0.0)
+
+    if plot:
+        plot_form(form, show_q=False, fix_width=True).show()
+
+    return form
+
+def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
+
+    tol = 0.01
+
+    for key in form.vertices():
+        x, _, _ = form.vertex_coordinates(key)
+        if x > x0 - tol and x < x1 + tol:
+            pz0 = form.get_vertex_attribute(key, 'pz')
+            if x > x1 - tol:
+                form.set_vertex_attribute(key, 'pz', value = ((magnitude-1)/2 +1) * pz0)
+            else:
+                form.set_vertex_attribute(key, 'pz', value = magnitude * pz0)
+    
+    return form
+
+

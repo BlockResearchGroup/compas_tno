@@ -6,9 +6,6 @@ from compas_thrust.algorithms.scale import lagrangian_scale
 from compas_thrust.algorithms.scale import scale_form
 from compas_thrust.algorithms.equilibrium import z_from_form
 
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.utilities.symmetry import replicate
-
 from compas_thrust.diagrams.form import energy
 from compas_thrust.diagrams.form import loadpath
 from compas_thrust.diagrams.form import adapt_tna

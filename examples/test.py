@@ -9,6 +9,12 @@ from compas_thrust.algorithms import z_from_form
 from compas_thrust.diagrams.form import overview_forces
 from compas.utilities import geometric_key
 
+from compas_thrust.utilities import fix_boundaries_sym
+from compas_thrust.utilities import fix_boundaries_complete
+
+from compas_thrust.utilities import fix_mid_sym
+from compas_thrust.utilities import fix_mid_complete
+
 from compas.geometry import is_point_on_segment
 from compas.geometry import intersection_segment_segment
 from compas.geometry import is_intersection_line_line
@@ -44,6 +50,9 @@ from scipy.sparse import csr_matrix
 from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 
+import matplotlib
+import matplotlib.pyplot as plt
+
 
 # ==============================================================================
 # Main
@@ -73,34 +82,71 @@ if __name__ == "__main__":
 
     # plot_form(form,show_edgeuv=True, max_width=2.0).show()
 
+    i_s = []
+    n_s = []
+    lp_s = []
 
-    for i in range(1,8):
-        print('Form: ',str(i))
-        filesym = '/Users/mricardo/compas_dev/me/minmax/radial/01_0'+ str(i) +'_calc.json'
-        form_ = FormDiagram.from_json(filesym)
-        args = initialize_problem(form_)
-        plot_form(form_).show()
-        file = '/Users/mricardo/compas_dev/me/minmax/radial/01_0'+ str(i) +'_complete_min.json'
-        form = FormDiagram.from_json(file)
+    for i in range(2,8):
 
-        inds_midpt = []
-        for u,v in form_.edges():
-            if form_.get_edge_attribute((u,v),'is_ind') == True:
-                inds_midpt.append(geometric_key(form_.edge_midpoint(u,v)[:2]+[0]))
-        for u,v in form.edges():
-            form.set_edge_attribute((u,v), 'is_ind', value = False)
-            if geometric_key(form.edge_midpoint(u,v)) in inds_midpt:
-                print('update ',u,v)
-                form.set_edge_attribute((u,v), 'is_ind', value = True)
+        print('\n\n------------------ Form ',str(i),'\n')
+        j = 1
+
+        file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+ str(j) +'_0'+ str(i) +'_complete_nosym.json'
+        form = FormDiagram.from_json(file_complete)
+        overview_forces(form)
+        # plot_form(form).show()
+        form = z_from_form(form)
+        # plot_form(form).show()
+        form.to_json(file_complete)
+        # i_s.append(i)
+        # n_s.append(form.number_of_edges())
+        # lp_s.append(form.attributes['loadpath'])
+        # plot_form(form,show_q=False, simple=True, max_width=5.0).show()
+        # force = ForceDiagram.from_formdiagram(form)
+        # form, force = update_tna(form, delete_face=False)
+        # plot_force(force, form, color_inds=False).show()
+
+        # form = not_sym_load(form, 0.0, 5.0, 25)
+
+
+
+    # fig, ax = plt.subplots()
+    # ax.plot(n_s, lp_s)
+    # ax.set(xlabel='# Edges F.D.', ylabel='LP',
+    #     title='LP for different discretization - Orthogonal')
+    # ax.grid()
+    # plt.show()
+
+    # print(lp_s)
+
+
+    # for i in range(1,8):
+    #     print('Form: ',str(i))
+    #     filesym = '/Users/mricardo/compas_dev/me/minmax/radial/01_0'+ str(i) +'_calc.json'
+    #     form_ = FormDiagram.from_json(filesym)
+    #     args = initialize_problem(form_)
+    #     plot_form(form_).show()
+    #     file = '/Users/mricardo/compas_dev/me/minmax/radial/01_0'+ str(i) +'_complete_min.json'
+    #     form = FormDiagram.from_json(file)
+
+    #     inds_midpt = []
+    #     for u,v in form_.edges():
+    #         if form_.get_edge_attribute((u,v),'is_ind') == True:
+    #             inds_midpt.append(geometric_key(form_.edge_midpoint(u,v)[:2]+[0]))
+    #     for u,v in form.edges():
+    #         form.set_edge_attribute((u,v), 'is_ind', value = False)
+    #         if geometric_key(form.edge_midpoint(u,v)) in inds_midpt:
+    #             print('update ',u,v)
+    #             form.set_edge_attribute((u,v), 'is_ind', value = True)
         
-        for u,v in form.edges():
-            if geometric_key(form.edge_midpoint(u,v)[:2]+[0]) in inds_midpt:
-                print('update ',u,v)
-                form.set_edge_attribute((u,v), 'is_ind', value = True)
+    #     for u,v in form.edges():
+    #         if geometric_key(form.edge_midpoint(u,v)[:2]+[0]) in inds_midpt:
+    #             print('update ',u,v)
+    #             form.set_edge_attribute((u,v), 'is_ind', value = True)
                 
-        plot_form(form,radius = 0.05, show_q= False, max_width=2).show()
-        form, force = update_tna(form)
-        plot_force(force, form).show()
+    #     plot_form(form,radius = 0.05, show_q= False, max_width=2).show()
+    #     form, force = update_tna(form)
+    #     plot_force(force, form).show()
 
         # form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
         # form = z_from_form(form)

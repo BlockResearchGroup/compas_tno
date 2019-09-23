@@ -218,6 +218,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     if printout:
         print('Form diagram has {0} (RREF) or {1} (SVD) independent branches '.format(len(ind), m - len(s)))
         print('Shape Equilibrium Matrix: ', E.shape)
+        print('Rank Equilibrium Matrix: ', matrix_rank(E))
         print('Found {0} independents'.format(k))
 
     # Set-up
@@ -241,17 +242,19 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
                 print(b)
     else:
         b = None
-    
-    print(b)
+
+    if printout:
+        print(b)
     
     try:
         joints = form.attributes['joints']
     except:
         joints = None
 
-    print(joints)
+    if printout:
+        print(joints)
 
-    args   = (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i)
+    args = (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i)
 
     if use_bounds:
         bounds = []
@@ -293,7 +296,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         if objective=='loadpath':
             fdevo, fslsqp, fieq = _fint, _fint_, _fieq
         if objective=='target':
-            fdevo, fslsqp, fieq = fbf, fbf, _fieq
+            fdevo, fslsqp, fieq = fbf, fbf_, _fieq
         if objective == 'min':
             fdevo, fslsqp, fieq = fmin, fmin, _fieq_bounds
         if objective=='max':
@@ -436,12 +439,12 @@ def fmin(qid, *args):
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
-    CfQ = Cf.transpose().dot(diags(q.flatten()))
-    # f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
+    CfQ = Cf.transpose().dot(diags(q_.flatten()))
+    f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
     # f +=  pz.transpose().dot(z[free])/1000
-    print( (CfQ.dot(U[:,newaxis])) )
-    print( (CfQ.dot(V[:,newaxis])) )
-    f = (CfQ.dot(U[:,newaxis])).transpose() + (CfQ.dot(V[:,newaxis])).transpose()
+    # print( (CfQ.dot(U[:,newaxis])) )
+    # print( (CfQ.dot(V[:,newaxis])) )
+    # f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
 
     if isnan(f) == True or any(qid) == False:
         return 10**10
@@ -654,7 +657,64 @@ def _fint_(qid, *args):
 
     return f
 
+def fbf_(qid, *args):
+
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
+
+    qid, t = qid[:k], qid[-1]
+    z, l2, q, q_ = zlq_from_qid(qid, args)
+    z_s = abs(z[free] - s[free])
+    f = z_s.transpose().dot(z_s)
+    f = f[0,0]
+
+    if isnan(f):
+        return 10**10
+
+    else:
+        return f
+
 def _fieq(qid, *args):
+
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
+
+    q[ind, 0], t = qid[:k], qid[-1]
+    # z, l2, q, q_ = zlq_from_qid(qid, args) # Added
+    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
+    q_ = 1 * q
+    q[sym] *= 0
+    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
+
+    # Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
+    # Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
+    # Rh = Rx**2 + Ry**2
+    # Rm = max(sqrt(Rh))
+
+    Rm = 0.0
+    pen_lb = 0.0
+    pen_ub = 0.0
+
+    if lb_ind: # Added
+        if t is not 0.0:
+            lb = lb - t
+        z_lb    = z[lb_ind]
+        log_lb  = z_lb < lb
+        diff_lb = z_lb[log_lb] - lb[log_lb]
+        pen_lb  = sum(abs(diff_lb) + 2)**4
+
+    if ub_ind:
+        if t is not 0.0:
+            ub = ub - t
+        z_ub    = z[ub_ind]
+        log_ub  = z_ub > ub
+        diff_ub = z_ub[log_ub] - ub[log_ub]
+        pen_ub  = sum(abs(diff_ub) + 2)**4
+
+    if not tension:
+        return hstack([q.ravel() + 10**(-5), tol - Rm, -pen_lb, -pen_ub])
+        # return hstack([Rm + pen_lb + pen_ub])
+    return [tol - Rm - pen_lb - pen_ub]
+
+def _fieq_ub_lb(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
 
@@ -663,16 +723,29 @@ def _fieq(qid, *args):
     q_ = 1 * q
     q[sym] *= 0
 
-    Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
-    Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
-    Rh = Rx**2 + Ry**2
-    Rm = max(sqrt(Rh))
+    Rm = 0
 
     pen_lb = 0.0
     pen_ub = 0.0
 
+    if lb_ind:
+        if t is not 0.0:
+            lb = lb - t
+        z_lb    = z[lb_ind]
+        log_lb  = z_lb < lb
+        diff_lb = z_lb[log_lb] - lb[log_lb]
+        pen_lb  = sum(abs(diff_lb) + 2)**4
+
+    if ub_ind:
+        if t is not 0.0:
+            ub = ub - t
+        z_ub    = z[ub_ind]
+        log_ub  = z_ub > ub
+        diff_ub = z_ub[log_ub] - ub[log_ub]
+        pen_ub  = sum(abs(diff_ub) + 2)**4
+
     if not tension:
-        return hstack([q.ravel() + 10**(-5), tol - Rm])
+        return hstack([pen_ub + pen_ub])
         # return hstack([Rm + pen_lb + pen_ub])
     return [tol - Rm - pen_lb - pen_ub]
 
@@ -745,7 +818,7 @@ def _fieq_bounds(qid, *args):
 def _slsqp(fn, qid0, bounds, printout, fieq, args):
 
     pout = 2 if printout else 0
-    opt  = fmin_slsqp(fn, qid0, args=args, disp=pout, bounds=bounds, full_output=1, iter=1000, f_ieqcons=fieq)
+    opt  = fmin_slsqp(fn, qid0, args=args, disp=pout, bounds=bounds, full_output=1, iter=500, f_ieqcons=fieq)
 
     return opt[1], opt[0]
 
