@@ -31,6 +31,9 @@ __all__ = [
     'interp_surf',
     'null_edges',
     'set_height_constraint',
+    'set_cross_vault_heights',
+    'set_pavillion_vault_heights',
+    'set_oct_vault_heights',
 ]
 
 
@@ -166,5 +169,102 @@ def set_height_constraint(form, zmax = 1.0):
 
     for key in form.vertices():
         form.set_vertex_attribute(key, 'ub', value = zmax)
+
+    return form
+
+def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.00, set_heights = False):
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi <= y1/x1 * xi + tol and yi <= y1 - xi + tol: #Q1
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi >= y1/x1 * xi - tol and yi >= y1 - xi - tol: #Q3
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi <= y1/x1 * xi + tol and yi >= y1 - xi - tol: #Q2
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        elif yi >= y1/x1 * xi - tol and yi <= y1 - xi + tol: #Q4
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(z,2))
+
+    return form
+
+def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.00, set_heights = False):
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi <= y1/x1 * xi + tol and yi <= y1 - xi + tol: #Q1
+            try:
+                z = math.sqrt((ry)**2 - (yi-ry)**2)
+            except:
+                z = 0
+        elif yi >= y1/x1 * xi - tol and yi >= y1 - xi - tol: #Q3
+            try:
+                z = math.sqrt((ry)**2 - (yi-ry)**2)
+            except:
+                z = 0
+        elif yi <= y1/x1 * xi + tol and yi >= y1 - xi - tol: #Q2
+            try:
+                z = math.sqrt((rx)**2 - (xi-rx)**2)
+            except:
+                z = 0
+        elif yi >= y1/x1 * xi - tol and yi <= y1 - xi + tol: #Q4
+            try:
+                z = math.sqrt((rx)**2 - (xi-rx)**2)
+            except:
+                z = 0
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(z,2))
+
+    return form
+
+def set_oct_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.01):
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi < y1/x1*xi + tol and yi < y1 - x1 + tol: #Q1
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi > y1/x1*xi - tol and yi > y1 - x1 - tol: #Q3
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi < y1/x1*xi + tol and yi > y1 - x1 - tol: #Q2
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        elif yi > y1/x1*xi - tol and yi < y1 - x1 + tol: #Q4
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=z)
 
     return form

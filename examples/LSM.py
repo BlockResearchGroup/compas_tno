@@ -218,7 +218,7 @@ if __name__ == "__main__":
     plot_form(form, thick='Rm', show_q= False, heights=True, radius=0.3).show()
 
     A = A_stress(form,Rm)
-
+    # Check if it is the same as [ Ct (Rm/lij) C ]
 
     # Known Var
 

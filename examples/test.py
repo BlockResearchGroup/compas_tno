@@ -11,6 +11,9 @@ from compas.utilities import geometric_key
 
 from compas_thrust.utilities import fix_boundaries_sym
 from compas_thrust.utilities import fix_boundaries_complete
+from compas_thrust.utilities import set_cross_vault_heights
+from compas_thrust.utilities import set_pavillion_vault_heights
+from compas_thrust.utilities import set_oct_vault_heights
 
 from compas_thrust.utilities import fix_mid_sym
 from compas_thrust.utilities import fix_mid_complete
@@ -42,6 +45,7 @@ from numpy.random import rand
 from numpy.random import randint
 
 from compas.numerical import normrow
+from compas_viewers.meshviewer import MeshViewer
 # from compas.numerical import norm
 
 from scipy.linalg import svd
@@ -86,18 +90,20 @@ if __name__ == "__main__":
     n_s = []
     lp_s = []
 
-    for i in range(2,8):
+    for i in range(5,6):
 
         print('\n\n------------------ Form ',str(i),'\n')
         j = 1
 
-        file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+ str(j) +'_0'+ str(i) +'_complete_nosym.json'
+        file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+ str(j) +'_0'+ str(i) +'_complete.json'
         form = FormDiagram.from_json(file_complete)
         overview_forces(form)
+        form = set_cross_vault_heights(form, set_heights=True)
+        plot_form(form, heights=True, show_q = False).show()
         # plot_form(form).show()
-        form = z_from_form(form)
+        # form = z_from_form(form)
         # plot_form(form).show()
-        form.to_json(file_complete)
+        # form.to_json(file_complete)
         # i_s.append(i)
         # n_s.append(form.number_of_edges())
         # lp_s.append(form.attributes['loadpath'])
@@ -107,6 +113,10 @@ if __name__ == "__main__":
         # plot_force(force, form, color_inds=False).show()
 
         # form = not_sym_load(form, 0.0, 5.0, 25)
+
+        viewer = MeshViewer()
+        viewer.mesh = form
+        viewer.show()
 
 
 

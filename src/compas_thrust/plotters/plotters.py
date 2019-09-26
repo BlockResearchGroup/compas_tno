@@ -93,7 +93,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     if radius:
         if heights:
             plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-            radius=radius, text={i: form.get_vertex_attribute(i, 'pz') for i in form.vertices()})
+            radius=radius, text={i: form.get_vertex_attribute(i, 'z') for i in form.vertices()})
         else:
             plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
             radius=radius)

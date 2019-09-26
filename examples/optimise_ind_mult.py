@@ -38,11 +38,11 @@ if __name__ == "__main__":
 
     lps = []
 
-    for i in range(5,6):
+    for i in range(4,5):
 
         print('\n\n\n\n------------------ Form ',str(i),'\n\n')
 
-        j = 1
+        j = 2
 
         file = '/Users/mricardo/compas_dev/me/loadpath/midsupport/discretize/0'+str(j)+'_0'+str(i)+'_sym.json'
         file_save = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete_maxz.json'
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                                             polish='slsqp',
                                             population=600,
                                             generations=200,
-                                            printout=True,
+                                            printout=None,
                                             tol=0.01,
                                             t = tmax,
                                             opt_max=False,
