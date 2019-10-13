@@ -42,6 +42,8 @@ from compas_thrust.plotters.plotters import plot_form
 
 from compas_thrust.algorithms.equilibrium import zlq_from_qid
 from compas_thrust.algorithms.equilibrium import reactions
+from compas_thrust.algorithms.equilibrium import xlq_from_qid
+from compas_thrust.algorithms.equilibrium import ylq_from_qid
 
 from multiprocessing import Pool
 from random import shuffle
@@ -175,8 +177,15 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         w[i] = vertex.get('weight', 1.0)
 
     Wfree = diags(w[free].flatten())
-    # print('Max Z is', max(z))
-    xy = xyz[:, :2]
+    if printout:
+        print('Max Z is', max(z))
+    xy = xyz[:, [0,1]]
+    xz = xyz[:, [0,2]]
+    yz = xyz[:, [1,2]]
+    print(xyz[0])
+    print(xy[0])
+    print(xz[0])
+    print(yz[0])
 
     # Temporary anchors location
 
@@ -189,47 +198,79 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     Cf  = C[:, fixed]
     Ct = C.transpose()
     Cit = Ci.transpose()
-    E   = equilibrium_matrix(C, xy, free, 'csr').toarray()
+    Exy   = equilibrium_matrix_3D(C, xyz, free, 'csr', 'xy').toarray()
+    Exz   = equilibrium_matrix_3D(C, xyz, free, 'csr', 'xz').toarray()
+    Eyz   = equilibrium_matrix_3D(C, xyz, free, 'csr', 'yz').toarray()
     uvw = C.dot(xyz)
     U   = uvw[:, 0]
     V   = uvw[:, 1]
-    W   = uvw[:, 2] 
+    W   = uvw[:, 2]
 
     # Independent and dependent branches
 
-    if indset:
-        ind = []
-        for u, v in form.edges():
-            if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
-                ind.append(uv_i[(u, v)])
-    else:
-        _, sdv_ind, _ = svd(E)
-        ind = []
-        if random_ind is False:
-            # ind = nonpivots(sympy.Matrix(E).rref()[0].tolist())
-            ind = find_independents(E)
-        else:
-            ind = randint(0,m,m - len(sdv_ind)).tolist()
+    indz = find_independents(Exy)
+    indy = find_independents(Exz)
+    indx = find_independents(Eyz)
 
-    k   = len(ind)
-    dep = list(set(range(m)) - set(ind))
+    print('Shape Z Equilibrium Matrix: ', Exy.shape)
+    print('Rank Equilibrium Matrix: ', matrix_rank(Exy))
+    print('Indeoendents Z: {0} '.format(len(indz)))
+    print('Shape Y Equilibrium Matrix: ', Exz.shape)
+    print('Rank Equilibrium Matrix: ', matrix_rank(Exz))
+    print('Indeoendents Y: {0}'.format(len(indy)))
+    print('Shape X Equilibrium Matrix: ', Eyz.shape)
+    print('Rank Equilibrium Matrix: ', matrix_rank(Eyz))
+    print('Indeoendents X: {0}'.format(len(indx)))
+
+    print(indz)
+    print(indy)
+    print(indx)
+    # ind = indz
+    kz   = len(indz)
+    ky   = len(indy)
+    kx   = len(indx)
+    depz = list(set(range(m)) - set(indz))
+    depy = list(set(range(m)) - set(indy))
+    depx = list(set(range(m)) - set(indx))
 
     for u, v in form.edges():
-        form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
+        form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in indz else False)
+
+    # plot_form(form, fix_width=True, max_width = 2.0, show_q= False).show()
+
+    # for u, v in form.edges():
+    #     form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in indy else False)
+
+    # plot_form(form, fix_width=True, max_width = 2.0, show_q= False).show()
+
+    # for u, v in form.edges():
+    #     form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in indx else False)
+
+    # plot_form(form, fix_width=True, max_width = 2.0, show_q= False).show()
 
     if printout:
-        print('Form diagram has {0} (RREF) or {1} (SVD) independent branches '.format(len(ind), m - len(sdv_ind)))
-        print('Shape Equilibrium Matrix: ', E.shape)
-        print('Rank Equilibrium Matrix: ', matrix_rank(E))
-        print('Found {0} independents'.format(k))
+        print('Shell element has {0}, {1}, {2} (Z, Y, X) independent branches '.format(len(indz),len(indy),len(indx)))
+        print('Shape Equilibrium Matrices: ', Exy.shape, Exz.shape, Eyz.shape)
+        print('Rank Equilibrium Matrix: ', matrix_rank(Exy), matrix_rank(Exz), matrix_rank(Eyz))
 
     # Set-up
 
-    lh     = normrow(C.dot(xy))**2
-    Edinv  = -csr_matrix(pinv(E[:, dep]))
-    Ei     = E[:, ind]
-    p      = vstack([px[free], py[free]])
+    lxy     = normrow(C.dot(xy))**2
+    lxz     = normrow(C.dot(xz))**2
+    lyz     = normrow(C.dot(yz))**2
+    Edinv_z  = -csr_matrix(pinv(Exy[:, depz]))
+    Edinv_y  = -csr_matrix(pinv(Exz[:, depy]))
+    Edinv_x  = -csr_matrix(pinv(Eyz[:, depx]))
+    Eiz     = Exy[:, indz]
+    Eiy     = Exz[:, indy]
+    Eix     = Eyz[:, indx]
+    p_z     = vstack([px[free], py[free]])
+    p_y     = vstack([px[free], pz[free]])
+    p_x     = vstack([py[free], pz[free]])
     q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
+
+    print('Shape Inverse Matrices: ', Edinv_z.shape, Edinv_y.shape, Edinv_x.shape)
+    print('Rank Inverses Matrix: ', matrix_rank(Edinv_z), matrix_rank(Edinv_y), matrix_rank(Edinv_x))
 
     if objective == 'loadpath':
         t = None
@@ -256,7 +297,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     if printout and joints:
         print('Joins Data', joints)
 
-    args = (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i)
+    args = (q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x)
 
     if use_bounds:
         bounds = []
@@ -271,7 +312,9 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
                 else:
                     bounds.append([qmin,qi+bounds_width])
     else:
-        bounds = [[qmin, qmax]] * k
+        boundsz = [[qmin, qmax]] * kz
+        boundsy = [[qmin, qmax]] * ky
+        boundsx = [[qmin, qmax]] * kx
     if t:
         bounds.append([-t,t])
     
@@ -281,27 +324,64 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     checked = True
 
     _q = deepcopy(q)
+
     if tol > 0:
         for i in range(10**3):
-            _q[ind, 0] = rand(k) * qmax
-            _q[dep] = -Edinv.dot(p - Ei.dot(_q[ind]))
+            _q[indz, 0] = rand(kz) * qmax
+            _q[depz] = -Edinv_z.dot(p_z - Eiz.dot(_q[indz]))
             Rx = Cit.dot(U * _q.ravel()) - px[free].ravel()
             Ry = Cit.dot(V * _q.ravel()) - py[free].ravel()
+            Rz = Cit.dot(W * _q.ravel())
             R  = max(sqrt(Rx**2 + Ry**2))
-            # Rz = Cit.dot(W * _q.ravel()) - pz[free].ravel()
             # print(sum(Rz))
             if R > tol:
                 checked = False
+                print('Failed checks on Z. Iteration {0}'.format(i))
+                print('Rx: {0} Rz: {1}'.format(sum(abs(Rx)),sum(abs(Ry))))
                 break
 
+    _q = deepcopy(q)
+
+    if tol > 0:
+        for i in range(10**3):
+            _q[indy, 0] = rand(ky) * qmax
+            _q[depy] = -Edinv_y.dot(p_y - Eiy.dot(_q[indy]))
+            Rx = Cit.dot(U * _q.ravel()) - px[free].ravel()
+            Rz = Cit.dot(W * _q.ravel()) - pz[free].ravel()
+            R  = max(sqrt(Rx**2 + Rz**2))
+            # print(sum(Rz))
+            if R > tol:
+                checked = False
+                # print('\nFailed checks on Y. Iteration {0}'.format(i))
+                # print('Rx: {0} Rz: {1}'.format(sum(abs(Rx)),sum(abs(Rz))))
+                # break
+
+    _q = deepcopy(q)
+
+    if tol > 0:
+        for i in range(5):
+            _q[indx, 0] = rand(kx) * qmax
+            _q[depx] = -Edinv_x.dot(p_x - Eix.dot(_q[indx]))
+            Rz = Cit.dot(W * _q.ravel()) - pz[free].ravel()
+            Ry = Cit.dot(V * _q.ravel()) - py[free].ravel()
+            R  = max(sqrt(Rz**2 + Ry**2))
+            # print(sum(Rz))
+            if R > tol:
+                checked = False
+                # print('\nFailed checks on X. Iteration {0}'.format(i))
+                # print('Rz: {0} Ry: {1}\n'.format(sum(abs(Rz)),sum(abs(Ry))))
+                # break
+
     if checked:
+
+        plot_form(form).show()
 
         # Define Objective
 
         if objective=='loadpath':
             fdevo, fslsqp, fieq = _fint, _fint_, _fieq
         if objective=='target':
-            fdevo, fslsqp, fieq = fbf, fbf_, _fieq
+            fdevo, fslsqp, fieq = fbf, fbf_dome_, _fieq
         if objective == 'min':
             fdevo, fslsqp, fieq = fmin, fmin, _fieq_bounds
         if objective=='max':
@@ -309,27 +389,24 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         if objective=='bounds':
             fdevo, fslsqp, fieq = fbounds, fbounds, _fieq_bounds
 
-        # Solve
+        # Solve with gradient in Z, X, Y .
+        
+        # Solve in Z:
 
-        if solver == 'devo':
-            fopt, qopt = _diff_evo(fdevo, bounds, population, generations, printout, plot, frange, args)
-
+        qi = q[indz]
+        if t:
+            qopt = append(qi,t)
         else:
-            qi = q[ind]
-            if t:
-                qopt = append(qi,t)
-            else:
-                qopt = qi.reshape(k,)
-            fopt = fslsqp(qopt,*args)
-            if printout:
-                print('Gradient Method: Initial Value: {0}'.format(fopt))
+            qopt = qi.reshape(kz,)
+        fopt = fslsqp(qopt,*args)
+        if printout:
+            print('Gradient Method: Initial Value: {0}'.format(fopt))
 
         if polish == 'slsqp':
-            fopt_, qopt_ = _slsqp(fslsqp, qopt, bounds, printout, fieq, args)
-
+            fopt_, qopt_ = _slsqp(fslsqp, qopt, boundsz, printout, fieq, args)
             if t:
-                qopt_, t_slsqp = qopt_[:k], qopt_[-1]
-                qopt, t = qopt[:k], qopt[-1]
+                qopt_, t_slsqp = qopt_[:kz], qopt_[-1]
+                qopt, t = qopt[:kz], qopt[-1]
             q1 = zlq_from_qid(qopt_, args)[2]
             if fopt_ < fopt:
                 if (min(q1) > -0.001 and not tension) or tension:
@@ -341,19 +418,128 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
 
         z, _, q, q_ = zlq_from_qid(qopt, args)
 
-        # Unique key
+        for i in range(n):
+            key = i_k[i]
+            form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+            form.set_vertex_attribute(key=key, name='y', value=float(y[i]))
+            form.set_vertex_attribute(key=key, name='x', value=float(x[i]))
 
-        gkeys = []
-        for i in ind:
-            u, v = i_uv[i]
-            gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-        form.attributes['indset'] = gkeys
+        for c, qi in enumerate(list(q_.ravel())):
+            u, v = i_uv[c]
+            form.set_edge_attribute((u, v), 'q', float(qi))
+
+        plot_form(form).show()
+
+        # Set up for Y
+
+        for key, vertex in form.vertex.items():
+            i = k_i[key]
+            xyz[i, :] = form.vertex_coordinates(key)
+        xz = xyz[:, [0,2]]
+        Exz   = equilibrium_matrix_3D(C, xyz, free, 'csr', 'xz').toarray()
+        lxz     = normrow(C.dot(xz))**2
+        Edinv_y  = -csr_matrix(pinv(Exz[:, depy]))
+        Eiy     = Exz[:, indy]
+        args =  (q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x)
+ 
+        # Solve in Y:
+
+        qi = q[indy]
+        if t:
+            qopt = append(qi,t)
+        else:
+            qopt = qi.reshape(ky,)
+        fopt = fbf_dome_y(qopt,*args)
+        if printout:
+            print('Gradient Method for Y: Initial Value: {0}'.format(fopt))
+
+        if polish == 'slsqp':
+            fopt_, qopt_ = _slsqp(fbf_dome_y, qopt, boundsy, printout, _fieqy, args)
+            if t:
+                qopt_, t_slsqp = qopt_[:ky], qopt_[-1]
+                qopt, t = qopt[:ky], qopt[-1]
+            q1 = ylq_from_qid(qopt_, args)[2]
+            if fopt_ < fopt:
+                if (min(q1) > -0.001 and not tension) or tension:
+                    fopt, qopt = fopt_, qopt_
+                    if t:
+                        t = t_slsqp
+        if t:
+            form.attributes['offset'] = t
+
+        y, _, q, q_ = ylq_from_qid(qopt, args)
+
+        for i in range(n):
+            key = i_k[i]
+            form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+            form.set_vertex_attribute(key=key, name='y', value=float(y[i]))
+            form.set_vertex_attribute(key=key, name='x', value=float(x[i]))
+
+        for c, qi in enumerate(list(q_.ravel())):
+            u, v = i_uv[c]
+            form.set_edge_attribute((u, v), 'q', float(qi))
+
+        plot_form(form).show()
+
+        # Set up for X
+
+        for key, vertex in form.vertex.items():
+            i = k_i[key]
+            xyz[i, :] = form.vertex_coordinates(key)
+        yz = xyz[:, [1,2]]
+        Eyz   = equilibrium_matrix_3D(C, xyz, free, 'csr', 'yz').toarray()
+        lyz     = normrow(C.dot(yz))**2
+        Edinv_x  = -csr_matrix(pinv(Eyz[:, depx]))
+        Eix     = Eyz[:, indx]
+        args =  (q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x)
+        # Solve in X:
+
+        qi = q[indx]
+        if t:
+            qopt = append(qi,t)
+        else:
+            qopt = qi.reshape(kx,)
+        fopt = fbf_dome_x(qopt,*args)
+        if printout:
+            print('Gradient Method for X: Initial Value: {0}'.format(fopt))
+
+        if polish == 'slsqp':
+            fopt_, qopt_ = _slsqp(fbf_dome_x, qopt, boundsx, printout, _fieqx, args)
+            if t:
+                qopt_, t_slsqp = qopt_[:kx], qopt_[-1]
+                qopt, t = qopt[:kx], qopt[-1]
+            q1 = xlq_from_qid(qopt_, args)[2]
+            if fopt_ < fopt:
+                if (min(q1) > -0.001 and not tension) or tension:
+                    fopt, qopt = fopt_, qopt_
+                    if t:
+                        t = t_slsqp
+        if t:
+            form.attributes['offset'] = t
+
+        for i in range(n):
+            key = i_k[i]
+            form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+            form.set_vertex_attribute(key=key, name='y', value=float(y[i]))
+            form.set_vertex_attribute(key=key, name='x', value=float(x[i]))
+
+        for c, qi in enumerate(list(q_.ravel())):
+            u, v = i_uv[c]
+            form.set_edge_attribute((u, v), 'q', float(qi))
+
+        x, _, q, q_ = xlq_from_qid(qopt, args)
+
+        plot_form(form).show()
 
         # Update FormDiagram
 
         for i in range(n):
             key = i_k[i]
             form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+            form.set_vertex_attribute(key=key, name='y', value=float(y[i]))
+            form.set_vertex_attribute(key=key, name='x', value=float(x[i]))
+
+        plot_form(form).show()
 
         for c, qi in enumerate(list(q_.ravel())):
             u, v = i_uv[c]
@@ -417,6 +603,41 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
             print('Horizontal equillibrium checks failed')
 
         return None, None
+
+
+def equilibrium_matrix_3D(C, xyz, free, rtype='array', axis='xy'):
+
+    from scipy.sparse import vstack as svstack
+    from numpy import asarray
+
+    xyz = asarray(xyz, dtype=float)
+    C   = csr_matrix(C)
+    uvw  = C.dot(xyz)
+    U   = diags([uvw[:, 0].flatten()], [0])
+    V   = diags([uvw[:, 1].flatten()], [0])
+    W   = diags([uvw[:, 2].flatten()], [0])
+    Ct  = C.transpose()
+    Cti = Ct[free, :]
+    if axis == 'xy':
+        E   = svstack((Cti.dot(U), Cti.dot(V)))
+    if axis == 'xz':
+        E   = svstack((Cti.dot(U), Cti.dot(W)))
+    if axis == 'yz':
+        E   = svstack((Cti.dot(V), Cti.dot(W)))
+    return _return_matrix(E, rtype)
+
+def _return_matrix(M, rtype):
+    if rtype == 'list':
+        return M.toarray().tolist()
+    if rtype == 'array':
+        return M.toarray()
+    if rtype == 'csr':
+        return M.tocsr()
+    if rtype == 'csc':
+        return M.tocsc()
+    if rtype == 'coo':
+        return M.tocoo()
+    return M
 
 def _fint(qid, *args):
 
@@ -644,10 +865,9 @@ def fbf(qid, *args):
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
     z = z + t
-    z_s = z[free] - s[free]
+    z_s = abs(z[free] - s[free])
     f = Wfree.dot(z_s.transpose().dot(z_s))
     f = f[0,0]
-    # f = sum(Wfree.dot(z_s))
 
     if not tension:
             f += sum((q[q < 0] - 5)**4)
@@ -674,10 +894,9 @@ def fbf_(qid, *args):
 
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
-    z_s = z[free] - s[free]
+    z_s = abs(z[free] - s[free])
     f = z_s.transpose().dot(z_s)
     f = f[0,0]
-    # f = sum(Wfree.dot(z_s))
 
     if isnan(f):
         return 10**10
@@ -687,9 +906,39 @@ def fbf_(qid, *args):
 
 def fbf_dome_(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
-    qid, t = qid[:k], qid[-1]
+    q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args
+
+    qid, t = qid[:kz], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
+    exp = sqrt(x[free]**2 + y[free]**2 + z[free]**2)
+    f = sum(abs(exp - 10.0 * ones((len(free),)))) # 10 is the radius
+
+    if isnan(f):
+        return 10**10
+
+    else:
+        return f
+
+def fbf_dome_y(qid, *args):
+
+    q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args
+    
+    qid, t = qid[:len(indy)], qid[-1]
+    y, l2, q, q_ = ylq_from_qid(qid, args)
+    exp = sqrt(x[free]**2 + y[free]**2 + z[free]**2)
+    f = sum(abs(exp - 10.0 * ones((len(free),)))) # 10 is the radius
+
+    if isnan(f):
+        return 10**10
+
+    else:
+        return f
+
+def fbf_dome_x(qid, *args):
+
+    q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args
+    qid, t = qid[:len(indx)], qid[-1]
+    x, l2, q, q_ = xlq_from_qid(qid, args)
     exp = sqrt(x[free]**2 + y[free]**2 + z[free]**2)
     f = sum(abs(exp - 10.0 * ones((len(free),)))) # 10 is the radius
 
@@ -701,42 +950,41 @@ def fbf_dome_(qid, *args):
 
 def _fieq(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
-
-    q[ind, 0], t = qid[:k], qid[-1]
-    # z, l2, q, q_ = zlq_from_qid(qid, args) # Added
-    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
-    q_ = 1 * q
-    q[sym] *= 0
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
-
-    # Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
-    # Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
-    # Rh = Rx**2 + Ry**2
-    # Rm = max(sqrt(Rh))
-
-    Rm = 0.0
-    pen_lb = 0.0
-    pen_ub = 0.0
-
-    if lb_ind: # Added
-        if t is not 0.0:
-            lb = lb - t
-        z_lb    = z[lb_ind]
-        log_lb  = z_lb < lb
-        diff_lb = z_lb[log_lb] - lb[log_lb]
-        pen_lb  = sum(abs(diff_lb) + 2)**4
-
-    if ub_ind:
-        if t is not 0.0:
-            ub = ub - t
-        z_ub    = z[ub_ind]
-        log_ub  = z_ub > ub
-        diff_ub = z_ub[log_ub] - ub[log_ub]
-        pen_ub  = sum(abs(diff_ub) + 2)**4
+    q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args
+    
+    q[indz, 0], t = qid[:kz], qid[-1]
+    q[depz] = -Edinv_z.dot(p_z - Eiz.dot(q[indz]))
 
     if not tension:
-        return hstack([q.ravel() + 10**(-5), tol - Rm, -pen_lb, -pen_ub])
+        return hstack([q.ravel() + 10**(-5)])
+        # return hstack([Rm + pen_lb + pen_ub])
+    return [tol - Rm - pen_lb - pen_ub]
+
+def _fieqy(qid, *args):
+
+    q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args
+    
+    q[indy, 0], t = qid[:len(indy)], qid[-1]
+    # z, l2, q, q_ = zlq_from_qid(qid, args) # Added
+    depy = list(set(range(len(q))) - set(indy))
+    q[depy] = -Edinv_y.dot(p_y - Eiy.dot(q[indy]))
+
+    if not tension:
+        return hstack([q.ravel() + 10**(-5)])
+        # return hstack([Rm + pen_lb + pen_ub])
+    return [tol - Rm - pen_lb - pen_ub]
+
+def _fieqx(qid, *args):
+
+    q, indz, depz, Edinv_z, Eiz, C, Ct, Ci, Cit, Cf, U, V, p_z, px, py, pz, tol, z, free, fixed, planar, lxy, sym, tension, kz, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i, indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args
+    
+    q[indx, 0], t = qid[:len(indx)], qid[-1]
+    # z, l2, q, q_ = zlq_from_qid(qid, args) # Added
+    depx = list(set(range(len(q))) - set(indx))
+    q[depx] = -Edinv_x.dot(p_x - Eiy.dot(q[indx]))
+
+    if not tension:
+        return hstack([q.ravel() + 10**(-5)])
         # return hstack([Rm + pen_lb + pen_ub])
     return [tol - Rm - pen_lb - pen_ub]
 

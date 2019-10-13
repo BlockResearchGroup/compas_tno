@@ -90,16 +90,17 @@ if __name__ == "__main__":
     n_s = []
     lp_s = []
 
-    for i in range(5,6):
+    for i in range(2,9):
 
         print('\n\n------------------ Form ',str(i),'\n')
-        j = 1
+        j = 3
 
-        file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+ str(j) +'_0'+ str(i) +'_complete.json'
+        file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete_paper.json'
+        # file_complete = '/Users/mricardo/compas_dev/me/bestfit/Fix/discretize/0'+ str(j) +'_0'+ str(i) +'_complete.json'
         form = FormDiagram.from_json(file_complete)
-        overview_forces(form)
-        form = set_cross_vault_heights(form, set_heights=True)
-        plot_form(form, heights=True, show_q = False).show()
+        # overview_forces(form)
+        # form = set_cross_vault_heights(form)
+        # form.to_json(file_save)
         # plot_form(form).show()
         # form = z_from_form(form)
         # plot_form(form).show()
@@ -112,11 +113,17 @@ if __name__ == "__main__":
         # form, force = update_tna(form, delete_face=False)
         # plot_force(force, form, color_inds=False).show()
 
+        # plot_form(form, fix_width=False, max_width=5, show_q=False, simple=True).show()
+        form, force = update_tna(form, delete_face = True)
+        # force = ForceDiagram.from_formdiagram(form)
+        plot_force(force, form, color_inds=False).show()
+        # force.plot()
+
         # form = not_sym_load(form, 0.0, 5.0, 25)
 
-        viewer = MeshViewer()
-        viewer.mesh = form
-        viewer.show()
+        # viewer = MeshViewer()
+        # viewer.mesh = form
+        # viewer.show()
 
 
 

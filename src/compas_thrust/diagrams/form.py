@@ -43,6 +43,7 @@ __all__ = [
     'remove_feet',
     'energy',
     'loadpath',
+    'delete_boundary_edges',
     'overview_forces',
 ]
 
@@ -339,6 +340,15 @@ def loadpath(form):
 
     return lp
 
+def delete_boundary_edges(form):
+
+    bound = form.edges_on_boundary()
+    print(bound)
+
+    for u,v in bound:
+        form.delete_edge(u,v)
+
+    return form
 
 def overview_forces(form):
 

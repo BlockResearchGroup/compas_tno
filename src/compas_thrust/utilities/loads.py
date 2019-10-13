@@ -33,6 +33,10 @@ __email__     = 'mricardo@ethz.ch'
 __all__ = [
     'not_sym_load',
     'fill_load',
+    'set_cross_vault_loads',
+    'set_pavillion_vault_loads',
+    'set_oct_vault_loads',
+    'set_dome_loads',
 ]
 
 def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
@@ -82,3 +86,141 @@ def fill_load(form, t = 0.5, ro = 1.0, scale = 100):
 
     return form
 
+def set_cross_vault_loads(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.00, set_heights = False):
+
+    # WIP
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi <= y1/x1 * xi + tol and yi <= y1 - xi + tol: #Q1
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi >= y1/x1 * xi - tol and yi >= y1 - xi - tol: #Q3
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi <= y1/x1 * xi + tol and yi >= y1 - xi - tol: #Q2
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        elif yi >= y1/x1 * xi - tol and yi <= y1 - xi + tol: #Q4
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(z,2))
+
+    return form
+
+def set_pavillion_vault_loads(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.00, set_heights = False):
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi <= y1/x1 * xi + tol and yi <= y1 - xi + tol: #Q1
+            try:
+                z = math.sqrt((ry)**2 - (yi-ry)**2)
+            except:
+                z = 0
+        elif yi >= y1/x1 * xi - tol and yi >= y1 - xi - tol: #Q3
+            try:
+                z = math.sqrt((ry)**2 - (yi-ry)**2)
+            except:
+                z = 0
+        elif yi <= y1/x1 * xi + tol and yi >= y1 - xi - tol: #Q2
+            try:
+                z = math.sqrt((rx)**2 - (xi-rx)**2)
+            except:
+                z = 0
+        elif yi >= y1/x1 * xi - tol and yi <= y1 - xi + tol: #Q4
+            try:
+                z = math.sqrt((rx)**2 - (xi-rx)**2)
+            except:
+                z = 0
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(z,2))
+
+    return form
+
+def set_oct_vault_loads(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.01):
+
+    # WIP
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi < y1/x1*xi + tol and yi < y1 - x1 + tol: #Q1
+            z = math.sqrt= ((rx)**2 - (xi-rx)**2)
+        elif yi > y1/x1*xi - tol and yi > y1 - x1 - tol: #Q3
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi < y1/x1*xi + tol and yi > y1 - x1 - tol: #Q2
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        elif yi > y1/x1*xi - tol and yi < y1 - x1 + tol: #Q4
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=z)
+
+    return form
+
+def set_dome_loads(form, center = [0.0,0.0], radius = 10.0, thickness = None, tol = 0.00, set_heights = False, scale =100):
+
+    x0 = center[0]
+    y0 = center[1]
+
+    loads = deepcopy(form)
+
+    for key in loads.vertices():
+        xi, yi, _ = loads.vertex_coordinates(key)
+        z2 = + radius**2 - (xi - x0)**2 - (yi - y0)**2
+        if -0.01 <= z2 <= 0.0:
+            z2 = 0.0
+        try: 
+            z = math.sqrt(z2)
+        except:
+            print(xi,yi)
+            z=0
+        loads.set_vertex_attribute(key,'z',value=z)
+    
+    pzt = 0.0
+    for key in form.vertices():
+        pz = loads.vertex_area(key)
+        form.set_vertex_attribute(key,'pz',value=pz)
+        pzt += pz
+
+    print('Total_Load: {0:.2f}'.format(pzt))
+
+
+    if scale:
+        scl = scale/pzt
+        pzt = 0.0
+        for key in form.vertices():
+            form.vertex[key]['pz'] *= scl
+            pzt += form.vertex[key]['pz']
+
+    print('After Scaling Load: {0:.2f}'.format(pzt))
+
+    return form

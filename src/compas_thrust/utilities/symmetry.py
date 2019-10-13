@@ -37,6 +37,7 @@ __all__ = [
     'fix_boundaries_complete',
     'fix_mid_sym',
     'fix_mid_complete',
+    'unfix_mid_complete',
     'not_sym_load',
 ]
 
@@ -287,8 +288,6 @@ def replicate2(form, file, plot=None):
 
 def create_sym(form, keep_q = True):
 
-    plot_form(form).show()
-
     lines = []
     symmetry = []
     pins = []
@@ -360,8 +359,6 @@ def create_sym(form, keep_q = True):
 
     gkey_key = form_.gkey_key()
 
-    plot_form(form_).show()
-
     for i in pins:
         form_.set_vertex_attribute(gkey_key[i], 'is_fixed', value=True)
 
@@ -389,8 +386,6 @@ def create_sym(form, keep_q = True):
     for u, v in form_.edges_where({'is_symmetry': False}):
         qi = qs[geometric_key(form_.edge_midpoint(u,v))]
         form_.set_edge_attribute((u, v), name = 'q', value = qi)
-
-    plot_form(form_).show()
 
     return form_
 
@@ -481,9 +476,18 @@ def fix_boundaries_sym(form, plot = False):
 
 def fix_boundaries_complete(form, plot = False):
 
+    tol = 0.001
+    
     for key in form.vertices_on_boundary():
         form.set_vertex_attribute(key, 'is_fixed', True)
         form.set_vertex_attribute(key, 'z', 0.0)
+
+    if form.vertices_on_boundary() == []:
+        for key in form.vertices():
+            x, y, _ = form.vertex_coordinates(key)
+            if ( y > 10.0 - tol and y < 10.0 + tol ) or ( y > 0.0 - tol and y < 0.0 + tol ) or ( x > 10.0 - tol and x < 10.0 + tol ) or ( x > 0.0 - tol and x < 0.0 + tol ):
+                form.set_vertex_attribute(key, 'is_fixed', True)
+                form.set_vertex_attribute(key, 'z', 0.0)
 
     if plot:
         plot_form(form).show()
@@ -516,6 +520,24 @@ def fix_mid_complete(form, plot = False):
             form.set_vertex_attribute(key, 'z', 0.0)
         if ( (x > 10.0 - tol and x < 10.0 + tol) or  (x > 0.0 - tol and x < 0.0 + tol) ) and (y > 5.0 - tol and y < 5.0 + tol):
             form.set_vertex_attribute(key, 'is_fixed', True)
+            form.set_vertex_attribute(key, 'z', 0.0)
+
+    if plot:
+        plot_form(form, show_q=False, fix_width=True).show()
+
+    return form
+
+def unfix_mid_complete(form, plot = False):
+
+    tol = 0.001
+
+    for key in form.vertices_on_boundary():
+        x, y, _ = form.vertex_coordinates(key)
+        if ( (y > 10.0 - tol and y < 10.0 + tol) or  (y > 0.0 - tol and y < 0.0 + tol) ) and (x > 5.0 - tol and x < 5.0 + tol):
+            form.set_vertex_attribute(key, 'is_fixed', False)
+            form.set_vertex_attribute(key, 'z', 0.0)
+        if ( (x > 10.0 - tol and x < 10.0 + tol) or  (x > 0.0 - tol and x < 0.0 + tol) ) and (y > 5.0 - tol and y < 5.0 + tol):
+            form.set_vertex_attribute(key, 'is_fixed', False)
             form.set_vertex_attribute(key, 'z', 0.0)
 
     if plot:

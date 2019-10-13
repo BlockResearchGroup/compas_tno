@@ -11,6 +11,7 @@ from __future__ import absolute_import
 from .equilibrium import *
 from .grad_based import *
 from .ind_based import *
+from .mult_inds import *
 from .scale import *
 from .airy import *
 

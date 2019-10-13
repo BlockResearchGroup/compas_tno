@@ -23,17 +23,20 @@ from compas_viewers.meshviewer import MeshViewer
 
 if __name__ == "__main__":
 
-    file_complete = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_complete.json'
+    j = 4
+    i = 5
+    file_complete = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
     # file = '/Users/mricardo/compas_dev/me/loadpath/prototype/prot_complete.json'
-    file_scaled = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_scaled.json'
+    # file_scaled = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_scaled.json'
     # file_scaled = '/Users/mricardo/compas_dev/me/loadpath/prototype/prot_scaled.json'
-    file_sym = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_sym.json'
+    # file_sym = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_sym.json'
     # file_real = '/Users/mricardo/compas_dev/me/minmax/radial/mixed_05_sym.json'
 
     form = FormDiagram.from_json(file_complete)
+    print(form.number_of_edges())
     plot_form(form).show()
-    tmax = form.attributes['tmax']
-    print('TMAX',tmax)
+    # tmax = form.attributes['tmax']
+    # print('TMAX',tmax)
 
     # viewer = MeshViewer()
     # viewer.mesh = form
@@ -41,15 +44,15 @@ if __name__ == "__main__":
 
     # Scale to get an initial best-value for the objective with TNA
 
-    form = adapt_objective(form, zrange = [3.0,9.0], kmax = 500, objective = 'target', plot = True, delete_face = True)
-    form.to_json(file_scaled)
+    form = adapt_objective(form, zrange = [3.0,8.0], kmax = 500, method = 'fd', objective = 'loadpath', plot = False, delete_face = False)
+    # form.to_json(file_scaled)
     plot_form(form).show()
 
     # Prepare Symmetrical part for optimisation with independents
     
     form = remove_feet(form, plot = True)
     overview_forces(form)
-    form.to_json(file_scaled)
+    # form.to_json(file_scaled)
 
     # for key in form.vertices():
     #     print(form.get_vertex_attribute(key, 'target'))
@@ -61,15 +64,15 @@ if __name__ == "__main__":
 
     # If form has 3 axis of Symmetry
 
-    form = create_sym(form)
-    form.attributes['tmax'] = tmax
-    print('TMAX',form.attributes['tmax'])
-    form.to_json(file_sym)
-    plot_form(form).show()
-    overview_forces(form)
+    # form = create_sym(form)
+    # form.attributes['tmax'] = tmax
+    # print('TMAX',form.attributes['tmax'])
+    # form.to_json(file_sym)
+    # plot_form(form).show()
+    # overview_forces(form)
 
-    for key in form.vertices():
-        print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
+    # for key in form.vertices():
+    #     print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
 
 
     # Viewer Complete
@@ -105,12 +108,12 @@ if __name__ == "__main__":
 
     #Replicate
 
-    form_ = replicate(form, file_complete, plot = True)
+    # form_ = replicate(form, file_complete, plot = True)
     # form_ = replicate2(form, file)
-    form_.to_json(file_complete)
+    # form_.to_json(file_complete)
 
     # Viewer
 
-    viewer = MeshViewer()
-    viewer.mesh = form_
-    viewer.show()
+    # viewer = MeshViewer()
+    # viewer.mesh = form_
+    # viewer.show()

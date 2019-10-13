@@ -11,15 +11,16 @@ import rhinoscriptsyntax as rs
 
 # jsonpath = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints.json'
 # jsonpath = '//Users/mricardo/compas_dev/me/bestfit/dome/dome_ortho.json'
+j = 4
 
-
-for i in range[(2,9)]:
+for i in [1]:
     # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
-    jsonpath = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
+    # jsonpath = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
+    jsonpath = '/Users/mricardo/compas_dev/me/freeform/stereodome/form_simple.json'
 
     # Form
 
-    Lines_txt = '0' + str(j) + '_0' + str(i)   #'Lines' #_complete
+    Lines_txt = 'Lines' #0' + str(j) + '_0' + str(i)   #'Lines' #_complete
     Symmetry_txt = 'Sym' #_complete
     Pins_txt = 'Pins' #_complete
     Dots_txt = 'Dots' #_complete
@@ -34,7 +35,7 @@ for i in range[(2,9)]:
 
     guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Symmetry_txt)
     lines = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids if rs.IsCurve(i)]
-    form = FormDiagram.from_lines(lines, delete_boundary_face=True) # AAAALWAYS CHECK IT
+    form = FormDiagram.from_lines(lines, delete_boundary_face=True) # AAAALWAYS CHECK IT if SYM than NO DELETE B>FACE
 
     form.update_default_vertex_attributes({'is_roller': False})
     form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
@@ -43,9 +44,9 @@ for i in range[(2,9)]:
 
     gkey_key = form.gkey_key()
 
-    Loads3d = False # Change
-    lb_ub = False # Change
-    target = False # Change
+    Loads3d = True # Change
+    lb_ub = True # Change
+    target = True # Change
     scale = False
     rollers = False
     writepz = False
@@ -75,9 +76,6 @@ for i in range[(2,9)]:
     # artist = NetworkArtist(form, layer=dots_3D)
     # artist.clear_layer()
 
-    loads = FormDiagram.from_lines(lines, delete_boundary_face=True)
-    pzt = 0
-
     # Openings - if Any
 
     if openings:
@@ -91,6 +89,10 @@ for i in range[(2,9)]:
                 loads.delete_face(key)
                 print('Deleted area of face {0}'.format(key))
                 break
+
+    
+    loads = FormDiagram.from_lines(lines, delete_boundary_face=True)
+    pzt = 0
 
     for key in form.vertices():
         form.vertex[key]['pz'] = loads.vertex_area(key=key)
@@ -115,7 +117,7 @@ for i in range[(2,9)]:
                 print([b[0], b[1]])
                 print(form.vertex_coordinates(key))
 
-    # Joints if desired
+    # Joints - if Any
 
     if joints:
         from compas.geometry import is_point_on_segment
@@ -132,26 +134,6 @@ for i in range[(2,9)]:
                     joints_list.append([[sp.X,sp.Y,sp.Z],[ep.X,ep.Y,ep.Z],(u,v)])
         form.attributes['joints'] = joints_list
         print(joints_list)
-
-
-    if Loads3d == True:
-    
-        for i in rs.ObjectsByLayer(target_layer):
-            point_target = rs.PointCoordinates(i)
-            point_ground = [point_target[0],point_target[1],0.0]
-            gkey = geometric_key(point_ground)
-            z_target = point_target[2]
-            loads.set_vertex_attribute(gkey_key[gkey], 'z', z_target)
-        
-        pvt = 0
-        for key in form.vertices():
-                pz = loads.vertex_area(key=key)
-                form.vertex[key]['pz'] = pz
-                rs.CurrentLayer(dots_3D)
-                rs.AddTextDot('{0:.2f}'.format(pz), loads.vertex_coordinates(key))
-                pvt += pz
-
-        print('3D load - pzt = {0}'.format(pvt))
 
     # Constraints
 
@@ -180,15 +162,77 @@ for i in range[(2,9)]:
 
     if target == True:
 
-        for i in rs.ObjectsByLayer(target_layer):
-            point_target = rs.PointCoordinates(i)
-            point_ground = [point_target[0],point_target[1],0.0]
-            gkey = geometric_key(point_ground)
-            z_target = point_target[2]
-            form.set_vertex_attribute(gkey_key[gkey], 'target', z_target)
-            targets += 1
+        # for key in rs.ObjectsByLayer(target_layer):
+        #     point_target = rs.PointCoordinates(i)
+        #     point_ground = [point_target[0],point_target[1],0.0]
+        #     gkey = geometric_key(point_ground)
+        #     z_target = point_target[2]
+        #     form.set_vertex_attribute(gkey_key[gkey], 'target', z_target)
+        #     targets += 1
+
+        for key in form.vertices():
+            try:
+                lb = form.get_vertex_attribute(key, 'lb')
+                ub = form.get_vertex_attribute(key, 'ub')
+                if ub is not None and lb is not None:
+                    z_target = (ub+lb)/2
+                    form.set_vertex_attribute(key, 'target', z_target)
+                    targets += 1
+            except:
+                print('Key no ub-ub:', key)
+                form.set_vertex_attribute(key, 'target', 0.0)
 
         print('Got {0} lb contraints {1} ub and {2} target constraints'.format(lb_constraints,ub_constraints,targets))
+
+    loads = FormDiagram.from_lines(lines, delete_boundary_face=True)
+    pzt = 0
+
+    if Loads3d == True:
+    
+        # for i in rs.ObjectsByLayer(target_layer):
+        #     point_target = rs.PointCoordinates(i)
+        #     point_ground = [point_target[0],point_target[1],0.0]
+        #     gkey = geometric_key(point_ground)
+        #     z_target = point_target[2]
+        #     loads.set_vertex_attribute(gkey_key[gkey], 'z', z_target)
+
+        # for i in rs.ObjectsByLayer(target_layer):
+        #     point_target = rs.PointCoordinates(i)
+        #     point_ground = [point_target[0],point_target[1],0.0]
+        #     gkey = geometric_key(point_ground)
+        #     z_target = point_target[2]
+        #     loads.set_vertex_attribute(gkey_key[gkey], 'z', z_target)
+        
+        for key in loads.vertices():
+            try:
+                z_target = form.get_vertex_attribute(key, 'target')
+                loads.set_vertex_attribute(key, 'z', z_target)
+            except:
+                print('Key no target:', key)
+
+        rs.CurrentLayer(dots_3D)
+
+        for u, v in loads.edges():
+            sp = loads.vertex_coordinates(u)
+            ep = loads.vertex_coordinates(v)
+            id = rs.AddLine(sp, ep)
+        
+        pvt = 0
+        for key in form.vertices():
+            print(key)
+            pz = loads.vertex_area(key=key)
+            print(pz)
+            form.vertex[key]['pz'] = pz
+            rs.AddTextDot('{0:.2f}'.format(pz), loads.vertex_coordinates(key))
+            # pvt += pz
+        print('3D load - pzt = {0}'.format(pvt))
+
+    # Draw loads
+
+    for u, v in loads.edges():
+        sp = loads.vertex_coordinates(u)
+        ep = loads.vertex_coordinates(v)
+        id = rs.AddLine(sp, ep)
 
     # Symmetry
 

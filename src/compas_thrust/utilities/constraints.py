@@ -27,6 +27,7 @@ __email__     = 'mricardo@ethz.ch'
 
 __all__ = [
     'check_constraints',
+    'distance_target',
     'replicate_contraints',
     'interp_surf',
     'null_edges',
@@ -34,6 +35,7 @@ __all__ = [
     'set_cross_vault_heights',
     'set_pavillion_vault_heights',
     'set_oct_vault_heights',
+    'set_dome_heights',
 ]
 
 
@@ -86,6 +88,27 @@ def check_constraints(form, show=False, lb_show=False, ub_show=False):
 
 
     return penalty
+
+def distance_target(form, method='least-squares'):
+
+    dist = 0
+
+    if method == 'least-squares':
+
+        for key in form.vertices():
+            _, _, z = form.vertex_coordinates(key)
+            targ = form.get_vertex_attribute(key, 'target')
+            dist += (z - targ) ** 2
+
+    if method == 'volume':
+
+        for key in form.vertices():
+            _, _, z = form.vertex_coordinates(key)
+            targ = form.get_vertex_attribute(key, 'target')
+            weight = form.get_vertex_attribute(key, 'weight')
+            dist += abs(z - targ)*weight
+
+    return dist
 
 def replicate_contraints(file, file_constraint):
 
@@ -172,7 +195,7 @@ def set_height_constraint(form, zmax = 1.0):
 
     return form
 
-def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.00, set_heights = False):
+def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], weights = False, thickness = None, tol = 0.00, set_heights = False):
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -196,6 +219,8 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness =
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
         form.set_vertex_attribute(key,'target',value=z)
+        if weights:
+            form.set_vertex_attribute(key,name='weight',value = form.get_vertex_attribute(key,'pz'))
         if set_heights:
             form.set_vertex_attribute(key,'z',value=round(z,2))
 
@@ -255,7 +280,7 @@ def set_oct_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = N
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
         if yi < y1/x1*xi + tol and yi < y1 - x1 + tol: #Q1
-            z = math.sqrt((rx)**2 - (xi-rx)**2)
+            z = math.sqrt= ((rx)**2 - (xi-rx)**2)
         elif yi > y1/x1*xi - tol and yi > y1 - x1 - tol: #Q3
             z = math.sqrt((rx)**2 - (xi-rx)**2)
         elif yi < y1/x1*xi + tol and yi > y1 - x1 - tol: #Q2
@@ -266,5 +291,26 @@ def set_oct_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = N
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
         form.set_vertex_attribute(key,'target',value=z)
+
+    return form
+
+def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, tol = 0.00, set_heights = False):
+
+    x0 = center[0]
+    y0 = center[1]
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        z2 = + radius**2 - (xi - x0)**2 - (yi - y0)**2
+        if -0.01 <= z2 <= 0.0:
+            z2 = 0.0
+        try: 
+            z = math.sqrt(z2)
+        except:
+            print(xi,yi)
+            z=0
+        form.set_vertex_attribute(key,'target',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(z,2))
 
     return form
