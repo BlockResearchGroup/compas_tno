@@ -15,7 +15,7 @@ for i in range(2,8):
     fnm = '/Users/mricardo/compas_dev/me/loadpath/midsupport/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
     fnm_base = '/Users/mricardo/compas_dev/me/loadpath/midsupport/discretize/0'+str(j)+'_08_complete.json'
     
-    form = FormDiagram.from_json(fnm_base)
+    form = FormDiagram.from_json(fnm)
     vertices = [form.vertex_coordinates(key) for key in form.vertices()]
     faces = [form.face[key] for key in form.faces()]
     mesh = rs.AddMesh(vertices,faces)

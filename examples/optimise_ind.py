@@ -31,31 +31,33 @@ if __name__ == "__main__":
 
 
     # file = '/Users/mricardo/compas_dev/me/minmax/radial/01_05_sym.json'
-    file = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_sym.json'
-    file_save = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_calc.json'
-    file_complete = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_complete.json'
+    file = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01_lp.json'
+    # file_save = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_calc.json'
+    # file_complete = '/Users/mricardo/compas_dev/me/minmax/fan/fill_01_05_complete.json'
+
+    # file = '/Users/mricardo/compas_dev/me/convex/4bars/diagram.json'
 
     form = FormDiagram.from_json(file)
-    check_constraints(form, show=True, lb_show=True, ub_show=True)
+    # check_constraints(form, show=True, lb_show=True, ub_show=True)
 
-    form = _form(form)
+    # form = _form(form)
 
     # for key in form.vertices():
     #     print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
 
     # Initial parameters
 
-    tmax = 3.25
+    tmax = None
     bounds_width = 5.0
     use_bounds = False
-    qmax = 60
+    qmax = 100
     indset = None
 
-    plot_form(form,radius=0.1, heights=True, show_q=False).show()
+    # plot_form(form,radius=0.1, heights=True, show_q=False).show()
 
     # # Optimisation
 
-    fopt, qopt = optimise_single(form,  qmax=qmax, solver='devo',
+    fopt, qopt = optimise_single(form,  qmax=qmax, solver=None,
                                         polish='slsqp',
                                         population=800,
                                         generations=500,
@@ -66,7 +68,7 @@ if __name__ == "__main__":
                                         tension=False,
                                         use_bounds = use_bounds,
                                         bounds_width = bounds_width,
-                                        objective='min',
+                                        objective='loadpath',
                                         indset=indset,
                                         buttress = False)
 
@@ -78,20 +80,20 @@ if __name__ == "__main__":
         overview_forces(form)
         reactions(form, plot=False)
         print('Optimisation completed')
-        form.to_json(file_save)
+        # form.to_json(file_save)
     
     # Replicate-sym and Print Results
 
-    print('Horizontal checks: {0}'.format(horizontal_check(form)))
+    # print('Horizontal checks: {0}'.format(horizontal_check(form)))
     overview_forces(form)
 
-    form_ = replicate(form, file_complete)
-    reactions(form_)
-    check_constraints(form_, show=True)
+    # form_ = replicate(form, file_complete)
+    # reactions(form_)
+    # check_constraints(form_, show=True)
     # form.to_json(file)
     # oveview_forces(form_)
-    plot_form(form_)
+    plot_form(form)
 
     viewer = MeshViewer()
-    viewer.mesh = form_
+    viewer.mesh = form
     viewer.show()

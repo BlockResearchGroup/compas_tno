@@ -150,7 +150,7 @@ def zlq_from_qid(qid, args):
     q[sym] *= 0
 
     if not planar:
-        z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
+        z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free]) # From original equation CiQCi*(zi) = pz - CiQCf*(zf) assuming zf = 0 -> Meaning: Fixed nodes in z = o
     l2 = lh + C.dot(z)**2
 
     return z, l2, q, q_

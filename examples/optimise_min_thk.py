@@ -15,6 +15,7 @@ from compas_thrust.utilities.constraints import set_dome_heights
 from compas_thrust.utilities.constraints import distance_target
 from compas_thrust.utilities.constraints import set_cross_vault_heights
 from compas_thrust.utilities.constraints import set_pavillion_vault_heights
+from compas_thrust.utilities.constraints import circular_heights
 
 from numpy.random import rand
 from compas.utilities import geometric_key
@@ -61,9 +62,9 @@ if __name__ == "__main__":
     ns = []
     obj = []
 
-    for j in [2]: # j = 1
+    for j in [1]: # j = 1
         if j == 0 or j == 1:
-            shapes = [11] #[2,4,5,7,8,10,11]
+            shapes = [5] # [2,4,5,7,8,10,11]
         else:
             shapes = [5] #range(2,9)
         # ['B1''B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']
@@ -73,21 +74,28 @@ if __name__ == "__main__":
 
             start_time = time.time()
 
-            # Files for calculating the square very fast
-            # file = '/Users/mricardo/compas_dev/me/loadpath/Corner/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
-            # file_save = '/Users/mricardo/compas_dev/me/loadpath/Corner/discretize/0'+str(j)+'_0'+str(i)+'_fit_sixpartite.json'
-            file_complete = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0' + str(j) + '_0' + str(i) + '_complete_paper.json'
-
-            # file_save = '/Users/mricardo/compas_dev/me/loadpath/Corner/topology/'+i+'_lp.json'
-            # file_complete = '/Users/mricardo/compas_dev/me/loadpath/Corner/topology/'+i+'_complete.json'
+            file_complete = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01_lp.json'
+            file_save = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/minthk/2DArch_Le=2,7_t=20.json'
+            # file_complete = '/Users/mricardo/compas_dev/me/convex/4bars/diagram.json'
+            # file_complete = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0' + str(j) + '_0' + str(i) + '_complete_paper.json'
 
             form = FormDiagram.from_json(file_complete)
+            # form = _form(form, keep_q=False)
+            # form.set_edges_attribute('q', value=3.0)
+            # form.set_vertices_attribute('ub', value = 1.0)
+            # form.set_vertices_attribute('lb', value = None)
             # plot_form(form, show_q=False, simple=True, max_width=3.0).show()   
             # form = set_pavillion_vault_heights(form, ub_lb=False, thk=2.0, set_heights=True)
+            form = circular_heights(form, thk=0.75)
+            check_constraints(form, show= True)
+            # for key in form.vertices():
+            #     if form.get_vertex_attribute(key, 'is_fixed') == False:
+            #         form.set_vertex_attribute(key, 'ub', value = 1.0)
+            #         form.set_vertex_attribute(key, 'lb', value = 0.5)
+            #         print(form.get_vertex_attribute(key,'ub'),form.get_vertex_attribute(key,'lb'))
             # form = fix_boundaries_complete(form)
             # form = fix_mid_complete(form)
             # form.to_json(file_fixed)
-            plot_form(form, show_q=False, max_width=2, simple=True, radius=0.02).show()
             # print(form.vertices_on_boundary())
 
             # viewer = MeshViewer()
@@ -139,54 +147,29 @@ if __name__ == "__main__":
             
             # Initial parameters
 
-            tmax = None # 5.0 # form.attributes['tmax']
-            bounds_width = 5.0
+            tmax = 0.05  #form.attributes['tmax'] # 5.0 # form.attributes['tmax']
+            bounds_width = None
             use_bounds = False
-            qmax = 100.0
+            qmax = 500.0
             indset = None
             nsol = 5
             sol = 0
             sols = []
             forms = []
             tol = 0.001
-            ni = []
-            # indset = '0.000,1.563,0.000,2.813,2.461,0.000,8.437,1.563,0.000,5.000,2.187,0.000,10.000,7.813,0.000,10.000,1.563,0.000,7.812,1.367,0.000,7.812,7.812,0.000,8.945,2.812,0.000,1.914,7.813,0.000,2.188,7.812,0.000,8.242,7.188,0.000,1.055,2.812,0.000,7.812,0.820,0.000,0.547,2.188,0.000,5.312,0.000,0.000,4.688,0.000,0.000,3.438,7.852,0.000,8.984,4.063,0.000,4.063,6.445,0.000,9.062,9.648,0.000,0.938,9.297,0.000,0.703,0.938,0.000,5.937,5.000,0.000,2.539,5.937,0.000,0.430,6.562,0.000,5.312,9.414,0.000,5.000,9.063,0.000,8.437,0.781,0.000,5.938,10.000,0.000,8.594,2.813,0.000,0.000,5.312,0.000,7.813,0.273,0.000,4.688,8.828,0.000,9.180,0.938,0.000,6.484,5.312,0.000,1.406,7.187,0.000,4.062,3.047,0.000,9.727,7.813,0.000,6.562,8.281,0.000,8.437,0.391,0.000,2.813,10.000,0.000'
-            # q = array([attr['q'] for u, v, attr in form.edges(True)])
-            # ind = []
-            # for u, v in form.edges():
-            #     if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
-            #         ind.append(uv_i[(u, v)])
-            # print(ind)
-            # test = rand(len(ind)) * qmax
-            # q[ind] = test
 
-            # print( hdsiodh)
+            # print('t',tmax)
 
-            # plot_form(form,radius=0.04).show()
+            # plot_form(form).show()
 
             # Optimisation Routine - Many trials and Many solutions
 
             fopt = 100
 
             for k in range(5):
-                # form = fill_load(form)
-                form = _form(form, keep_q=True)
-                print('Optimisation trial {0}.'.format(k))
-                if sol == 0 and k % 4 == 0 and k > 0:
-                    form = _form(form, keep_q=False)
-                    print('Shuffle the form')
-                if k > 0 and k % 5 is not 0:
-                    qi_max  = max(array(q))
-                    if qi_max > 0.95 * qmax:
-                        qmax = qmax * 1.25
-                        print('upgrate on qmax')
-                    else:
-                        bounds_width = bounds_width/k
-                        use_bounds = False
+                # form = _form(form, keep_q=True)
                 fopt, qopt = optimise_single(form, qmax=qmax, solver=None,
                                                 polish='slsqp',
-                                                population=600,
-                                                generations=200,
                                                 printout=100,
                                                 tol=0.01,
                                                 t = tmax,
@@ -194,14 +177,13 @@ if __name__ == "__main__":
                                                 tension=False,
                                                 use_bounds = use_bounds,
                                                 bounds_width = bounds_width,
-                                                objective='loadpath',
+                                                objective='min',
                                                 indset=indset,
-                                                buttress=False)
-                # plot_form(form, show_q=False).show()
+                                                buttress=True)
                 q = array([attr['q'] for u, v, attr in form.edges(True)])
                 print('Result iteration {0}: {1}'.format(k,fopt))
                 qmin  = min(q)
-                if qmin > -0.1 and fopt is not None and fopt < 1000.0 and check_constraints(form, show= False) < 1.0:
+                if qmin > -0.1 and fopt is not None and check_constraints(form, show= False) < 1.0:
                     if sols == []:
                         end_time = time.time() # take time of first solution only
                     forms.append(deepcopy(form))
@@ -224,38 +206,18 @@ if __name__ == "__main__":
                 obj.append(sols[n])
                 # reactions(form)
                 # print('Horizontal checks: {0}'.format(horizontal_check(form)))
-                # overview_forces(form)
+                overview_forces(form)
 
                 time_i = end_time - start_time
                 ts.append(time_i)
                 print('Times elapsed: {0:.3f} sec'.format(time_i))
                 print('Number of edges: {0}'.format(form.number_of_edges()))
                 ns.append(form.number_of_edges())
-                plot_form(form).show()
-                form.to_json(file_save)
+                # plot_form(form).show()
+                # form.to_json(file_save)
 
             else:
                 print('\n\nFailed on', i)
-
-            # form_old = FormDiagram.from_json(file_save)
-            # if form.attributes['loadpath'] < form_old.attributes['loadpath']:
-            #     form.to_json(file_save)
-            # else:
-            #     print('The optimisation before: {0} was better than now: {1}'.format(form_old.attributes['loadpath'],form.attributes['loadpath']))
-            # print(lps)
-            # print(obj)
-            # print(ts)
-            # print(ns)
-
-            # Replicate and Save Complete
-
-            # form = FormDiagram.from_json(file_complete)
-            # form_ = replicate(form, file_complete, plot=True)
-            # reactions(form_)
-            # overview_forces(form_)
-            # check_constraints(form_)
-            # form_.to_json(file_save)
-            # form = form_
 
     print('Final LP, TIMES, N_EDGES, OBJ_FUNC')
     print(lps)

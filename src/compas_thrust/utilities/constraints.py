@@ -36,6 +36,7 @@ __all__ = [
     'set_pavillion_vault_heights',
     'set_oct_vault_heights',
     'set_dome_heights',
+    'circular_heights'
 ]
 
 
@@ -123,11 +124,15 @@ def replicate_contraints(file, file_constraint):
 
     for key in form_.vertices():
         target = form_.vertex[key].get('target', 0.0)
+        lb = form_.vertex[key].get('lb', 0.0)
+        ub = form_.vertex[key].get('ub', 0.0)
         if target < 10**(-4):
             target = 0.00
         gkey = geometric_key([form_.vertex_coordinates(key)[0],form_.vertex_coordinates(key)[1], 0.0])
         form.set_vertex_attribute(gkey_planar[gkey], 'target', target)
-
+        form.set_vertex_attribute(gkey_planar[gkey], 'lb', lb)
+        form.set_vertex_attribute(gkey_planar[gkey], 'ub', ub)
+        
     return form
 
 def interp_surf(form):
@@ -195,7 +200,7 @@ def set_height_constraint(form, zmax = 1.0):
 
     return form
 
-def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], weights = False, thickness = None, tol = 0.00, set_heights = False):
+def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False, weights = False, thk = None, tol = 0.00, set_heights = False):
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -224,9 +229,70 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], weights = F
         if set_heights:
             form.set_vertex_attribute(key,'z',value=round(z,2))
 
+    if ub_lb:
+        form = set_cross_vault_heights_ub(form, xy_span = xy_span, thk = thk)
+        form = set_cross_vault_heights_lb(form, xy_span = xy_span, thk = thk)
+
     return form
 
-def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.00, set_heights = False):
+def set_cross_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.000):
+
+    y1 = xy_span[1][1] + thk/2
+    y0 = xy_span[1][0] - thk/2
+    x1 = xy_span[0][1] + thk/2
+    x0 = xy_span[0][0] - thk/2
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0] + thk)/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
+            z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
+        elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q3
+            z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
+        elif (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q2
+            z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
+        elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q4
+            z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key, 'ub', value = z)
+
+    return form
+
+def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.0):
+
+    y1 = xy_span[1][1] - thk/2
+    y0 = xy_span[1][0] + thk/2
+    x1 = xy_span[0][1] - thk/2
+    x0 = xy_span[0][0] + thk/2
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0] - thk)/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if ((yi) > y1 and ((xi) > x1 or (xi) < x0 )) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
+            z = 0.0
+        else:
+            if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
+                z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
+            elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q3
+                z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
+            elif (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q2
+                z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
+            elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q4
+                z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
+            else:
+                print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+                z = 0.0
+        form.set_vertex_attribute(key,'lb',value=z)
+
+    return form
+
+def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False):
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -265,7 +331,71 @@ def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickne
         if set_heights:
             form.set_vertex_attribute(key,'z',value=round(z,2))
 
+    if ub_lb:
+        form = set_pavillion_vault_heights_ub(form, xy_span = xy_span, thk = thk)
+        form = set_pavillion_vault_heights_lb(form, xy_span = xy_span, thk = thk)
+
     return form
+
+def set_pavillion_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False):
+
+    y1 = xy_span[1][1] + thk/2
+    y0 = xy_span[1][0] - thk/2
+    x1 = xy_span[0][1] + thk/2
+    x0 = xy_span[0][0] - thk/2
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0] + thk)/2.0
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
+            z = math.sqrt((ry)**2 - ((yi - y0)-ry)**2)
+        elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q3
+            z = math.sqrt((ry)**2 - ((yi - y0)-ry)**2)
+        elif (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q2
+            z = math.sqrt((rx)**2 - ((xi - x0)-rx)**2)
+        elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q4
+            z = math.sqrt((rx)**2 - ((xi - x0)-rx)**2)
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'ub',value=z)
+        # form.set_vertex_attribute(key,'z',value=z)
+
+    return form
+
+def set_pavillion_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False):
+
+    y1 = xy_span[1][1] - thk/2
+    y0 = xy_span[1][0] + thk/2
+    x1 = xy_span[0][1] - thk/2
+    x0 = xy_span[0][0] + thk/2
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0] - thk)/2.0
+    
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if (yi) > y1 or (xi) > x1 or (xi) < x0 or (yi) < y0:
+            z = 0.0
+        else:
+            if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
+                z = math.sqrt(abs((ry)**2 - ((yi - y0)-ry)**2))
+            elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q3
+                z = math.sqrt(abs((ry)**2 - ((yi - y0)-ry)**2))
+            elif (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q2
+                z = math.sqrt(abs((rx)**2 - ((xi - x0)-rx)**2))
+            elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q4
+                z = math.sqrt(abs((rx)**2 - ((xi - x0)-rx)**2))
+            else:
+                print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+                z = 0.0
+        form.set_vertex_attribute(key,'lb',value=z)
+        form.set_vertex_attribute(key,'z',value=z)
+
+    return form
+
 
 def set_oct_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = None, tol = 0.01):
 
@@ -312,5 +442,65 @@ def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, 
         form.set_vertex_attribute(key,'target',value=z)
         if set_heights:
             form.set_vertex_attribute(key,'z',value=round(z,2))
+
+    return form
+
+
+def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, tol = 0.00, set_heights = False):
+
+    x0 = center[0]
+    y0 = center[1]
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        z2 = + radius**2 - (xi - x0)**2 - (yi - y0)**2
+        if -0.01 <= z2 <= 0.0:
+            z2 = 0.0
+        try: 
+            z = math.sqrt(z2)
+        except:
+            print(xi,yi)
+            z=0
+        form.set_vertex_attribute(key,'target',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(z,2))
+
+    return form
+
+def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
+
+    if x0 == None or xf == None:
+        x = []
+        for key in form.vertices():
+            x.append(form.vertex_coordinates(key)[0])
+        x0 = min(x)
+        xf = max(x)
+    
+    xc = (xf+x0)/2
+    r = xf - xc
+    ri = r - thk/2
+    re = r + thk/2
+    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / Thickness: {2:.2} m / Ratio t/Ri: {3:.2} m'.format(2*xc, 2*ri, thk, (thk/ri)))
+
+    for key in form.vertices():
+        x, _, _ = form.vertex_coordinates(key)
+        zt = math.sqrt(r**2 - (x-xc)**2)
+        ze = math.sqrt(re**2 - (x-xc)**2) - t
+        form.set_vertex_attribute(key,'target',value=zt)
+        zi2 = ri**2 - (x-xc)**2
+        if zi2 < 0:
+            zi = 0 - t
+        else:
+            zi = math.sqrt(zi2) - t
+        if form.get_vertex_attribute(key,'is_fixed') == True:
+            form.set_vertex_attribute(key,'lb',value=None)
+            form.set_vertex_attribute(key,'ub',value=None)
+        else:
+            form.set_vertex_attribute(key,'lb',value=zi)
+            form.set_vertex_attribute(key,'ub',value=ze)
+        # form.set_vertex_attribute(key,'z',value=ze)
+        if x == x0:
+            form.attributes['tmax'] = ze
+        
 
     return form

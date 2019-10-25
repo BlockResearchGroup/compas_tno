@@ -18,7 +18,7 @@ __all__ = [
     'plot_dual',
 ]
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False):
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None):
 
     """ Extended plotting of a FormDiagram
 
@@ -99,6 +99,8 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             radius=radius)
 
     plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
 
     return plotter
 

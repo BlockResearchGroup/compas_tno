@@ -378,5 +378,6 @@ def overview_forces(form):
     print('z: {0:.3f} : {1:.3f}'.format(float(min(z)), float(max(z))))
     print('pz: {0:.3f}'.format(pz))
     print('lp: {0:.3f}'.format(lp))
+    form.attributes['loadpath'] = lp
 
     return

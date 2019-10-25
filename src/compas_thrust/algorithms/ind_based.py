@@ -149,6 +149,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
     ub = array(ub)
     lb.shape = (len(lb),1)
     ub.shape = (len(ub),1)
+    # print('ub,lb', ub, lb)
 
     # Co-ordinates and loads
 
@@ -175,7 +176,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         w[i] = vertex.get('weight', 1.0)
 
     Wfree = diags(w[free].flatten())
-    # print('Max Z is', max(z))
+    print('Max Z is', max(z))
     xy = xyz[:, :2]
 
     # Temporary anchors location
@@ -274,6 +275,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         bounds = [[qmin, qmax]] * k
     if t:
         bounds.append([-t,t])
+        # t = 0.0
     
 
     # Horizontal checks
@@ -288,8 +290,6 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
             Rx = Cit.dot(U * _q.ravel()) - px[free].ravel()
             Ry = Cit.dot(V * _q.ravel()) - py[free].ravel()
             R  = max(sqrt(Rx**2 + Ry**2))
-            # Rz = Cit.dot(W * _q.ravel()) - pz[free].ravel()
-            # print(sum(Rz))
             if R > tol:
                 checked = False
                 break
@@ -299,7 +299,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
         # Define Objective
 
         if objective=='loadpath':
-            fdevo, fslsqp, fieq = _fint, _fint_, _fieq
+            fdevo, fslsqp, fieq = _fint, _fint_, _fieq_bounds
         if objective=='target':
             fdevo, fslsqp, fieq = fbf, fbf_, _fieq
         if objective == 'min':
@@ -323,10 +323,12 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
             fopt = fslsqp(qopt,*args)
             if printout:
                 print('Gradient Method: Initial Value: {0}'.format(fopt))
+                print('Initial step', qopt)
 
         if polish == 'slsqp':
             fopt_, qopt_ = _slsqp(fslsqp, qopt, bounds, printout, fieq, args)
-
+            print(qopt_)
+            print(bounds)
             if t:
                 qopt_, t_slsqp = qopt_[:k], qopt_[-1]
                 qopt, t = qopt[:k], qopt[-1]
@@ -359,23 +361,6 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
             u, v = i_uv[c]
             form.set_edge_attribute((u, v), 'q', float(qi))
 
-        # Relax
-
-        # q    = array([attr['q'] for u, v, attr in form.edges(True)])
-        # Q    = diags(q)
-        # CitQ = Cit.dot(Q)
-        # Di   = CitQ.dot(Ci)
-        # Df   = CitQ.dot(Cf)
-        # bx   = px - Df.dot(x[fixed])
-        # by   = py - Df.dot(y[fixed])
-        # # bz   = pz - Df.dot(z[fixed])
-        # x[free, 0] = spsolve(Di, bx)
-        # y[free, 0] = spsolve(Di, by)
-        # # z[free, 0] = spsolve(Di, bz)
-
-        # for i in range(n):
-        #     form.set_vertex_attributes(key=i_k[i], names='xyz', values=[float(j) for j in [x[i], y[i], z[i]]])
-        
         lp = 0
         for u, v in form.edges():
             if form.get_edge_attribute((u, v), 'is_symmetry') is False:
@@ -405,8 +390,7 @@ def optimise_single(form, solver='devo', polish='slsqp', qmin=1e-6, qmax=10, pop
             print('qid range : {0:.3f} : {1:.3f}'.format(min(qopt), max(qopt)))
             print('q range   : {0:.3f} : {1:.3f}'.format(min(q), max(q)))
             print('fopt      : {0:.3f}'.format(fopt))
-            if t:
-                print('t      : {0:.3f}'.format(t))
+            print('t      : ', t)
             print('-' * 50 + '\n')
 
         return fopt, qopt
@@ -446,8 +430,12 @@ def _fint(qid, *args):
 def fmin(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
-
-    qid, t = qid[:k], qid[-1]
+    
+    if len(qid) > k:
+        qid, t = qid[:k], qid[-1]
+        # print('t is', t)
+    else:
+        t = 0.0
     z, l2, q, q_ = zlq_from_qid(qid, args)
     CfQ = Cf.transpose().dot(diags(q_.flatten()))
     f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
@@ -516,8 +504,8 @@ def fmin(qid, *args):
 
 def _fmin(qid, *args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints = args
-
+    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
+    
     qid, t = qid[:k], qid[-1]
     z, l2, q, q_ = zlq_from_qid(qid, args)
     CfQ = Cf.transpose().dot(diags(q.flatten()))
@@ -531,7 +519,11 @@ def _fmin(qid, *args):
 def fbounds(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
-    qid, t = qid[:k], qid[-1]
+    if len(qid) > k:
+        qid, t = qid[:k], qid[-1]
+    else:
+        print('case')
+        t = 0.0
     z, l2, q, q_ = zlq_from_qid(qid, args)
     f = 0
 
@@ -585,7 +577,10 @@ def fmax(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
     
-    qid, t = qid[:k], qid[-1]
+    if len(qid) > k:
+        qid, t = qid[:k], qid[-1]
+    else:
+        t = 0.0
     z, l2, q, q_ = zlq_from_qid(qid, args)
     CfQ = Cf.transpose().dot(diags(q_.flatten()))
     f = 1 / ((CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed]))
@@ -703,39 +698,42 @@ def _fieq(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
 
-    q[ind, 0], t = qid[:k], qid[-1]
+    if len(qid) > k:
+        qid, t = qid[:k], qid[-1]
+    else:
+        t = 0.0
     # z, l2, q, q_ = zlq_from_qid(qid, args) # Added
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
-
-    # Rx = Cit.dot(U * q_.ravel()) - px[free].ravel()
-    # Ry = Cit.dot(V * q_.ravel()) - py[free].ravel()
-    # Rh = Rx**2 + Ry**2
-    # Rm = max(sqrt(Rh))
+    # z, l2, q, q_ = zlq_from_qid(qid, args) # Need to be activated if we want to constraint on z
+    # z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
 
     Rm = 0.0
     pen_lb = 0.0
     pen_ub = 0.0
 
-    if lb_ind: # Added
-        if t is not 0.0:
-            lb = lb - t
-        z_lb    = z[lb_ind]
-        log_lb  = z_lb < lb
-        diff_lb = z_lb[log_lb] - lb[log_lb]
-        pen_lb  = sum(abs(diff_lb) + 2)**4
+    # if lb_ind: # Added
+    #     if t is not 0.0:
+    #         lb = lb - t
+    #     z_lb    = z[lb_ind]
+    #     log_lb  = z_lb < lb
+    #     diff_lb = z_lb[log_lb] - lb[log_lb]
+    #     pen_lb  = sum(abs(diff_lb) + 2)**4
 
-    if ub_ind:
-        if t is not 0.0:
-            ub = ub - t
-        z_ub    = z[ub_ind]
-        log_ub  = z_ub > ub
-        diff_ub = z_ub[log_ub] - ub[log_ub]
-        pen_ub  = sum(abs(diff_ub) + 2)**4
+    # if ub_ind:
+    #     if t is not 0.0:
+    #         ub = ub - t
+    #     z_ub    = z[ub_ind]
+    #     log_ub  = z_ub > ub
+    #     diff_ub = z_ub[log_ub] - ub[log_ub]
+    #     pen_ub  = sum(abs(diff_ub) + 2)**4
+
+    # print('z e pens',z[free], pen_lb, pen_ub)
 
     if not tension:
+        # print('here')
+        # return [q.ravel() + 10**(-5)]
         return hstack([q.ravel() + 10**(-5), tol - Rm, -pen_lb, -pen_ub])
         # return hstack([Rm + pen_lb + pen_ub])
     return [tol - Rm - pen_lb - pen_ub]
@@ -771,7 +769,7 @@ def _fieq_ub_lb(qid, *args):
         pen_ub  = sum(abs(diff_ub) + 2)**4
 
     if not tension:
-        return hstack([pen_ub + pen_ub])
+        return hstack([- pen_ub - pen_ub])
         # return hstack([Rm + pen_lb + pen_ub])
     return [tol - Rm - pen_lb - pen_ub]
 
@@ -779,11 +777,18 @@ def _fieq_bounds(qid, *args):
 
     q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b, joints, i_uv, k_i = args
     
-    q[ind, 0], t = qid[:k], qid[-1]
+    if len(qid) > k:
+        qid, t = qid[:k], qid[-1]
+        # print('t on iteration-constraint',t)
+    else:
+        t = 0.0
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
+    z, l2, q, q_ = zlq_from_qid(q[ind].reshape(k,), args) # Added
     
+    # When there is no t assigned, the last value of qindependent takes value t...
+
     rbut = 0.0
 
     W = C.dot(z)[:,0]
@@ -836,8 +841,9 @@ def _fieq_bounds(qid, *args):
                 joint += 10 ** 5
 
     if not tension:
-        return hstack([Rm + pen_lb + pen_ub])
-        # return hstack([q.ravel() + 10**(-5), tol - Rm - pen_lb - pen_ub])
+        # return hstack([tol -Rm - pen_lb - pen_ub])
+        print(pen_lb,pen_ub)
+        return hstack([q.ravel() + 10**(-5), tol - Rm - pen_lb - pen_ub])
         # return hstack([Rm + pen_lb + pen_ub])
     return [tol - Rm - pen_lb - pen_ub - rbut - joint]
 
@@ -1072,7 +1078,7 @@ def inds_incl_excl(E, ins, outs):
 
     return ind
 
-def initialize_problem(form, indset = None, printout = None):
+def initialize_problem(form, indset = None, printout = None, find_inds=True):
 
     # Mapping
 
@@ -1154,28 +1160,44 @@ def initialize_problem(form, indset = None, printout = None):
 
     # Independent and dependent branches
 
-    if indset:
-        ind = []
-        for u, v in form.edges():
-            if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
-                ind.append(uv_i[(u, v)])
-    else:
-        _, s, _ = svd(E)
-        ind = independents_exclude(E, sym)
-    
-    k   = len(ind)
-    dep = list(set(range(m)) - set(ind))
-    elapsed_time = time.time() - start_time
-    print('Found {0} independents'.format(k))
-    print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
+    if find_inds:
 
-    for u, v in form.edges():
-        form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
+        if indset:
+            ind = []
+            for u, v in form.edges():
+                if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
+                    ind.append(uv_i[(u, v)])
+        else:
+            _, s, _ = svd(E)
+            ind = find_independents(E)
+        
+        k   = len(ind)
+        dep = list(set(range(m)) - set(ind))
 
-    if printout:
-        print('Form diagram has {0} (RREF) or {1} (SVD) independent branches '.format(len(ind), m - len(s)))
-        print('Shape Equilibrium Matrix: ', E.shape)
+        elapsed_time = time.time() - start_time
+
         print('Found {0} independents'.format(k))
+        print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
+
+        for u, v in form.edges():
+            form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
+
+        if printout:
+            print('Form diagram has {0} (RREF) or {1} (SVD) independent branches '.format(len(ind), m - len(s)))
+            print('Shape Equilibrium Matrix: ', E.shape)
+            print('Found {0} independents'.format(k))
+            print('The independents are: ',ind)
+
+        
+        Edinv  = -csr_matrix(pinv(E[:, dep]))
+        Ei     = E[:, ind]
+
+    else:
+        k = m
+        ind = list(set(range(m)))
+        dep = []
+        Edinv  = []
+        Ei = []
 
     # Set-up
 
@@ -1185,8 +1207,7 @@ def initialize_problem(form, indset = None, printout = None):
         t = None
 
     lh     = normrow(C.dot(xy))**2
-    Edinv  = -csr_matrix(pinv(E[:, dep]))
-    Ei     = E[:, ind]
+
     p      = vstack([px[free], py[free]])
     q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
 
@@ -1199,7 +1220,7 @@ def initialize_problem(form, indset = None, printout = None):
     b = None
 
 
-    args   = (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b)
+    args   = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b)
     
     return args
 

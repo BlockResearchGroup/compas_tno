@@ -20,12 +20,19 @@ for j in [2]: # j = 1
         shapes = [2,4,5,7,8,10,11]
     else:
         shapes = [8] #range(2,8)
-    
-    for i in shapes:
+
+    i = 4
+
+    for pat in ['c']:
 
         # fnm = '/Users/mricardo/compas_dev/me/bestfit/crossvault/discretize/0'+str(j)+'_0'+str(i)+'_fit_crossvault.json'
-        fnm = '/Users/mricardo/compas_dev/me/bestfit/sixpartite/discretize/0'+str(j)+'_0'+str(i)+'_fit_sixpartite.json'
-
+        # fnm = '/Users/mricardo/compas_dev/me/bestfit/sixpartite/discretize/0'+str(j)+'_0'+str(i)+'_fit_sixpartite.json'
+        
+        # Load
+        
+        # file = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01.json'
+        fnm = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/02_06_complete_nosym.json'
+        # fnm = '/Users/mricardo/compas_dev/me/loadpath/Midsupport/topology/'+pat+'_lp.json'
         form = FormDiagram.from_json(fnm)
         # overview_forces(form)
 
@@ -38,7 +45,8 @@ for j in [2]: # j = 1
             print('No offset!')
 
         # thrust_layer = 'Thrust_grad_lp'
-        thrust_layer = str(j)+'_Fix::Thrust-'+str(i)
+        # thrust_layer = str(j)+'_Fix::Thrust-'+str(i)
+        thrust_layer = 'Default'#'Topology::Midsupport_'+pat+'_Thrust'
         # thrust_layer = str(j)+'_midsupport::' + str(i) + '_opt'
         # reactions_layer = 'Thrust_grad_lp'
         # points_layer = '1_Fix::Points'
@@ -66,7 +74,7 @@ for j in [2]: # j = 1
         # rs.CurrentLayer(points_layer)
 
         dx = (i-1)*15
-        dy = -20*6 -20*j #+40 #-20 * 4
+        dy = 0#-20*6 -20*j #+40 #-20 * 4
 
         for uv in form.edges():
             u, v = uv
@@ -91,7 +99,7 @@ for j in [2]: # j = 1
                 # rs.ObjectColor(id, (255,255*(1002-i)/1002,0))
 
         rs.AddTextDot('{0:.1f}'.format(lp),[dx - 1.0, dy - 1.0, 0.0 ])
-
+        i = i+1
         # artist = NetworkArtist(form, layer=reactions_layer)
         # artist.clear_layer()
         # rs.CurrentLayer(reactions_layer)

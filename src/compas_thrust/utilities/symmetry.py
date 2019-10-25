@@ -549,6 +549,8 @@ def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
 
     tol = 0.01
 
+    pzt = 0.0
+
     for key in form.vertices():
         x, _, _ = form.vertex_coordinates(key)
         if x > x0 - tol and x < x1 + tol:
@@ -557,6 +559,9 @@ def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
                 form.set_vertex_attribute(key, 'pz', value = ((magnitude-1)/2 +1) * pz0)
             else:
                 form.set_vertex_attribute(key, 'pz', value = magnitude * pz0)
+        pzt += form.get_vertex_attribute(key, 'pz')
+
+    print('Final Load: {0}'.format(pzt))
     
     return form
 

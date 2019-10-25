@@ -64,27 +64,28 @@ if __name__ == "__main__":
     n_s = []
     lp_s = []
 
-    for i in range(2,10):
+    for i in range(5,11):
 
         print('\n\n------------------ Form ',str(i),'\n')
         j=1
 
-        file_complete = '/Users/mricardo/compas_dev/me/loadpath/midsupport/discretize/0'+ str(j) +'_0'+ str(i) +'_complete_nosym.json'
+        file_complete = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+ str(j) +'_0'+ str(i) +'_complete_paper.json'
         form = FormDiagram.from_json(file_complete)
-        overview_forces(form)
-        i_s.append(i)
-        n_s.append(form.number_of_edges())
-        lp_s.append(form.attributes['loadpath'])
-        # plot_form(form,show_q=False, simple=True, max_width=5.0).show()
-        # force = ForceDiagram.from_formdiagram(form)
-        # form, force = update_tna(form, delete_face=False)
-        # plot_force(force, form, color_inds=False).show()
+        # overview_forces(form)
+        # i_s.append(i)
+        # n_s.append(form.number_of_edges())
+        # lp_s.append(form.attributes['loadpath'])
+        form = initialize_problem(form)
+        plot_form(form,show_q=False, simple=False, max_width=5.0).show()
+        force = ForceDiagram.from_formdiagram(form)
+        form, force = update_tna(form, delete_face=False)
+        plot_force(force, form, color_inds=True).show()
 
-    fig, ax = plt.subplots()
-    ax.plot(n_s, lp_s)
-    ax.set(xlabel='# Edges F.D.', ylabel='LP',
-        title='LP for different discretization - Orthogonal')
-    ax.grid()
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot(n_s, lp_s)
+    # ax.set(xlabel='# Edges F.D.', ylabel='LP',
+    #     title='LP for different discretization - Orthogonal')
+    # ax.grid()
+    # plt.show()
 
-    print(lp_s)
+    # print(lp_s)
