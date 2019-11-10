@@ -28,6 +28,8 @@ from numpy import newaxis
 from numpy import sqrt
 from numpy import sum
 
+import math
+
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -45,6 +47,7 @@ __all__ = [
     'loadpath',
     'delete_boundary_edges',
     'overview_forces',
+    'create_arch'
 ]
 
 def _form(form, keep_q=False):
@@ -381,3 +384,34 @@ def overview_forces(form):
     form.attributes['loadpath'] = lp
 
     return
+
+def create_arch(D = 2.00, x0 = 0.0, total_nodes = 100, total_self_weight = 20.0):
+
+    r = D/2
+    xc = x0 + r
+    lines = []
+    total_edges = total_nodes - 1
+    gkey_fix = []
+
+    for i in range(total_edges):
+        xi = xc - r*math.cos(i/total_edges*math.pi)
+        xf = xc - r*math.cos((i+1)/total_edges*math.pi)
+        lines.append([[xi,0.0,0.0],[xf,0.0,0.0]])
+        if i == 0:
+            gkey_fix.append(geometric_key([xi,0.0,0.0], precision=6))
+        elif i == total_edges - 1:
+            gkey_fix.append(geometric_key([xf,0.0,0.0], precision=6))
+
+    form = FormDiagram.from_lines(lines, delete_boundary_face=False)
+    gkey_key = form.gkey_key(precision=6)
+
+    form.update_default_vertex_attributes({'is_roller': False})
+    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    form.attributes['loadpath'] = 0
+    form.attributes['indset'] = []
+    form.set_vertices_attribute('pz', total_self_weight/(total_nodes))
+    # form.update_default_vertex_attributes({'px': 0.0, 'py': 0.0, 'pz': total_self_weight/(total_nodes)})
+    form.set_vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
+    form.set_vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+
+    return form

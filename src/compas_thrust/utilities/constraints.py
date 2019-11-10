@@ -40,7 +40,7 @@ __all__ = [
 ]
 
 
-def check_constraints(form, show=False, lb_show=False, ub_show=False):
+def check_constraints(form, show=False, lb_show=False, ub_show=False, tol = 1e-6):
 
     try:
         t = form.attributes['offset']
@@ -56,13 +56,13 @@ def check_constraints(form, show=False, lb_show=False, ub_show=False):
         if vertex.get('lb', None):
             lb = vertex['lb']
             lbs[key] = lb
-            if z < lb:
+            if z < lb - tol:
                 outside[key] = lb - z
                 penalty += (abs(outside[key])+4)**(4)
         if vertex.get('ub', None):
             ub = vertex['ub']
             ubs[key] = ub
-            if z > ub:
+            if z > ub + tol:
                 outside[key] = z - ub
                 penalty += (abs(outside[key])+4)**(4)
 
@@ -480,7 +480,9 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
     r = xf - xc
     ri = r - thk/2
     re = r + thk/2
-    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / Thickness: {2:.2} m / Ratio t/Ri: {3:.2} m'.format(2*xc, 2*ri, thk, (thk/ri)))
+    form.attributes['Re'] = re
+    form.attributes['Ri'] = ri
+    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m'.format(2*xc, 2*ri, 2*re, thk, (thk/ri), (thk/r)))
 
     for key in form.vertices():
         x, _, _ = form.vertex_coordinates(key)
@@ -499,6 +501,8 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
             form.set_vertex_attribute(key,'lb',value=zi)
             form.set_vertex_attribute(key,'ub',value=ze)
         # form.set_vertex_attribute(key,'z',value=ze)
+        if form.get_vertex_attribute(key, 'is_fixed') == True:
+            form.set_vertex_attribute(key, 'b', value = [thk/2,0.0])
         if x == x0:
             form.attributes['tmax'] = ze
         

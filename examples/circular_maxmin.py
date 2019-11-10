@@ -141,7 +141,7 @@ if __name__ == "__main__":
     file_matlab = '/Users/mricardo/Documents/MATLAB/optimisation/2Darch_solve.mat'
     file = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01.json'
     form = FormDiagram.from_json(file)
-
+    plot_form(form,heights=True, show_q=False).show()
     # form = circular_heights(form)
     
     # form = _form(form)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
 
     # Load Matlab
 
-    form = load_matlab(form, file_matlab)
+    # form = load_matlab(form, file_matlab)
 
     # Run CVOPT
 

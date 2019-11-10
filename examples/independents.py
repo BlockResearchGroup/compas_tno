@@ -17,8 +17,8 @@ if __name__ == "__main__":
     i_s = []
     n_s = []
     lp_s = []
-    i = 11
-    j = 1
+    i = 5
+    j = 2
 
     file = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+ str(j) +'_0'+ str(i) +'_complete_paper.json'
     form = FormDiagram.from_json(file)

@@ -824,9 +824,9 @@ def _fieq_bounds(qid, *args):
                 x_comp = abs(scl * Rx[key])
                 y_comp = abs(scl * Ry[key])
                 if x_comp > abs(b[key][0][0]):
-                    rbut += (x_comp - b[key][0][0] + 5) **2
+                    rbut += (x_comp - b[key][0][0] + 5) ** 2
                 if y_comp > abs(b[key][0][1]):
-                    rbut += (y_comp - b[key][0][1] + 5) **2
+                    rbut += (y_comp - b[key][0][1] + 5) ** 2
 
     if joints:
         for jt in joints:

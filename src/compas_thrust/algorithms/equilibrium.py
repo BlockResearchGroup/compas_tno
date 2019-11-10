@@ -19,6 +19,7 @@ from numpy.linalg import pinv
 from numpy.linalg import matrix_rank
 from numpy.random import rand
 from numpy.random import randint
+from numpy.linalg import det
 
 from scipy.sparse.linalg import spsolve
 from scipy.optimize import fmin_slsqp
@@ -65,8 +66,7 @@ __email__     = 'mricardo@ethz.ch'
 
 __all__ = [
     'zlq_from_qid',
-    'ylq_from_qid',
-    'xlq_from_qid',
+    'q_from_qid',
     'z_update',
     'z_from_form',
     'horizontal_check',
@@ -140,104 +140,29 @@ def zlq_from_qid(qid, args):
 
     """
 
-
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym = args[:23]
-    # q, ind, dep, Edinv, Ei, C, Ci, Cit, U, V, p, px, py, pz, tol, z, free, planar, lh, sym, *_ = args
-    # q, ind, dep, Edinv, Ei, C, Ci, Cit, p, pz, z, free, planar, lh2, sym = args[:-5]
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
     q[ind, 0] = qid
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
-
-    if not planar:
-        z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free]) # From original equation CiQCi*(zi) = pz - CiQCf*(zf) assuming zf = 0 -> Meaning: Fixed nodes in z = o
+    
+    # if not planar:
+    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
     l2 = lh + C.dot(z)**2
 
     return z, l2, q, q_
 
-def ylq_from_qid(qid, args):
+def q_from_qid(qid, args):
 
-    """ Calculate y's from independent edges.
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
 
-    Parameters
-    ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
+    q, ind, dep, E, Edinv, Ei = args[:6]
+    q[ind, 0] = qid
+    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
 
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    l2 : array
-        Lenghts squared
-    q : array
-        Force densities without symetrical edges (q[sym] = 0)
-    q_ : array
-        Force densities with symetrical edges 
-
-    """
+    return q
 
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym = args[:23]
-    # q, ind, dep, Edinv, Ei, C, Ci, Cit, U, V, p, px, py, pz, tol, z, free, planar, lh, sym, *_ = args
-    # q, ind, dep, Edinv, Ei, C, Ci, Cit, p, pz, z, free, planar, lh2, sym = args[:-5]
-    indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args[-13:]
-    q[indy, 0] = qid
-    depy = list(set(range(len(q))) - set(indy))
-    q[depy] = -Edinv_y.dot(p_y - Eiy.dot(q[indy]))
-    q_ = 1 * q
-    q[sym] *= 0
-
-    if not planar:
-        y[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), py[free])
-    l2 = lxz + C.dot(y)**2
-
-    return y, l2, q, q_
-
-def xlq_from_qid(qid, args):
-
-    """ Calculate x's from independent edges.
-
-    Parameters
-    ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    l2 : array
-        Lenghts squared
-    q : array
-        Force densities without symetrical edges (q[sym] = 0)
-    q_ : array
-        Force densities with symetrical edges 
-
-    """
-
-
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym = args[:23]
-    # q, ind, dep, Edinv, Ei, C, Ci, Cit, U, V, p, px, py, pz, tol, z, free, planar, lh, sym, *_ = args
-    # q, ind, dep, Edinv, Ei, C, Ci, Cit, p, pz, z, free, planar, lh2, sym = args[:-5]
-    indy, Edinv_y, Eiy, p_y, lxz, y, indx, Edinv_x, Eix, p_x, lyz, W, x = args[-13:]
-    q[indx, 0] = qid
-    depx = list(set(range(len(q))) - set(indx))
-    q[depx] = -Edinv_x.dot(p_x - Eix.dot(q[indx]))
-    q_ = 1 * q
-    q[sym] *= 0
-
-    if not planar:
-        x[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), px[free])
-    l2 = lyz + C.dot(x)**2
-
-    return x, l2, q, q_
 
 def update_qid(file, value, ind_i = 0):
 
@@ -626,7 +551,7 @@ def paralelise_form(form, force, q, alpha = 1.0, kmax = 100, plot = None, displa
 
 def reactions(form, plot=False): 
 
-# Mapping
+    # Mapping
 
     k_i  = form.key_index()
     i_k  = form.index_key()
