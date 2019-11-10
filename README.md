@@ -1,4 +1,4 @@
 # compas_thrust
 
-Compas_thrust perform masonry assessment by performinig optimisation with multiple objectives in Thrust Networks.
+Compas_thrust performs masonry assessment by means of optimisation with multiple objectives in Funicular Thrust Networks.
 
