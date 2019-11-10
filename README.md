@@ -1,4 +1,4 @@
 # compas_thrust
 
-Masonry analysis with TNA
+Compas_thrust perform masonry assessment by performinig optimisation with multiple objectives in Thrust Networks.
 
