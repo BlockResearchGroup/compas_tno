@@ -31,7 +31,6 @@ from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 
 from compas_thrust.plotters.plotters import plot_form
-from compas_viewers.meshviewer import MeshViewer
 
 from copy import deepcopy
 from numpy import array

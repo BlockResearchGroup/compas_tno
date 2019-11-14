@@ -19,6 +19,7 @@ __all__ = [
     'plot_grad',
     'plot_dual',
     'plot_form_xz',
+    'plot_form_joints',
 ]
 
 def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None):
@@ -256,7 +257,152 @@ def plot_dual(form):
 
     return plotter
 
-def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False):
+def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False, joints = False):
+
+    """ Plor of a 2D diagrma in the XZ plane
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    max_width : float
+        Maximum edge width.
+    simple : bool
+        Simple red and blue colour plotting.
+
+    Returns
+    -------
+    obj
+        Plotter object.
+
+    """
+
+    q = [attr[thick] for u, v, attr in form.edges(True)]
+    qmax  = max(abs(array(q))) 
+    lines = []
+    xs = []
+    reac_lines = []
+
+    for key in form.vertices():
+        xs.append(form.vertex_coordinates(key)[0])
+        if form.get_vertex_attribute(key, 'is_fixed') == True:
+            x, _, z = form.vertex_coordinates(key)
+            if z > 0.0:
+                rz = abs(form.get_vertex_attribute(key, 'rz'))
+                rx = form.get_vertex_attribute(key, 'rx')
+                reac_line = [x,z,x + z*rx/rz,0.0]
+                reac_lines.append(reac_line)
+                # reac_x.append(x + z*rx/rz)
+                # reac_z.append(0.0)
+                # reac_x.append(x)
+                # reac_z.append(z)
+        
+
+    for u, v in form.edges():
+        qi = form.get_edge_attribute((u, v), thick)
+        l = form.edge_length(u,v)
+        uv_i = form.uv_index
+
+        if simple:
+            if qi > 0:
+                colour = ['ff', '00', '00']
+            elif qi < 0:
+                colour = ['00', '00', 'ff']
+            else:
+                colour = ['aa', 'aa', 'aa']
+
+        else:
+            colour = ['ff', '00', '00']
+            if qi > 0:
+                colour[0] = 'ff'
+            if form.get_edge_attribute((u, v), 'is_symmetry'):
+                colour[1] = 'cc'
+            if form.get_edge_attribute((u, v), 'is_ind'):
+                # colour[2] = 'ff'
+                colour[0] = '00'
+                colour[2] = '80'
+
+        width = max_width if fix_width else (qi / qmax) * max_width
+
+        
+        if show_edgeuv:
+            text = str(u) + ',' + str(v)
+        elif show_q:
+            text = round(qi, 2)
+        else:
+            text = ''
+
+        lines.append({
+            'start': [form.vertex_coordinates(u)[0], form.vertex_coordinates(u)[2]],
+            'end':   [form.vertex_coordinates(v)[0], form.vertex_coordinates(v)[2]],
+            'color': 'FF0000',
+            'width': width,
+            'text': text,
+        })
+
+    try:
+        Re = form.attributes['Re']
+        Ri = form.attributes['Ri']
+    except:
+        Re = 1.20 #(max(xs) - min(xs))/2 + thk/2
+        Ri = 1.00 #(max(xs) - min(xs))/2 - thk/2
+    
+    xc = sum(xs)/len(xs)
+    discr = 200
+    # print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re,Ri))
+
+    for R in [Re, Ri]:
+        for i in range(discr):
+            lines.append({
+                'start': [xc-R+2*R*i/discr,sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
+                'end':   [xc-R+2*R*(i+1)/discr,sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
+                'color': '000000',
+                'width': 0.5,
+            })
+    
+    if plot_reactions:
+        for reac_line in reac_lines:
+            lines.append({
+                'start': [reac_line[0],reac_line[1]],
+                'end':   [reac_line[2],reac_line[3]],
+                'color': ''.join(colour),
+                'width': width,
+            })
+
+    if joints:
+        joints = form.attributes['joints']
+        for i in joints:
+            lines.append({
+                'start': [joints[i][0][0],joints[i][0][2]],
+                'end':   [joints[i][1][0],joints[i][1][2]],
+                'color': '000000',
+                'width': 0.25,
+            })
+
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    # round(form.get_vertex_attribute(i, 'pz'), 2)
+    # if radius:
+    #     if heights:
+    #         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
+    #         radius=radius, text={i: i for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
+    #     else:
+    #         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
+    #         radius=radius)
+
+    # plotter.draw_vertices(radius= {i : form.get_vertex_attribute(i, 'px')/100 for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
+
+    plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False):
 
     """ Plor of a 2D diagrma in the XZ plane
 
@@ -383,10 +529,11 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
     #         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
     #         radius=radius)
 
-    plotter.draw_vertices(radius= {i : form.get_vertex_attribute(i, 'px')/100 for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
+    # plotter.draw_vertices(radius= {i : form.get_vertex_attribute(i, 'px')/100 for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
 
     plotter.draw_lines(lines)
     if save:
         plotter.save(save)
 
     return plotter
+

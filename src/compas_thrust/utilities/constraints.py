@@ -36,7 +36,8 @@ __all__ = [
     'set_pavillion_vault_heights',
     'set_oct_vault_heights',
     'set_dome_heights',
-    'circular_heights'
+    'circular_heights',
+    'circular_joints',
 ]
 
 
@@ -482,7 +483,7 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
     re = r + thk/2
     form.attributes['Re'] = re
     form.attributes['Ri'] = ri
-    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m'.format(2*xc, 2*ri, 2*re, thk, (thk/ri), (thk/r)))
+    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m'.format(2*r, 2*ri, 2*re, thk, (thk/ri), (thk/r)))
 
     for key in form.vertices():
         x, _, _ = form.vertex_coordinates(key)
@@ -505,6 +506,68 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
             form.set_vertex_attribute(key, 'b', value = [thk/2,0.0])
         if x == x0:
             form.attributes['tmax'] = ze
-        
+
+    return form
+
+def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0):
+
+    k_i = form.key_index()
+
+    if x0 == None or xf == None:
+        x = []
+        for key in form.vertices():
+            x.append(form.vertex_coordinates(key)[0])
+        x0 = min(x)
+        xf = max(x)
+    y = 0.0
+    
+    xc = (xf+x0)/2
+    r = xf - xc
+    ri = r - thk/2
+    re = r + thk/2
+    form.attributes['Re'] = re
+    form.attributes['Ri'] = ri
+    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m / Number of Blocks: {6}'.format(2*r, 2*ri, 2*re, thk, (thk/ri), (thk/r),blocks))
+
+    njoints = blocks+1
+    joints = {}
+    for j in range(njoints):
+        theta = j/blocks*math.pi
+        xi = xc + ri * math.cos(theta)
+        zi = ri * math.sin(theta)
+        xe = xc + re * math.cos(theta)
+        ze = re * math.sin(theta)
+        xmax = max(xi,xe)
+        xmin = min(xi,xe)
+        possible_edges = []
+        for (u,v) in form.edges():
+            xu, xv = form.vertex_coordinates(u)[0], form.vertex_coordinates(v)[0]
+            if max(xu,xv) >= xmin and min(xu,xv) <= xmax: 
+                possible_edges.append(tuple(sorted([k_i[u],k_i[v]])))
+        joints[j] = [[xi,y,zi],[xe,y,ze],set(possible_edges)]
+        print(joints[j])
+    form.attributes['joints'] = joints
+
+    for key in form.vertices():
+        x, _, _ = form.vertex_coordinates(key)
+        zt = math.sqrt(r**2 - (x-xc)**2)
+        ze = math.sqrt(re**2 - (x-xc)**2) - t
+        form.set_vertex_attribute(key,'target',value=zt)
+        zi2 = ri**2 - (x-xc)**2
+        if zi2 < 0:
+            zi = 0 - t
+        else:
+            zi = math.sqrt(zi2) - t
+        if form.get_vertex_attribute(key,'is_fixed') == True:
+            form.set_vertex_attribute(key,'lb',value=None)
+            form.set_vertex_attribute(key,'ub',value=None)
+        else:
+            form.set_vertex_attribute(key,'lb',value=zi)
+            form.set_vertex_attribute(key,'ub',value=ze)
+        # form.set_vertex_attribute(key,'z',value=ze)
+        if form.get_vertex_attribute(key, 'is_fixed') == True:
+            form.set_vertex_attribute(key, 'b', value = [thk/2,0.0])
+        if x == x0:
+            form.attributes['tmax'] = ze
 
     return form

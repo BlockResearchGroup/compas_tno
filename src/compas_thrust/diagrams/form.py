@@ -385,7 +385,7 @@ def overview_forces(form):
 
     return
 
-def create_arch(D = 2.00, x0 = 0.0, total_nodes = 100, total_self_weight = 20.0):
+def create_arch(D = 2.00, x0 = 0.0, total_nodes = 100, total_self_weight = 20.0, lambda_hor = None, f_concentrated = None ):
 
     r = D/2
     xc = x0 + r
@@ -410,7 +410,11 @@ def create_arch(D = 2.00, x0 = 0.0, total_nodes = 100, total_self_weight = 20.0)
     form.attributes['loadpath'] = 0
     form.attributes['indset'] = []
     form.set_vertices_attribute('pz', total_self_weight/(total_nodes))
-    # form.update_default_vertex_attributes({'px': 0.0, 'py': 0.0, 'pz': total_self_weight/(total_nodes)})
+    if lambda_hor:
+        form.set_vertices_attribute('px', lambda_hor*total_self_weight/(total_nodes))
+    if  f_concentrated:
+        lbd, key, direc = f_concentrated
+        form.set_vertex_attribute(key,direc,value=lbd*form.get_vertex_attribute(key,'pz'))   
     form.set_vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
     form.set_vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
 
