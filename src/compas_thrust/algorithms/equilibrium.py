@@ -145,7 +145,7 @@ def zlq_from_qid(qid, args):
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
-    
+
     # if not planar:
     z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
     l2 = lh + C.dot(z)**2
@@ -155,7 +155,7 @@ def zlq_from_qid(qid, args):
 def q_from_qid(qid, args):
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
-
+    
     q, ind, dep, E, Edinv, Ei = args[:6]
     q[ind, 0] = qid
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))

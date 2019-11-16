@@ -5,6 +5,7 @@ from numpy import array
 from numpy.linalg import matrix_rank
 from numpy.random import rand
 from math import sqrt
+from copy import deepcopy
 
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -135,12 +136,13 @@ def check_independents(args, tol = 0.001):
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
     checked = True
+    q_ = deepcopy(q)
     if tol > 0:
         for i in range(10**3):
-            q[ind, 0] = rand(k) * 10
-            q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
-            Rx = array(Cit.dot(U * q.ravel()) - px[free].ravel())
-            Ry = array(Cit.dot(V * q.ravel()) - py[free].ravel())
+            q_[ind, 0] = rand(k) * 10
+            q_[dep] = -Edinv.dot(p - Ei.dot(q_[ind]))
+            Rx = array(Cit.dot(U * q_.ravel()) - px[free].ravel())
+            Ry = array(Cit.dot(V * q_.ravel()) - py[free].ravel())
             R  = sqrt(max(Rx**2 + Ry**2))
             if R > tol:
                 checked = False

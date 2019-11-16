@@ -1,9 +1,13 @@
 from scipy.optimize import fmin_slsqp
+from compas.numerical import devo_numpy
+from compas.numerical import ga
 
 from compas_thrust.algorithms.problems import initialise_problem
 
 from compas_thrust.algorithms.objectives import f_min_loadpath
+from compas_thrust.algorithms.objectives import f_min_loadpath_pen
 from compas_thrust.algorithms.objectives import f_min_thrust
+from compas_thrust.algorithms.objectives import f_min_thrust_pen
 from compas_thrust.algorithms.objectives import f_max_thrust
 from compas_thrust.algorithms.objectives import f_target
 from compas_thrust.algorithms.objectives import f_constant
@@ -51,7 +55,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
-
+    print('qid',q[ind])
     # Problem specifities
 
     if bmax:
@@ -72,8 +76,6 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         joints = form.attributes['joints']
     except:
         joints = None
-    if printout and joints:
-        print('Joins Data', joints)
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
 
@@ -84,28 +86,30 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
     if objective == 'constr_lp':
         fobj, fconstr = f_min_loadpath, f_ub_lb
     if objective == 'lp_joints':
-        fobj, fconstr = f_min_loadpath, f_joints
+        fobj, fconstr = f_min_loadpath_pen, f_joints
     if objective=='target':
         fobj, fconstr =  f_target, f_compression
     if objective == 'min':
         fobj, fconstr = f_min_thrust, f_ub_lb
     if objective == 'min_joints':
-        fobj, fconstr = f_min_thrust, f_joints
+        fobj, fconstr = f_min_thrust_pen, f_joints
     if objective=='max':
         fobj, fconstr =  f_max_thrust, f_ub_lb
     if objective == 'feasibility':
-        fobj, fconstr = f_constant, f_ub_lb
+        fobj, fconstr = f_constant, f_joints
 
     # Definition of the Variables and starting point
 
     if translation:
         x0 = q[ind]
-        bounds = [[qmin, qmax]] * k + [[-1*1000, translation]] * len(fixed)
+        bounds = [[qmin, qmax]] * k + [[-1*10, translation]] * len(fixed)
         x0 = append(x0[0],z[fixed]).reshape(-1,1)
     else:
         x0 = q[ind]
         bounds = [[qmin, qmax]] * k
 
+    print('Independents:', ind)
+    print('Initial stepbefore:', x0)
     f0 = fobj(x0, *args)
     
     if printout:
@@ -128,6 +132,30 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
             if printout:
                 print(message)
 
+    if solver == 'devo':
+        fopt, xopt = _diff_evo(fn = fobj, bounds = bounds, population= 500, generations = 100, printout= 10, plot = False, frange=[], args = args)
+        xopt = array(xopt).reshape(len(xopt),1)
+        niter = 100
+        exitflag = 0
+        if translation:
+            q[ind] = xopt[:k]
+            z[fixed] = xopt[k:].reshape(-1,1)
+        else:
+            q[ind] = xopt[:k]
+
+    if solver == 'ga':
+        GA = _ga(fn = fobj, fit_type = 'min', num_var = len(x0), boundaries = bounds, num_pop= 500, num_gen = 300, args = args)
+        fopt = float(GA.best_fit)
+        best_i = GA.best_individual_index
+        xopt = array(GA.current_pop['scaled'][best_i]).reshape(-1,1)
+        niter = 100
+        exitflag = 0
+        if translation:
+            q[ind] = xopt[:k]
+            z[fixed] = xopt[k:].reshape(-1,1)
+        else:
+            q[ind] = xopt[:k]
+
     if solver == 'cvx':
         print('W.I.P.')
 
@@ -135,6 +163,8 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
     z, _, q, q_ = zlq_from_qid(q[ind], args)
+
+    print('qid',q[ind])
 
     gkeys = []
     for i in ind:
@@ -162,17 +192,13 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
     form.attributes['exitflag'] = exitflag
     reactions(form, plot = plot)
 
-    # print(q[ind])
-    # print(q)
-    # print(z[fixed])
-
     if summary:
-            print('\n' + '-' * 50)
-            print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-            print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-            print('zb range : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-            print('fopt      : {0:.3f}'.format(fopt))
-            print('-' * 50 + '\n')
+        print('\n' + '-' * 50)
+        print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
+        print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
+        print('zb range : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+        print('fopt      : {0:.3f}'.format(fopt))
+        print('-' * 50 + '\n')
 
     return fopt, q[ind], z[fixed], exitflag
 
@@ -199,3 +225,13 @@ def _cobyla(fn, qid0, bounds, printout, fieq, args):
     # W.I.P
 
     return None
+
+def _diff_evo(fn, bounds, population, generations, printout, plot, frange, args):
+
+    return devo_numpy(fn=fn, bounds=bounds, population=population, generations=generations, printout=printout,
+                      plot=plot, frange=frange, args=args)
+
+def _ga(fn, fit_type, num_var, boundaries, num_gen, num_pop, args):
+    
+    return ga(fit_function=fn,fit_type = fit_type, num_var = num_var, boundaries = boundaries, num_gen = num_gen, num_pop = num_pop, fargs = args)
+

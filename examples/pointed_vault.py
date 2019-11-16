@@ -2,12 +2,14 @@ from compas_tna.diagrams import FormDiagram
 
 from compas_thrust.utilities.constraints import circular_heights
 from compas_thrust.utilities.constraints import circular_joints
+from compas_thrust.utilities.constraints import set_pointed_vault_heights
 from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.diagrams.form import create_arch
 from compas_thrust.algorithms import optimise_general
 
 from compas_thrust.plotters.plotters import plot_form_xz
 from compas_thrust.plotters.plotters import plot_form_joints
+from compas_thrust.plotters.plotters import plot_form
 from numpy import array
 
 from compas.geometry import intersection_segment_segment_xy
@@ -20,7 +22,6 @@ from numpy import zeros
 from numpy import vstack
 from numpy import hstack
 from numpy import multiply
-from numpy import divide
 from numpy import divide
 from numpy import array
 from numpy.linalg import matrix_rank
@@ -41,16 +42,12 @@ from compas_thrust.algorithms.problems import initialise_problem
 
 if __name__ == "__main__":
 
-    file_save = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/arch_joint.json'
-    lambda_hor = 0.0
-    exitflag = 0
-    blocks = 18
-    form = create_arch(total_nodes = blocks, lambda_hor = lambda_hor, D = 2.00)
-    # form.to_json(file_save)
-    print_opt = True
-    thk = 0.25
-    form = circular_joints(form, thk = thk, blocks = blocks)
-    # plot_form_xz(form, radius=0.01, simple=True, fix_width = True, max_width=1.5, heights=True, show_q=False, thk = thk, plot_reactions=True, joints=True).show()
+    file_pattern = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/01_05_complete.json'
+    form = FormDiagram.from_json(file_pattern)
+    # plot_form(form).show()
+    form = set_pointed_vault_heights(form, set_heights=True)
+    plot_form(form).show()
+
 
     # Initial parameters
 

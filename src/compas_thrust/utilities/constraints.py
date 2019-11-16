@@ -425,6 +425,137 @@ def set_oct_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = N
 
     return form
 
+def _find_r_given_h_l(h,l):
+
+    r = h**2/l + l/4
+
+    return r
+
+def _find_O_rcentral(x0_,x1_,he1,he2,hc):
+
+    x1 = x1_
+    z1 = he1
+    x2 = (x0_ + x1_)/2
+    z2 = hc
+    x3 = x0_
+    z3 = he2
+
+    x12 = x1 - x2
+    x13 = x1 - x3
+    z12 = z1 - z2
+    z13 = z1 - z3
+    z31 = z3 - z1
+    z21 = z2 - z1
+    x31 = x3 - x1
+    x21 = x2 - x1
+  
+    sx13 = x1**2 - x3**2
+    sz13 = z1**2 + z3**2
+    sx21 = x2**2 - x1**2 
+    sz21 = z2**2 - z1**2
+
+    f = ((sx13) * (x12) + (sz13) * (x12) + (sx21) * (x13) + (sz21) * (x13)) / (2 * ((z31) * (x12) - (z21) * (x13)))
+    g = ((sx13) * (z12) + (sz13) * (z12) + (sx21) * (z13) + (sz21) * (z13)) / (2 * ((x31) * (z12) - (x21) * (z13)))
+    c = - x1 ** 2 -  z1 ** 2 - 2 * g * x1 - 2 * f * z1
+    h = -g; 
+    k = -f; 
+    r2 = h * h + k * k - c; 
+    r = math.sqrt(r2); 
+
+    return h, k, r
+
+def set_pointed_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0, he=[5.0,5.0,5.0,5.0],  ub_lb=False, weights = False, thk = None, tol = 0.00, set_heights = False):
+    """
+    Set heights of a Pointed Vault
+    ----------------------
+
+
+
+    ----------------------
+    Notes:
+
+        Q3
+    Q2      Q1
+        Q4
+
+
+    """
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    lx = x1 - x0
+    ly = y1 - y0
+
+    # Central Circular profile of the heights passing orthogonally throught the center
+    hx, kx, rx = _find_O_rcentral(x0,x1,he[0],he[1],hc)
+    hy, ky, ry = _find_O_rcentral(y0,y1,he[2],he[3],hc)
+
+    if xy_span[0] == xy_span[1]:
+        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
+            # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant)
+            hi = kx + math.sqrt(rx ** 2 - (xi - hx) ** 2)
+            # Given that height we find the radius of the mid-quadrant
+            ri = _find_r_given_h_l(hi,ly)
+            # Given the point on th emid-quadrant we find individual height knowing the fictious center xc_ yc_
+            # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2              
+            if yi <= (y1 + y0)/2:
+                zi = math.sqrt((ri)**2 - (yi-(y0+ri)**2))
+            else:           
+                zi = math.sqrt((ri)**2 - (yi-(y1-ri)**2))
+
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+            # Equation (xi - hy) ** 2 + (hi - ky) ** 2 = ry **2 to find the height of the pointed part (middle of quadrant)
+            hi = ky + math.sqrt(ry ** 2 - (xi - hy) ** 2)
+            # Given that height we find the radius of the mid-quadrant
+            ri = _find_r_given_h_l(hi,lx)
+            # Given the point on th emid-quadrant we find individual height knowing the fictious center xc_ yc_
+            # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2              
+            if x0 <= (x0 + x1)/2:
+                zi = math.sqrt((ri)**2 - (xi-(x0+ri)**2))
+            else:           
+                zi = math.sqrt((ri)**2 - (xi-(x1-ri)**2))
+
+
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q2
+            hi = kx + math.sqrt(rx ** 2 - (xi - hx) ** 2)
+            ri = _find_r_given_h_l(hi,ly)           
+            if yi <= (y1 + y0)/2:
+                zi = math.sqrt((ri)**2 - (yi-(y0+ri)**2))
+            else:           
+                zi = math.sqrt((ri)**2 - (yi-(y1-ri)**2))
+            
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+            hi = ky + math.sqrt(ry ** 2 - (xi - hy) ** 2)
+            ri = _find_r_given_h_l(hi,lx)
+            if x0 <= (x0 + x1)/2:
+                zi = math.sqrt((ri)**2 - (xi-(x0+ri)**2))
+            else:           
+                zi = math.sqrt((ri)**2 - (xi-(x1-ri)**2))
+
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+            z = 0.0
+        form.set_vertex_attribute(key,'target',value=zi)
+        print(zi)
+        if weights:
+            form.set_vertex_attribute(key,name='weight',value = form.get_vertex_attribute(key,'pz'))
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(zi,2))
+
+    # if ub_lb:
+    #     form = set_cross_vault_heights_ub(form, xy_span = xy_span, thk = thk)
+    #     form = set_cross_vault_heights_lb(form, xy_span = xy_span, thk = thk)
+
+    return form
+
 def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, tol = 0.00, set_heights = False):
 
     x0 = center[0]
@@ -509,7 +640,7 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
 
     return form
 
-def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0):
+def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0, tol = 1e-3):
 
     k_i = form.key_index()
 
@@ -533,10 +664,10 @@ def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0):
     joints = {}
     for j in range(njoints):
         theta = j/blocks*math.pi
-        xi = xc + ri * math.cos(theta)
-        zi = ri * math.sin(theta)
+        xi = xc + ri * math.cos(theta) # takeout
+        zi = ri * math.sin(theta) + tol
         xe = xc + re * math.cos(theta)
-        ze = re * math.sin(theta)
+        ze = re * math.sin(theta) + tol # take out
         xmax = max(xi,xe)
         xmin = min(xi,xe)
         possible_edges = []
@@ -544,6 +675,10 @@ def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0):
             xu, xv = form.vertex_coordinates(u)[0], form.vertex_coordinates(v)[0]
             if max(xu,xv) >= xmin and min(xu,xv) <= xmax: 
                 possible_edges.append(tuple(sorted([k_i[u],k_i[v]])))
+                if form.get_vertex_attribute(u, 'is_fixed') == True:
+                    possible_edges.append(tuple(sorted([-k_i[u],k_i[u]])))
+                if form.get_vertex_attribute(v, 'is_fixed') == True:
+                    possible_edges.append(tuple(sorted([-k_i[v],k_i[v]])))
         joints[j] = [[xi,y,zi],[xe,y,ze],set(possible_edges)]
         print(joints[j])
     form.attributes['joints'] = joints

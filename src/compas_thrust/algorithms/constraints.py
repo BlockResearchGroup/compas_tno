@@ -1,12 +1,14 @@
-
 from numpy import vstack
 from numpy import hstack
 from numpy import multiply
 from numpy import divide
 from numpy import array
+from numpy import zeros
 from numpy.linalg import matrix_rank
 from numpy import transpose
 from compas.geometry import is_intersection_segment_segment_xy
+from compas.geometry import intersection_line_segment_xy
+from compas.geometry import distance_point_point_xy
 from compas_thrust.algorithms import zlq_from_qid
 from compas_thrust.algorithms import q_from_qid
 from scipy.sparse import diags
@@ -22,6 +24,7 @@ __email__     = 'mricardo@ethz.ch'
 __all__ = [
     'f_ub_lb',
     'f_compression',
+    'f_joints'
 ]
 
 
@@ -53,7 +56,13 @@ def f_ub_lb(xopt, *args):
 
 def f_compression(xopt, *args):
 
-    q = q_from_qid(xopt, args)
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    if len(xopt)>k:
+        qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
+    else:
+        qid = xopt
+
+    q = q_from_qid(qid, args)
 
     return hstack([q.ravel() + 10**(-5)])
 
@@ -68,23 +77,36 @@ def f_joints(xopt, *args):
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
 
+    # Reactions and additional edges
+    CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
+    xyz = hstack([x,y,z])
+    R = CfQC.dot(xyz)
+    zR = zeros((len(x),1))
+    xR = zeros((len(x),1))
+    xR[fixed] = x[fixed] + R[:,0].reshape(-1,1)
+    zR[fixed] = z[fixed] + R[:,2].reshape(-1,1)
+
     constr = 0.0
     for i, elements in joints.items():
         p1, p2, edges = elements
-        joint_int = False
+        joint_int = - 50.0
         for k1, k2 in edges:
-            e1 = [x[k1], z[k1]]
-            e2 = [x[k2], z[k2]]
+            if -k1 == k2:
+                e1 = xR[-k1], zR[-k1]
+            else:
+                e1 = x[k1], z[k1]
+            e2 = x[k2], z[k2]
             edge_2D = [e1,e2]
             joint_2D = [[p1[0],p1[2]],[p2[0],p2[2]]]
             if is_intersection_segment_segment_xy(joint_2D,edge_2D) == True:
-                joint_int = True
+                joint_int = 0.0
                 break
-        constr+float(joint_int*1)-1
-    constr = array(constr)
-    # print(constr)
+            else:
+                virtual_pt = intersection_line_segment_xy(joint_2D,edge_2D)
+                if virtual_pt:
+                    offset = min(distance_point_point_xy([virtual_pt[0],virtual_pt[2]],joint_2D[0]),distance_point_point_xy([virtual_pt[0],virtual_pt[2]],joint_2D[1]))
+                    joint_int = - (offset +1) ** 2
+                    break
+        constr+= joint_int
 
-    if any(q) == False:
-        return 10**10
-
-    return constr.transpose()
+    return constr

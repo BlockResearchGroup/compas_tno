@@ -16,8 +16,8 @@ from numpy import array
 if __name__ == "__main__":
 
     file_save = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/couplet_problem.json'
-    
-    form = create_arch(total_nodes=14)
+    blocks = 15
+    form = create_arch(total_nodes=blocks)
     overview_forces(form)
     print_opt = True
     decrease = 0.01
