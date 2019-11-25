@@ -15,6 +15,7 @@ from compas_thrust.algorithms.objectives import f_constant
 from compas_thrust.algorithms.constraints import f_compression
 from compas_thrust.algorithms.constraints import f_ub_lb
 from compas_thrust.algorithms.constraints import f_joints
+from compas_thrust.algorithms.constraints import f_cracks
 
 from compas_thrust.algorithms.equilibrium import reactions
 
@@ -55,7 +56,11 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
-    print('qid',q[ind])
+    print('lb',lb)
+    print('len-lb',len(lb))
+    print('ub',ub)
+    print('len-ub',len(ub))
+
     # Problem specifities
 
     if bmax:
@@ -69,15 +74,21 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         b = array(b)
     else:
         b = None
-
     if printout and bmax:
         print('Reaction spread: {0}'.format(b))
+
     try:
         joints = form.attributes['joints']
     except:
         joints = None
 
-    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
+    try:
+        cracks_lb, cracks_ub = form.attributes['cracks']
+    except:
+        cracks_lb = []
+        cracks_ub = []
+
+    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub)
 
     # Select Objetive and Constraints
 
@@ -85,6 +96,8 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         fobj, fconstr = f_min_loadpath, f_compression
     if objective == 'constr_lp':
         fobj, fconstr = f_min_loadpath, f_ub_lb
+    if objective == 'cracks_lp':
+        fobj, fconstr = f_min_loadpath, f_cracks
     if objective == 'lp_joints':
         fobj, fconstr = f_min_loadpath_pen, f_joints
     if objective=='target':
@@ -157,7 +170,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
             q[ind] = xopt[:k]
 
     if solver == 'cvx':
-        print('W.I.P.')
+        fopt, xopt = _cvx(fobj,args)
 
     # Recalculate equilibrium and update form-diagram
 
@@ -234,4 +247,60 @@ def _diff_evo(fn, bounds, population, generations, printout, plot, frange, args)
 def _ga(fn, fit_type, num_var, boundaries, num_gen, num_pop, args):
     
     return ga(fit_function=fn,fit_type = fit_type, num_var = num_var, boundaries = boundaries, num_gen = num_gen, num_pop = num_pop, fargs = args)
+
+
+def _cvx(fobj,args):
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    
+    import matlab.engine
+
+    # file = '/Users/mricardo/Documents/MATLAB/optimisation/discretize/test.mat'
+
+    # savemat(file,{
+    #     'm': int(form.number_of_edges()),
+    #     'n': int(form.number_of_vertices()),
+    #     'ni': len(free),
+    #     'C': C,
+    #     'Ci': Ci,
+    #     'Cf': Cf,
+    #     'Cit': Cit,
+    #     'x': x,
+    #     'y': y,
+    #     'xb': x[fixed],
+    #     'yb': y[fixed],
+    #     'pz': pz[free],
+    #     'free': free,
+    #     'fixed': fixed,
+    #     'p': p,
+    #     'E': E,
+    #     })
+
+    eng = matlab.engine.start_matlab()
+    eng.workspace['m'] = int(len(q))
+    eng.workspace['C'] = matlab.double(C.toarray().tolist()) #C.todense()
+    eng.workspace['Ci'] = matlab.double(Ci.toarray().tolist()) #Ci.todense()
+    eng.workspace['Cf'] = matlab.double(Cf.toarray().tolist()) #Cf.todense()
+    eng.workspace['Cit'] = matlab.double(Cit.toarray().tolist()) #Cit.todense()
+    eng.workspace['xt'] = matlab.double(x.transpose().tolist())
+    eng.workspace['yt'] = matlab.double(y.transpose().tolist())
+    eng.workspace['xb'] = matlab.double(x[fixed].tolist())
+    eng.workspace['yb'] = matlab.double(y[fixed].tolist())
+    eng.workspace['pz'] = matlab.double(pz[free].tolist())
+    eng.workspace['E'] = matlab.double(E.tolist()) #E.todense()
+    # eng.load('/Users/mricardo/Documents/MATLAB/optimisation/discretize/nosym_02_06_p_140.mat', nargout=0)
+    eng.cvx_begin(nargout=0)
+    eng.variable('q(double(m))', nargout = 0)
+    eng.minimize('matrix_frac(pz,(Cit*diag(q)*Ci)) + xt*transpose(C)*diag(q)*Cf*xb + yt*transpose(C)*diag(q)*Cf*yb',nargout=0)
+    eng.eval('q >= 0.0', nargout = 0)
+    eng.eval('q <= 100.0', nargout = 0)
+    eng.eval('E*q == 0.0', nargout = 0)
+    eng.cvx_end(nargout=0)
+
+    fopt = eng.workspace['cvx_optval']
+    qopt = array(eng.workspace['q'])
+    xopt = qopt[ind]
+
+    return fopt, xopt
+
 

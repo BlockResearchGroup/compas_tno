@@ -112,32 +112,32 @@ def save_matlab(form, file, find_inds=True, heights=False, lb_ub=True):
     else:
         zt = zlb = zub = 1.0
 
-    savemat(file,{
-            'm': int(form.number_of_edges()),
-            'n': int(form.number_of_vertices()),
-            'ni': len(free),
-            'C': C,
-            'Ci': Ci,
-            'Cf': Cf,
-            'Cit': Cit,
-            'x': x,
-            'y': y,
-            'xb': x[fixed],
-            'yb': y[fixed],
-            'pz': pz[free],
-            'free': free,
-            'fixed': fixed,
-            'p': p,
-            'E': E,
-            'Edinv': Edinv,
-            'Ei': Ei,
-            'k': k,
-            'ind': ind,
-            'dep': dep,
-            'zlb': zlb,
-            'zub': zub,
-            'zt': zt
-        })
+savemat(file,{
+    'm': int(form.number_of_edges()),
+    'n': int(form.number_of_vertices()),
+    'ni': len(free),
+    'C': C,
+    'Ci': Ci,
+    'Cf': Cf,
+    'Cit': Cit,
+    'x': x,
+    'y': y,
+    'xb': x[fixed],
+    'yb': y[fixed],
+    'pz': pz[free],
+    'free': free,
+    'fixed': fixed,
+    'p': p,
+    'E': E,
+    'Edinv': Edinv,
+    'Ei': Ei,
+    'k': k,
+    'ind': ind,
+    'dep': dep,
+    'zlb': zlb,
+    'zub': zub,
+    'zt': zt
+})
     pass
 
 

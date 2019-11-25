@@ -18,6 +18,7 @@ from compas_plotters import MeshPlotter
 import math
 
 from compas_thrust.plotters.plotters import plot_form
+from compas_thrust.plotters.plotters import plot_form_xz
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -203,24 +204,63 @@ def set_height_constraint(form, zmax = 1.0):
 
 def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False, weights = False, thk = None, tol = 0.00, set_heights = False):
 
+    """ Set Cross-Vault heights.
+
+    Parameters
+    ----------
+    xy_span : list
+        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+    ub_lb : bool (optional)
+        If True, the thickness will apply and the limits will be stored as attributes 'ub' and 'lb' on the form-diagram
+
+    thk : float (optional)
+        Thickness of the vault - perpendicular to the middle surface
+
+    tol : float (optional)
+        Approximates the equations avoiding negative square-roots.
+
+    set_heights: bool
+        If True, the nodes will have the heights 'z' updated to match the pointed arch shape.
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    Notes
+    ----------------------
+    Position of the quadrants is as in the schema below:
+
+        Q3
+    Q2      Q1
+        Q4
+
+    """
+
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
 
-    if xy_span[0] == xy_span[1]:
-        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+    rx = (x1 - x0)/2
+    ry = (y1 - y0)/2
+    hc = max(rx,ry)
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
-        if yi <= y1/x1 * xi + tol and yi <= y1 - xi + tol: #Q1
-            z = math.sqrt((rx)**2 - (xi-rx)**2)
-        elif yi >= y1/x1 * xi - tol and yi >= y1 - xi - tol: #Q3
-            z = math.sqrt((rx)**2 - (xi-rx)**2)
-        elif yi <= y1/x1 * xi + tol and yi >= y1 - xi - tol: #Q2
-            z = math.sqrt((ry)**2 - (yi-ry)**2)
-        elif yi >= y1/x1 * xi - tol and yi <= y1 - xi + tol: #Q4
-            z = math.sqrt((ry)**2 - (yi-ry)**2)
+        xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
+        yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
+        hxd = (math.sqrt((rx)**2 - ((xd - x0)- rx)**2))   
+        hyd = (math.sqrt((ry)**2 - ((yd - y0)- ry)**2))
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
+            z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+            z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q2
+            z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+            z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
@@ -228,7 +268,7 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False
         if weights:
             form.set_vertex_attribute(key,name='weight',value = form.get_vertex_attribute(key,'pz'))
         if set_heights:
-            form.set_vertex_attribute(key,'z',value=round(z,2))
+            form.set_vertex_attribute(key, 'z', value = round(z,2))
 
     if ub_lb:
         form = set_cross_vault_heights_ub(form, xy_span = xy_span, thk = thk)
@@ -236,60 +276,83 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False
 
     return form
 
-def set_cross_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.000):
+def set_cross_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.000, set_heights = False):
 
     y1 = xy_span[1][1] + thk/2
     y0 = xy_span[1][0] - thk/2
     x1 = xy_span[0][1] + thk/2
     x0 = xy_span[0][0] - thk/2
 
-    if xy_span[0] == xy_span[1]:
-        rx = ry = (xy_span[0][1] - xy_span[0][0] + thk)/2.0
+    rx = (x1 - x0)/2
+    ry = (y1 - y0)/2
+    hc = max(rx,ry)
+    print(rx,ry)
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
-        if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
-            z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
-        elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q3
-            z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
-        elif (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q2
-            z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
-        elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q4
-            z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
+        xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
+        yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
+        hxd = (math.sqrt((rx)**2 - ((xd - x0)- rx)**2))   
+        hyd = (math.sqrt((ry)**2 - ((yd - y0)- ry)**2))
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
+            z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+            z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q2
+            z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+            z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
         form.set_vertex_attribute(key, 'ub', value = z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=z)
 
     return form
 
-def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.0):
+def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.0, set_heights = False):
 
     y1 = xy_span[1][1] - thk/2
     y0 = xy_span[1][0] + thk/2
     x1 = xy_span[0][1] - thk/2
     x0 = xy_span[0][0] + thk/2
 
-    if xy_span[0] == xy_span[1]:
-        rx = ry = (xy_span[0][1] - xy_span[0][0] - thk)/2.0
+    rx = (x1 - x0)/2
+    ry = (y1 - y0)/2
+    hc = max(rx,ry)
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
         if ((yi) > y1 and ((xi) > x1 or (xi) < x0 )) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
             z = 0.0
         else:
-            if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
-                z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
-            elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q3
-                z = math.sqrt(((rx)**2 - ((xi - x0)-rx)**2))
-            elif (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) >= (y1 - y0) - (xi - x0) - tol: #Q2
-                z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
-            elif (yi - y0) >= y1/x1 * (xi - x0) - tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q4
-                z = math.sqrt(((ry)**2 - ((yi - y0)-ry)**2))
+            if yi > y1:
+                yi = y1
+            elif yi < y0:
+                yi = y0
+            elif xi > x1:
+                xi = x1
+            elif xi < x0:
+                xi = x0
+            xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
+            yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
+            hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
+            hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
+            if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
+                z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+                z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q2
+                z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+            elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+                z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
             else:
                 print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
                 z = 0.0
         form.set_vertex_attribute(key,'lb',value=z)
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=z)
 
     return form
 
@@ -300,31 +363,20 @@ def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb =
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
 
-    if xy_span[0] == xy_span[1]:
-        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+    rx = (x1 - x0)/2
+    ry = (y1 - y0)/2
+    
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
-        if yi <= y1/x1 * xi + tol and yi <= y1 - xi + tol: #Q1
-            try:
-                z = math.sqrt((ry)**2 - (yi-ry)**2)
-            except:
-                z = 0
-        elif yi >= y1/x1 * xi - tol and yi >= y1 - xi - tol: #Q3
-            try:
-                z = math.sqrt((ry)**2 - (yi-ry)**2)
-            except:
-                z = 0
-        elif yi <= y1/x1 * xi + tol and yi >= y1 - xi - tol: #Q2
-            try:
-                z = math.sqrt((rx)**2 - (xi-rx)**2)
-            except:
-                z = 0
-        elif yi >= y1/x1 * xi - tol and yi <= y1 - xi + tol: #Q4
-            try:
-                z = math.sqrt((rx)**2 - (xi-rx)**2)
-            except:
-                z = 0
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
+            z = math.sqrt((rx)**2 - (xi-rx)**2)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+            z = math.sqrt((rx)**2 - (yi-rx)**2)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q2
+            z = math.sqrt((ry)**2 - (xi-ry)**2)
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+            z = math.sqrt((ry)**2 - (yi-ry)**2)
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
@@ -431,14 +483,14 @@ def _find_r_given_h_l(h,l):
 
     return r
 
-def _find_O_rcentral(x0_,x1_,he1,he2,hc):
+def circle_3points_xy(p1,p2,p3):
 
-    x1 = x1_
-    z1 = he1
-    x2 = (x0_ + x1_)/2
-    z2 = hc
-    x3 = x0_
-    z3 = he2
+    x1 = p1[0]
+    z1 = p1[1]
+    x2 = p2[0]
+    z2 = p2[1]
+    x3 = p3[0]
+    z3 = p3[1]
 
     x12 = x1 - x2
     x13 = x1 - x3
@@ -448,36 +500,77 @@ def _find_O_rcentral(x0_,x1_,he1,he2,hc):
     z21 = z2 - z1
     x31 = x3 - x1
     x21 = x2 - x1
-  
+    
     sx13 = x1**2 - x3**2
-    sz13 = z1**2 + z3**2
+    sz13 = z1**2 - z3**2
     sx21 = x2**2 - x1**2 
     sz21 = z2**2 - z1**2
 
     f = ((sx13) * (x12) + (sz13) * (x12) + (sx21) * (x13) + (sz21) * (x13)) / (2 * ((z31) * (x12) - (z21) * (x13)))
     g = ((sx13) * (z12) + (sz13) * (z12) + (sx21) * (z13) + (sz21) * (z13)) / (2 * ((x31) * (z12) - (x21) * (z13)))
     c = - x1 ** 2 -  z1 ** 2 - 2 * g * x1 - 2 * f * z1
-    h = -g; 
-    k = -f; 
-    r2 = h * h + k * k - c; 
-    r = math.sqrt(r2); 
+    h = - g
+    k = - f
+    r2 = h * h + k * k - c
+    r = math.sqrt(r2)
+
+    print('h: ',h,'k: ',k,'r: ',r)
 
     return h, k, r
 
-def set_pointed_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0, he=[5.0,5.0,5.0,5.0],  ub_lb=False, weights = False, thk = None, tol = 0.00, set_heights = False):
-    """
-    Set heights of a Pointed Vault
+def _sqrt(x):
+    try:
+        sqrt_x = math.sqrt(x)
+    except:
+        if x > -10e4:
+            sqrt_x = math.sqrt(abs(x))
+        else:
+            sqrt_x = 0.0
+            print('Problems to sqrt: ',x)
+    return sqrt_x
+
+def set_pointed_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0, he=None, hm=None,  ub_lb=False, thk = None, tol = 0.00, set_heights = False):
+    
+    """ Set pointed-vault heights.
+
+    Parameters
+    ----------
+    xy_span : list
+        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+    hc: float
+        Height of the central part of the pointed vault.
+
+    he: list (optional)
+        Height of the opening mid-span for each of the quadrants (see Notes).
+
+    hm: list (optional)
+        Height of each quadrant mid-span (see Notes).
+
+    ub_lb : bool (optional)
+        If True, the thickness will apply and the limits will be stored as attributes 'ub' and 'lb' on the form-diagram
+
+    thk : float (optional)
+        Thickness of the vault - perpendicular to the middle surface
+
+    tol : float (optional)
+        Approximates the equations avoiding negative square-roots.
+
+    set_heights: bool
+        If True, the nodes will have the heights 'z' updated to match the pointed arch shape.
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    Notes
     ----------------------
-
-
-
-    ----------------------
-    Notes:
+    Position of the quadrants is as in the schema below:
 
         Q3
     Q2      Q1
         Q4
-
 
     """
 
@@ -489,72 +582,268 @@ def set_pointed_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0, h
     lx = x1 - x0
     ly = y1 - y0
 
-    # Central Circular profile of the heights passing orthogonally throught the center
-    hx, kx, rx = _find_O_rcentral(x0,x1,he[0],he[1],hc)
-    hy, ky, ry = _find_O_rcentral(y0,y1,he[2],he[3],hc)
-
-    if xy_span[0] == xy_span[1]:
-        rx = ry = (xy_span[0][1] - xy_span[0][0])/2.0
+    if he and hm is None:
+        h1, k1, r1 = circle_3points_xy([x0,he[1]],[(x1+x0)/2,hc],[x1,he[0]])
+        h2, k2, r2 = h1, k1, r1
+        h3, k3, r3 = circle_3points_xy([y0,he[3]],[(y1+y0)/2,hc],[y1,he[2]])
+        h4, k4, r4 = h3, k3, r3
+    elif hm and he:
+        h1, k1, r1 = circle_3points_xy([(x1+x0)/2,hc],[3*(x1+x0)/4,hm[0]],[x1,he[0]])
+        h2, k2, r2 = circle_3points_xy([(x1+x0)/2,hc],[1*(x1+x0)/4,hm[1]],[x0,he[1]])
+        h3, k3, r3 = circle_3points_xy([(y1+y0)/2,hc],[3*(y1+y0)/4,hm[2]],[y1,he[2]])
+        h4, k4, r4 = circle_3points_xy([(y1+y0)/2,hc],[1*(y1+y0)/4,hm[3]],[y0,he[3]])
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
-        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
-            # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant)
-            hi = kx + math.sqrt(rx ** 2 - (xi - hx) ** 2)
-            # Given that height we find the radius of the mid-quadrant
+
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: # Q1
+            # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
+            if he:
+                hi = k1 + math.sqrt(r1 ** 2 - (xi - h1) ** 2)
+            else:
+                hi = hc
+            ri = _find_r_given_h_l(hi,ly) # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if yi <= (y1 + y0)/2:
+                zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
+            else:    
+                zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: # Q3
+            # Equation (xi - hy) ** 2 + (hi - ky) ** 2 = ry **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
+            if he:
+                hi = k3 + math.sqrt(r3 ** 2 - (yi - h3) ** 2)
+            else:
+                hi = hc
+            ri = _find_r_given_h_l(hi,lx) # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if xi <= (x0 + x1)/2:
+                zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
+            else:
+                zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: # Q2
+            if he:
+                hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
+            else:
+                hi = hc
             ri = _find_r_given_h_l(hi,ly)
-            # Given the point on th emid-quadrant we find individual height knowing the fictious center xc_ yc_
-            # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2              
             if yi <= (y1 + y0)/2:
-                zi = math.sqrt((ri)**2 - (yi-(y0+ri)**2))
-            else:           
-                zi = math.sqrt((ri)**2 - (yi-(y1-ri)**2))
-
-
-        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
-            # Equation (xi - hy) ** 2 + (hi - ky) ** 2 = ry **2 to find the height of the pointed part (middle of quadrant)
-            hi = ky + math.sqrt(ry ** 2 - (xi - hy) ** 2)
-            # Given that height we find the radius of the mid-quadrant
-            ri = _find_r_given_h_l(hi,lx)
-            # Given the point on th emid-quadrant we find individual height knowing the fictious center xc_ yc_
-            # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2              
-            if x0 <= (x0 + x1)/2:
-                zi = math.sqrt((ri)**2 - (xi-(x0+ri)**2))
-            else:           
-                zi = math.sqrt((ri)**2 - (xi-(x1-ri)**2))
-
-
-        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q2
-            hi = kx + math.sqrt(rx ** 2 - (xi - hx) ** 2)
-            ri = _find_r_given_h_l(hi,ly)           
-            if yi <= (y1 + y0)/2:
-                zi = math.sqrt((ri)**2 - (yi-(y0+ri)**2))
-            else:           
-                zi = math.sqrt((ri)**2 - (yi-(y1-ri)**2))
+                zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
+            else:       
+                zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
             
-        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
-            hi = ky + math.sqrt(ry ** 2 - (xi - hy) ** 2)
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: # Q4
+            if he:
+                hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
+            else:
+                hi = hc
             ri = _find_r_given_h_l(hi,lx)
-            if x0 <= (x0 + x1)/2:
-                zi = math.sqrt((ri)**2 - (xi-(x0+ri)**2))
-            else:           
-                zi = math.sqrt((ri)**2 - (xi-(x1-ri)**2))
+            if xi <= (x0 + x1)/2:
+                zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
+            else:
+                zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
 
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
-            z = 0.0
         form.set_vertex_attribute(key,'target',value=zi)
-        print(zi)
-        if weights:
-            form.set_vertex_attribute(key,name='weight',value = form.get_vertex_attribute(key,'pz'))
+        
         if set_heights:
             form.set_vertex_attribute(key,'z',value=round(zi,2))
 
-    # if ub_lb:
-    #     form = set_cross_vault_heights_ub(form, xy_span = xy_span, thk = thk)
-    #     form = set_cross_vault_heights_lb(form, xy_span = xy_span, thk = thk)
+    if ub_lb and thk:
+        form = set_pointed_vault_heights_ub(form, xy_span = xy_span, hc = hc, he = he, hm = hm, thk = thk)
+        form = set_pointed_vault_heights_lb(form, xy_span = xy_span, hc = hc, he = he, hm = hm, thk = thk)
 
     return form
+
+def set_pointed_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0, he=None, hm=None, thk = None, tol = 0.00, set_heights = False):
+
+    y1_init = xy_span[1][1]
+    y0_init = xy_span[1][0]
+    x1_init = xy_span[0][1]
+    x0_init = xy_span[0][0]
+    
+    y1 = xy_span[1][1] + thk / 2
+    y0 = xy_span[1][0] - thk / 2
+    x1 = xy_span[0][1] + thk / 2
+    x0 = xy_span[0][0] - thk / 2
+
+    lx = x1 - x0
+    ly = y1 - y0
+
+    hc += thk/2
+    if he:
+        for i in range(len(he)):
+            he[i] += thk/2
+    if hm:
+        for i in range(len(he)):
+            hm[i] += thk/2
+
+    if he and hm is None:
+        h1, k1, r1 = circle_3points_xy([x0_init,he[1]],[(x1_init+x0_init)/2,hc],[x1_init,he[0]])
+        h2, k2, r2 = h1, k1, r1
+        h3, k3, r3 = circle_3points_xy([y0_init,he[3]],[(y1_init+y0_init)/2,hc],[y1_init,he[2]])
+        h4, k4, r4 = h3, k3, r3
+    elif hm and he:
+        h1, k1, r1 = circle_3points_xy([(x1_init+x0_init)/2,hc],[3*(x1_init+x0_init)/4,hm[0]],[x1_init,he[0]])
+        h2, k2, r2 = circle_3points_xy([(x1_init+x0_init)/2,hc],[1*(x1_init+x0_init)/4,hm[1]],[x0_init,he[1]])
+        h3, k3, r3 = circle_3points_xy([(y1_init+y0_init)/2,hc],[3*(y1_init+y0_init)/4,hm[2]],[y1_init,he[2]])
+        h4, k4, r4 = circle_3points_xy([(y1_init+y0_init)/2,hc],[1*(y1_init+y0_init)/4,hm[3]],[y0_init,he[3]])
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: # Q1
+            # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
+            if he:
+                hi = k1 + math.sqrt(r1 ** 2 - (xi - h1) ** 2)
+            else:
+                hi = hc
+            ri = _find_r_given_h_l(hi,ly) # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if yi <= (y1 + y0)/2:
+                zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
+            else:    
+                zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: # Q3
+            # Equation (xi - hy) ** 2 + (hi - ky) ** 2 = ry **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
+            if he:
+                hi = k3+ math.sqrt(r3 ** 2 - (yi - h3) ** 2)
+            else:
+                hi = hc
+            ri = _find_r_given_h_l(hi,lx) # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if xi <= (x0 + x1)/2:
+                zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
+            else:
+                zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: # Q2
+            if he:
+                hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
+            else:
+                hi = hc
+            ri = _find_r_given_h_l(hi,ly)
+            if yi <= (y1 + y0)/2:
+                zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
+            else:       
+                zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
+            
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: # Q4
+            if he:
+                hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
+            else:
+                hi = hc
+            ri = _find_r_given_h_l(hi,lx)
+            if xi <= (x0 + x1)/2:
+                zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
+            else:
+                zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
+
+        else:
+            print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+        form.set_vertex_attribute(key,'target',value=zi)
+        
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(zi,2))
+
+    return form
+
+def set_pointed_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0, he=None, hm=None, thk = None, tol = 0.00, set_heights = False):
+
+    y1_init = xy_span[1][1]
+    y0_init = xy_span[1][0]
+    x1_init = xy_span[0][1]
+    x0_init = xy_span[0][0]
+    
+    y1 = xy_span[1][1] - thk/2
+    y0 = xy_span[1][0] + thk/2
+    x1 = xy_span[0][1] - thk/2
+    x0 = xy_span[0][0] + thk/2
+
+    lx = x1 - x0
+    ly = y1 - y0
+
+    hc -= thk/2
+    if he:
+        for i in range(len(he)):
+            he[i] -= thk/2
+    if hm:
+        for i in range(len(he)):
+            hm[i] -= thk/2
+
+    if hm and he:
+        h1, k1, r1 = circle_3points_xy([(x1_init+x0_init)/2,hc],[3*(x1_init+x0_init)/4,hm[0]],[x1_init,he[0]])
+        h2, k2, r2 = circle_3points_xy([(x1_init+x0_init)/2,hc],[1*(x1_init+x0_init)/4,hm[1]],[x0_init,he[1]])
+        h3, k3, r3 = circle_3points_xy([(y1_init+y0_init)/2,hc],[3*(y1_init+y0_init)/4,hm[2]],[y1_init,he[2]])
+        h4, k4, r4 = circle_3points_xy([(y1_init+y0_init)/2,hc],[1*(y1_init+y0_init)/4,hm[3]],[y0_init,he[3]])
+    elif he and hm is None:
+        h1, k1, r1 = circle_3points_xy([x0_init,he[1]],[(x1_init+x0_init)/2,hc],[x1_init,he[0]])
+        h2, k2, r2 = h1, k1, r1
+        h3, k3, r3 = circle_3points_xy([y0_init,he[3]],[(y1_init+y0_init)/2,hc],[y1_init,he[2]])
+        h4, k4, r4 = h3, k3, r3
+
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+
+        if (yi) > y1 or (xi) > x1 or (xi) < x0 or (yi) < y0:
+            zi = 0.0
+        else:
+
+            if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: # Q1
+                # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
+                if he:
+                    hi = k1 + math.sqrt(r1 ** 2 - (xi - h1) ** 2)
+                else:
+                    hi = hc
+                ri = _find_r_given_h_l(hi,ly) # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+                if yi <= (y1 + y0)/2:
+                    zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
+                else:    
+                    zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
+
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: # Q3
+                # Equation (xi - hy) ** 2 + (hi - ky) ** 2 = ry **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
+                if he:
+                    hi = k3+ math.sqrt(r3 ** 2 - (yi - h3) ** 2)
+                else:
+                    hi = hc
+                ri = _find_r_given_h_l(hi,lx) # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+                if xi <= (x0 + x1)/2:
+                    zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
+                else:
+                    zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
+
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: # Q2
+                if he:
+                    hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
+                else:
+                    hi = hc
+                ri = _find_r_given_h_l(hi,ly)
+                if yi <= (y1 + y0)/2:
+                    zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
+                else:       
+                    zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
+                
+            elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: # Q4
+                if he:
+                    hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
+                else:
+                    hi = hc
+                ri = _find_r_given_h_l(hi,lx)
+                if xi <= (x0 + x1)/2:
+                    zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
+                else:
+                    zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
+
+            else:
+                print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
+        
+        form.set_vertex_attribute(key,'target',value=zi)
+        
+        if set_heights:
+            form.set_vertex_attribute(key,'z',value=round(zi,2))
+
+    return form
+
 
 def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, tol = 0.00, set_heights = False):
 
@@ -577,29 +866,7 @@ def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, 
 
     return form
 
-
-def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, tol = 0.00, set_heights = False):
-
-    x0 = center[0]
-    y0 = center[1]
-
-    for key in form.vertices():
-        xi, yi, _ = form.vertex_coordinates(key)
-        z2 = + radius**2 - (xi - x0)**2 - (yi - y0)**2
-        if -0.01 <= z2 <= 0.0:
-            z2 = 0.0
-        try: 
-            z = math.sqrt(z2)
-        except:
-            print(xi,yi)
-            z=0
-        form.set_vertex_attribute(key,'target',value=z)
-        if set_heights:
-            form.set_vertex_attribute(key,'z',value=round(z,2))
-
-    return form
-
-def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
+def circular_heights(form , x0 = None, xf = None, thk=0.5, t=50):
 
     if x0 == None or xf == None:
         x = []
@@ -619,16 +886,16 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
     for key in form.vertices():
         x, _, _ = form.vertex_coordinates(key)
         zt = math.sqrt(r**2 - (x-xc)**2)
-        ze = math.sqrt(re**2 - (x-xc)**2) - t
+        ze = math.sqrt(re**2 - (x-xc)**2)
         form.set_vertex_attribute(key,'target',value=zt)
         zi2 = ri**2 - (x-xc)**2
         if zi2 < 0:
             zi = 0 - t
         else:
-            zi = math.sqrt(zi2) - t
+            zi = math.sqrt(zi2)
         if form.get_vertex_attribute(key,'is_fixed') == True:
-            form.set_vertex_attribute(key,'lb',value=None)
-            form.set_vertex_attribute(key,'ub',value=None)
+            form.set_vertex_attribute(key,'lb',value=-t)
+            form.set_vertex_attribute(key,'ub',value=ze)
         else:
             form.set_vertex_attribute(key,'lb',value=zi)
             form.set_vertex_attribute(key,'ub',value=ze)
@@ -637,6 +904,50 @@ def circular_heights(form , x0 = None, xf = None, thk=0.5, t=0.0):
             form.set_vertex_attribute(key, 'b', value = [thk/2,0.0])
         if x == x0:
             form.attributes['tmax'] = ze
+
+    return form
+
+def create_cracks(form , dx =[[0.50, 0.55]], dy = [[-0.1, 0.1]], type = ['top'], view = False):
+
+    """ Create cracks on a form diagram to the nodes desired.
+
+    Parameters
+    ----------
+    form : obj
+        ForceDiagram to constraint.
+    dx : list
+        List of the range on the x-coordinates of the nodes to be constrained.
+    dy : list
+        List of the range on the y-coordinates of the nodes to be constrained.
+    type : list
+        List with the type of constraint to applye to the vertices (top or bottom).
+
+    Returns
+    -------
+    form : obj
+        ForceDiagram with the constraints in attribute 'cracks'.
+
+    """
+
+    k_i = form.key_index()
+    cracks_ub = []
+    cracks_lb = []
+
+    count = 0
+
+    for key in form.vertices():
+        x, y, _ = form.vertex_coordinates(key)
+        for i in range(len(dx)):
+            if dx[i][0] <= x <= dx[i][1] and dy[i][0] <= y <= dy[i][1]:
+                if type[i] == 'top':
+                    cracks_ub.append(k_i[key])
+                if type[i] == 'bottom':
+                    cracks_lb.append(k_i[key])
+
+    form.attributes['cracks'] = (cracks_lb, cracks_ub)
+    
+    if view:
+        plot_form_xz(form, radius=0.02, cracks=True).show()
 
     return form
 

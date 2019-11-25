@@ -17,13 +17,14 @@ import rhinoscriptsyntax as rs
 j = 2
 i = 6
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
-jsonpath = '/Users/mricardo/compas_dev/me/loadpath/Fix/nosym/0'+str(j)+'_0'+str(i)+'_t_60.json'
+# jsonpath = '/Users/mricardo/compas_dev/me/loadpath/Fix/nosym/0'+str(j)+'_0'+str(i)+'_t_60.json'
+jsonpath = '/Users/mricardo/compas_dev/me/loadpath/freeform/test.json'
 # jsonpath = '/Users/mricardo/compas_dev/me/convex/4bars/diagram.json'
 
 
 # Form
 
-Lines_txt = 'Lines'#_0' + str(j) #_complete '0' + str(j) + '_0' + str(i)
+Lines_txt = 'Lines_complete'#_0' + str(j) #_complete '0' + str(j) + '_0' + str(i)
 Symmetry_txt = 'Sym' #_complete
 Pins_txt = 'Pins' #_complete
 Dots_txt = 'Dots' #_complete
@@ -38,7 +39,7 @@ joints_layer = 'Joint_Segments'
 
 guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Symmetry_txt)
 lines = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids if rs.IsCurve(i)]
-form = FormDiagram.from_lines(lines, delete_boundary_face=False) # AAAALWAYS CHECK IT
+form = FormDiagram.from_lines(lines, delete_boundary_face=True) # AAAALWAYS CHECK IT
 
 form.update_default_vertex_attributes({'is_roller': False})
 form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
@@ -48,14 +49,14 @@ form.attributes['indset'] = []
 gkey_key = form.gkey_key()
 
 Loads3d = False # Change
-lb_ub = True # Change
+lb_ub = False # Change
 target = False # Change
 scale = False
 rollers = False
 writepz = False
 nsym = 1 #8
 ind = False
-openings = False
+openings = True
 buttress = False
 joints = False
 

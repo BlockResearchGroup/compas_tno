@@ -14,7 +14,6 @@ from compas_thrust.algorithms import q_from_qid
 from scipy.sparse import diags
 
 
-
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
 __license__   = 'MIT License'
@@ -110,3 +109,39 @@ def f_joints(xopt, *args):
         constr+= joint_int
 
     return constr
+
+
+def f_cracks(xopt, *args):
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub = args
+
+    if len(xopt)>k:
+        qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
+        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub
+        z, l2, q, _ = zlq_from_qid(qid, args)
+    else:
+        z, l2, q, _ = zlq_from_qid(xopt, args)
+
+    # Constraints on Heights
+    upper_limit = 0 #ub - z[ub_ind] # >= 0
+    lower_limit = 0 #z[lb_ind] - lb # >= 0
+
+    tol = 1e-10
+
+    # Constraints on Reactions
+    CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
+    xyz = hstack([x,y,z])
+    R = CfQC.dot(xyz)
+    Rx_angle = tol + abs(b[:,0].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,0],R[:,2]).reshape(-1,1)))
+    Ry_angle = tol + abs(b[:,1].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,1],R[:,2]).reshape(-1,1)))
+
+    # Constraints on Cracks
+
+    crack_tol = 0.001
+
+    lower_cracks = - abs(lb[cracks_lb] - z[cracks_lb]) + crack_tol
+    upper_cracks = - abs(z[cracks_ub] - ub[cracks_ub]) + crack_tol
+
+    # This can be simplified to not count with the abs... Will test in 3D later on... and see :)
+
+    return transpose(vstack([upper_limit, lower_limit, lower_cracks, upper_cracks, Rx_angle, Ry_angle]))[0]

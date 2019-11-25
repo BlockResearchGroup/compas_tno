@@ -1,5 +1,5 @@
 from compas_tna.diagrams import FormDiagram
-# from compas_rhino.artists import NetworkArtist
+from compas_rhino.artists import NetworkArtist
 from compas.utilities import geometric_key
 from compas.geometry import distance_point_point
 # from compas_thrust.diagrams.form import overview_forces
@@ -21,7 +21,7 @@ for j in [2]: # j = 1
     else:
         shapes = [8] #range(2,8)
 
-    i = 4
+    i = 1
 
     for pat in ['c']:
 
@@ -31,7 +31,9 @@ for j in [2]: # j = 1
         # Load
         
         # file = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01.json'
-        fnm = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/02_06_complete_nosym.json'
+        # fnm = '/Users/mricardo/compas_dev/me/loadpath/corner/pointed/example.json'
+        # fnm = '/Users/mricardo/Documents/MATLAB/optimisation/discretize/form2.json'
+        fnm = '/Users/mricardo/compas_dev/me/loadpath/corner/pointed/rounded.json'
         # fnm = '/Users/mricardo/compas_dev/me/loadpath/Midsupport/topology/'+pat+'_lp.json'
         form = FormDiagram.from_json(fnm)
         # overview_forces(form)
@@ -46,7 +48,7 @@ for j in [2]: # j = 1
 
         # thrust_layer = 'Thrust_grad_lp'
         # thrust_layer = str(j)+'_Fix::Thrust-'+str(i)
-        thrust_layer = 'Default'#'Topology::Midsupport_'+pat+'_Thrust'
+        thrust_layer = 'Default' #'Topology::Midsupport_'+pat+'_Thrust'
         # thrust_layer = str(j)+'_midsupport::' + str(i) + '_opt'
         # reactions_layer = 'Thrust_grad_lp'
         # points_layer = '1_Fix::Points'

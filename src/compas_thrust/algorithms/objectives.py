@@ -42,7 +42,7 @@ def f_min_loadpath(xopt, *args):
         args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i
         z, l2, q, _ = zlq_from_qid(qid, args)
     else:
-        z, l2, q, _ = zlq_from_qid(xopt, args)
+        z, l2, q, _ = zlq_from_qid(xopt.reshape(-1,1), args)
     f = dot(abs(q.transpose()), l2)
 
     if isnan(f) == True or any(xopt) == False:

@@ -66,6 +66,7 @@ __email__     = 'mricardo@ethz.ch'
 
 __all__ = [
     'zlq_from_qid',
+    'zlq_from_q',
     'q_from_qid',
     'z_update',
     'z_from_form',
@@ -141,7 +142,7 @@ def zlq_from_qid(qid, args):
     """
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
-    q[ind, 0] = qid
+    q[ind] = array(qid).reshape(-1,1)
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
@@ -157,12 +158,20 @@ def q_from_qid(qid, args):
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
     
     q, ind, dep, E, Edinv, Ei = args[:6]
-    q[ind, 0] = qid
+    q[ind] = array(qid).reshape(-1,1)
     q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
 
     return q
 
+def zlq_from_q(q, args):
 
+    q_old, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
+    q_ = 1 * q
+    q[sym] *= 0
+    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
+    l2 = lh + C.dot(z)**2
+
+    return z, l2, q, q_
 
 def update_qid(file, value, ind_i = 0):
 

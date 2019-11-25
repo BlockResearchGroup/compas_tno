@@ -19,6 +19,7 @@ from random import shuffle
 from copy import copy
 from compas_tna.utilities import parallelise_sparse
 
+from numpy.random import rand
 from numpy import array
 from numpy import float64
 from numpy import zeros
@@ -47,7 +48,7 @@ __all__ = [
     'loadpath',
     'delete_boundary_edges',
     'overview_forces',
-    'create_arch'
+    'create_arch',
 ]
 
 def _form(form, keep_q=False):
@@ -417,5 +418,292 @@ def create_arch(D = 2.00, x0 = 0.0, total_nodes = 100, total_self_weight = 20.0,
         form.set_vertex_attribute(key,direc,value=lbd*form.get_vertex_attribute(key,'pz'))   
     form.set_vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
     form.set_vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+
+    return form
+
+
+def create_cross_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'corners', rollers = False ,pz = True, px = None, py = None):
+
+    """ Create a cross form-diagram.
+
+    Parameters
+    ----------
+    xy_span : list
+        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+    division: int
+        Set the density of the grid in x and y directions.
+
+    fix : string
+        Option to select the constrained nodes: 'corners', 'all' are accepted.
+
+    rollers: bool
+        Set the non-fixed vertices on the boundary as rollers.
+
+    pz : bool / float
+        If set to False, no vertical loads apply. If set to True, planar tributary area apply.
+
+    px : bool / float
+        If set to False, no x-horizontal loads apply. If set to float will apply a proportion of the vertical pz as px. Example px = 0.2 apply 20% of pz to px.
+
+    px : bool / float
+        If set to False, no y-horizontal loads apply. If set to float will apply a proportion of the vertical pz as py. Example py = 0.2 apply 20% of pz to py.
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    """
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    x_span = x1 - x0
+    y_span = y1 - y0
+    dx = x_span/division
+    dy = y_span/division
+
+    lines = []
+
+    for i in range(division+1):
+        for j in range(division+1):
+            if i < division and j < division:
+                # Vertical Members:
+                xa = x0 + dx*i
+                ya = y0 + dy*j
+                xb = x0 + dx*(i + 1)
+                yb = y0 + dy*j
+                # Horizontal Members:
+                xc = x0 + dx*i
+                yc = y0 + dy*j
+                xd = x0 + dx*i
+                yd = y0 + dy*(j + 1)
+                lines.append([[xa,ya,0.0],[xb,yb,0.0]])
+                lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+                if i == j:
+                    # Diagonal Members in + Direction:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*(i + 1)
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+                if i + j == division:
+                    # Diagonal Members in - Direction:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*(i - 1)
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+                    if i == (division - 1):
+                        xc = x0 + dx*i
+                        yc = y0 + dy*j
+                        xd = x0 + dx*(i + 1)
+                        yd = y0 + dy*(j - 1)
+                        lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+            else:
+                if i == division and j < division:
+                    # Vertical Members on last column:
+                    xa = x0 + dx*j
+                    ya = y0 + dy*i
+                    xb = x0 + dx*(j + 1)
+                    yb = y0 + dy*i
+                    # Horizontal Members:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*i
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xa,ya,0.0],[xb,yb,0.0]])
+                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+
+    form = FormDiagram.from_lines(lines, delete_boundary_face=True)
+
+    form.update_default_vertex_attributes({'is_roller': False})
+    form.update_default_vertex_attributes({'is_fixed': False})
+    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    form.attributes['loadpath'] = 0
+    form.attributes['indset'] = []
+
+    gkey_key = form.gkey_key()
+
+    if fix == 'corners':
+        form.set_vertex_attribute(gkey_key[geometric_key([x0,y0,0.0])], 'is_fixed', True)
+        form.set_vertex_attribute(gkey_key[geometric_key([x0,y1,0.0])], 'is_fixed', True)
+        form.set_vertex_attribute(gkey_key[geometric_key([x1,y0,0.0])], 'is_fixed', True)
+        form.set_vertex_attribute(gkey_key[geometric_key([x1,y1,0.0])], 'is_fixed', True)
+    else:
+        for key in form.vertices_on_boundaries:
+            form.set_vertex_attribute(key, 'is_fixed', True)
+    
+    if rollers:
+        for key in form.vertices_on_boundaries:
+            if form.get_vertex_attribute(key, 'is_fixed') == False:
+                form.set_vertex_attribute(key, 'is_roller', True)
+
+    if pz:
+        pzt = 0
+        for key in form.vertices():
+            form.vertex[key]['pz'] = form.vertex_area(key=key)
+            pzt += form.vertex[key]['pz']
+        print('Planar load - pzt = {0}'.format(pzt))
+
+    if px:
+        pxt = 0
+        for key in form.vertices():
+            form.vertex[key]['px'] = form.vertex[key]['pz'] * px
+            pxt += form.vertex[key]['px']
+        print('Load x-direction - pxt = {0}'.format(pxt))
+
+    if py:
+        pyt = 0
+        for key in form.vertices():
+            form.vertex[key]['py'] = form.vertex[key]['pz'] * py
+            pyt += form.vertex[key]['py']
+        print('Loax y-direction - pyt = {0}'.format(pyt))
+
+    return form
+
+def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'corners', rollers = False ,pz = True, px = None, py = None):
+
+    """ Create a cross form-diagram.
+
+    Parameters
+    ----------
+    xy_span : list
+        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+    division: int
+        Set the density of the grid in x and y directions.
+
+    fix : string
+        Option to select the constrained nodes: 'corners', 'all' are accepted.
+
+    rollers: bool
+        Set the non-fixed vertices on the boundary as rollers.
+
+    pz : bool / float
+        If set to False, no vertical loads apply. If set to True, planar tributary area apply.
+
+    px : bool / float
+        If set to False, no x-horizontal loads apply. If set to float will apply a proportion of the vertical pz as px. Example px = 0.2 apply 20% of pz to px.
+
+    px : bool / float
+        If set to False, no y-horizontal loads apply. If set to float will apply a proportion of the vertical pz as py. Example py = 0.2 apply 20% of pz to py.
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    """
+    
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    x_span = x1 - x0
+    y_span = y1 - y0
+    dx = x_span/division
+    dy = y_span/division
+
+    lines = []
+
+    for i in range(division/2+1):
+        for j in range(division/2+1):
+            if i < division/2 and j < division/2:
+                # Vertical Members:
+                xa = x0 + dx*i
+                ya = y0 + dy*j
+                xb = x0 + dx*(i + 1)
+                yb = y0 + dy*j
+                # Horizontal Members:
+                xc = x0 + dx*i
+                yc = y0 + dy*j
+                xd = x0 + dx*i
+                yd = y0 + dy*(j + 1)
+                lines.append([[xa,ya,0.0],[xb,yb,0.0]])
+                lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+                if i == j:
+                    # Diagonal Members in + Direction:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*(i + 1)
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+                if i + j == division:
+                    # Diagonal Members in - Direction:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*(i - 1)
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+                    if i == (division - 1):
+                        xc = x0 + dx*i
+                        yc = y0 + dy*j
+                        xd = x0 + dx*(i + 1)
+                        yd = y0 + dy*(j - 1)
+                        lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+            else:
+                if i == division and j < division:
+                    # Vertical Members on last column:
+                    xa = x0 + dx*j
+                    ya = y0 + dy*i
+                    xb = x0 + dx*(j + 1)
+                    yb = y0 + dy*i
+                    # Horizontal Members:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*i
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xa,ya,0.0],[xb,yb,0.0]])
+                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+
+    form = FormDiagram.from_lines(lines)
+
+    form.update_default_vertex_attributes({'is_roller': False})
+    form.update_default_vertex_attributes({'is_fixed': False})
+    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    form.attributes['loadpath'] = 0
+    form.attributes['indset'] = []
+
+    gkey_key = form.gkey_key()
+
+    if fix == 'corners':
+        form.set_vertex_attribute(gkey_key[geometric_key([x0,y0,0.0])], 'is_fixed', True)
+        form.set_vertex_attribute(gkey_key[geometric_key([x0,y1,0.0])], 'is_fixed', True)
+        form.set_vertex_attribute(gkey_key[geometric_key([x1,y0,0.0])], 'is_fixed', True)
+        form.set_vertex_attribute(gkey_key[geometric_key([x1,y1,0.0])], 'is_fixed', True)
+    else:
+        for key in form.vertices_on_boundaries:
+            form.set_vertex_attribute(key, 'is_fixed', True)
+    
+    if rollers:
+        for key in form.vertices_on_boundaries:
+            if form.get_vertex_attribute(key, 'is_fixed') == False:
+                form.set_vertex_attribute(key, 'is_roller', True)
+
+    if pz:
+        pzt = 0
+        for key in form.vertices():
+            form.vertex[key]['pz'] = form.vertex_area(key=key)
+            pzt += form.vertex[key]['pz']
+        print('Planar load - pzt = {0}'.format(pzt))
+
+    if px:
+        pxt = 0
+        for key in form.vertices():
+            form.vertex[key]['px'] = form.vertex[key]['pz'] * px
+            pxt += form.vertex[key]['px']
+        print('Load x-direction - pxt = {0}'.format(pxt))
+
+    if py:
+        pyt = 0
+        for key in form.vertices():
+            form.vertex[key]['py'] = form.vertex[key]['pz'] * py
+            pyt += form.vertex[key]['py']
+        print('Loax y-direction - pyt = {0}'.format(pyt))
 
     return form

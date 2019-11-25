@@ -41,9 +41,9 @@ from compas_thrust.algorithms.equilibrium import z_from_form
 from compas_thrust.algorithms.equilibrium import update_form
 from compas_thrust.algorithms.equilibrium import paralelise_form
 
-from compas_thrust.diagrams.form import evaluate_a
-from compas_thrust.diagrams.form import energy
-from compas_thrust.diagrams.form import loadpath
+# from compas_thrust.diagrams.form import evaluate_a
+# from compas_thrust.diagrams.form import energy
+# from compas_thrust.diagrams.form import loadpath
 
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram

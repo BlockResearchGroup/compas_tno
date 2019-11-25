@@ -183,7 +183,8 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
 
     args   = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y)
 
-    if find_independents:
+    if find_inds is True:
+        print('Checking Independents')
         checked = check_independents(args, tol = tol)
         if checked:
             pass
@@ -191,6 +192,3 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
             print('Warning: independent edges not equilibrated')
     
     return args
-
-
-

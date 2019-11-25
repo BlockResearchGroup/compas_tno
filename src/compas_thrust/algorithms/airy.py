@@ -6,10 +6,10 @@ from compas_thrust.algorithms.scale import lagrangian_scale
 from compas_thrust.algorithms.scale import scale_form
 from compas_thrust.algorithms.equilibrium import z_from_form
 
-from compas_thrust.diagrams.form import energy
-from compas_thrust.diagrams.form import loadpath
-from compas_thrust.diagrams.form import adapt_tna
-from compas_thrust.diagrams.form import evaluate_a
+# from compas_thrust.diagrams.form import energy
+# from compas_thrust.diagrams.form import loadpath
+# from compas_thrust.diagrams.form import adapt_tna
+# from compas_thrust.diagrams.form import evaluate_a
 from compas.geometry import Plane
 
 from compas.numerical import grad

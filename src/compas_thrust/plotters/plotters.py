@@ -257,7 +257,7 @@ def plot_dual(form):
 
     return plotter
 
-def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False, joints = False):
+def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False, joints = False, cracks = False):
 
     """ Plor of a 2D diagrma in the XZ plane
 
@@ -281,6 +281,7 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
 
     """
 
+    i_k = form.index_key()
     q = [attr[thick] for u, v, attr in form.edges(True)]
     qmax  = max(abs(array(q))) 
     lines = []
@@ -382,7 +383,29 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
                 'color': '000000',
                 'width': 0.25,
             })
-
+    
+    vertices = []
+    if cracks:
+        cracks_lb, cracks_ub = form.attributes['cracks']
+        for i in cracks_ub:
+            key = i_k[i]
+            x, _, _ = form.vertex_coordinates(key)
+            z = form.get_vertex_attribute(key, 'ub')
+            vertices.append({
+                'pos': [x,z],
+                'radius': radius,
+                'color': '000000',
+            })
+        for i in cracks_lb:
+            key = i_k[i]
+            x, _, _ = form.vertex_coordinates(key)
+            z = form.get_vertex_attribute(key, 'lb')
+            vertices.append({
+                'pos': [x,z],
+                'radius': radius,
+                'color': '000000',
+            })
+        
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     # round(form.get_vertex_attribute(i, 'pz'), 2)
@@ -397,6 +420,8 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
     # plotter.draw_vertices(radius= {i : form.get_vertex_attribute(i, 'px')/100 for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
 
     plotter.draw_lines(lines)
+    plotter.draw_points(vertices)
+
     if save:
         plotter.save(save)
 
