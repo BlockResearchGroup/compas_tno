@@ -22,6 +22,8 @@ from compas_thrust.algorithms.equilibrium import reactions
 from compas_thrust.algorithms import zlq_from_qid
 from compas.utilities import geometric_key
 
+import pyOpt
+
 from numpy.random import rand
 from numpy import append
 from numpy import array
@@ -41,9 +43,9 @@ __all__ = [
 
 
 def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True, tol = 0.001,
-                    printout=10, plot=False, indset=None, tension=False, planar=False,
+                    printout=10, plot=False, indset=None, tension=False, planar =False,
                     translation = None, use_bounds = None, bounds_width = 5.0,
-                    summary = True, objective='loadpath', bmax = False):
+                    summary = True, objective='loadpath', bmax = False, cracks = False):
 
     # Mapping
 
@@ -56,10 +58,6 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
-    print('lb',lb)
-    print('len-lb',len(lb))
-    print('ub',ub)
-    print('len-ub',len(ub))
 
     # Problem specifities
 
@@ -75,18 +73,22 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
     else:
         b = None
     if printout and bmax:
-        print('Reaction spread: {0}'.format(b))
+        print('Reaction spread:\n {0}'.format(b))
 
     try:
         joints = form.attributes['joints']
     except:
         joints = None
 
-    try:
-        cracks_lb, cracks_ub = form.attributes['cracks']
-    except:
-        cracks_lb = []
-        cracks_ub = []
+    if cracks:
+        try:
+            cracks_lb, cracks_ub = form.attributes['cracks']
+            if printout:
+                print('Cracks Definition')
+                print(cracks_lb, cracks_ub)
+        except:
+            cracks_lb = []
+            cracks_ub = []
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub)
 
@@ -96,7 +98,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         fobj, fconstr = f_min_loadpath, f_compression
     if objective == 'constr_lp':
         fobj, fconstr = f_min_loadpath, f_ub_lb
-    if objective == 'cracks_lp':
+    if objective == 'lp_cracks':
         fobj, fconstr = f_min_loadpath, f_cracks
     if objective == 'lp_joints':
         fobj, fconstr = f_min_loadpath_pen, f_joints
@@ -106,8 +108,12 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         fobj, fconstr = f_min_thrust, f_ub_lb
     if objective == 'min_joints':
         fobj, fconstr = f_min_thrust_pen, f_joints
+    if objective == 'min_cracks':
+        fobj, fconstr = f_min_thrust, f_cracks
     if objective=='max':
         fobj, fconstr =  f_max_thrust, f_ub_lb
+    if objective == 'max_cracks':
+        fobj, fconstr = f_max_thrust, f_cracks
     if objective == 'feasibility':
         fobj, fconstr = f_constant, f_joints
 
@@ -116,18 +122,20 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
     if translation:
         x0 = q[ind]
         bounds = [[qmin, qmax]] * k + [[-1*10, translation]] * len(fixed)
-        x0 = append(x0[0],z[fixed]).reshape(-1,1)
+        x0 = append(x0,z[fixed]).reshape(-1,1)
     else:
         x0 = q[ind]
         bounds = [[qmin, qmax]] * k
 
     print('Independents:', ind)
-    print('Initial stepbefore:', x0)
+    # print('Initial stepbefore:', x0)
     f0 = fobj(x0, *args)
+    g0 = fconstr(x0, *args)
     
     if printout:
-        print('Gradient Method: Initial Value: {0}'.format(f0))
-        print('Initial step:', x0)
+        print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
+        print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0),min(g0)))
+        # print('Initial step:', x0)
 
     # Solve with the appropriate solver
 
@@ -137,7 +145,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
             fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, printout, fconstr, args)
         if exitflag == 0:
             if translation:
-                q[ind] = xopt[:k]
+                q[ind] = xopt[:k].reshape(-1,1)
                 z[fixed] = xopt[k:].reshape(-1,1)
             else:
                 q[ind] = xopt[:k]
@@ -169,15 +177,75 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         else:
             q[ind] = xopt[:k]
 
-    if solver == 'cvx':
-        fopt, xopt = _cvx(fobj,args)
+    if solver.split('-')[0] == 'pyOpt':
+        lower = [x[0] for x in bounds]
+        upper = [x[1] for x in bounds]
+        solver_pyOpt = solver.split('-')[1]
+        title = 'Solver: ' + solver_pyOpt + 'Objective: ' + objective
+
+        opt_prob = pyOpt.Optimization(title,pyOpt_wrapper)
+        opt_prob.addObj('f', value = f0)
+        opt_prob.addVarGroup('x', len(x0), type='c', value=x0, lower=lower, upper=upper)
+        opt_prob.addConGroup('c',len(g0), type='i', value=g0)
+
+        if solver_pyOpt == 'SLSQP':
+            slv = pyOpt.SLSQP() 
+
+        if solver_pyOpt == 'PSQP':
+            slv = pyOpt.PSQP() 
+
+        if solver_pyOpt == 'CONMIN':
+            slv = pyOpt.CONMIN() 
+
+        if solver_pyOpt == 'COBYLA':
+            slv = pyOpt.COBYLA() 
+
+        if solver_pyOpt == 'SOLVOPT':
+            slv = pyOpt.SOLVOPT() 
+
+        if solver_pyOpt == 'KSOPT':
+            slv = pyOpt.KSOPT() 
+
+        if solver_pyOpt == 'NSGA2':
+            slv = pyOpt.NSGA2() 
+
+        if solver_pyOpt == 'ALGENCAN':
+            slv = pyOpt.ALGENCAN() 
+
+        if solver_pyOpt == 'FILTERSD':
+            slv = pyOpt.FILTERSD()
+
+        if solver_pyOpt == 'SDPEN':
+            slv = pyOpt.SDPEN()
+
+        if solver_pyOpt == 'ALPSO':
+            slv = pyOpt.SDPEN()
+
+        if solver_pyOpt == 'ALHSO':
+            slv = pyOpt.SDPEN()
+
+        if solver_pyOpt == 'MIDACO':
+            slv = pyOpt.SDPEN()
+
+        # slv.setOption('IPRINT',-1)
+        [fopt, xopt, info] = slv(opt_prob, sens_type='FD', args = args, objective = fobj, constraints = fconstr)
+        # if printout:
+        #     print(opt_prob.solution(0))
+        print(info['text'])
+        fopt = fopt.item()
+        print(fopt)
+        niter = 100
+        exitflag = 0
+        if translation:
+            q[ind] = xopt[:k].reshape(-1,1)
+            z[fixed] = xopt[k:].reshape(-1,1)
+        else:
+            q[ind] = xopt[:k].reshape(-1,1)
 
     # Recalculate equilibrium and update form-diagram
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
     z, _, q, q_ = zlq_from_qid(q[ind], args)
-
-    print('qid',q[ind])
 
     gkeys = []
     for i in ind:
@@ -201,7 +269,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
             lp += abs(qi) * li**2
     form.attributes['loadpath'] = lp
 
-    form.attributes['iter'] = niter
+    # form.attributes['iter'] = niter
     form.attributes['exitflag'] = exitflag
     reactions(form, plot = plot)
 
@@ -249,58 +317,14 @@ def _ga(fn, fit_type, num_var, boundaries, num_gen, num_pop, args):
     return ga(fit_function=fn,fit_type = fit_type, num_var = num_var, boundaries = boundaries, num_gen = num_gen, num_pop = num_pop, fargs = args)
 
 
-def _cvx(fobj,args):
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
-    
-    import matlab.engine
-
-    # file = '/Users/mricardo/Documents/MATLAB/optimisation/discretize/test.mat'
-
-    # savemat(file,{
-    #     'm': int(form.number_of_edges()),
-    #     'n': int(form.number_of_vertices()),
-    #     'ni': len(free),
-    #     'C': C,
-    #     'Ci': Ci,
-    #     'Cf': Cf,
-    #     'Cit': Cit,
-    #     'x': x,
-    #     'y': y,
-    #     'xb': x[fixed],
-    #     'yb': y[fixed],
-    #     'pz': pz[free],
-    #     'free': free,
-    #     'fixed': fixed,
-    #     'p': p,
-    #     'E': E,
-    #     })
-
-    eng = matlab.engine.start_matlab()
-    eng.workspace['m'] = int(len(q))
-    eng.workspace['C'] = matlab.double(C.toarray().tolist()) #C.todense()
-    eng.workspace['Ci'] = matlab.double(Ci.toarray().tolist()) #Ci.todense()
-    eng.workspace['Cf'] = matlab.double(Cf.toarray().tolist()) #Cf.todense()
-    eng.workspace['Cit'] = matlab.double(Cit.toarray().tolist()) #Cit.todense()
-    eng.workspace['xt'] = matlab.double(x.transpose().tolist())
-    eng.workspace['yt'] = matlab.double(y.transpose().tolist())
-    eng.workspace['xb'] = matlab.double(x[fixed].tolist())
-    eng.workspace['yb'] = matlab.double(y[fixed].tolist())
-    eng.workspace['pz'] = matlab.double(pz[free].tolist())
-    eng.workspace['E'] = matlab.double(E.tolist()) #E.todense()
-    # eng.load('/Users/mricardo/Documents/MATLAB/optimisation/discretize/nosym_02_06_p_140.mat', nargout=0)
-    eng.cvx_begin(nargout=0)
-    eng.variable('q(double(m))', nargout = 0)
-    eng.minimize('matrix_frac(pz,(Cit*diag(q)*Ci)) + xt*transpose(C)*diag(q)*Cf*xb + yt*transpose(C)*diag(q)*Cf*yb',nargout=0)
-    eng.eval('q >= 0.0', nargout = 0)
-    eng.eval('q <= 100.0', nargout = 0)
-    eng.eval('E*q == 0.0', nargout = 0)
-    eng.cvx_end(nargout=0)
-
-    fopt = eng.workspace['cvx_optval']
-    qopt = array(eng.workspace['q'])
-    xopt = qopt[ind]
-
-    return fopt, xopt
+def pyOpt_wrapper(x, **kwargs):
+    args = kwargs['args']
+    fobj = kwargs['objective']
+    fconst = kwargs['constraints']
+    # Temp
+    f = fobj(x, *args)
+    g = -1 * fconst(x, *args) # pyOpt get constraints g1 <= 0 as default
+    fail = 0
+    return f, g, fail
 
 

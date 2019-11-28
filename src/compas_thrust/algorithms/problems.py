@@ -81,13 +81,14 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
     ub_ind = []
     lb = []
     ub = []
-    for key, vertex in form.vertex.items():
-        if vertex.get('lb', None):
-            lb_ind.append(k_i[key])
-            lb.append(vertex['lb'])
-        if vertex.get('ub', None):
-            ub_ind.append(k_i[key])
-            ub.append(vertex['ub'])
+    for i in range(n):
+        key = i_k[i]
+        if form.get_vertex_attribute(key, 'lb', None):
+            lb_ind.append(i)
+            lb.append(form.get_vertex_attribute(key, 'lb'))
+        if form.get_vertex_attribute(key, 'ub', None):
+            ub_ind.append(i)
+            ub.append(form.get_vertex_attribute(key, 'ub'))
     lb = array(lb)
     ub = array(ub)
     lb.shape = (len(lb),1)

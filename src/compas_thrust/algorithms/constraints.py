@@ -23,7 +23,8 @@ __email__     = 'mricardo@ethz.ch'
 __all__ = [
     'f_ub_lb',
     'f_compression',
-    'f_joints'
+    'f_joints',
+    'f_cracks'
 ]
 
 
@@ -48,8 +49,8 @@ def f_ub_lb(xopt, *args):
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
     xyz = hstack([x,y,z])
     R = CfQC.dot(xyz)
-    Rx_angle = tol + abs(b[:,0].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,0],R[:,2]).reshape(-1,1)))
-    Ry_angle = tol + abs(b[:,1].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,1],R[:,2]).reshape(-1,1)))
+    Rx_angle = tol + abs(b[:,0].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,0],R[:,2]).reshape(-1,1))) # >= 0
+    Ry_angle = tol + abs(b[:,1].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,1],R[:,2]).reshape(-1,1))) # >= 0
 
     return transpose(vstack([upper_limit, lower_limit, Rx_angle, Ry_angle]))[0]
 
@@ -123,8 +124,8 @@ def f_cracks(xopt, *args):
         z, l2, q, _ = zlq_from_qid(xopt, args)
 
     # Constraints on Heights
-    upper_limit = 0 #ub - z[ub_ind] # >= 0
-    lower_limit = 0 #z[lb_ind] - lb # >= 0
+    upper_limit = ub - z[ub_ind] # >= 0
+    lower_limit = z[lb_ind] - lb # >= 0
 
     tol = 1e-10
 
@@ -137,10 +138,10 @@ def f_cracks(xopt, *args):
 
     # Constraints on Cracks
 
-    crack_tol = 0.001
+    crack_tol = 0.030
 
-    lower_cracks = - abs(lb[cracks_lb] - z[cracks_lb]) + crack_tol
-    upper_cracks = - abs(z[cracks_ub] - ub[cracks_ub]) + crack_tol
+    lower_cracks = (lb[cracks_lb] - z[cracks_lb]) + crack_tol
+    upper_cracks = (z[cracks_ub] - ub[cracks_ub]) + crack_tol
 
     # This can be simplified to not count with the abs... Will test in 3D later on... and see :)
 

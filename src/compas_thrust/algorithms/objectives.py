@@ -189,8 +189,13 @@ def f_max_thrust(xopt, *args):
         z, l2, q, _ = zlq_from_qid(xopt, args)
         # Verify if it is really necessary calculate z at this step. It may be necessary to only use the dependents equation
     
-    CfQ = Cf.transpose().dot(diags(q.flatten()))
-    f = -1* (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
+    # CfQ = Cf.transpose().dot(diags(q.flatten()))
+    # f = -1* (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
+
+    CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
+    xyz = hstack([x,y,z])
+    R = CfQC.dot(xyz)
+    f = (-1) * ( norm_vector(R[:,0]) + norm_vector(R[:,1]) )
 
     if isnan(f) == True or any(xopt) == False:
         return 10**10

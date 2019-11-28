@@ -14,6 +14,7 @@ from numpy import argmin
 from compas_thrust.algorithms.equilibrium import z_from_form
 
 from compas_plotters import MeshPlotter
+from copy import deepcopy
 
 import math
 
@@ -202,7 +203,7 @@ def set_height_constraint(form, zmax = 1.0):
 
     return form
 
-def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False, weights = False, thk = None, tol = 0.00, set_heights = False):
+def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False, weights = False, thk = None, tol = 0.00, set_heights = False, update_loads = False, t = 3.0, b = 1.0):
 
     """ Set Cross-Vault heights.
 
@@ -222,6 +223,12 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False
 
     set_heights: bool
         If True, the nodes will have the heights 'z' updated to match the pointed arch shape.
+    
+    update_loads: bool
+        If True, loads will be redistributed to match the target shape (Note: the magnitude will continue the  as in the input FD).
+
+    t: float
+        Negative lower-bound for the reactions position.
 
     Returns
     -------
@@ -247,6 +254,9 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False
     ry = (y1 - y0)/2
     hc = max(rx,ry)
 
+    form_ = deepcopy(form)
+    pzt = 0
+
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
         xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
@@ -264,15 +274,32 @@ def set_cross_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb=False
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
-        form.set_vertex_attribute(key,'target',value=z)
+        form.set_vertex_attribute(key,'target', value = z)
+        form_.set_vertex_attribute(key, 'z', value = z)
+        pzt += form.get_vertex_attribute(key, 'pz')
         if weights:
             form.set_vertex_attribute(key,name='weight',value = form.get_vertex_attribute(key,'pz'))
         if set_heights:
             form.set_vertex_attribute(key, 'z', value = round(z,2))
+        if form.get_vertex_attribute(key, 'is_fixed') == True:
+            form.set_vertex_attribute(key, 'b', value = [b,b])
+
+    if update_loads:
+        pz_3d = 0
+        for key in form.vertices():
+            pzi = form_.vertex_area(key)
+            form.set_vertex_attribute(key, 'pz', value = pzi)
+            pz_3d += pzi
+        factor = pzt/pz_3d
+        print('Planar load: {0:.2f} \ 3d Load: {1:.2f} \ Factor applied: {2:.3f}'.format(pzt,pz_3d,factor))
+        for key in form.vertices():
+            pz = factor * form.get_vertex_attribute(key, 'pz')
+            form.set_vertex_attribute(key, 'pz', value = pz)
+
 
     if ub_lb:
         form = set_cross_vault_heights_ub(form, xy_span = xy_span, thk = thk)
-        form = set_cross_vault_heights_lb(form, xy_span = xy_span, thk = thk)
+        form = set_cross_vault_heights_lb(form, xy_span = xy_span, thk = thk, t = t)
 
     return form
 
@@ -286,7 +313,6 @@ def set_cross_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.
     rx = (x1 - x0)/2
     ry = (y1 - y0)/2
     hc = max(rx,ry)
-    print(rx,ry)
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
@@ -306,12 +332,14 @@ def set_cross_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
         form.set_vertex_attribute(key, 'ub', value = z)
+        if form.get_vertex_attribute(key, 'is_fixed'):
+            form.attributes['tmax'] = z
         if set_heights:
             form.set_vertex_attribute(key,'z',value=z)
 
     return form
 
-def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.0, set_heights = False):
+def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.5, tol = 0.0, set_heights = False, t = 3.0):
 
     y1 = xy_span[1][1] - thk/2
     y0 = xy_span[1][0] + thk/2
@@ -325,7 +353,7 @@ def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
         if ((yi) > y1 and ((xi) > x1 or (xi) < x0 )) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
-            z = 0.0
+            z = - 1* max(t,max(rx,ry)/4)
         else:
             if yi > y1:
                 yi = y1
@@ -357,6 +385,8 @@ def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.
     return form
 
 def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False):
+
+    # Uodate this function to work on rectangular vaults
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -866,7 +896,7 @@ def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thickness = None, 
 
     return form
 
-def circular_heights(form , x0 = None, xf = None, thk=0.5, t=50):
+def circular_heights(form , x0 = None, xf = None, thk = 0.5, t = 50):
 
     if x0 == None or xf == None:
         x = []
@@ -1016,4 +1046,14 @@ def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0, to
         if x == x0:
             form.attributes['tmax'] = ze
 
+    return form
+
+def rollers_on_openings(form):
+
+    bndr = form.vertices_on_boundary()
+
+    for key in bndr:
+        if form.get_vertex_attribute(key, 'is_fixed') == False:
+            form.set_vertex_attribute(key, 'is_roller', value = True)
+            
     return form

@@ -8,10 +8,14 @@ from compas_thrust.utilities.constraints import set_pointed_vault_heights_lb
 from compas_thrust.utilities.constraints import set_cross_vault_heights
 from compas_thrust.utilities.constraints import set_cross_vault_heights_ub
 from compas_thrust.utilities.constraints import set_cross_vault_heights_lb
+from compas_thrust.utilities.constraints import create_cracks
+from compas_thrust.utilities.constraints import rollers_on_openings
+
 
 from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.diagrams.form import create_arch
 from compas_thrust.diagrams.form import create_cross_form
+from compas_thrust.diagrams.form import create_fan_form
 from compas_thrust.diagrams.form import _form
 from compas_thrust.algorithms import optimise_general
 from compas_thrust.algorithms import optimise_convex
@@ -53,48 +57,36 @@ from compas_thrust.algorithms.problems import initialise_problem
 
 if __name__ == "__main__":
 
-    # file_pattern = '/Users/mricardo/compas_dev/me/loadpath/freeform/test.json'
-    # '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/01_08_complete_paper.json'
-    file_save = '/Users/mricardo/compas_dev/me/loadpath/corner/pointed/rounded.json'
-    # form = FormDiagram.from_json(file_pattern)
-    # for key in form.edges():
-    #     form.set_edge_attribute(key, 'q', value = 1.0)
-    # for key in form.vertices():
-    #     form.set_vertex_attribute(key, 'z', value = 0.0)
-    # form.to_json('/Users/mricardo/Documents/MATLAB/optimisation/discretize/form1.json')
-    # plot_form(form, show_q=False, simple=True).show()
-    x_span = 10.0
-    y_span = 5.0
-    divisions = 50
-    form = create_cross_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
-    # form = set_cross_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], set_heights=True)
-    form = set_cross_vault_heights_lb(form, xy_span = [[0.0,x_span],[0.0,y_span]], set_heights=True, thk = 0.4)
+    file_save = '/Users/mricardo/compas_dev/me/minmax/ortho/square/D_20_min_thrust+cracks.json'
+    file_initial = '/Users/mricardo/compas_dev/me/minmax/ortho/square/D_20_min_loadpath.json'
 
-    # plot_form(form, show_q=False, simple=True, heights=True).show()
-    # form.to_json('/Users/mricardo/Documents/MATLAB/optimisation/discretize/form2.json')
-    # print('Number of Edges:',form.number_of_edges())
-    # form = _form(form)
-    # form.to_json('/Users/mricardo/Documents/MATLAB/optimisation/discretize/form2.json')
-    # plot_form(form, show_q=False, simple=True).show()
-    # form = _form(form)
-    # plot_form(form, show_q=False, simple=True).show()
-    # print(form)
-    # plot_form(form, show_q=True).show()
-    # form = set_pointed_vault_heights_lb(form, xy_span = [[0.0,x_span],[0.0,y_span]], hc=8.0, he=[6.0,6.0,6.0,6.0], set_heights=True, thk = 0.6)
+
+    # Create Vault from one of the patterns Fan/Grid and set constraints to be cross-vault
     
-    # form = set_pointed_vault_heights_lb(form, xy_span = [[0.0,x_span],[0.0,y_span]], hc=6.0, he=[7.0,7.0,7.0,7.0], hm=[8.0,8.0,8.0,8.0], set_heights=True, thk = 0.6)
-    # form = set_pointed_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], hc=7.0, set_heights=True, thk = 0.6)
+    x_span = 10.0
+    y_span = 10.0
+    divisions = 4
+    form = create_cross_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
+    form = set_cross_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = 0.5, b = 5.0, set_heights=False, ub_lb = True, update_loads = True)
+    plot_form(form).show()
+    # form = create_cracks(form , dx =[[4.9, 5.1]], dy = [[4.9, 5.1]], type = ['top'], view = False)
+    # form = create_cracks(form , dx =[[2.0, 2.0],[2.0, 2.0],[8.0, 8.0],[8.0, 8.0],[5.0, 5.0]], dy = [[2.0, 2.0],[8.0, 8.0],[8.0, 8.0],[2.0, 2.0],[5.0, 5.0]], type = ['bottom','bottom','bottom','bottom','top'], view = False)
+    # form = create_cracks(form , dx =[[5.0, 5.0],[0.0, 10.0]], dy = [[0.0, 10.0],[5.0, 5.0]], type = ['top','top'], view = False)
+    # form = create_cracks(form , dx =[[2.0, 2.0],[2.5, 2.5],[7.0, 10.0],[5.0, 5.0]], dy = [[8.0, 10.0],[0.0, 2.5],[7.0, 7.0],[5.0,5.0]], type = ['bottom','bottom','bottom','top'], view = False)
+    form = rollers_on_openings(form)
 
     # Initial parameters
 
-    translation = None
+    translation = form.attributes['tmax']
     bounds_width = 5.0
     use_bounds = False
-    qmax = 20
+    qmax = 100
+    qmin = -1e-6
     indset = None
     print_opt = True
+    cracks = True
 
-    # Optimisation
+    # Convex Optimisation
 
     # fopt, qopt, zbopt, exitflag = optimise_convex(form,  qmax=qmax,
     #                                         printout=print_opt,
@@ -103,21 +95,30 @@ if __name__ == "__main__":
     #                                         objective='loadpath',
     #                                         indset=indset)
 
+    # form.to_json(file_initial)
+
+    # form = FormDiagram.from_json(file_initial)
+    # indset = form.attributes['indset']
+
+    # Minimum Thrust
+
+    solver = 'pyOpt-' + 'SLSQP'
+
+    fopt, qopt, zbopt, exitflag = optimise_general(form,  qmax=qmax, solver=solver,
+                                        printout=print_opt,
+                                        find_inds=True,
+                                        indset=indset,
+                                        tol=0.01,
+                                        translation = translation,
+                                        use_bounds = use_bounds,
+                                        bounds_width = bounds_width,
+                                        objective='max',
+                                        bmax = True,
+                                        cracks = cracks,
+                                        summary=print_opt)
+
     form.to_json(file_save)
 
     # Visualisation
-
-    # from compas.datastructures import Mesh
-
-    # from compas_viewers import VtkViewer
-    # import compas
-
-    # # datastructure = Mesh.from_obj(compas.get('quadmesh.obj'))
-
-    # viewer = VtkViewer(datastructure=form)
-    # viewer.setup()
-    # viewer.start()
-
-
-
     
+    # W.I.P.

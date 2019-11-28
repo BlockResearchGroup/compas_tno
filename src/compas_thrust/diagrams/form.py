@@ -598,6 +598,8 @@ def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'cor
         FormDiagram.
 
     """
+
+    from compas.geometry.transformations.transformations import mirror_point_line
     
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -606,79 +608,200 @@ def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'cor
 
     x_span = x1 - x0
     y_span = y1 - y0
-    dx = x_span/division
-    dy = y_span/division
+    xc0 = x0 + x_span/2
+    yc0 = y0 + y_span/2
+    dx = float(x_span/division)
+    dy = float(y_span/division)
+    n = int(division/2)
+    line_hor = [[x0,yc0,0.0],[xc0,yc0,0.0]]
+    line_ver = [[xc0,y0,0.0],[xc0,yc0,0.0]]
 
     lines = []
 
-    for i in range(division/2+1):
-        for j in range(division/2+1):
-            if i < division/2 and j < division/2:
-                # Vertical Members:
-                xa = x0 + dx*i
-                ya = y0 + dy*j
-                xb = x0 + dx*(i + 1)
-                yb = y0 + dy*j
-                # Horizontal Members:
-                xc = x0 + dx*i
-                yc = y0 + dy*j
-                xd = x0 + dx*i
-                yd = y0 + dy*(j + 1)
-                lines.append([[xa,ya,0.0],[xb,yb,0.0]])
+    for i in range(n):
+        for j in range(n+1):
+            # Diagonal Members:
+            xa = x0 + dx*i
+            ya = y0 + dy*j*i/n
+            xb = x0 + dx*(i + 1)
+            yb = y0 + dy*j*(i + 1)/n
+            lines.append([[xa,ya,0.0],[xb,yb,0.0]])
+
+            # a_mirror = mirror_point_line([xa, ya, 0.0], line_hor)
+            # b_mirror = mirror_point_line([xb, yb, 0.0], line_hor)
+            # lines.append([a_mirror,b_mirror])
+            # a_mirror = mirror_point_line(a_mirror, line_ver)
+            # b_mirror = mirror_point_line(b_mirror, line_ver)
+            # lines.append([a_mirror,b_mirror])
+            # a_mirror = mirror_point_line([xa, ya, 0.0], line_ver)
+            # b_mirror = mirror_point_line([xb, yb, 0.0], line_ver)
+            # lines.append([a_mirror,b_mirror])
+
+            xa_ = x0 + dx * j * i / n
+            ya_ = y0 + dy * i
+            xb_ = x0 + dx * j * (i + 1) / n
+            yb_ = y0 + dy * (i + 1)
+            lines.append([[xa_,ya_,0.0],[xb_,yb_,0.0]])
+
+            # a_mirror = mirror_point_line([xa_, ya_, 0.0], line_hor)
+            # b_mirror = mirror_point_line([xb_, yb_, 0.0], line_hor)
+            # lines.append([a_mirror,b_mirror])
+            # a_mirror = mirror_point_line(a_mirror, line_ver)
+            # b_mirror = mirror_point_line(b_mirror, line_ver)
+            # lines.append([a_mirror,b_mirror])
+            # a_mirror = mirror_point_line([xa_, ya_, 0.0], line_ver)
+            # b_mirror = mirror_point_line([xb_, yb_, 0.0], line_ver)
+            # lines.append([a_mirror,b_mirror])
+
+            if j < n:
+                # Vertical or Horizontal Members:
+                xc = x0 + dx * (i + 1)
+                yc = y0 + dy * j * (i + 1) / n
+                xd = x0 + dx * (i + 1)
+                yd = y0 + dy * (j + 1) * (i + 1) / n
                 lines.append([[xc,yc,0.0],[xd,yd,0.0]])
-                if i == j:
-                    # Diagonal Members in + Direction:
-                    xc = x0 + dx*i
-                    yc = y0 + dy*j
-                    xd = x0 + dx*(i + 1)
-                    yd = y0 + dy*(j + 1)
-                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
-                if i + j == division:
-                    # Diagonal Members in - Direction:
-                    xc = x0 + dx*i
-                    yc = y0 + dy*j
-                    xd = x0 + dx*(i - 1)
-                    yd = y0 + dy*(j + 1)
-                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
-                    if i == (division - 1):
-                        xc = x0 + dx*i
-                        yc = y0 + dy*j
-                        xd = x0 + dx*(i + 1)
-                        yd = y0 + dy*(j - 1)
-                        lines.append([[xc,yc,0.0],[xd,yd,0.0]])
-            else:
-                if i == division and j < division:
-                    # Vertical Members on last column:
-                    xa = x0 + dx*j
-                    ya = y0 + dy*i
-                    xb = x0 + dx*(j + 1)
-                    yb = y0 + dy*i
-                    # Horizontal Members:
-                    xc = x0 + dx*i
-                    yc = y0 + dy*j
-                    xd = x0 + dx*i
-                    yd = y0 + dy*(j + 1)
-                    lines.append([[xa,ya,0.0],[xb,yb,0.0]])
-                    lines.append([[xc,yc,0.0],[xd,yd,0.0]])
+
+                # c_mirror = mirror_point_line([xc, yc, 0.0], line_hor)
+                # d_mirror = mirror_point_line([xd, yd, 0.0], line_hor)
+                # lines.append([c_mirror, d_mirror])
+                # c_mirror = mirror_point_line(c_mirror, line_ver)
+                # d_mirror = mirror_point_line(d_mirror, line_ver)
+                # lines.append([c_mirror,d_mirror])
+                # c_mirror = mirror_point_line([xc, yc, 0.0], line_ver)
+                # d_mirror = mirror_point_line([xd, yd, 0.0], line_ver)
+                # lines.append([c_mirror, d_mirror])
+
+                xc_ = x0 + dx * j * (i + 1) / n
+                yc_ = y0 + dy * (i + 1)
+                xd_ = x0 + dx * (j + 1) * (i + 1) / n
+                yd_ = y0 + dy * (i + 1)
+                lines.append([[xc_,yc_,0.0],[xd_,yd_,0.0]])
+
+                # c_mirror = mirror_point_line([xc_, yc_, 0.0], line_hor)
+                # d_mirror = mirror_point_line([xd_, yd_, 0.0], line_hor)
+                # lines.append([c_mirror,d_mirror])
+                # c_mirror = mirror_point_line(c_mirror, line_ver)
+                # d_mirror = mirror_point_line(d_mirror, line_ver)
+                # lines.append([c_mirror,d_mirror])
+                # c_mirror = mirror_point_line([xc_, yc_, 0.0], line_ver)
+                # d_mirror = mirror_point_line([xd_, yd_, 0.0], line_ver)
+                # lines.append([c_mirror,d_mirror])
+
+
 
     form = FormDiagram.from_lines(lines)
 
-    form.update_default_vertex_attributes({'is_roller': False})
-    form.update_default_vertex_attributes({'is_fixed': False})
-    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
-    form.attributes['loadpath'] = 0
-    form.attributes['indset'] = []
+    # form.update_default_vertex_attributes({'is_roller': False})
+    # form.update_default_vertex_attributes({'is_fixed': False})
+    # form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    # form.attributes['loadpath'] = 0
+    # form.attributes['indset'] = []
+
+
+    # for u, v in form.edges():
+    #         line_edge = [sp, ep]
+    #         mp = midpoint_line_xy(line_edge)
+
+    #         if mp[0] < 0.001:
+    #             mp[0] = 0.0
+    #         if mp[1] < 0.001:
+    #             mp[1] = 0.0
+
+    #         gkey_mid = geometric_key(mp)
+    #         q_i[gkey_mid] = form.get_edge_attribute((u,v),'q')
+    #         line_sym = ([0.0,10.0,0.0],[10.0,0.0,0.0])
+
+    #         mirror_diag = mirror_point_line(mp,line_sym)
+
+    #         if mirror_diag[0] < 0.001:
+    #             mirror_diag[0] = 0.0
+    #         if mirror_diag[1] < 0.001:
+    #             mirror_diag[1] = 0.0
+
+
+    #         gkey_mirror = geometric_key(mirror_diag)
+
+    #         if gkey_mirror == gkey_mid:
+    #             q_i[gkey_mid] = 2 * q_i[gkey_mid]
+    #         elif round(mp[0], 3) == 5.000:
+    #             q_i[gkey_mid] = 2 * q_i[gkey_mid]
+    #             q_i[gkey_mirror] = q_i[gkey_mid]
+    #         else:
+    #             q_i[gkey_mirror] = q_i[gkey_mid]
+
+    #         for j in range(2, 7, 2):
+    #             [rot,diag_rot] = rotate_points([mp,mirror_diag], j/2.0*math.pi/2, axis=[0.0,0.0,1.0],origin=[5.0,5.0,0])
+
+    #             if rot[0] < 0.001:
+    #                 rot[0] = 0.0
+    #             if rot[1] < 0.001:
+    #                 rot[1] = 0.0
+
+    #             if diag_rot[0] < 0.001:
+    #                 diag_rot[0] = 0.0
+    #             if diag_rot[1] < 0.001:
+    #                 diag_rot[1] = 0.0
+
+    #             gkey_rot = geometric_key(rot)
+    #             gkey_diag_rot = geometric_key(diag_rot)
+
+    #             q_i[gkey_rot] = q_i[gkey_mid]
+    #             q_i[gkey_diag_rot] = q_i[gkey_mirror]
+
+    #     if form.get_edge_attribute((u,v),'is_ind') == True:
+    #         sp, ep = form.vertex_coordinates(u), form.vertex_coordinates(v)
+    #         line_edge = [sp, ep]
+    #         mp = midpoint_line_xy(line_edge)
+
+    #         if mp[0] < 0.001:
+    #             mp[0] = 0.0
+    #         if mp[1] < 0.001:
+    #             mp[1] = 0.0
+
+    #         gkey_mid = geometric_key(mp)
+    #         mid_ind.append(gkey_mid)
+
+    # real_points = []
+    # for key in q_i:
+    #     real_points.append(reverse_geometric_key(key))
+
+    # for u, v in form_.edges():
+    #     sp, ep = form_.vertex_coordinates(u), form_.vertex_coordinates(v)
+    #     line_edge = [sp, ep]
+    #     mp = midpoint_line_xy(line_edge)
+
+    #     if mp[0] < 0.001:
+    #             mp[0] = 0.0
+    #     if mp[1] < 0.001:
+    #         mp[1] = 0.0
+
+    #     gkey_mid = geometric_key(mp)
+    #     try:
+    #         form_.set_edge_attribute((u, v), name='q', value = q_i[gkey_mid])
+    #     except:
+    #         dist = []
+    #         for point in real_points:
+    #             dist.append(distance_point_point_xy(point,mp))
+    #         point_i = argmin(dist)
+    #         gkey_appx = geometric_key(real_points[point_i])
+    #         form_.set_edge_attribute((u, v), name='q', value = q_i[gkey_appx])
+
+    #     if gkey_mid in mid_ind:
+    #         form_.set_edge_attribute((u, v), name='is_ind', value = True)
+    #     else:
+    #         form_.set_edge_attribute((u, v), name='is_ind', value = False)
+
 
     gkey_key = form.gkey_key()
 
-    if fix == 'corners':
-        form.set_vertex_attribute(gkey_key[geometric_key([x0,y0,0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x0,y1,0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x1,y0,0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x1,y1,0.0])], 'is_fixed', True)
-    else:
-        for key in form.vertices_on_boundaries:
-            form.set_vertex_attribute(key, 'is_fixed', True)
+    # if fix == 'corners':
+    #     form.set_vertex_attribute(gkey_key[geometric_key([x0,y0,0.0])], 'is_fixed', True)
+    #     form.set_vertex_attribute(gkey_key[geometric_key([x0,y1,0.0])], 'is_fixed', True)
+    #     form.set_vertex_attribute(gkey_key[geometric_key([x1,y0,0.0])], 'is_fixed', True)
+    #     form.set_vertex_attribute(gkey_key[geometric_key([x1,y1,0.0])], 'is_fixed', True)
+    # else:
+    #     for key in form.vertices_on_boundaries:
+    #         form.set_vertex_attribute(key, 'is_fixed', True)
     
     if rollers:
         for key in form.vertices_on_boundaries:

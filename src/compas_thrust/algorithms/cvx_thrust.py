@@ -198,6 +198,14 @@ def call_cvx_ind(fobj,args_cvx):
 
     return fopt, qopt, exitflag, niter
 
+
+# -----------------------
+# -----------------------
+# ALL OF THE BELOW IMPLEMENT THE CONVEX OPTIMISATION WITH CVX_PY -> THERE'S NO SOLVER SDPT3 ON THAT -> VERIFY IF SHOULD DELETE
+# -----------------------
+# -----------------------
+
+
 def min_loadpath(form, args, printout=False):
 
     uv_i = form.uv_index()
