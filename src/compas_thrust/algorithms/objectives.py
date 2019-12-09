@@ -35,7 +35,7 @@ __all__ = [
 
 def f_min_loadpath(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
@@ -52,7 +52,7 @@ def f_min_loadpath(xopt, *args):
 
 def f_min_loadpath_pen(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
@@ -101,7 +101,7 @@ def f_min_loadpath_pen(xopt, *args):
 
 def f_min_thrust(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
@@ -109,7 +109,6 @@ def f_min_thrust(xopt, *args):
         z, l2, q, _ = zlq_from_qid(qid, args)
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
-        # Verify if it is really necessary calculate z at this step. It may be necessary to only use the dependents equation
     
     # CfQ = Cf.transpose().dot(diags(q.flatten()))
     # f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
@@ -126,7 +125,7 @@ def f_min_thrust(xopt, *args):
 
 def f_min_thrust_pen(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
     xopt = array(xopt)
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
@@ -179,7 +178,7 @@ def f_min_thrust_pen(xopt, *args):
 
 def f_max_thrust(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
@@ -210,6 +209,6 @@ def f_target(args):
 
 def f_constant(xopt, *args):
 
-    f = 1
+    f = 1.0
 
     return f

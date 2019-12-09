@@ -42,7 +42,6 @@ if __name__ == "__main__":
         count = 0
 
         while count < 100 and exitflag is not 0:
-            # form = _form(form, keep_q=True)
             fopt, qopt, zbopt, exitflag = optimise_general(form,  qmax=qmax, solver='slsqp',
                                                 printout=print_opt,
                                                 find_inds=True,
@@ -55,9 +54,7 @@ if __name__ == "__main__":
                                                 indset=indset,
                                                 bmax = True,
                                                 summary=print_opt)
-
             # Check compression and Save
-
             q = [attr['q'] for u, v, attr in form.edges(True)]
             qmin  = min(array(q))
             count += 1

@@ -365,8 +365,8 @@ def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.
                 xi = x0
             xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
             yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
-            hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
-            hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
+            hxd = (_sqrt((rx)**2 - ((xd - x0) - rx)**2))
+            hyd = (_sqrt((ry)**2 - ((yd - y0) - ry)**2))
             if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q1
                 z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
             elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
@@ -384,7 +384,7 @@ def set_cross_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], thk = 0.
 
     return form
 
-def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False):
+def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False, b = 5.0, t = 3.0, update_loads = False):
 
     # Uodate this function to work on rectangular vaults
 
@@ -395,7 +395,10 @@ def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb =
 
     rx = (x1 - x0)/2
     ry = (y1 - y0)/2
+
+    pzt = 0
     
+    form_ = deepcopy(form)
 
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
@@ -410,13 +413,29 @@ def set_pavillion_vault_heights(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb =
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
-        form.set_vertex_attribute(key,'target',value=z)
+        form.set_vertex_attribute(key, 'target', value = z)
+        form_.set_vertex_attribute(key, 'z', value = z)
+        pzt += form.get_vertex_attribute(key, 'pz')
         if set_heights:
             form.set_vertex_attribute(key,'z',value=round(z,2))
+        if form.get_vertex_attribute(key, 'is_fixed') == True:
+            form.set_vertex_attribute(key, 'b', value = [b,b]) # Change to be [b,0] or [0,b]
+
+    if update_loads:
+        pz_3d = 0
+        for key in form.vertices():
+            pzi = form_.vertex_area(key)
+            form.set_vertex_attribute(key, 'pz', value = pzi)
+            pz_3d += pzi
+        factor = pzt/pz_3d
+        print('Planar load: {0:.2f} \ 3d Load: {1:.2f} \ Factor applied: {2:.3f}'.format(pzt,pz_3d,factor))
+        for key in form.vertices():
+            pz = factor * form.get_vertex_attribute(key, 'pz')
+            form.set_vertex_attribute(key, 'pz', value = pz)
 
     if ub_lb:
         form = set_pavillion_vault_heights_ub(form, xy_span = xy_span, thk = thk)
-        form = set_pavillion_vault_heights_lb(form, xy_span = xy_span, thk = thk)
+        form = set_pavillion_vault_heights_lb(form, xy_span = xy_span, thk = thk, t = t)
 
     return form
 
@@ -443,11 +462,13 @@ def set_pavillion_vault_heights_ub(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_l
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
         form.set_vertex_attribute(key,'ub',value=z)
+        if form.get_vertex_attribute(key, 'is_fixed'):
+            form.attributes['tmax'] = z
         # form.set_vertex_attribute(key,'z',value=z)
 
     return form
 
-def set_pavillion_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False):
+def set_pavillion_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_lb = False, thk = 0.5, tol = 0.00, set_heights = False, t = 3.0):
 
     y1 = xy_span[1][1] - thk/2
     y0 = xy_span[1][0] + thk/2
@@ -461,7 +482,7 @@ def set_pavillion_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_l
     for key in form.vertices():
         xi, yi, _ = form.vertex_coordinates(key)
         if (yi) > y1 or (xi) > x1 or (xi) < x0 or (yi) < y0:
-            z = 0.0
+            z = -1.0 * t
         else:
             if (yi - y0) <= y1/x1 * (xi - x0) + tol and (yi - y0) <= (y1 - y0) - (xi - x0) + tol: #Q1
                 z = math.sqrt(abs((ry)**2 - ((yi - y0)-ry)**2))
@@ -475,7 +496,7 @@ def set_pavillion_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], ub_l
                 print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
                 z = 0.0
         form.set_vertex_attribute(key,'lb',value=z)
-        form.set_vertex_attribute(key,'z',value=z)
+        # form.set_vertex_attribute(key,'z',value=z)
 
     return form
 
@@ -1048,12 +1069,29 @@ def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0, to
 
     return form
 
-def rollers_on_openings(form):
+def rollers_on_openings(form, xy_span = [[0.0,10.0],[0.0,10.0]], max_f = 5.0, constraint_directions = 'all'):
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
 
     bndr = form.vertices_on_boundary()
 
     for key in bndr:
         if form.get_vertex_attribute(key, 'is_fixed') == False:
-            form.set_vertex_attribute(key, 'is_roller', value = True)
+            x, y, _ = form.vertex_coordinates(key)
+            if x == x1 and (constraint_directions in ['all', 'x']): 
+                form.set_vertex_attribute(key, 'rol_x', True)
+                form.set_vertex_attribute(key, 'max_rx', max_f)
+            if x == x0 and (constraint_directions in ['all', 'x']): 
+                form.set_vertex_attribute(key, 'rol_x', True)
+                form.set_vertex_attribute(key, 'max_rx', max_f)
+            if y == y1 and (constraint_directions in ['all', 'y']): 
+                form.set_vertex_attribute(key, 'rol_y', True)
+                form.set_vertex_attribute(key, 'max_ry', max_f)
+            if y == y0 and (constraint_directions in ['all', 'y']): 
+                form.set_vertex_attribute(key, 'rol_y', True)
+                form.set_vertex_attribute(key, 'max_ry', max_f)
             
     return form

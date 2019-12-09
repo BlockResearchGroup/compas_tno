@@ -45,7 +45,7 @@ __all__ = [
 def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True, tol = 0.001,
                     printout=10, plot=False, indset=None, tension=False, planar =False,
                     translation = None, use_bounds = None, bounds_width = 5.0,
-                    summary = True, objective='loadpath', bmax = False, cracks = False):
+                    summary = True, objective='loadpath', bmax = False, cracks = False, rollers = False):
 
     # Mapping
 
@@ -57,41 +57,16 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
     # Set-up of the problem
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+    
+    # Problem specific constraint setting
 
-    # Problem specifities
+    b = set_b_constraint(form, bmax, printout)
+    joints = set_joints_constraint(form, printout)
+    cracks_lb, cracks_ub = set_cracks_constraint(form, cracks, printout)
 
-    if bmax:
-        b = []
-        for key in form.vertices_where({'is_fixed': True}):
-            try:
-                [b_] = form.get_vertex_attributes(key, 'b')
-                b.append(b_)
-            except:
-                pass
-        b = array(b)
-    else:
-        b = None
-    if printout and bmax:
-        print('Reaction spread:\n {0}'.format(b))
-
-    try:
-        joints = form.attributes['joints']
-    except:
-        joints = None
-
-    if cracks:
-        try:
-            cracks_lb, cracks_ub = form.attributes['cracks']
-            if printout:
-                print('Cracks Definition')
-                print(cracks_lb, cracks_ub)
-        except:
-            cracks_lb = []
-            cracks_ub = []
-
-    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub)
-
+    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
+    
     # Select Objetive and Constraints
 
     if objective=='loadpath':
@@ -115,7 +90,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
     if objective == 'max_cracks':
         fobj, fconstr = f_max_thrust, f_cracks
     if objective == 'feasibility':
-        fobj, fconstr = f_constant, f_joints
+        fobj, fconstr = f_constant, f_ub_lb
 
     # Definition of the Variables and starting point
 
@@ -148,7 +123,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
                 q[ind] = xopt[:k].reshape(-1,1)
                 z[fixed] = xopt[k:].reshape(-1,1)
             else:
-                q[ind] = xopt[:k]
+                q[ind] = xopt[:k].reshape(-1,1)
         else:
             if printout:
                 print(message)
@@ -227,15 +202,18 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         if solver_pyOpt == 'MIDACO':
             slv = pyOpt.SDPEN()
 
-        # slv.setOption('IPRINT',-1)
+        slv.setOption('MAXIT',1000)
         [fopt, xopt, info] = slv(opt_prob, sens_type='FD', args = args, objective = fobj, constraints = fconstr)
+        # exitflag = info['text']
+        if info['text'] == 'Optimization terminated successfully.':
+            exitflag = 1
+        else:
+            exitflag = 0
         # if printout:
         #     print(opt_prob.solution(0))
         print(info['text'])
         fopt = fopt.item()
-        print(fopt)
         niter = 100
-        exitflag = 0
         if translation:
             q[ind] = xopt[:k].reshape(-1,1)
             z[fixed] = xopt[k:].reshape(-1,1)
@@ -271,6 +249,8 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
 
     # form.attributes['iter'] = niter
     form.attributes['exitflag'] = exitflag
+    form.attributes['fopt'] = fopt
+    form.attributes['objective'] = objective
     reactions(form, plot = plot)
 
     if summary:
@@ -327,4 +307,52 @@ def pyOpt_wrapper(x, **kwargs):
     fail = 0
     return f, g, fail
 
+def set_b_constraint(form, bmax, printout):
 
+    if bmax:
+        b = []
+        for key in form.vertices_where({'is_fixed': True}):
+            try:
+                [b_] = form.get_vertex_attributes(key, 'b')
+                b.append(b_)
+            except:
+                pass
+        b = array(b)
+    else:
+        b = None
+
+    if printout and bmax:
+        print('Reaction spread:\n {0}'.format(b))
+        
+    return b
+
+def set_joints_constraint(form, printout):
+
+    try:
+        joints = form.attributes['joints']
+    except:
+        joints = None
+
+    if printout and joints:
+        print('Constraints on the Joints set for {0} contacts.'.format(len(joints)))
+    
+    return joints
+
+def set_cracks_constraint(form, cracks, printout):
+
+    if cracks:
+        try:
+            cracks_lb, cracks_ub = form.attributes['cracks']
+            if printout:
+                print('Cracks Definition')
+                print(cracks_lb, cracks_ub)
+        except:
+            cracks_lb = []
+            cracks_ub = []
+    else:
+        cracks_lb = []
+        cracks_ub = []
+
+    print('Constraints on cracks activated in {0} lb and {1} ub.'.format(len(cracks_lb), len(cracks_ub)))
+
+    return cracks_lb, cracks_ub

@@ -8,9 +8,11 @@ from numpy import vstack
 from numpy import hstack
 from numpy import newaxis
 from numpy.linalg import pinv
+from numpy import asarray
 
 from scipy.sparse import csr_matrix
 from scipy.sparse import diags
+from scipy.sparse import vstack as svstack
 
 from compas.numerical import connectivity_matrix
 from compas.numerical import equilibrium_matrix
@@ -20,6 +22,8 @@ from compas.utilities import geometric_key
 
 from compas_thrust.algorithms.independents import find_independents
 from compas_thrust.algorithms.independents import check_independents
+
+from copy import deepcopy
 
 import time
 
@@ -31,7 +35,8 @@ __email__     = 'mricardo@ethz.ch'
 
 
 __all__ = [
-    'initialise_problem'
+    'initialise_problem',
+    'initialise_form'
 ]
 
 def initialise_problem(form, indset = None, printout = None, find_inds=True, tol = 0.001):
@@ -89,6 +94,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
         if form.get_vertex_attribute(key, 'ub', None):
             ub_ind.append(i)
             ub.append(form.get_vertex_attribute(key, 'ub'))
+            
     lb = array(lb)
     ub = array(ub)
     lb.shape = (len(lb),1)
@@ -122,17 +128,38 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
     Wfree = diags(w[free].flatten())
     xy = xyz[:, :2]
 
+
+    # If Rols are set up
+
+    rol_x = []
+    rol_y = []
+
+    for key in form.vertices_where({'rol_x': True}):
+        rol_x.append(k_i[key])
+
+    for key in form.vertices_where({'rol_y': True}):
+        rol_y.append(k_i[key])
+
+    free_x = list(set(free) - set(rol_x))
+    free_y = list(set(free) - set(rol_y))
+
     # C and E matrices
 
     C   = connectivity_matrix(edges, 'csr')
     Ci  = C[:, free]
     Cf  = C[:, fixed]
+    Cftx = C[:, rol_x].transpose()
+    Cfty = C[:, rol_y].transpose()
     Ct = C.transpose()
     Cit = Ci.transpose()
-    E   = equilibrium_matrix(C, xy, free, 'csr').toarray()
+    Citx = Ct[free_x, :]#.toarray()
+    City = Ct[free_y, :]#.toarray()
     uvw = C.dot(xyz)
-    U   = uvw[:, 0]
-    V   = uvw[:, 1]
+    U   = diags(uvw[:, 0].flatten())
+    V   = diags(uvw[:, 1].flatten())
+    E   = svstack((Citx.dot(U), City.dot(V))).toarray()
+    # E   = equilibrium_matrix(C, xy, free, 'csr').toarray()
+    print('Equilibrium Matrix Shape: ',E.shape)
 
     start_time = time.time()
 
@@ -173,23 +200,50 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
 
     # Set-up
 
-    try:
-        t = form.attributes['offset']
-    except:
-        t = None
-
     lh     = normrow(C.dot(xy))**2
-    p      = vstack([px[free], py[free]])
+    p      = vstack([px[free_x], py[free_y]])
     q      = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
 
-    args   = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y)
-
+    args   = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
+    args_inds   = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Citx, City, Cf, U, V, p, px, py, pz, z, free_x, free_y, fixed, lh, sym, k)
     if find_inds is True:
-        print('Checking Independents')
-        checked = check_independents(args, tol = tol)
+        checked = check_independents(args_inds, tol = tol)
         if checked:
+            print('Independents checked!')
             pass
         else:
             print('Warning: independent edges not equilibrated')
     
     return args
+
+
+def initialise_form(form, indset = None, printout = False, find_inds= True):
+
+    """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+    
+    Returns
+    -------
+    form : obj
+        The FormDiagram.
+
+    """
+
+    i_uv = form.index_uv()
+
+    args = initialise_problem(form, indset = indset, printout = printout, find_inds= find_inds)
+    q, ind, dep = args[:3]
+
+    form.update_default_edge_attributes({'is_ind': False})
+    gkeys = []
+    for i in ind:
+        u, v = i_uv[i]
+        gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
+        form.set_edge_attribute((u,v), 'is_ind', value = True)
+    form.attributes['indset'] = gkeys
+
+    return form

@@ -7,28 +7,23 @@ from compas.geometry import distance_point_point
 
 import rhinoscriptsyntax as rs
 import json
+import math
 
+# Mesh
 
-# Plot Thrust Network
-i = 0
-# shapes = [2,4,5,7,8,10,11]
-# shapes = range(2,9)
-
-
-# fnm = '/Users/mricardo/compas_dev/me/bestfit/crossvault/discretize/0'+str(j)+'_0'+str(i)+'_fit_crossvault.json'
-# fnm = '/Users/mricardo/compas_dev/me/bestfit/sixpartite/discretize/0'+str(j)+'_0'+str(i)+'_fit_sixpartite.json'
-
-# Load
-
-fnm = '/Users/mricardo/compas_dev/me/minmax/ortho/square/D_20_min_thrust+cracks.json'
+fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/cross_fd/cross_fd_discr_20_max_t=50.json'
 form = FormDiagram.from_json(fnm)
 k_i = form.key_index()
+i_k = form.index_key()
 
 try:
     cracks_lb, cracks_ub = form.attributes['cracks']
 except:
     cracks_lb = []
     cracks_ub = []
+fs = []
+radius_max = 0.30
+# Usually 0.50 for Cross Form-Diagram
 
 thrust_layer = 'Thrust' 
 rs.AddLayer(thrust_layer)
@@ -39,12 +34,37 @@ lp = 0.0
 for u, v in form.edges():
     q = form.get_edge_attribute((u,v), 'q')
     l = form.edge_length(u,v)
+    fs.append(q*l)
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
     lp += q * l * l
 rs.AddTextDot('{0:.1f}'.format(lp),[- 1.0, - 1.0, 0.0 ])
+
+thrust_limits = 'Limits' 
+rs.AddLayer(thrust_limits)
+rs.CurrentLayer(thrust_limits)
+artist = NetworkArtist(form, layer=thrust_limits)
+artist.clear_layer()
+lp = 0.0
+tol_crack = 0.01
+for key in form.vertices():
+    x, y, z = form.vertex_coordinates(key)
+    try:
+        lb = form.get_vertex_attribute(key, 'lb')
+        if abs(z - lb) < tol_crack:
+            id = rs.AddPoint([x,y,z])
+            rs.ObjectColor(id, color = (0,0,200))
+    except:
+        pass
+    try:
+        ub = form.get_vertex_attribute(key, 'ub')
+        if abs(z - ub) < tol_crack:
+            id = rs.AddPoint([x,y,z])
+            rs.ObjectColor(id, color = (200,0,0))
+    except:
+        pass
 if cracks_lb:
     for i in cracks_lb:
         rs.AddTextDot('lb',form.vertex_coordinates(k_i[i]))
@@ -65,7 +85,6 @@ for u, v in form.edges():
     ep[2] = form.get_vertex_attribute(v, 'target')
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
-
 
 ub_layer = 'UB' 
 rs.AddLayer(ub_layer)
@@ -122,10 +141,51 @@ for key in form.vertices_where({'is_fixed': True}):
         rs.ObjectName(id, str(norm))
         rs.AddTextDot('rx: {0:.1f} / ry: {1:.1f}'.format(rx, ry), node)
 
+for key in form.vertices_where({'rol_x': True}):
+    try:
+        rx = form.get_vertex_attribute(key, 'rx')
+        sp = form.vertex_coordinates(key)
+        ep = [sp[0] + rx, sp[1], sp[2]]
+        id = rs.AddLine(sp, ep)
+        rs.ObjectName(id, str(rx))
+        print('Rx on key: ', key, 'Value: ', rx)
+    except:
+        pass
 
+for key in form.vertices_where({'rol_y': True}):
+    try:
+        ry = form.get_vertex_attribute(key, 'ry')
+        sp = form.vertex_coordinates(key)
+        ep = [sp[0], sp[1] + ry, sp[2]]
+        id = rs.AddLine(sp, ep)
+        rs.ObjectName(id, str(ry))
+        print('Ry on key: ', key, 'Value: ', ry)
+    except:
+        pass
+
+pipes_layer = 'Pipes' 
+rs.AddLayer(pipes_layer)
+rs.CurrentLayer(pipes_layer)
+artist = NetworkArtist(form, layer=pipes_layer)
+artist.clear_layer()
+rs.CurrentLayer(pipes_layer)
+for u, v in form.edges():
+    l = form.edge_length(u, v)
+    q = form.get_edge_attribute((u, v), 'q')
+    sp = form.vertex_coordinates(u)
+    ep = form.vertex_coordinates(v)
+    if q > 0.001:
+        id = rs.AddLine(sp, ep)
+        f = math.sqrt(math.fabs(q * l))
+        coef = f/max(fs)*radius_max
+        pipe = rs.AddPipe(id, 0, coef)
+        rs.ObjectColor(pipe, color=(255,0,0))
+
+rs.CurrentLayer('Default')
 rs.LayerVisible(target_layer, False)
 rs.LayerVisible(ub_layer, False)
 rs.LayerVisible(lb_layer, False)
 rs.LayerVisible(thrust_layer, True)
 rs.LayerVisible(reac_layer, True)
-
+rs.LayerVisible(thrust_limits, True)
+rs.LayerVisible(pipes_layer, False)

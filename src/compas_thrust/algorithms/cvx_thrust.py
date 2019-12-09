@@ -55,7 +55,7 @@ def optimise_convex(form, qmin=1e-6, qmax=10, find_inds = True, tol = 0.001,
     eng = future.result()
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cfx, Cfy = args
     
     # Problem specifities
 

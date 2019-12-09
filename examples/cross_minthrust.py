@@ -1,52 +1,20 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.utilities.constraints import circular_heights
-from compas_thrust.utilities.constraints import circular_joints
-from compas_thrust.utilities.constraints import set_pointed_vault_heights
-from compas_thrust.utilities.constraints import set_pointed_vault_heights_ub
-from compas_thrust.utilities.constraints import set_pointed_vault_heights_lb
-from compas_thrust.utilities.constraints import set_cross_vault_heights
-from compas_thrust.utilities.constraints import set_cross_vault_heights_ub
-from compas_thrust.utilities.constraints import set_cross_vault_heights_lb
-
 from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_arch
 from compas_thrust.diagrams.form import create_cross_form
 from compas_thrust.diagrams.form import create_fan_form
-from compas_thrust.diagrams.form import _form
+
+from compas_thrust.utilities.constraints import set_cross_vault_heights
+
+from compas_thrust.algorithms.equilibrium import reactions
+
 from compas_thrust.algorithms import optimise_general
 from compas_thrust.algorithms import optimise_convex
 
-from compas_thrust.plotters.plotters import plot_form_xz
-from compas_thrust.plotters.plotters import plot_form_joints
 from compas_thrust.plotters.plotters import plot_form
-from numpy import array
 
-from compas.geometry import intersection_segment_segment_xy
-from compas.geometry import is_intersection_segment_segment_xy
-from compas.geometry import intersection_line_segment_xy
-from compas.geometry import distance_point_point_xy
-from compas.geometry import intersection_line_line_xy
+import math
 
-from numpy import zeros
-from numpy import vstack
-from numpy import hstack
-from numpy import multiply
-from numpy import divide
-from numpy import array
-from numpy.linalg import matrix_rank
-from numpy import transpose
-from compas.geometry import is_intersection_segment_segment_xy
-from compas.geometry import intersection_line_segment_xy
-from compas.geometry import scale_vector_xy
-from compas.geometry import distance_point_point_xy
-from compas_thrust.algorithms import zlq_from_qid
-from compas_thrust.algorithms import q_from_qid
-from scipy.sparse import diags
-
-from compas_viewers.multimeshviewer import MultiMeshViewer
-
-from compas_thrust.algorithms.problems import initialise_problem
 
 # ==============================================================================
 # Main
@@ -54,59 +22,83 @@ from compas_thrust.algorithms.problems import initialise_problem
 
 if __name__ == "__main__":
 
-    file_save = '/Users/mricardo/compas_dev/me/minmax/ortho/square/D_20_min_thrust.json'
-    file_initial = '/Users/mricardo/compas_dev/me/minmax/ortho/square/D_20_min_loadpath.json'
+    # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
+    type_fd = 'fan_fd'
+    objective = 'max'
+    thck = 0.5
 
-    # Create Vault from one of the patterns Fan/Grid and set constraints to be cross-vault
+    # Create Vault from one of the patterns Fan/Grid with the dimensions
     
-    x_span = 10.0
+    x_span = 5.0
     y_span = 10.0
-    divisions = 20
-    xy_span = [[0.0,x_span],[0.0,y_span]]
-    form = create_cross_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
-    form = set_cross_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = 0.5, b = 5.0, set_heights=False, ub_lb = True, update_loads = True)
+    
+
+    if type_fd == 'cross_fd':
+        divisions = 20
+        form = create_cross_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
+    if type_fd == 'fan_fd':
+        divisions = 16
+        form = create_fan_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
+    
+    PATH = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/5x10/'+ type_fd + '/' + type_fd + '_discr_'+ str(divisions)
+    file_initial = PATH + '_lp.json'
+    file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
+
+    # Set Constraints for Cross_Vaults
+    
+    form = set_cross_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = thck, b = 5.0, set_heights=False, ub_lb = True, update_loads = True)
     
     # Initial parameters
 
     translation = form.attributes['tmax']
     bounds_width = 5.0
     use_bounds = False
-    qmax = 30
+    qmax = 100
     qmin = -1e-6
     indset = None
     print_opt = True
 
-    # Convex Optimisation
+    # Convex Optimisation to find good starting point. Save the starting point, and can load it later if wanted
 
-    fopt, qopt, zbopt, exitflag = optimise_convex(form,  qmax=qmax,
-                                            printout=print_opt,
-                                            find_inds=True,
-                                            tol=0.01,
-                                            objective='loadpath',
-                                            indset=indset)
+    # fopt, qopt, zbopt, exitflag = optimise_convex(form,  qmax=qmax,
+    #                                         printout=print_opt,
+    #                                         find_inds=True,
+    #                                         tol=0.01,
+    #                                         objective='loadpath',
+    #                                         indset=indset)
 
-    form.to_json(file_initial)
+    # form.to_json(file_initial)
 
-    # form = FormDiagram.from_json(file_save)
+    form = FormDiagram.from_json(file_initial)
+    indset = form.attributes['indset']
 
-    # Minimum Thrust
+    # Maximum or Minimum Thrusts
 
     solver = 'pyOpt-' + 'SLSQP'
 
     fopt, qopt, zbopt, exitflag = optimise_general(form,  qmax=qmax, solver=solver,
                                         printout=print_opt,
                                         find_inds=True,
+                                        indset=indset,
                                         tol=0.01,
                                         translation = translation,
-                                        use_bounds = use_bounds,
-                                        bounds_width = bounds_width,
-                                        objective='min',
-                                        indset=indset,
+                                        objective=objective,
                                         bmax = True,
                                         summary=print_opt)
 
     form.to_json(file_save)
+    overview_forces(form)
+    # plot_form(form, show_q = False).show()
+    reactions(form)
 
-    # Visualisation
-    
-    # W.I.P.
+    for key in form.vertices_where({'is_fixed': True}):
+        rx = round(form.get_vertex_attribute(key, 'rx'),3)
+        ry = round(form.get_vertex_attribute(key, 'ry'),3)
+        zb = round(form.get_vertex_attribute(key,'z'),3)
+        print('Reaction on Corner {0}: rx: {1:.3f}/ ry: {2:.3f}/ r: {3:.3f}'.format(key, rx, ry, math.sqrt(rx**2 + ry**2)))
+        break
+    qmax = round(max(qopt).item(),3)
+    fopt = round(fopt,3)
+    print('zb: {0:.3f}'.format(zb))
+    print('fopt: {0:.3f}'.format(fopt))
+    print('qmax: {0:.3f}'.format(max(qopt).item()))

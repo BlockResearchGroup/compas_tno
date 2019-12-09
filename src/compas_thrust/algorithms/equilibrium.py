@@ -143,7 +143,7 @@ def zlq_from_qid(qid, args):
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
     q[ind] = array(qid).reshape(-1,1)
-    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
     q_ = 1 * q
     q[sym] *= 0
 
@@ -159,7 +159,9 @@ def q_from_qid(qid, args):
     
     q, ind, dep, E, Edinv, Ei = args[:6]
     q[ind] = array(qid).reshape(-1,1)
-    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
+    q_ = 1 * q
+    q[sym] *= 0
 
     return q
 
@@ -200,7 +202,7 @@ def update_qid(file, value, ind_i = 0):
     print(q0)
 
     q[ind, 0] = q0
-    q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
     q[sym] *= 0
     z[free] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
 
@@ -564,7 +566,6 @@ def reactions(form, plot=False):
 
     k_i  = form.key_index()
     i_k  = form.index_key()
-    uv_i = form.uv_index()
 
     # Vertices and edges
 
@@ -605,6 +606,8 @@ def reactions(form, plot=False):
     Rx = C.transpose().dot(U * q.ravel()) - px.ravel()
     Ry = C.transpose().dot(V * q.ravel()) - py.ravel()
     Rz = C.transpose().dot(W * q.ravel()) - pz.ravel()
+
+    eq_node = {key: [round(Rx[k_i[key]],1),round(Ry[k_i[key]],1)] for key in form.vertices_where({'is_fixed': True})}
     
     for i in fixed:
         key = i_k[i]
@@ -615,8 +618,23 @@ def reactions(form, plot=False):
             print('Reactions in key: {0} are:'.format(key))
             print(Rx[i], Ry[i], Rz[i])
 
+    for key in form.vertices_where({'rol_x': True}):
+        i = k_i[key]
+        eq_node[key] = round(Rx[i],2)
+        form.set_vertex_attribute(key, 'rx', value = Rx[i])
+        if plot:
+            print('Reactions in Partial X-Key: {0} :'.format(key))
+            print(Rx[i])
+
+    for key in form.vertices_where({'rol_y': True}):
+        i = k_i[key]
+        eq_node[key] = round(Ry[i],2)
+        form.set_vertex_attribute(key, 'ry', value = Ry[i])
+        if plot:
+            print('Reactions in Partial Y-Key: {0} :'.format(key))
+            print(Ry[i])
+
     if plot:
-        eq_node = {key: [round(Rx[k_i[key]],1),round(Ry[k_i[key]],1)] for key in form.vertices_where({'is_fixed': True})}
         plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
         plotter.draw_vertices(text=eq_node)
         plotter.draw_edges()

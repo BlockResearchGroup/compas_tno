@@ -40,15 +40,17 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         Simple red and blue colour plotting.
 
     Returns
-    -------
+    ----------
     obj
         Plotter object.
 
     """
 
+    uv_i = form.uv_index()
     q = [attr[thick] for u, v, attr in form.edges(True)]
     qmax  = max(abs(array(q)))
     lines = []
+    i = 0
 
     for u, v in form.edges():
         qi = form.get_edge_attribute((u, v), thick)
@@ -78,7 +80,8 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
         
         if show_edgeuv:
-            text = str(u) + ',' + str(v)
+            # text = str(u) + ',' + str(v)
+            text = str(i)
         elif show_q:
             text = round(qi, 2)
         else:
@@ -92,15 +95,23 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             'text': text,
         })
 
+        i = i + 1
+    
+    rad_colors = {}
+    for key in form.vertices_where({'is_fixed': True}):
+        rad_colors[key] = '#aaaaaa'
+    for key in form.vertices_where({'rol_x': True}):
+        rad_colors[key] = '#ffb733'
+    for key in form.vertices_where({'rol_y': True}):
+        rad_colors[key] = '#ffb733'
+
     plotter = MeshPlotter(form, figsize=(10, 10))
-    # round(form.get_vertex_attribute(i, 'pz'), 2)
     if radius:
         if heights:
             plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
             radius=radius, text={i: i for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
         else:
-            plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-            radius=radius)
+            plotter.draw_vertices(facecolor = rad_colors, radius=radius)
 
     plotter.draw_lines(lines)
     if save:

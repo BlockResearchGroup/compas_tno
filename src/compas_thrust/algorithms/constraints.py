@@ -30,11 +30,11 @@ __all__ = [
 
 def f_ub_lb(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
-        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i
+        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
         z, l2, q, _ = zlq_from_qid(qid, args)
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
@@ -49,14 +49,25 @@ def f_ub_lb(xopt, *args):
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
     xyz = hstack([x,y,z])
     R = CfQC.dot(xyz)
-    Rx_angle = tol + abs(b[:,0].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,0],R[:,2]).reshape(-1,1))) # >= 0
-    Ry_angle = tol + abs(b[:,1].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,1],R[:,2]).reshape(-1,1))) # >= 0
+    Rx_angle = tol #+ abs(b[:,0].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,0],R[:,2]).reshape(-1,1))) # >= 0
+    Ry_angle = tol #+ abs(b[:,1].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,1],R[:,2]).reshape(-1,1))) # >= 0
 
-    return transpose(vstack([upper_limit, lower_limit, Rx_angle, Ry_angle]))[0]
+    # Positive Qs
+    qpos = (q.ravel() + 10**(-5)).reshape(-1,1)
+
+    max_f_x = array([1.0]*len(rol_x)) # Change to be personalised for each node....
+    max_f_y = array([1.0]*len(rol_y))
+
+    # Reactions on the walls
+    reac_rol_x = (array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1,1)
+    reac_rol_y = (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1,1)
+
+    return transpose(vstack([qpos, upper_limit, lower_limit, Rx_angle, Ry_angle, reac_rol_x, reac_rol_y]))[0]
 
 def f_compression(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
     else:
@@ -68,11 +79,11 @@ def f_compression(xopt, *args):
 
 def f_joints(xopt, *args):
     # Boolean constraint - WIP to make it at least non-linear
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
-        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i
+        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
         z, l2, q, _ = zlq_from_qid(qid, args)
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
@@ -114,14 +125,18 @@ def f_joints(xopt, *args):
 
 def f_cracks(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
     if len(xopt)>k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1,1)
-        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub
+        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
         z, l2, q, _ = zlq_from_qid(qid, args)
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
+
+    # Compression only
+
+    qpos = (q.ravel() + 10**(-5)).reshape(-1,1)
 
     # Constraints on Heights
     upper_limit = ub - z[ub_ind] # >= 0
@@ -143,6 +158,12 @@ def f_cracks(xopt, *args):
     lower_cracks = (lb[cracks_lb] - z[cracks_lb]) + crack_tol
     upper_cracks = (z[cracks_ub] - ub[cracks_ub]) + crack_tol
 
-    # This can be simplified to not count with the abs... Will test in 3D later on... and see :)
+    # Constraints on flying reactions
 
-    return transpose(vstack([upper_limit, lower_limit, lower_cracks, upper_cracks, Rx_angle, Ry_angle]))[0]
+    max_f_x = array([5.0]*len(rol_x))
+    max_f_y = array([5.0]*len(rol_y))
+
+    reac_rol_x = (array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1,1)
+    reac_rol_y = (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1,1)
+
+    return transpose(vstack([qpos, upper_limit, lower_limit, lower_cracks, upper_cracks, Rx_angle, Ry_angle, reac_rol_x, reac_rol_y]))[0]

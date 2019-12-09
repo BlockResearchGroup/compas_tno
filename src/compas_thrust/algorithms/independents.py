@@ -2,6 +2,7 @@
 from numpy import vstack
 from numpy import hstack
 from numpy import array
+from numpy import any
 from numpy.linalg import matrix_rank
 from numpy.random import rand
 from math import sqrt
@@ -24,11 +25,23 @@ __all__ = [
 
 def find_independents(E):
 
-    _, m = E.shape
-    Etemp = E[:,[0]]
     ind = []
+    _, m = E.shape
 
-    for i in range(1,m):
+    # Take as independent all edges connecting supported points.
+
+    for i in range(m):
+        if any(E[:,i]):
+            pass
+        else:
+            ind.append(i)
+
+    internal = list(set(range(m)) - set(ind))
+    Etemp = E[:,[internal[0]]]
+
+    # Proceed for the internal edges only.
+
+    for i in internal[1:]:
         Etest = hstack([Etemp,E[:,[i]]])
         _ , ncol = Etest.shape
         if matrix_rank(Etest) < ncol:
@@ -132,18 +145,18 @@ def inds_incl_excl(E, ins, outs):
     return ind
 
 
-def check_independents(args, tol = 0.001):
+def check_independents(args_inds, tol = 0.001):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Citx, City, Cf, U, V, p, px, py, pz, z, free_x, free_y, fixed, lh, sym, k = args_inds
     checked = True
     q_ = deepcopy(q)
     if tol > 0:
         for i in range(10**3):
             q_[ind, 0] = rand(k) * 10
-            q_[dep] = -Edinv.dot(p - Ei.dot(q_[ind]))
-            Rx = array(Cit.dot(U * q_.ravel()) - px[free].ravel())
-            Ry = array(Cit.dot(V * q_.ravel()) - py[free].ravel())
-            R  = sqrt(max(Rx**2 + Ry**2))
+            q_[dep] = Edinv.dot(- p + Ei.dot(q_[ind]))
+            Rx = array(Citx.dot(U * q_.ravel()) - px[free_x].ravel())
+            Ry = array(City.dot(V * q_.ravel()) - py[free_y].ravel())
+            R  = max( sqrt(max(Rx**2)) , sqrt(max(Ry**2)) )
             if R > tol:
                 checked = False
                 break
