@@ -11,7 +11,8 @@ import math
 
 # Mesh
 
-fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/cross_fd/cross_fd_discr_20_max_t=50.json'
+fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/cross_fd/modified_ub_lb/cross_fd_discr_12_max_t=30.json'
+# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/r=5/radial_discr_8_16_min_t=30.json'
 form = FormDiagram.from_json(fnm)
 k_i = form.key_index()
 i_k = form.index_key()
@@ -37,6 +38,7 @@ for u, v in form.edges():
     fs.append(q*l)
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
+    print(sp,ep)
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
     lp += q * l * l
@@ -126,8 +128,6 @@ for key in form.vertices_where({'is_fixed': True}):
     rx = form.get_vertex_attribute(key, 'rx')
     rz = form.get_vertex_attribute(key, 'rz')
     norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
-    print('Rection on key: ', key)
-    print(rx,ry,rz)
     if rz < 0.0 and norm > 0.0:
         sp = node
         print(sp)

@@ -25,13 +25,13 @@ if __name__ == "__main__":
     # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
     type_fd = 'fan_fd'
     objective = 'max'
-    thck = 0.5
+    thck = 0.50
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
     
     x_span = 5.0
     y_span = 10.0
-    
+    example = 'rectangular/5x10/'
 
     if type_fd == 'cross_fd':
         divisions = 20
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         divisions = 16
         form = create_fan_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
     
-    PATH = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/5x10/'+ type_fd + '/' + type_fd + '_discr_'+ str(divisions)
+    PATH = '/Users/mricardo/compas_dev/me/minmax/cross/' + example + type_fd + '/' + type_fd + '_discr_'+ str(divisions)
     file_initial = PATH + '_lp.json'
     file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
 
@@ -86,6 +86,7 @@ if __name__ == "__main__":
                                         bmax = True,
                                         summary=print_opt)
 
+    print('File saved to: ',file_save)
     form.to_json(file_save)
     overview_forces(form)
     # plot_form(form, show_q = False).show()

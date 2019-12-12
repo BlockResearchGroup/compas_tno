@@ -7,7 +7,7 @@ from numpy import zeros
 from numpy import array
 
 from compas_thrust.algorithms import zlq_from_qid
-
+from compas.numerical import normrow
 from compas.geometry import is_intersection_segment_segment_xy
 from compas.geometry import intersection_line_segment_xy
 from compas.geometry import distance_point_point_xy
@@ -109,14 +109,11 @@ def f_min_thrust(xopt, *args):
         z, l2, q, _ = zlq_from_qid(qid, args)
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
-    
-    # CfQ = Cf.transpose().dot(diags(q.flatten()))
-    # f = (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
 
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
-    xyz = hstack([x,y,z])
-    R = CfQC.dot(xyz)
-    f = norm_vector(R[:,0]) + norm_vector(R[:,1])
+    xy = hstack([x,y])
+    Rh = CfQC.dot(xy)
+    f = sum(normrow(Rh))   # Updated this, there was a mistake before
 
     if isnan(f) == True or any(xopt) == False:
         return 10**10
@@ -188,13 +185,10 @@ def f_max_thrust(xopt, *args):
         z, l2, q, _ = zlq_from_qid(xopt, args)
         # Verify if it is really necessary calculate z at this step. It may be necessary to only use the dependents equation
     
-    # CfQ = Cf.transpose().dot(diags(q.flatten()))
-    # f = -1* (CfQ.dot(U[:,newaxis])).transpose().dot(x[fixed]) + (CfQ.dot(V[:,newaxis])).transpose().dot(y[fixed])
-
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
-    xyz = hstack([x,y,z])
-    R = CfQC.dot(xyz)
-    f = (-1) * ( norm_vector(R[:,0]) + norm_vector(R[:,1]) )
+    xy = hstack([x,y])
+    Rh = CfQC.dot(xy)
+    f = (-1) * sum(normrow(Rh))
 
     if isnan(f) == True or any(xopt) == False:
         return 10**10

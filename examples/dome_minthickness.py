@@ -3,8 +3,11 @@ from compas_tna.diagrams import FormDiagram
 from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.diagrams.form import create_cross_form
 from compas_thrust.diagrams.form import create_fan_form
+from compas_thrust.diagrams.form import create_dome_form
+from compas_thrust.diagrams.form import delete_boundary_edges
 
 from compas_thrust.utilities.constraints import set_pavillion_vault_heights
+from compas_thrust.utilities.constraints import set_dome_heights
 
 from compas_thrust.algorithms.equilibrium import reactions
 
@@ -25,31 +28,24 @@ import csv
 if __name__ == "__main__":
 
     # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
-    type_fd = 'cross_fd'
-    objective = 'min'
-    total = 10
-
-    thck = 0.30
+    type_fd = 'radial'
+    objective = 'max'
+    thck = 0.19
     reduction = 0.01
+    total = 25
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
-    
-    x_span = 10.0
-    y_span = 10.0
 
-    if type_fd == 'cross_fd':
-        divisions = 20
-        xy_span = [[0.0,x_span],[0.0,y_span]]
-        form = create_cross_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions, fix='all') # FIX ALL NODES ON BOUNDARIES
-    if type_fd == 'fan_fd':
-        divisions = 16
-        xy_span = [[0.0,x_span],[0.0,y_span]]
-        form = create_fan_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions, fix='all') # FIX ALL NODES ON BOUNDARIES
+    xc = 5.0
+    yc = 5.0
+    radius = 5.0
+    n_radial = 8
+    n_spikes = 16
 
     # Open initial formdiagram and output file
     
-    PATH = '/Users/mricardo/compas_dev/me/minmax/pavillion/'+ type_fd + '/' + type_fd + '_discr_'+ str(divisions)
-    FILECSV = '/Users/mricardo/compas_dev/me/minmax/pavillion/minthck_via_' + objective + '_' + type_fd + '.csv'
+    PATH = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/' + type_fd + '_discr_'+ str(n_radial) + '_' + str(n_spikes)
+    FILECSV = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/minthck_via_' + objective + '_' + type_fd + '.csv'
 
     file_initial = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
     form = FormDiagram.from_json(file_initial)
@@ -72,20 +68,18 @@ if __name__ == "__main__":
         i = 1
         while exitflag == 1 and i <= total:
             
-            file_initial = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
+            objective_load = 'min'
+            file_initial = PATH + '_' + objective_load + '_t=' + str(int(thck*100)) + '.json'
             form = FormDiagram.from_json(file_initial)
 
             thck = round(thck - reduction, 3)
             print('----------------------\nOptimisation with thickness: {0}'.format(thck))
             file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
-            form = set_pavillion_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = thck, b = 5.0, set_heights=False, ub_lb = True, update_loads = True)
+            form = set_dome_heights(form, center = [xc, yc], radius = radius, thck = thck)
             indset = form.attributes['indset']
 
             # Initial parameters
 
-            translation = form.attributes['tmax']
-            bounds_width = 5.0
-            use_bounds = False
             qmax = 100
             qmin = -1e-6
             indset = form.attributes['indset']
@@ -100,7 +94,7 @@ if __name__ == "__main__":
                                                 find_inds=True,
                                                 indset=indset,
                                                 tol=0.01,
-                                                translation = translation,
+                                                translation = True,
                                                 objective=objective,
                                                 bmax = True,
                                                 summary=print_opt)
@@ -126,5 +120,7 @@ if __name__ == "__main__":
                 # exitflag = 0
 
                 writer.writerow([thck*100, rx, ry, qmax, zb, fopt, exitflag])
-    
-    
+
+
+
+

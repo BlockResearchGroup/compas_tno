@@ -96,14 +96,15 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
 
     if translation:
         x0 = q[ind]
-        bounds = [[qmin, qmax]] * k + [[-1*10, translation]] * len(fixed)
+        zb_bounds = [[form.get_vertex_attribute(i_k[i], 'lb'), form.get_vertex_attribute(i_k[i], 'ub')] for i in fixed]
+        bounds = [[qmin, qmax]] * k + zb_bounds
         x0 = append(x0,z[fixed]).reshape(-1,1)
     else:
         x0 = q[ind]
         bounds = [[qmin, qmax]] * k
 
-    print('Independents:', ind)
-    # print('Initial stepbefore:', x0)
+    print('Total of Independents:', len(ind))
+    print('Number of Variables:', len(x0))
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
     
@@ -240,14 +241,14 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds = True,
         form.set_edge_attribute((u, v), 'q', float(qi))
 
     lp = 0
-    for u, v in form.edges():
+    for u, v in form.edges_where({'is_edge': True}):
         if form.get_edge_attribute((u, v), 'is_symmetry') is False:
             qi = form.get_edge_attribute((u, v), 'q')
             li = form.edge_length(u, v)
             lp += abs(qi) * li**2
     form.attributes['loadpath'] = lp
 
-    # form.attributes['iter'] = niter
+    # form.attributes['iter'] = niter  
     form.attributes['exitflag'] = exitflag
     form.attributes['fopt'] = fopt
     form.attributes['objective'] = objective
@@ -322,7 +323,7 @@ def set_b_constraint(form, bmax, printout):
         b = None
 
     if printout and bmax:
-        print('Reaction spread:\n {0}'.format(b))
+        print('Reaction spread in : {0} joints'.format(len(b)))
         
     return b
 

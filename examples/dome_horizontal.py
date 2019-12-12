@@ -3,14 +3,18 @@ from compas_tna.diagrams import FormDiagram
 from compas_thrust.diagrams.form import overview_forces
 from compas_thrust.diagrams.form import create_cross_form
 from compas_thrust.diagrams.form import create_fan_form
+from compas_thrust.diagrams.form import create_dome_form
 from compas_thrust.diagrams.form import delete_boundary_edges
 
 from compas_thrust.utilities.constraints import set_pavillion_vault_heights
+from compas_thrust.utilities.constraints import set_dome_heights
 
 from compas_thrust.algorithms.equilibrium import reactions
 
 from compas_thrust.algorithms import optimise_general
 from compas_thrust.algorithms import optimise_convex
+
+from compas.datastructures import mesh_quads_to_triangles
 
 from compas_thrust.plotters.plotters import plot_form
 
@@ -24,42 +28,29 @@ import math
 if __name__ == "__main__":
 
     # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
-    type_fd = 'cross_fd'
-    objective = 'max'
+    type_fd = 'radial'
+    objective = 'feasibility'
     thck = 0.30
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
-    
-    x_span = 10.0
-    y_span = 10.0
 
-    if type_fd == 'cross_fd':
-        divisions = 12
-        xy_span = [[0.0,x_span],[0.0,y_span]]
-        form = create_cross_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions, fix='all') # FIX ALL NODES ON BOUNDARIES
-    if type_fd == 'fan_fd':
-        divisions = 16
-        xy_span = [[0.0,x_span],[0.0,y_span]]
-        form = create_fan_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions, fix='all') # FIX ALL NODES ON BOUNDARIES
-    
+    xc = 5.0
+    yc = 5.0
+    radius = 5.0
+    n_radial = 8
+    n_spikes = 16
+    rx = 0.02
+
+    form = create_dome_form(center = [xc, yc], radius = radius, n_radial = n_radial, n_spikes = n_spikes, r_oculus= 0.0)
+    form = set_dome_heights(form, center = [xc, yc], radius = radius, thck = thck)
     form = delete_boundary_edges(form)
-    plot_form(form, show_q=False).show()
-    
-    PATH = '/Users/mricardo/compas_dev/me/minmax/pavillion/'+ type_fd + '/' + type_fd + '_discr_'+ str(divisions)
-    
+
+    PATH = '/Users/mricardo/compas_dev/me/minmax/dome/hor-loads/r=' + str(int(radius)) + '/' + type_fd + '_discr_'+ str(n_radial) + '_' + str(n_spikes)
     file_initial = PATH + '_lp.json'
-    file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
-
-    # Set Constraints for Cross_Vaults
-    
-    # I modified this by hand
-    # file_min = PATH + '_' + 'max' + '_t=' + str(int(thck*100)) + '.json'
-    # form = FormDiagram.from_json(file_min)
-
-    # Initial parameters
+    file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '_px=' + str(rx) + '.json'
 
     translation = True
-    qmax = 400
+    qmax = 200
     qmin = -1e-6
     indset = None
     print_opt = True
@@ -74,13 +65,22 @@ if __name__ == "__main__":
     #                                         indset=indset)
     # form.to_json(file_initial)
     form = FormDiagram.from_json(file_initial)
-    for key in form.vertices_where({'is_fixed': True}):
-        ub = form.get_vertex_attribute(key, 'ub')
-        form.set_vertex_attribute(key, 'z', ub)
-    form = set_pavillion_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = thck, b = 5.0, t = 0.0, set_heights=False, ub_lb = True, update_loads = True)
+    # indset = form.attributes['indset']
     
-    indset = form.attributes['indset']
-    plot_form(form, show_q = False).show()
+    # Add Horizontal Loads
+
+    mesh_quads_to_triangles(form)
+
+    for u,v in form.edges():
+        qi = form.get_edge_attribute((u,v),'q')
+        if qi == 1.0 or qi == None:
+            form.set_edge_attribute((u,v),'q',value=0.0)
+
+    pxt = 0
+    for key in form.vertices():
+        form.vertex[key]['px'] = form.vertex[key]['pz'] * rx
+        pxt += form.vertex[key]['px']
+    print('Load x-direction - pxt = {0}'.format(pxt))
 
     # Maximum or Minimum Thrusts
 
@@ -96,10 +96,10 @@ if __name__ == "__main__":
                                         bmax = True,
                                         summary=print_opt)
 
-    print('File Saved:', file_save)
+    print('Form Saved to: ',file_save)
     form.to_json(file_save)
     overview_forces(form)
-    # plot_form(form, show_q = False).show()
+    plot_form(form, show_q = False).show()
     reactions(form)
 
     for key in form.vertices_where({'is_fixed': True}):

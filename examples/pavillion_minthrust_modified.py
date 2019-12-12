@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
     type_fd = 'cross_fd'
-    objective = 'max'
+    objective = 'min'
     thck = 0.30
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
@@ -45,39 +45,32 @@ if __name__ == "__main__":
     form = delete_boundary_edges(form)
     plot_form(form, show_q=False).show()
     
-    PATH = '/Users/mricardo/compas_dev/me/minmax/pavillion/'+ type_fd + '/' + type_fd + '_discr_'+ str(divisions)
+    PATH = '/Users/mricardo/compas_dev/me/minmax/pavillion/'+ type_fd + '/modified_ub_lb/' + type_fd + '_discr_'+ str(divisions)
     
     file_initial = PATH + '_lp.json'
     file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
-
-    # Set Constraints for Cross_Vaults
-    
-    # I modified this by hand
-    # file_min = PATH + '_' + 'max' + '_t=' + str(int(thck*100)) + '.json'
-    # form = FormDiagram.from_json(file_min)
+    # file_initial = PATH + '_' + 'min' + '_t=' + str(int(thck*100)) + '.json'
 
     # Initial parameters
 
     translation = True
-    qmax = 400
+    qmax = 100
     qmin = -1e-6
     indset = None
     print_opt = True
 
     # Convex Optimisation to find good starting point. Save the starting point, and can load it later if wanted
 
-    # fopt, qopt, zbopt, exitflag = optimise_convex(form,  qmax=qmax,
-    #                                         printout=print_opt,
-    #                                         find_inds=True,
-    #                                         tol=0.01,
-    #                                         objective='loadpath',
-    #                                         indset=indset)
-    # form.to_json(file_initial)
+    fopt, qopt, zbopt, exitflag = optimise_convex(form,  qmax=qmax,
+                                            printout=print_opt,
+                                            find_inds=True,
+                                            tol=0.01,
+                                            objective='loadpath',
+                                            indset=indset)
+    form.to_json(file_initial)
+
     form = FormDiagram.from_json(file_initial)
-    for key in form.vertices_where({'is_fixed': True}):
-        ub = form.get_vertex_attribute(key, 'ub')
-        form.set_vertex_attribute(key, 'z', ub)
-    form = set_pavillion_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = thck, b = 5.0, t = 0.0, set_heights=False, ub_lb = True, update_loads = True)
+    form = set_pavillion_vault_heights(form, xy_span = [[- thck/2 ,x_span + thck/2],[- thck/2,y_span + thck/2]], thk = thck, b = 5.0, t = 0.0, set_heights=False, ub_lb = True, update_loads = False)
     
     indset = form.attributes['indset']
     plot_form(form, show_q = False).show()

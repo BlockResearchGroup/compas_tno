@@ -49,6 +49,7 @@ __all__ = [
     'delete_boundary_edges',
     'overview_forces',
     'create_arch',
+    'create_dome_form',
 ]
 
 def _form(form, keep_q=False):
@@ -346,11 +347,8 @@ def loadpath(form):
 
 def delete_boundary_edges(form):
 
-    bound = form.edges_on_boundary()
-    print(bound)
-
-    for u,v in bound:
-        form.delete_edge(u,v)
+    for u,v in form.edges_on_boundary():
+        form.set_edge_attribute((u,v), 'is_edge', False)
 
     return form
 
@@ -567,7 +565,7 @@ def create_cross_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'c
 
     return form
 
-def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'corners', rollers = False ,pz = True, px = None, py = None):
+def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'corners', pz = True, px = None, py = None):
 
     """ Create a cross form-diagram.
 
@@ -706,13 +704,9 @@ def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'cor
         form.set_vertex_attribute(gkey_key[geometric_key([x1,y0,0.0])], 'is_fixed', True)
         form.set_vertex_attribute(gkey_key[geometric_key([x1,y1,0.0])], 'is_fixed', True)
     else:
-        for key in form.vertices_on_boundaries:
+        [bnds] = form.vertices_on_boundaries()
+        for key in bnds:
             form.set_vertex_attribute(key, 'is_fixed', True)
-    
-    if rollers:
-        for key in form.vertices_on_boundaries:
-            if form.get_vertex_attribute(key, 'is_fixed') == False:
-                form.set_vertex_attribute(key, 'is_roller', True)
 
     if pz:
         pzt = 0
@@ -737,6 +731,113 @@ def create_fan_form(xy_span = [[0.0,10.0],[0.0,10.0]], division = 10, fix = 'cor
 
     return form
 
+def create_dome_form(center = [5.0, 5.0], radius = 5.0, n_radial = 5, n_spikes = 10, r_oculus = 0.0, pz = True, px = None, py = None):
+
+    """ Create a Dome Form-diagram and set common attributes.
+
+    Parameters
+    ----------
+    center : list
+        Planar coordinates of the form-diagram [xc, yc].
+
+    radius: float
+        Radius of the form-diagram
+
+    n_radial : int
+        Number of meridians on the dome form-diagram.
+
+    n_spikes: int
+        Number of spikes from the center.
+
+    r_oculus: float
+        Value of the radius of the oculus, if no oculus is present should be set to zero.
+
+    pz : bool / float
+        If set to False, no vertical loads apply. If set to True, planar tributary area apply.
+
+    px : bool / float
+        If set to False, no x-horizontal loads apply. If set to float will apply a proportion of the vertical pz as px. Example px = 0.2 apply 20% of pz to px.
+
+    px : bool / float
+        If set to False, no y-horizontal loads apply. If set to float will apply a proportion of the vertical pz as py. Example py = 0.2 apply 20% of pz to py.
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    """
+
+    xc = center[0]
+    yc = center[1]
+    theta = 2*math.pi/n_spikes
+    r_div = (radius - r_oculus)/n_radial
+    lines = []
+
+    from compas_tna.utilities import LoadUpdater
+
+    for nr in range(n_radial+1):
+        for nc in range(n_spikes):
+            if (r_oculus + nr * r_div) > 0.0:
+                # Meridian Elements
+                xa = xc + (r_oculus + nr * r_div) * math.cos( theta * nc )
+                xb = xc + (r_oculus + nr * r_div) * math.cos( theta * ( nc + 1 ) )
+                ya = yc + (r_oculus + nr * r_div) * math.sin( theta * nc)
+                yb = yc + (r_oculus + nr * r_div) * math.sin( theta * ( nc + 1 ) )          
+                lines.append([[xa, ya, 0.0],[xb, yb, 0.0]])
+            
+            if nr <= n_radial - 1:
+            
+                # Radial Elements
+                xa = xc + (r_oculus + nr * r_div) * math.cos( theta * nc )
+                xb = xc + (r_oculus + (nr + 1) * r_div) * math.cos( theta * nc)
+                ya = yc + (r_oculus + nr * r_div) * math.sin( theta * nc)
+                yb = yc + (r_oculus + (nr + 1) * r_div) * math.sin( theta * nc)           
+                lines.append([[xa, ya, 0.0],[xb, yb, 0.0]])
+
+    form = FormDiagram.from_lines(lines, delete_boundary_edges = True)
+
+    form.update_default_vertex_attributes({'is_roller': False})
+    form.update_default_vertex_attributes({'is_fixed': False})
+    form.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
+    form.attributes['loadpath'] = 0
+    form.attributes['indset'] = []
+
+    if r_oculus:
+        for key in form.faces():
+            centroid = form.face_centroid(key)
+            if centroid[0] == xc and centroid[1] == yc:
+                form.set_face_attribute(key, 'is_loaded', False)
+
+    [bnds] = form.vertices_on_boundaries()
+    for key in bnds:
+        form.set_vertex_attribute(key, 'is_fixed', True)
+
+    if pz:
+        pzt = 0
+        for key in form.vertices():
+            form.vertex[key]['pz'] = form.vertex_area(key=key)
+            pzt += form.vertex[key]['pz']
+        print('Planar load - pzt = {0}'.format(pzt))
+
+    # updateloads = LoadUpdater(form,0)
+    # print(updateloads) # HOW UPDATE OPENINGS
+
+    if px:
+        pxt = 0
+        for key in form.vertices():
+            form.vertex[key]['px'] = form.vertex[key]['pz'] * px
+            pxt += form.vertex[key]['px']
+        print('Load x-direction - pxt = {0}'.format(pxt))
+
+    if py:
+        pyt = 0
+        for key in form.vertices():
+            form.vertex[key]['py'] = form.vertex[key]['pz'] * py
+            pyt += form.vertex[key]['py']
+        print('Loax y-direction - pyt = {0}'.format(pyt))
+
+    return form
 
 def sym_on_openings(form, xy_span = [[0.0,10.0],[0.0,10.0]], exc_length = 1.0):
 

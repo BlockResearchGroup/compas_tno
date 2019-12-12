@@ -52,7 +52,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     lines = []
     i = 0
 
-    for u, v in form.edges():
+    for u, v in form.edges_where({'is_edge': True}):
         qi = form.get_edge_attribute((u, v), thick)
         l = form.edge_length(u,v)
         uv_i = form.uv_index

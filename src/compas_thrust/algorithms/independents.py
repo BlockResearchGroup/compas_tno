@@ -21,6 +21,7 @@ __all__ = [
     'independents_include',
     'inds_incl_excl',
     'check_independents',
+    'check_horizontal'
 ]
 
 def find_independents(E):
@@ -160,5 +161,18 @@ def check_independents(args_inds, tol = 0.001):
             if R > tol:
                 checked = False
                 break
+
+    return checked
+
+
+def check_horizontal(E, p):
+
+    r = matrix_rank(E)
+    r_ = matrix_rank(hstack([E,p]))
+
+    if r == r_:
+        checked = True
+    else:
+        checked = False
 
     return checked
