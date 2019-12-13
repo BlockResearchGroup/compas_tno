@@ -85,7 +85,7 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
         folders = []
 
         if docs:
-            folders.append('docs/api/generated')
+            folders.append('docsource/api/generated')
 
         folders.append('dist/')
 
@@ -95,7 +95,7 @@ def clean(ctx, docs=True, bytecode=True, builds=True):
 
         if builds:
             folders.append('build/')
-            folders.append('src/compas_thrust.egg-info/')
+            folders.append('src/compas_tno.egg-info/')
 
         for folder in folders:
             rmtree(os.path.join(BASE_FOLDER, folder), ignore_errors=True)

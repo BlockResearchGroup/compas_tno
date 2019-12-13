@@ -12,7 +12,7 @@ import sphinx_compas_theme
 
 # -- General configuration ------------------------------------------------
 
-project = 'compas_thrust'
+project = 'compas_tno'
 copyright = 'Block Research Group - ETH Zurich'
 author = 'Ricardo Maia Avelino'
 release = '0.1.0'
@@ -98,7 +98,7 @@ html_theme = 'compaspkg'
 html_theme_path = sphinx_compas_theme.get_html_theme_path()
 
 html_theme_options = {
-    'package_name'    : 'compas_thrust',
+    'package_name'    : 'compas_tno',
     'package_title'   : project,
     'package_version' : release,
 }

@@ -1,18 +1,18 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_cross_form
-from compas_thrust.diagrams.form import create_fan_form
-from compas_thrust.diagrams.form import delete_boundary_edges
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import create_cross_form
+from compas_tno.diagrams.form import create_fan_form
+from compas_tno.diagrams.form import delete_boundary_edges
 
-from compas_thrust.utilities.constraints import set_pavillion_vault_heights
+from compas_tno.utilities.constraints import set_pavillion_vault_heights
 
-from compas_thrust.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import reactions
 
-from compas_thrust.algorithms import optimise_general
-from compas_thrust.algorithms import optimise_convex
+from compas_tno.algorithms import optimise_general
+from compas_tno.algorithms import optimise_convex
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 
 import math
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     thck = 0.30
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
-    
+
     x_span = 10.0
     y_span = 10.0
 
@@ -41,12 +41,12 @@ if __name__ == "__main__":
         divisions = 16
         xy_span = [[0.0,x_span],[0.0,y_span]]
         form = create_fan_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions, fix='all') # FIX ALL NODES ON BOUNDARIES
-    
+
     form = delete_boundary_edges(form)
     plot_form(form, show_q=False).show()
-    
+
     PATH = '/Users/mricardo/compas_dev/me/minmax/pavillion/'+ type_fd + '/modified_ub_lb/' + type_fd + '_discr_'+ str(divisions)
-    
+
     file_initial = PATH + '_lp.json'
     file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
     # file_initial = PATH + '_' + 'min' + '_t=' + str(int(thck*100)) + '.json'
@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     form = FormDiagram.from_json(file_initial)
     form = set_pavillion_vault_heights(form, xy_span = [[- thck/2 ,x_span + thck/2],[- thck/2,y_span + thck/2]], thk = thck, b = 5.0, t = 0.0, set_heights=False, ub_lb = True, update_loads = False)
-    
+
     indset = form.attributes['indset']
     plot_form(form, show_q = False).show()
 

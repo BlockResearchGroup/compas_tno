@@ -2,7 +2,7 @@ from compas_tna.diagrams import FormDiagram
 from compas_rhino.artists import NetworkArtist
 from compas.utilities import geometric_key
 from compas.geometry import distance_point_point
-# from compas_thrust.diagrams.form import overview_forces
+# from compas_tno.diagrams.form import overview_forces
 # from compas.utilities import XFunc
 
 import rhinoscriptsyntax as rs
@@ -26,7 +26,7 @@ fs = []
 radius_max = 0.30
 # Usually 0.50 for Cross Form-Diagram
 
-thrust_layer = 'Thrust' 
+thrust_layer = 'Thrust'
 rs.AddLayer(thrust_layer)
 rs.CurrentLayer(thrust_layer)
 artist = NetworkArtist(form, layer=thrust_layer)
@@ -44,7 +44,7 @@ for u, v in form.edges():
     lp += q * l * l
 rs.AddTextDot('{0:.1f}'.format(lp),[- 1.0, - 1.0, 0.0 ])
 
-thrust_limits = 'Limits' 
+thrust_limits = 'Limits'
 rs.AddLayer(thrust_limits)
 rs.CurrentLayer(thrust_limits)
 artist = NetworkArtist(form, layer=thrust_limits)
@@ -74,7 +74,7 @@ if cracks_ub:
     for i in cracks_ub:
         rs.AddTextDot('ub',form.vertex_coordinates(k_i[i]))
 
-target_layer = 'Target' 
+target_layer = 'Target'
 rs.AddLayer(target_layer)
 rs.CurrentLayer(target_layer)
 artist = NetworkArtist(form, layer=target_layer)
@@ -88,7 +88,7 @@ for u, v in form.edges():
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
 
-ub_layer = 'UB' 
+ub_layer = 'UB'
 rs.AddLayer(ub_layer)
 rs.CurrentLayer(ub_layer)
 artist = NetworkArtist(form, layer=ub_layer)
@@ -102,7 +102,7 @@ for u, v in form.edges():
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
 
-lb_layer = 'LB' 
+lb_layer = 'LB'
 rs.AddLayer(lb_layer)
 rs.CurrentLayer(lb_layer)
 artist = NetworkArtist(form, layer=lb_layer)
@@ -117,7 +117,7 @@ for u, v in form.edges():
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(q))
 
-reac_layer = 'Reactions' 
+reac_layer = 'Reactions'
 rs.AddLayer(reac_layer)
 rs.CurrentLayer(reac_layer)
 artist = NetworkArtist(form, layer=reac_layer)
@@ -163,7 +163,7 @@ for key in form.vertices_where({'rol_y': True}):
     except:
         pass
 
-pipes_layer = 'Pipes' 
+pipes_layer = 'Pipes'
 rs.AddLayer(pipes_layer)
 rs.CurrentLayer(pipes_layer)
 artist = NetworkArtist(form, layer=pipes_layer)

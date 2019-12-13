@@ -1,18 +1,18 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.utilities.symmetry import create_sym2
-from compas_thrust.utilities.symmetry import replicate2
-from compas_thrust.utilities.symmetry import create_sym
-from compas_thrust.utilities.symmetry import replicate
+from compas_tno.utilities.symmetry import create_sym2
+from compas_tno.utilities.symmetry import replicate2
+from compas_tno.utilities.symmetry import create_sym
+from compas_tno.utilities.symmetry import replicate
 
 from compas.utilities import geometric_key
 
-from compas_thrust.diagrams.form import remove_feet
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import adapt_objective
-from compas_thrust.diagrams.form import adapt_tna
+from compas_tno.diagrams.form import remove_feet
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import adapt_objective
+from compas_tno.diagrams.form import adapt_tna
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 
 from compas_viewers.meshviewer import MeshViewer
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     plot_form(form).show()
 
     # Prepare Symmetrical part for optimisation with independents
-    
+
     form = remove_feet(form, plot = True)
     overview_forces(form)
     # form.to_json(file_scaled)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # for u,v in form.edges():
     #     gkey = geometric_key(form.edge_midpoint(u,v)[:2] + [0])
     #     qs[gkey] = form.get_edge_attribute((u,v), 'q')
-    
+
     # print(qs)
 
     # form_ = FormDiagram.from_json(file_real)

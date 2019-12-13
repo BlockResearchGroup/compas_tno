@@ -1,22 +1,22 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
-# from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.plotters.plotters import plot_form
-from compas_thrust.plotters.plotters import plot_force
-from compas_thrust.algorithms import initialize_problem
-from compas_thrust.algorithms import update_tna
-from compas_thrust.algorithms import z_from_form
-from compas_thrust.diagrams.form import overview_forces
+# from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_force
+from compas_tno.algorithms import initialize_problem
+from compas_tno.algorithms import update_tna
+from compas_tno.algorithms import z_from_form
+from compas_tno.diagrams.form import overview_forces
 from compas.utilities import geometric_key
 
-from compas_thrust.utilities import fix_boundaries_sym
-from compas_thrust.utilities import fix_boundaries_complete
-from compas_thrust.utilities import set_cross_vault_heights
-from compas_thrust.utilities import set_pavillion_vault_heights
-from compas_thrust.utilities import set_oct_vault_heights
+from compas_tno.utilities import fix_boundaries_sym
+from compas_tno.utilities import fix_boundaries_complete
+from compas_tno.utilities import set_cross_vault_heights
+from compas_tno.utilities import set_pavillion_vault_heights
+from compas_tno.utilities import set_oct_vault_heights
 
-from compas_thrust.utilities import fix_mid_sym
-from compas_thrust.utilities import fix_mid_complete
+from compas_tno.utilities import fix_mid_sym
+from compas_tno.utilities import fix_mid_complete
 
 from compas.geometry import is_point_on_segment
 from compas.geometry import intersection_segment_segment
@@ -45,9 +45,9 @@ from numpy.linalg import matrix_rank
 from numpy.random import rand
 from numpy.random import randint
 
-from compas_thrust.diagrams.form import _form
-from compas_thrust.algorithms import min_loadpath
-from compas_thrust.algorithms import min_thrust
+from compas_tno.diagrams.form import _form
+from compas_tno.algorithms import min_loadpath
+from compas_tno.algorithms import min_thrust
 
 from compas.numerical import normrow
 from compas_viewers.meshviewer import MeshViewer
@@ -60,10 +60,10 @@ from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from compas.numerical import equilibrium_matrix
 
-from compas_thrust.utilities.constraints import set_cross_vault_heights
-from compas_thrust.utilities.constraints import set_pavillion_vault_heights
-from compas_thrust.utilities.constraints import circular_heights
-from compas_thrust.utilities.symmetry import create_sym
+from compas_tno.utilities.constraints import set_cross_vault_heights
+from compas_tno.utilities.constraints import set_pavillion_vault_heights
+from compas_tno.utilities.constraints import circular_heights
+from compas_tno.utilities.symmetry import create_sym
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -129,11 +129,11 @@ def save_matlab(form, file, find_inds=True, heights=False):
 # ==============================================================================
 
 if __name__ == "__main__":
-    
+
     # Load
 
     # import sdpt3glue
-    
+
     i = 4
     j = 2
     # file = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+str(j)+'_0'+str(i)+'_complete_paper.json'
@@ -143,12 +143,12 @@ if __name__ == "__main__":
     form = FormDiagram.from_json(file)
     plot_form(form,heights=True, show_q=False).show()
     # form = circular_heights(form)
-    
+
     # form = _form(form)
     # form = create_sym(form)
 
     # Modify Form
-    
+
     # form = fix_boundaries_complete(form)
     # form = fix_mid_complete(form)
     # plot_form(form,show_q=False, max_width=2.0).show()

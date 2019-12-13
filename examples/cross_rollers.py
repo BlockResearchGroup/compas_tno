@@ -1,20 +1,20 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_cross_form
-from compas_thrust.diagrams.form import create_fan_form
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import create_cross_form
+from compas_tno.diagrams.form import create_fan_form
 
-from compas_thrust.utilities.constraints import set_cross_vault_heights
-from compas_thrust.utilities.constraints import rollers_on_openings
+from compas_tno.utilities.constraints import set_cross_vault_heights
+from compas_tno.utilities.constraints import rollers_on_openings
 
-from compas_thrust.algorithms.problems import initialise_form
+from compas_tno.algorithms.problems import initialise_form
 
-from compas_thrust.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import reactions
 
-from compas_thrust.algorithms import optimise_general
-from compas_thrust.algorithms import optimise_convex
+from compas_tno.algorithms import optimise_general
+from compas_tno.algorithms import optimise_convex
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 
 import math
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     thck = 0.5
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
-    
+
     x_span = 7.5
     y_span = 10.0
 
@@ -42,13 +42,13 @@ if __name__ == "__main__":
     if type_fd == 'fan_fd':
         divisions = 16
         form = create_fan_form(xy_span = [[0.0,x_span],[0.0,y_span]], division=divisions)
-    
+
     PATH = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular-rollers/7,5x10/'+ type_fd + '/' + type_fd + '_discr_'+ str(divisions)
     file_initial = PATH + '_lp.json'
     file_save = PATH + '_rol-' + rollers + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
 
     # Set Constraints for Cross_Vaults
-    
+
     form = set_cross_vault_heights(form, xy_span = [[0.0,x_span],[0.0,y_span]], thk = thck, b = 5.0, set_heights=False, ub_lb = True, update_loads = True)
     # form = rollers_on_openings(form, xy_span = [[0.0,x_span],[0.0,y_span]], max_f = 1.0, constraint_directions = rollers)
     # form = initialise_form(form, printout = True)

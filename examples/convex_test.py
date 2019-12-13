@@ -1,26 +1,26 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
-# from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.plotters.plotters import plot_form
-from compas_thrust.plotters.plotters import plot_force
-from compas_thrust.algorithms import initialize_problem
-from compas_thrust.algorithms import update_tna
-from compas_thrust.algorithms import z_from_form
-from compas_thrust.diagrams.form import overview_forces
+# from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_force
+from compas_tno.algorithms import initialize_problem
+from compas_tno.algorithms import update_tna
+from compas_tno.algorithms import z_from_form
+from compas_tno.diagrams.form import overview_forces
 from compas.utilities import geometric_key
 
-from compas_thrust.utilities import fix_boundaries_sym
-from compas_thrust.utilities import fix_boundaries_complete
-from compas_thrust.utilities import set_cross_vault_heights
-from compas_thrust.utilities import set_pavillion_vault_heights
-from compas_thrust.utilities import set_oct_vault_heights
-from compas_thrust.utilities import check_constraints
-from compas_thrust.utilities import circular_heights
-from compas_thrust.utilities.symmetry import not_sym_load
-from compas_thrust.utilities import replicate_contraints
+from compas_tno.utilities import fix_boundaries_sym
+from compas_tno.utilities import fix_boundaries_complete
+from compas_tno.utilities import set_cross_vault_heights
+from compas_tno.utilities import set_pavillion_vault_heights
+from compas_tno.utilities import set_oct_vault_heights
+from compas_tno.utilities import check_constraints
+from compas_tno.utilities import circular_heights
+from compas_tno.utilities.symmetry import not_sym_load
+from compas_tno.utilities import replicate_contraints
 
-from compas_thrust.utilities import fix_mid_sym
-from compas_thrust.utilities import fix_mid_complete
+from compas_tno.utilities import fix_mid_sym
+from compas_tno.utilities import fix_mid_complete
 
 from compas.geometry import is_point_on_segment
 from compas.geometry import intersection_segment_segment
@@ -49,7 +49,7 @@ from numpy.linalg import matrix_rank
 from numpy.random import rand
 from numpy.random import randint
 
-from compas_thrust.diagrams.form import _form
+from compas_tno.diagrams.form import _form
 
 from compas.numerical import normrow
 from compas_viewers.meshviewer import MeshViewer
@@ -62,9 +62,9 @@ from scipy.sparse import diags
 from scipy.sparse.linalg import spsolve
 from compas.numerical import equilibrium_matrix
 
-from compas_thrust.utilities.constraints import set_cross_vault_heights
-from compas_thrust.utilities.constraints import set_pavillion_vault_heights
-from compas_thrust.utilities.symmetry import create_sym
+from compas_tno.utilities.constraints import set_cross_vault_heights
+from compas_tno.utilities.constraints import set_pavillion_vault_heights
+from compas_tno.utilities.symmetry import create_sym
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -98,7 +98,7 @@ def save_matlab(form, file, find_inds=True, heights=False, lb_ub=True):
 
     args = initialize_problem(form, find_inds=find_inds)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
-    
+
     if lb_ub:
         zt = []
         zlb = []
@@ -161,18 +161,18 @@ if __name__ == "__main__":
         print(i)
         j = 2
         i = 6
-        
+
         # Load
-        
+
         # file = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01.json'
         file_constraints = '/Users/mricardo/compas_dev/me/loadpath/Fix/nosym/0'+str(j)+'_0'+str(i)+'_t_60.json'
         file = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete_nosym.json'
         file = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete_paper.json'
-        
+
         file_save = '/Users/mricardo/compas_dev/me/loadpath/Fix/nosym/0'+str(j)+'_0'+str(i)+'_t_60cm_p_120.json'
         # file = '/Users/mricardo/compas_dev/me/loadpath/corner/discretize/0'+str(j)+'_0'+str(i)+'_complete_paper.json'
         # file_arch = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_lp.json'
-        
+
         # file = '/Users/mricardo/compas_dev/me/convex/4bars/diagram.json'
         # file_matlab_solve = '/Users/mricardo/Documents/MATLAB/optimisation/topology/Corner_0'+str(j)+'_0'+str(i)+'_solve.mat'
         # file_matlab = '/Users/mricardo/Documents/MATLAB/optimisation/Corner_0'+str(j)+'_0'+str(i)+'.mat'
@@ -184,7 +184,7 @@ if __name__ == "__main__":
         # form = create_sym(form)
 
         # Modify Form
-        
+
         # form = fix_boundaries_complete(form)
         # form = fix_mid_complete(form)
         # form = set_cross_vault_heights(form, ub_lb=True, thk=2.0, set_heights=False)
@@ -195,9 +195,9 @@ if __name__ == "__main__":
         overview_forces(form)
         plot_form(form,show_q=False, max_width=2.0, simple=True).show()
         # form.to_json(file_fix)
-        
+
         # Save Matlab
-        
+
         save_matlab(form, file_matlab, find_inds=True)
         plot_form(form).show()
 

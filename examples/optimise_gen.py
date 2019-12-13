@@ -1,26 +1,26 @@
 
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.algorithms.ind_based import optimise_single
-from compas_thrust.algorithms.ind_based import initialize_problem
+from compas_tno.algorithms.ind_based import optimise_single
+from compas_tno.algorithms.ind_based import initialize_problem
 
-from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.algorithms.equilibrium import horizontal_check
+from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import horizontal_check
 
-from compas_thrust.algorithms import optimise_general
+from compas_tno.algorithms import optimise_general
 
-from compas_thrust.utilities.constraints import circular_heights
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.utilities.symmetry import replicate
+from compas_tno.utilities.constraints import circular_heights
+from compas_tno.utilities.constraints import check_constraints
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.utilities.symmetry import replicate
 
 from compas_viewers.meshviewer import MeshViewer
 
-from compas_thrust.diagrams.form import _form
-from compas_thrust.plotters.plotters import plot_form
-from compas_thrust.plotters.plotters import plot_form_xz
+from compas_tno.diagrams.form import _form
+from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form_xz
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 import compas_pattern
 
 from copy import deepcopy
@@ -113,7 +113,7 @@ if __name__ == "__main__":
                 print('Optimisation completed - Trial:',count, 'PX: ', px)
                 plot_form_xz(form, radius=0.01, simple=True, fix_width = True, max_width=1.5, heights=True, show_q=False, thk = thk, plot_reactions=True).show()
                 # form.to_json(file_save)
-        
+
         # Replicate-sym and Print Results
 
         # print('Horizontal checks: {0}'.format(horizontal_check(form)))

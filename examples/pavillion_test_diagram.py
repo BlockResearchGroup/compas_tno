@@ -1,18 +1,18 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_cross_form
-from compas_thrust.diagrams.form import create_fan_form
-from compas_thrust.diagrams.form import delete_boundary_edges
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import create_cross_form
+from compas_tno.diagrams.form import create_fan_form
+from compas_tno.diagrams.form import delete_boundary_edges
 
-from compas_thrust.utilities.constraints import set_pavillion_vault_heights
+from compas_tno.utilities.constraints import set_pavillion_vault_heights
 
-from compas_thrust.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import reactions
 
-from compas_thrust.algorithms import optimise_general
-from compas_thrust.algorithms import optimise_convex
+from compas_tno.algorithms import optimise_general
+from compas_tno.algorithms import optimise_convex
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 
 import math
 
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     thck = 0.17
 
     # Create Vault from one of the patterns Fan/Grid with the dimensions
-    
+
     x_span = 10.0
     y_span = 10.0
 

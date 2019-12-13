@@ -1,12 +1,12 @@
 
 from compas_tna.diagrams import FormDiagram
-from compas_thrust.algorithms import optimise_general
+from compas_tno.algorithms import optimise_general
 
-from compas_thrust.utilities.constraints import circular_heights
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_arch
+from compas_tno.utilities.constraints import circular_heights
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import create_arch
 
-from compas_thrust.plotters.plotters import plot_form_xz
+from compas_tno.plotters.plotters import plot_form_xz
 from numpy import array
 
 # ==============================================================================
@@ -63,5 +63,5 @@ if __name__ == "__main__":
                 print('Optimisation completed - Trial:',count, 't', thk)
                 plot_form_xz(form, radius=0.01, simple=True, fix_width = True, max_width=1.5, heights=True, show_q=False, thk = thk, plot_reactions=True).show()
                 form.to_json(file_save)
-        
+
         thk = thk - decrease

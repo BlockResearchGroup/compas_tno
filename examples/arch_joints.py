@@ -1,13 +1,13 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.utilities.constraints import circular_heights
-from compas_thrust.utilities.constraints import circular_joints
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_arch
-from compas_thrust.algorithms import optimise_general
+from compas_tno.utilities.constraints import circular_heights
+from compas_tno.utilities.constraints import circular_joints
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import create_arch
+from compas_tno.algorithms import optimise_general
 
-from compas_thrust.plotters.plotters import plot_form_xz
-from compas_thrust.plotters.plotters import plot_form_joints
+from compas_tno.plotters.plotters import plot_form_xz
+from compas_tno.plotters.plotters import plot_form_joints
 from numpy import array
 
 from compas.geometry import intersection_segment_segment_xy
@@ -29,11 +29,11 @@ from compas.geometry import is_intersection_segment_segment_xy
 from compas.geometry import intersection_line_segment_xy
 from compas.geometry import scale_vector_xy
 from compas.geometry import distance_point_point_xy
-from compas_thrust.algorithms import zlq_from_qid
-from compas_thrust.algorithms import q_from_qid
+from compas_tno.algorithms import zlq_from_qid
+from compas_tno.algorithms import q_from_qid
 from scipy.sparse import diags
 
-from compas_thrust.algorithms.problems import initialise_problem
+from compas_tno.algorithms.problems import initialise_problem
 
 # ==============================================================================
 # Main
@@ -197,5 +197,5 @@ if __name__ == "__main__":
     #     result.append(joint_int)
 
     # print(result)
-        
+
     plot_form_xz(form, radius=0.01, simple=True, fix_width = True, max_width=1.5, heights=True, show_q=False, thk = thk, plot_reactions=True, joints=True).show()

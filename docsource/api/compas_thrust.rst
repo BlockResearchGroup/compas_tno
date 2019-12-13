@@ -1,2 +1,2 @@
 
-.. automodule:: compas_thrust
+.. automodule:: compas_tno

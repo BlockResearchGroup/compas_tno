@@ -1,26 +1,26 @@
 
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.algorithms.ind_based import optimise_single
+from compas_tno.algorithms.ind_based import optimise_single
 
-from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.algorithms.equilibrium import horizontal_check
+from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import horizontal_check
 
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.utilities.symmetry import create_sym2
-from compas_thrust.utilities.symmetry import replicate2
-from compas_thrust.utilities.symmetry import create_sym
-from compas_thrust.utilities.symmetry import replicate
+from compas_tno.utilities.constraints import check_constraints
+from compas_tno.utilities.symmetry import create_sym2
+from compas_tno.utilities.symmetry import replicate2
+from compas_tno.utilities.symmetry import create_sym
+from compas_tno.utilities.symmetry import replicate
 
-from compas_thrust.diagrams.form import _form
-from compas_thrust.diagrams.form import remove_feet
-from compas_thrust.diagrams.form import oveview_forces
+from compas_tno.diagrams.form import _form
+from compas_tno.diagrams.form import remove_feet
+from compas_tno.diagrams.form import oveview_forces
 
-from compas_thrust.diagrams.form import adapt_tna
-from compas_thrust.diagrams.form import adapt_objective
-from compas_thrust.diagrams.form import remove_feet
+from compas_tno.diagrams.form import adapt_tna
+from compas_tno.diagrams.form import adapt_objective
+from compas_tno.diagrams.form import remove_feet
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 
 from compas_viewers.meshviewer import MeshViewer
 
@@ -58,15 +58,15 @@ if __name__ == "__main__":
 
     # adapt_objective(form, objective = 'loadpath', plot = True, delete_face = True)
     # form.to_json(file_scaled)
-    
+
     # form.plot()
     # form = adapt_tna(form, zmax = 7.0, plot = False, delete_face = True)
     # plot_form(form).show()
     # form_complete = replicate2(form, '/Users/mricardo/compas_dev/compas_loadpath/data/freeform/A_comp.json', plot=True)
     # form_complete.to_json(file_save)
-    
+
     # form = remove_feet(form, plot = False, openings = 12.0)
-    
+
     # form.plot()
     # form = _form(form, keep_q=True)
     # plot_form(form).show()

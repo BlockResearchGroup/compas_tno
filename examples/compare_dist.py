@@ -1,16 +1,16 @@
 
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.algorithms.ind_based import optimise_single
+from compas_tno.algorithms.ind_based import optimise_single
 
-from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.algorithms.equilibrium import horizontal_check
+from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import horizontal_check
 
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.utilities.symmetry import replicate
+from compas_tno.utilities.constraints import check_constraints
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.utilities.symmetry import replicate
 
-from compas_thrust.diagrams.form import _form
+from compas_tno.diagrams.form import _form
 
 from compas.geometry import closest_point_in_cloud
 from compas.geometry import distance_point_point
@@ -18,7 +18,7 @@ from compas.utilities import geometric_key
 from compas.utilities import i_to_white
 from compas_plotters import MeshPlotter
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 import compas_pattern
 
 from copy import deepcopy
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     averages = []
     maxs = []
     i_s = []
-    
+
     for i in range(2,9):
         j = 2
         # file = '/Users/mricardo/compas_dev/me/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         # file_compare = '/Users/mricardo/compas_dev/me/discretize/02_09_complete.json'
         file_complete = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_complete.json'
         file_dist = '/Users/mricardo/compas_dev/me/loadpath/Fix/discretize/0'+str(j)+'_0'+str(i)+'_dist.json'
-        
+
         form = FormDiagram.from_json(file_dist)
         # form = FormDiagram.from_json(file)
         # formbase = FormDiagram.from_json(file_compare)
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         #         dists.append(dist)
         #         form.set_vertex_attribute(key, name = 'dist', value = dist)
         #     except:
-                
+
         #         dist, closest, _ = closest_point_in_cloud(point,points_base)
         #         form.set_vertex_attribute(key, name = 'dist', value = dist)
         #         dists.append(dist)

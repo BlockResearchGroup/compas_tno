@@ -1,24 +1,24 @@
 
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.algorithms.ind_based import optimise_single
-from compas_thrust.algorithms.ind_based import initialize_problem
+from compas_tno.algorithms.ind_based import optimise_single
+from compas_tno.algorithms.ind_based import initialize_problem
 
-from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.algorithms.equilibrium import horizontal_check
-from compas_thrust.algorithms.equilibrium import zlq_from_qid
-from compas_thrust.algorithms.equilibrium import update_qid
+from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import horizontal_check
+from compas_tno.algorithms.equilibrium import zlq_from_qid
+from compas_tno.algorithms.equilibrium import update_qid
 
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.diagrams.form import oveview_forces
-from compas_thrust.utilities.symmetry import replicate
+from compas_tno.utilities.constraints import check_constraints
+from compas_tno.diagrams.form import oveview_forces
+from compas_tno.utilities.symmetry import replicate
 
-from compas_thrust.diagrams.form import _form
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.diagrams.form import _form
+from compas_tno.plotters.plotters import plot_form
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 # from compas_viewers.meshviewer import MeshViewer
-from compas_thrust.viewers.meshviewer import MeshViewer
+from compas_tno.viewers.meshviewer import MeshViewer
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import diags
@@ -48,14 +48,14 @@ if __name__ == "__main__":
     # k_i = form.key_index()
     # i_uv = form.index_uv()
     # ind = args[1]
-    
+
     # print(ind)
-    
+
     # q0 = []
     # for i in ind:
     #     key = i_uv[i]
     #     q0.append(form.get_edge_attribute(key, 'q'))
-    
+
     # print(q0)
 
     # # Modify via Sliding

@@ -1,39 +1,39 @@
 
 from compas_tna.diagrams import FormDiagram
 
-# from compas_thrust.algorithms.ind_based import optimise_single
-from compas_thrust.algorithms.mult_inds import optimise_single
+# from compas_tno.algorithms.ind_based import optimise_single
+from compas_tno.algorithms.mult_inds import optimise_single
 
-from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.algorithms.equilibrium import horizontal_check
-from compas_thrust.algorithms.scale import scale_form
+from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import horizontal_check
+from compas_tno.algorithms.scale import scale_form
 
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.utilities.constraints import set_height_constraint
-from compas_thrust.utilities.constraints import set_cross_vault_heights
-from compas_thrust.utilities.constraints import set_dome_heights
+from compas_tno.utilities.constraints import check_constraints
+from compas_tno.utilities.constraints import set_height_constraint
+from compas_tno.utilities.constraints import set_cross_vault_heights
+from compas_tno.utilities.constraints import set_dome_heights
 
-from compas_thrust.utilities.loads import set_dome_loads
+from compas_tno.utilities.loads import set_dome_loads
 
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.utilities.symmetry import create_sym2
-from compas_thrust.utilities.symmetry import replicate2
-from compas_thrust.utilities.symmetry import create_sym
-from compas_thrust.utilities.symmetry import replicate
-from compas_thrust.utilities.loads import not_sym_load
-from compas_thrust.utilities.loads import fill_load
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.utilities.symmetry import create_sym2
+from compas_tno.utilities.symmetry import replicate2
+from compas_tno.utilities.symmetry import create_sym
+from compas_tno.utilities.symmetry import replicate
+from compas_tno.utilities.loads import not_sym_load
+from compas_tno.utilities.loads import fill_load
 
-from compas_thrust.diagrams.form import _form
-from compas_thrust.diagrams.form import remove_feet
-from compas_thrust.diagrams.form import delete_boundary_edges
+from compas_tno.diagrams.form import _form
+from compas_tno.diagrams.form import remove_feet
+from compas_tno.diagrams.form import delete_boundary_edges
 
-from compas_thrust.diagrams.form import adapt_tna
-from compas_thrust.diagrams.form import remove_feet
+from compas_tno.diagrams.form import adapt_tna
+from compas_tno.diagrams.form import remove_feet
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 from compas_viewers.meshviewer import MeshViewer
-from compas_thrust.algorithms import z_from_form
-from compas_thrust.algorithms import z_update
+from compas_tno.algorithms import z_from_form
+from compas_tno.algorithms import z_update
 
 from copy import deepcopy
 from numpy import array
@@ -65,7 +65,7 @@ if __name__ == "__main__":
 
         file_complete = '/Users/mricardo/compas_dev/me/bestfit/dome/dome_ortho.json'
         file_save = '/Users/mricardo/compas_dev/me/bestfit/dome/dome_ortho_NoFixFD.json'
-        
+
         form = FormDiagram.from_json(file_complete)
         # form = delete_boundary_edges(form)
         # form = set_cross_vault_heights(form)
@@ -105,7 +105,7 @@ if __name__ == "__main__":
         # overview_forces(form)
         # print('Horizontal checks: {0}'.format(horizontal_check(form)))
         # check_constraints(form, show=True)
-        
+
         # Initial parameters
 
         tmax = None # 5.0 # form.attributes['tmax']

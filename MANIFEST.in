@@ -6,6 +6,7 @@ prune data
 prune docs
 prune docsource
 prune examples
+prune scripts
 prune temp
 prune tests
 

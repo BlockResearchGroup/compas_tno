@@ -1,34 +1,34 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.algorithms.grad_based import optimise_tna
-from compas_thrust.algorithms.scale import evaluate_scale
-from compas_thrust.algorithms.scale import lagrangian_scale
-from compas_thrust.algorithms.scale import scale_form
-from compas_thrust.algorithms.equilibrium import z_from_form
+from compas_tno.algorithms.grad_based import optimise_tna
+from compas_tno.algorithms.scale import evaluate_scale
+from compas_tno.algorithms.scale import lagrangian_scale
+from compas_tno.algorithms.scale import scale_form
+from compas_tno.algorithms.equilibrium import z_from_form
 
-from compas_thrust.algorithms import planes_trimesh
-from compas_thrust.algorithms import local_matrix
-from compas_thrust.algorithms import local_matrix_external
-from compas_thrust.algorithms import assembly_Cf
-from compas_thrust.algorithms import A_heights
-from compas_thrust.algorithms import A_stress
-from compas_thrust.algorithms import hessian
-from compas_thrust.algorithms import simple_nurbs
+from compas_tno.algorithms import planes_trimesh
+from compas_tno.algorithms import local_matrix
+from compas_tno.algorithms import local_matrix_external
+from compas_tno.algorithms import assembly_Cf
+from compas_tno.algorithms import A_heights
+from compas_tno.algorithms import A_stress
+from compas_tno.algorithms import hessian
+from compas_tno.algorithms import simple_nurbs
 
-from compas_thrust.utilities.constraints import check_constraints
-from compas_thrust.utilities.symmetry import replicate
-from compas_thrust.utilities import paraboloid
-from compas_thrust.utilities import dome
+from compas_tno.utilities.constraints import check_constraints
+from compas_tno.utilities.symmetry import replicate
+from compas_tno.utilities import paraboloid
+from compas_tno.utilities import dome
 
-from compas_thrust.diagrams.form import energy
-from compas_thrust.diagrams.form import loadpath
-from compas_thrust.diagrams.form import adapt_tna
-from compas_thrust.diagrams.form import evaluate_a
+from compas_tno.diagrams.form import energy
+from compas_tno.diagrams.form import loadpath
+from compas_tno.diagrams.form import adapt_tna
+from compas_tno.diagrams.form import evaluate_a
 from compas.geometry import Plane
 
 
-from compas_thrust.plotters.plotters import plot_form
-from compas_thrust.plotters.plotters import plot_dual
+from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_dual
 
 # from scipy import array
 # from scipy import tensordot
@@ -162,7 +162,7 @@ if __name__ == "__main__":
     # view_form(form)
     print('zs: {0:.3f} : {1:.3f}'.format(float(min(zs)), float(max(zs))))
     plot_form(form,show_q=False,heights = True).show()
-    
+
     # view_form(form)
 
     # ---------------- 1. Assembly Matrix
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     # print('Phi shape:', phi.shape)
 
     # ---------------- 2.1. Not request Rm > 0 ( Convex )
-    
+
     # K = dot(A, Cf)
     # print('Matrix K Shape:',K.shape)
     # print('Matrix K Det:',det(K))
@@ -210,7 +210,7 @@ if __name__ == "__main__":
     print('Rm: {0:.3f} : {1:.3f}'.format(float(min(Rm)), float(max(Rm))))
 
     # ------------- 3. Get Z's from Stress Function Phi
-    
+
     form.update_default_edge_attributes({'Rm' : 0.0}) # Change to RM attribute
     for u,v in form.edges():
         form.set_edge_attribute((u,v), 'Rm', value= float(Rm[uv_i[(u,v)]]))

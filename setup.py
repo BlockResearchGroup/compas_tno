@@ -24,12 +24,12 @@ requirements = read('requirements.txt').split('\n')
 optional_requirements = {}
 
 setup(
-    name='compas_thrust',
+    name='compas_tno',
     version='0.1.0',
     description='Masonry analysis with TNA',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/BlockResearchGroup/compas_thrust',
+    url='https://github.com/BlockResearchGroup/compas_tno',
     author='Ricardo Maia Avelino',
     author_email='mricardo@ethz.ch',
     license='MIT license',
@@ -52,7 +52,7 @@ setup(
     ],
     keywords=[],
     project_urls={},
-    packages=['compas_thrust'],
+    packages=['compas_tno'],
     package_dir={'': 'src'},
     package_data={},
     data_files=[],

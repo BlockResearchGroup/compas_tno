@@ -1,22 +1,22 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
-# from compas_thrust.algorithms.equilibrium import reactions
-from compas_thrust.plotters.plotters import plot_form
-from compas_thrust.plotters.plotters import plot_force
-from compas_thrust.algorithms import initialize_problem
-from compas_thrust.algorithms import update_tna
-from compas_thrust.algorithms import z_from_form
-from compas_thrust.diagrams.form import overview_forces
+# from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_force
+from compas_tno.algorithms import initialize_problem
+from compas_tno.algorithms import update_tna
+from compas_tno.algorithms import z_from_form
+from compas_tno.diagrams.form import overview_forces
 from compas.utilities import geometric_key
 
-from compas_thrust.utilities import fix_boundaries_sym
-from compas_thrust.utilities import fix_boundaries_complete
-from compas_thrust.utilities import set_cross_vault_heights
-from compas_thrust.utilities import set_pavillion_vault_heights
-from compas_thrust.utilities import set_oct_vault_heights
+from compas_tno.utilities import fix_boundaries_sym
+from compas_tno.utilities import fix_boundaries_complete
+from compas_tno.utilities import set_cross_vault_heights
+from compas_tno.utilities import set_pavillion_vault_heights
+from compas_tno.utilities import set_oct_vault_heights
 
-from compas_thrust.utilities import fix_mid_sym
-from compas_thrust.utilities import fix_mid_complete
+from compas_tno.utilities import fix_mid_sym
+from compas_tno.utilities import fix_mid_complete
 
 from compas.geometry import is_point_on_segment
 from compas.geometry import intersection_segment_segment
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # # ind = find_independents(E)
     # uv_i = form.uv_index()
     # form.update_default_edge_attributes({ 'is_symmetry': False })
-    
+
     # args = initialize_problem(form)
     # q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
     # print(sym)
@@ -155,12 +155,12 @@ if __name__ == "__main__":
     #         if geometric_key(form.edge_midpoint(u,v)) in inds_midpt:
     #             print('update ',u,v)
     #             form.set_edge_attribute((u,v), 'is_ind', value = True)
-        
+
     #     for u,v in form.edges():
     #         if geometric_key(form.edge_midpoint(u,v)[:2]+[0]) in inds_midpt:
     #             print('update ',u,v)
     #             form.set_edge_attribute((u,v), 'is_ind', value = True)
-                
+
     #     plot_form(form,radius = 0.05, show_q= False, max_width=2).show()
     #     form, force = update_tna(form)
     #     plot_force(force, form).show()

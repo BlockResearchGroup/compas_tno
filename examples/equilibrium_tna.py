@@ -1,24 +1,24 @@
 from compas_tna.diagrams import FormDiagram
 
-from compas_thrust.algorithms.grad_based import optimise_tna
-from compas_thrust.algorithms.grad_based import evaluate_scale
-from compas_thrust.algorithms.grad_based import lagrangian_scale
-from compas_thrust.algorithms.grad_based import energy
-from compas_thrust.algorithms.grad_based import loadpath
+from compas_tno.algorithms.grad_based import optimise_tna
+from compas_tno.algorithms.grad_based import evaluate_scale
+from compas_tno.algorithms.grad_based import lagrangian_scale
+from compas_tno.algorithms.grad_based import energy
+from compas_tno.algorithms.grad_based import loadpath
 
-from compas_thrust.algorithms.equilibrium import scale_form
+from compas_tno.algorithms.equilibrium import scale_form
 
-from compas_thrust.utilities.utilities import check_constraints
-from compas_thrust.utilities.utilities import oveview_forces
-from compas_thrust.utilities.utilities import replicate
+from compas_tno.utilities.utilities import check_constraints
+from compas_tno.utilities.utilities import oveview_forces
+from compas_tno.utilities.utilities import replicate
 
-from compas_thrust.algorithms.equilibrium import z_from_form
+from compas_tno.algorithms.equilibrium import z_from_form
 
-from compas_thrust.diagrams.form import adapt_tna
-from compas_thrust.diagrams.form import remove_feet
-from compas_thrust.diagrams.form import evaluate_a
+from compas_tno.diagrams.form import adapt_tna
+from compas_tno.diagrams.form import remove_feet
+from compas_tno.diagrams.form import evaluate_a
 
-from compas_thrust.plotters.plotters import plot_form
+from compas_tno.plotters.plotters import plot_form
 from compas.utilities import geometric_key
 
 from copy import deepcopy
@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     form = remove_feet(form, plot = True)
     form.to_json(file_init)
-    
-    
+
+
 
 

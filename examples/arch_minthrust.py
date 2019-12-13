@@ -1,13 +1,13 @@
 
 from compas_tna.diagrams import FormDiagram
-from compas_thrust.algorithms import optimise_general
+from compas_tno.algorithms import optimise_general
 
-from compas_thrust.utilities.constraints import circular_heights
-from compas_thrust.utilities.constraints import create_cracks
-from compas_thrust.diagrams.form import overview_forces
-from compas_thrust.diagrams.form import create_arch
+from compas_tno.utilities.constraints import circular_heights
+from compas_tno.utilities.constraints import create_cracks
+from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form import create_arch
 
-from compas_thrust.plotters.plotters import plot_form_xz
+from compas_tno.plotters.plotters import plot_form_xz
 from numpy import array
 
 # ==============================================================================
@@ -17,7 +17,7 @@ from numpy import array
 if __name__ == "__main__":
 
     # All: ['SLSQP', 'PSQP', 'CONMIN', 'COBYLA', 'SOLVOPT', 'KSOPT', 'NSGA2', 'ALGENCAN', 'FILTERSD', 'SDPEN', 'ALPSO', 'ALHSO', 'MIDACO']
-    
+
     for solver in ['SLSQP', 'PSQP', 'ALGENCAN']:
 
         # Solvers that reach the optimum: 'SLSQP', 'PSQP', 'ALGENCAN'

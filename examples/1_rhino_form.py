@@ -2,7 +2,7 @@ from compas_tna.diagrams import FormDiagram
 from compas_rhino.artists import NetworkArtist
 from compas.utilities import geometric_key
 from compas.geometry import distance_point_point
-# from compas_thrust.diagrams.form import overview_forces
+# from compas_tno.diagrams.form import overview_forces
 # from compas.utilities import XFunc
 
 import rhinoscriptsyntax as rs
@@ -27,9 +27,9 @@ for j in [2]: # j = 1
 
         # fnm = '/Users/mricardo/compas_dev/me/bestfit/crossvault/discretize/0'+str(j)+'_0'+str(i)+'_fit_crossvault.json'
         # fnm = '/Users/mricardo/compas_dev/me/bestfit/sixpartite/discretize/0'+str(j)+'_0'+str(i)+'_fit_sixpartite.json'
-        
+
         # Load
-        
+
         # file = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/01.json'
         # fnm = '/Users/mricardo/compas_dev/me/loadpath/corner/pointed/example.json'
         # fnm = '/Users/mricardo/Documents/MATLAB/optimisation/discretize/form2.json'
