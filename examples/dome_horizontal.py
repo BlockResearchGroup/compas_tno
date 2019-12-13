@@ -39,7 +39,7 @@ if __name__ == "__main__":
     radius = 5.0
     n_radial = 8
     n_spikes = 16
-    rx = 0.02
+    rx = 0.01
 
     form = create_dome_form(center = [xc, yc], radius = radius, n_radial = n_radial, n_spikes = n_spikes, r_oculus= 0.0)
     form = set_dome_heights(form, center = [xc, yc], radius = radius, thck = thck)
@@ -65,16 +65,18 @@ if __name__ == "__main__":
     #                                         indset=indset)
     # form.to_json(file_initial)
     form = FormDiagram.from_json(file_initial)
+    plot_form(form, show_q = False, fix_width=True).show()
     # indset = form.attributes['indset']
     
     # Add Horizontal Loads
 
     mesh_quads_to_triangles(form)
+    plot_form(form, show_q = False, fix_width=True).show()
 
-    for u,v in form.edges():
-        qi = form.get_edge_attribute((u,v),'q')
-        if qi == 1.0 or qi == None:
-            form.set_edge_attribute((u,v),'q',value=0.0)
+    # for u,v in form.edges():
+    #     qi = form.get_edge_attribute((u,v),'q')
+    #     if qi == 1.0 or qi == None:
+    #         form.set_edge_attribute((u,v),'q',value=0.0)
 
     pxt = 0
     for key in form.vertices():
