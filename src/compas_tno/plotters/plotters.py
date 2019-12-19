@@ -7,10 +7,10 @@ from compas_tna.diagrams import ForceDiagram
 
 from math import sqrt
 
-__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
+__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__   = 'MIT License'
-__email__     = 'mricardo@ethz.ch'
+__license__ = 'MIT License'
+__email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
@@ -22,8 +22,8 @@ __all__ = [
     'plot_form_joints',
 ]
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None):
 
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None):
     """ Extended plotting of a FormDiagram
 
     Parameters
@@ -48,13 +48,13 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     uv_i = form.uv_index()
     q = [attr[thick] for u, v, attr in form.edges(True)]
-    qmax  = max(abs(array(q)))
+    qmax = max(abs(array(q)))
     lines = []
     i = 0
 
     for u, v in form.edges_where({'is_edge': True}):
         qi = form.get_edge_attribute((u, v), thick)
-        l = form.edge_length(u,v)
+        l = form.edge_length(u, v)
         uv_i = form.uv_index
 
         if simple:
@@ -78,7 +78,6 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
         width = max_width if fix_width else (qi / qmax) * max_width
 
-        
         if show_edgeuv:
             # text = str(u) + ',' + str(v)
             text = str(i)
@@ -96,7 +95,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         })
 
         i = i + 1
-    
+
     rad_colors = {}
     for key in form.vertices_where({'is_fixed': True}):
         rad_colors[key] = '#aaaaaa'
@@ -109,9 +108,9 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     if radius:
         if heights:
             plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-            radius=radius, text={i: i for i in form.vertices()}) # form.get_vertex_attribute(i, 'z')
+                                  radius=radius, text={i: i for i in form.vertices()})  # form.get_vertex_attribute(i, 'z')
         else:
-            plotter.draw_vertices(facecolor = rad_colors, radius=radius)
+            plotter.draw_vertices(facecolor=rad_colors, radius=radius)
 
     plotter.draw_lines(lines)
     if save:
@@ -119,8 +118,8 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     return plotter
 
-def plot_force(force, form, show_length = False, radius=0.1, fix_width=False, max_width=10, simple=False, color_inds=True):
 
+def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_width=10, simple=False, color_inds=True):
     """ Extended plotting of a Formdiagram
 
     Parameters
@@ -143,7 +142,6 @@ def plot_force(force, form, show_length = False, radius=0.1, fix_width=False, ma
 
     """
 
-
     plotter = MeshPlotter(force, figsize=(12, 8), tight=True)
 
     vertexcolor = {key: (1.0, 0.9, 0.9) for key in force.vertices() if not form.get_face_attribute(key, 'is_loaded')}
@@ -155,17 +153,16 @@ def plot_force(force, form, show_length = False, radius=0.1, fix_width=False, ma
     color = {}
     width = {}
     for key in force.edges():
-        u,v = key
-        lengths[key] = '{0:.2f}'.format(force.get_form_edge_attribute(form,key,'q'))
+        u, v = key
+        lengths[key] = '{0:.2f}'.format(force.get_form_edge_attribute(form, key, 'q'))
         if force.get_form_edge_attribute(form, key, 'is_external'):
-            color[key] = '#00ff00' 
+            color[key] = '#00ff00'
             width[key] = 2.0
         if color_inds:
             if force.get_form_edge_attribute(form, key, 'is_ind'):
-                color[key] = '#ff0000' 
+                color[key] = '#ff0000'
                 width[key] = 3.0
             pass
-
 
     plotter.draw_vertices(facecolor=vertexcolor, radius=radius)
     if show_length:
@@ -175,8 +172,8 @@ def plot_force(force, form, show_length = False, radius=0.1, fix_width=False, ma
 
     return plotter
 
-def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
 
+def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
     """ Extended load-path plotting of a the Gradient
 
     Parameters
@@ -200,12 +197,12 @@ def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
     """
 
     q = [attr['dq'] for u, v, attr in form.edges(True)]
-    qmax  = max(abs(array(q)))
+    qmax = max(abs(array(q)))
     lines = []
 
     for u, v in form.edges():
         qi = form.get_edge_attribute((u, v), 'dq')
-        l = form.edge_length(u,v)
+        l = form.edge_length(u, v)
         uv_i = form.uv_index
 
         if simple:
@@ -232,7 +229,7 @@ def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
             'end':   form.vertex_coordinates(v),
             'color': ''.join(colour),
             'width': width,
-            'text':round(qi, 2),
+            'text': round(qi, 2),
         })
 
     plotter = MeshPlotter(form, figsize=(10, 10))
@@ -246,19 +243,19 @@ def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
 def plot_dual(form):
 
     lines = []
-    dual = FormDiagram.dual(form,Mesh)
+    dual = FormDiagram.dual(form, Mesh)
 
     for u, v in dual.edges():
         lines.append({
             'start': dual.vertex_coordinates(u, 'xy'),
-            'end'  : dual.vertex_coordinates(v, 'xy'),
+            'end': dual.vertex_coordinates(v, 'xy'),
             'color': '#000000',
             'width': 0.5
         })
     for u, v in form.edges():
         lines.append({
             'start': form.vertex_coordinates(u, 'xy'),
-            'end'  : form.vertex_coordinates(v, 'xy'),
+            'end': form.vertex_coordinates(v, 'xy'),
             'color': '#FF0000',
             'width': 1.0
         })
@@ -268,8 +265,8 @@ def plot_dual(form):
 
     return plotter
 
-def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False, joints = False, cracks = False):
 
+def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False, joints=False, cracks=False):
     """ Plor of a 2D diagrma in the XZ plane
 
     Parameters
@@ -294,7 +291,7 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
 
     i_k = form.index_key()
     q = [attr[thick] for u, v, attr in form.edges(True)]
-    qmax  = max(abs(array(q))) 
+    qmax = max(abs(array(q)))
     lines = []
     xs = []
     reac_lines = []
@@ -306,22 +303,22 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
             if z > 0.0:
                 rz = abs(form.get_vertex_attribute(key, 'rz'))
                 rx = form.get_vertex_attribute(key, 'rx')
-                reac_line = [x,z,x + z*rx/rz,0.0]
+                reac_line = [x, z, x + z * rx / rz, 0.0]
                 reac_lines.append(reac_line)
                 # reac_x.append(x + z*rx/rz)
                 # reac_z.append(0.0)
                 # reac_x.append(x)
                 # reac_z.append(z)
-        
+                # rx attributes not right!!
 
     for u, v in form.edges():
         qi = form.get_edge_attribute((u, v), thick)
-        l = form.edge_length(u,v)
+        l = form.edge_length(u, v)
         uv_i = form.uv_index
 
         if simple:
             if qi > 0:
-                colour = ['ff', '00', '00']
+                colour = ['00', '00', '00']
             elif qi < 0:
                 colour = ['00', '00', 'ff']
             else:
@@ -340,7 +337,6 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
 
         width = max_width if fix_width else (qi / qmax) * max_width
 
-        
         if show_edgeuv:
             text = str(u) + ',' + str(v)
         elif show_q:
@@ -360,9 +356,9 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
         Re = form.attributes['Re']
         Ri = form.attributes['Ri']
     except:
-        Re = 1.20 #(max(xs) - min(xs))/2 + thk/2
-        Ri = 1.00 #(max(xs) - min(xs))/2 - thk/2
-    
+        Re = 1.20  # (max(xs) - min(xs))/2 + thk/2
+        Ri = 1.00  # (max(xs) - min(xs))/2 - thk/2
+
     xc = sum(xs)/len(xs)
     discr = 200
     # print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re,Ri))
@@ -370,17 +366,17 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
     for R in [Re, Ri]:
         for i in range(discr):
             lines.append({
-                'start': [xc-R+2*R*i/discr,sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
-                'end':   [xc-R+2*R*(i+1)/discr,sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
+                'start': [xc-R+2*R*i/discr, sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
+                'end':   [xc-R+2*R*(i+1)/discr, sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
                 'color': '000000',
                 'width': 0.5,
             })
-    
+
     if plot_reactions:
         for reac_line in reac_lines:
             lines.append({
-                'start': [reac_line[0],reac_line[1]],
-                'end':   [reac_line[2],reac_line[3]],
+                'start': [reac_line[0], reac_line[1]],
+                'end':   [reac_line[2], reac_line[3]],
                 'color': ''.join(colour),
                 'width': width,
             })
@@ -389,12 +385,12 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
         joints = form.attributes['joints']
         for i in joints:
             lines.append({
-                'start': [joints[i][0][0],joints[i][0][2]],
-                'end':   [joints[i][1][0],joints[i][1][2]],
+                'start': [joints[i][0][0], joints[i][0][2]],
+                'end':   [joints[i][1][0], joints[i][1][2]],
                 'color': '000000',
                 'width': 0.25,
             })
-    
+
     vertices = []
     if cracks:
         cracks_lb, cracks_ub = form.attributes['cracks']
@@ -403,7 +399,7 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
             x, _, _ = form.vertex_coordinates(key)
             z = form.get_vertex_attribute(key, 'ub')
             vertices.append({
-                'pos': [x,z],
+                'pos': [x, z],
                 'radius': radius,
                 'color': '000000',
             })
@@ -412,11 +408,36 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
             x, _, _ = form.vertex_coordinates(key)
             z = form.get_vertex_attribute(key, 'lb')
             vertices.append({
-                'pos': [x,z],
+                'pos': [x, z],
                 'radius': radius,
                 'color': '000000',
             })
-        
+
+    nodes = []
+    if radius:
+        for key in form.vertices():
+            x, _, z = form.vertex_coordinates(key)
+            if form.get_vertex_attribute(key, 'is_fixed') is True:
+                nodes.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '000000',
+                    'facecolor': 'aaaaaa',
+                })
+            if abs(form.get_vertex_attribute(key, 'ub') - z) < 1e-5:
+                nodes.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': 'FF0000',
+                    'facecolor': 'FF0000',
+                })
+            if abs(form.get_vertex_attribute(key, 'lb') - z) < 1e-5:
+                nodes.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '0000FF',
+                    'facecolor': '0000FF',
+                })
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     # round(form.get_vertex_attribute(i, 'pz'), 2)
@@ -432,14 +453,15 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
 
     plotter.draw_lines(lines)
     plotter.draw_points(vertices)
+    plotter.draw_points(nodes)
 
     if save:
         plotter.save(save)
 
     return plotter
 
-def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q =True, thick = 'q', heights = False, show_edgeuv=False, save=None, thk = 0.20, plot_reactions=False):
 
+def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False):
     """ Plor of a 2D diagrma in the XZ plane
 
     Parameters
@@ -463,7 +485,7 @@ def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=Fa
     """
 
     q = [attr[thick] for u, v, attr in form.edges(True)]
-    qmax  = max(abs(array(q))) 
+    qmax = max(abs(array(q)))
     lines = []
     xs = []
     reac_lines = []
@@ -475,17 +497,16 @@ def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=Fa
             if z > 0.0:
                 rz = abs(form.get_vertex_attribute(key, 'rz'))
                 rx = form.get_vertex_attribute(key, 'rx')
-                reac_line = [x,z,x + z*rx/rz,0.0]
+                reac_line = [x, z, x + z*rx/rz, 0.0]
                 reac_lines.append(reac_line)
                 # reac_x.append(x + z*rx/rz)
                 # reac_z.append(0.0)
                 # reac_x.append(x)
                 # reac_z.append(z)
-        
 
     for u, v in form.edges():
         qi = form.get_edge_attribute((u, v), thick)
-        l = form.edge_length(u,v)
+        l = form.edge_length(u, v)
         uv_i = form.uv_index
 
         if simple:
@@ -509,7 +530,6 @@ def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=Fa
 
         width = max_width if fix_width else (qi / qmax) * max_width
 
-        
         if show_edgeuv:
             text = str(u) + ',' + str(v)
         elif show_q:
@@ -529,9 +549,9 @@ def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=Fa
         Re = form.attributes['Re']
         Ri = form.attributes['Ri']
     except:
-        Re = 1.20 #(max(xs) - min(xs))/2 + thk/2
-        Ri = 1.00 #(max(xs) - min(xs))/2 - thk/2
-    
+        Re = 1.20  # (max(xs) - min(xs))/2 + thk/2
+        Ri = 1.00  # (max(xs) - min(xs))/2 - thk/2
+
     xc = sum(xs)/len(xs)
     discr = 200
     # print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re,Ri))
@@ -539,21 +559,20 @@ def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=Fa
     for R in [Re, Ri]:
         for i in range(discr):
             lines.append({
-                'start': [xc-R+2*R*i/discr,sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
-                'end':   [xc-R+2*R*(i+1)/discr,sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
+                'start': [xc-R+2*R*i/discr, sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
+                'end':   [xc-R+2*R*(i+1)/discr, sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
                 'color': '000000',
                 'width': 0.5,
             })
-    
+
     if plot_reactions:
         for reac_line in reac_lines:
             lines.append({
-                'start': [reac_line[0],reac_line[1]],
-                'end':   [reac_line[2],reac_line[3]],
+                'start': [reac_line[0], reac_line[1]],
+                'end':   [reac_line[2], reac_line[3]],
                 'color': ''.join(colour),
                 'width': width,
             })
-
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     # round(form.get_vertex_attribute(i, 'pz'), 2)
@@ -572,4 +591,3 @@ def plot_form_joints(form, radius=0.05, fix_width=False, max_width=10, simple=Fa
         plotter.save(save)
 
     return plotter
-

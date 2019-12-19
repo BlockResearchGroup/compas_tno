@@ -52,7 +52,6 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
     k_i = form.key_index()
     i_k = form.index_key()
     i_uv = form.index_uv()
-    uv_i = form.uv_index()
 
     # Set-up of the problem
 
@@ -155,8 +154,8 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
             q[ind] = xopt[:k]
 
     if solver.split('-')[0] == 'pyOpt':
-        lower = [x[0] for x in bounds]
-        upper = [x[1] for x in bounds]
+        lower = [lw[0] for lw in bounds]
+        upper = [up[1] for up in bounds]
         solver_pyOpt = solver.split('-')[1]
         title = 'Solver: ' + solver_pyOpt + 'Objective: ' + objective
 
@@ -167,6 +166,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
 
         if solver_pyOpt == 'SLSQP':
             slv = pyOpt.SLSQP()
+            slv.setOption('MAXIT', 1000)
 
         if solver_pyOpt == 'PSQP':
             slv = pyOpt.PSQP()
@@ -204,15 +204,17 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
         if solver_pyOpt == 'MIDACO':
             slv = pyOpt.SDPEN()
 
-        slv.setOption('MAXIT', 1000)
+        # JUST CHANGED TO BE 0 AS SUCCESSFUL AND 1 UNSUCCESSFUL
+
         [fopt, xopt, info] = slv(opt_prob, sens_type='FD', args=args, objective=fobj, constraints=fconstr)
         # exitflag = info['text']
         if info['text'] == 'Optimization terminated successfully.':
-            exitflag = 1
-        else:
             exitflag = 0
-        # if printout:
-        #     print(opt_prob.solution(0))
+        else:
+            exitflag = 1
+        exitflag = slv.informs
+        if printout:
+            print(opt_prob.solution(0))
         print(info['text'])
         fopt = fopt.item()
         niter = 100
@@ -224,6 +226,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
 
     # Recalculate equilibrium and update form-diagram
 
+    g_final = fconstr(xopt, *args)
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
     z, _, q, q_ = zlq_from_qid(q[ind], args)
 
@@ -259,7 +262,8 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
         print('\n' + '-' * 50)
         print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
         print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-        print('zb range : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+        print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+        print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
         print('fopt      : {0:.3f}'.format(fopt))
         print('-' * 50 + '\n')
 
@@ -309,6 +313,7 @@ def pyOpt_wrapper(x, **kwargs):
     # Temp
     f = fobj(x, *args)
     g = -1 * fconst(x, *args)  # pyOpt get constraints g1 <= 0 as default
+    print(max(g))
     fail = 0
     return f, g, fail
 

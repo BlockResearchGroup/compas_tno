@@ -9,6 +9,10 @@ compas_tno
 .. toctree::
     :maxdepth: 1
 
+    compas_tno.algorithms
+    compas_tno.diagrams
+    compas_tno.utilities
+
 
 """
 

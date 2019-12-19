@@ -1,9 +1,9 @@
 """
 ********************************************************************************
-compas_tno.plotters
+compas_tno.utilities
 ********************************************************************************
 
-.. currentmodule:: compas_tno.plotters
+.. currentmodule:: compas_tno.utilities
 
 """
 from __future__ import absolute_import

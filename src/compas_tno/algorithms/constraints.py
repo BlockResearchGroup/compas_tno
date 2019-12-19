@@ -42,9 +42,10 @@ def f_ub_lb(xopt, *args):
     # Constraints on Reactions
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
     xyz = hstack([x, y, z])
-    R = CfQC.dot(xyz)
-    Rx_angle = tol  # + abs(b[:,0].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,0],R[:,2]).reshape(-1,1))) # >= 0
-    Ry_angle = tol  # + abs(b[:,1].reshape(-1,1)) - abs(multiply(z[fixed],divide(R[:,1],R[:,2]).reshape(-1,1))) # >= 0
+    p_fixed = hstack([px, py, pz])[fixed]
+    R = CfQC.dot(xyz) - p_fixed
+    Rx_angle = abs(b[:, 0].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 0], R[:, 2]).reshape(-1, 1))) # + tol >= 0
+    Ry_angle = abs(b[:, 1].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 1], R[:, 2]).reshape(-1, 1))) # + tol >= 0
 
     # Positive Qs
     qpos = (q.ravel() + 10**(-5)).reshape(-1, 1)

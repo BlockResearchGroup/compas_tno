@@ -2,6 +2,7 @@ from compas_tna.diagrams import FormDiagram
 from compas_rhino.artists import NetworkArtist
 from compas.utilities import geometric_key
 from compas.geometry import distance_point_point
+from compas.utilities import i_to_rgb
 # from compas_tno.diagrams.form import overview_forces
 # from compas.utilities import XFunc
 
@@ -11,11 +12,13 @@ import math
 
 # Mesh
 
-fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/cross_fd/modified_ub_lb/cross_fd_discr_12_max_t=30.json'
+fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/hor-loads/cross_fd/cross_fd_discr_12_loadpath_t=50_px=0.1.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/dome/r=5/radial_discr_8_16_min_t=30.json'
 form = FormDiagram.from_json(fnm)
 k_i = form.key_index()
 i_k = form.index_key()
+
+master = 'add_diag'
 
 try:
     cracks_lb, cracks_ub = form.attributes['cracks']
@@ -26,7 +29,7 @@ fs = []
 radius_max = 0.30
 # Usually 0.50 for Cross Form-Diagram
 
-thrust_layer = 'Thrust'
+thrust_layer = master + '::Thrust'
 rs.AddLayer(thrust_layer)
 rs.CurrentLayer(thrust_layer)
 artist = NetworkArtist(form, layer=thrust_layer)
@@ -38,13 +41,12 @@ for u, v in form.edges():
     fs.append(q*l)
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
-    print(sp,ep)
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
     lp += q * l * l
 rs.AddTextDot('{0:.1f}'.format(lp),[- 1.0, - 1.0, 0.0 ])
 
-thrust_limits = 'Limits'
+thrust_limits = master + '::Limits'
 rs.AddLayer(thrust_limits)
 rs.CurrentLayer(thrust_limits)
 artist = NetworkArtist(form, layer=thrust_limits)
@@ -74,7 +76,7 @@ if cracks_ub:
     for i in cracks_ub:
         rs.AddTextDot('ub',form.vertex_coordinates(k_i[i]))
 
-target_layer = 'Target'
+target_layer = master + '::Target'
 rs.AddLayer(target_layer)
 rs.CurrentLayer(target_layer)
 artist = NetworkArtist(form, layer=target_layer)
@@ -88,7 +90,7 @@ for u, v in form.edges():
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
 
-ub_layer = 'UB'
+ub_layer = master + '::UB'
 rs.AddLayer(ub_layer)
 rs.CurrentLayer(ub_layer)
 artist = NetworkArtist(form, layer=ub_layer)
@@ -102,7 +104,7 @@ for u, v in form.edges():
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
 
-lb_layer = 'LB'
+lb_layer = master + '::LB'
 rs.AddLayer(lb_layer)
 rs.CurrentLayer(lb_layer)
 artist = NetworkArtist(form, layer=lb_layer)
@@ -117,29 +119,29 @@ for u, v in form.edges():
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(q))
 
-reac_layer = 'Reactions'
+reac_layer = master + '::Reactions'
 rs.AddLayer(reac_layer)
 rs.CurrentLayer(reac_layer)
 artist = NetworkArtist(form, layer=reac_layer)
 artist.clear_layer()
-for key in form.vertices_where({'is_fixed': True}):
-    node = form.vertex_coordinates(key)
-    ry = form.get_vertex_attribute(key, 'ry')
-    rx = form.get_vertex_attribute(key, 'rx')
-    rz = form.get_vertex_attribute(key, 'rz')
-    norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
-    if rz < 0.0 and norm > 0.0:
-        sp = node
-        print(sp)
-        dz = rz/norm
-        mult = node[2]/dz
-        dz *= mult
-        dx = mult* rx/norm
-        dy = mult* ry/norm
-        ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
-        id = rs.AddLine(sp, ep)
-        rs.ObjectName(id, str(norm))
-        rs.AddTextDot('rx: {0:.1f} / ry: {1:.1f}'.format(rx, ry), node)
+#for key in form.vertices_where({'is_fixed': True}):
+#    node = form.vertex_coordinates(key)
+#    ry = form.get_vertex_attribute(key, 'ry')
+#    rx = form.get_vertex_attribute(key, 'rx')
+#    rz = form.get_vertex_attribute(key, 'rz')
+#    norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
+#    if rz < 0.0 and norm > 0.0:
+#        sp = node
+#        print(sp)
+#        dz = rz/norm
+#        mult = node[2]/dz
+#        dz *= mult
+#        dx = mult* rx/norm
+#        dy = mult* ry/norm
+#        ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
+#        id = rs.AddLine(sp, ep)
+#        rs.ObjectName(id, str(norm))
+#        rs.AddTextDot('rx: {0:.1f} / ry: {1:.1f}'.format(rx, ry), node)
 
 for key in form.vertices_where({'rol_x': True}):
     try:
@@ -163,13 +165,13 @@ for key in form.vertices_where({'rol_y': True}):
     except:
         pass
 
-pipes_layer = 'Pipes'
+pipes_layer = master + '::Pipes'
 rs.AddLayer(pipes_layer)
 rs.CurrentLayer(pipes_layer)
 artist = NetworkArtist(form, layer=pipes_layer)
 artist.clear_layer()
 rs.CurrentLayer(pipes_layer)
-for u, v in form.edges():
+for u, v in form.edges_where({'is_edge': True}):
     l = form.edge_length(u, v)
     q = form.get_edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
@@ -181,6 +183,26 @@ for u, v in form.edges():
         pipe = rs.AddPipe(id, 0, coef)
         rs.ObjectColor(pipe, color=(255,0,0))
 
+pipes_color = master + '::Pipes-Color'
+rs.AddLayer(pipes_color)
+rs.CurrentLayer(pipes_color)
+artist = NetworkArtist(form, layer=pipes_color)
+artist.clear_layer()
+rs.CurrentLayer(pipes_color)
+for u, v in form.edges_where({'is_edge': True}):
+    l = form.edge_length(u, v)
+    q = form.get_edge_attribute((u, v), 'q')
+    sp = form.vertex_coordinates(u)
+    ep = form.vertex_coordinates(v)
+    if q > 0.001:
+        id = rs.AddLine(sp, ep)
+        f = math.fabs(q * l)
+        coef = f/max(fs)
+        r, g, b = i_to_rgb(coef)
+        print(coef)
+        pipe = rs.AddPipe(id, 0, 0.08)
+        rs.ObjectColor(pipe, color=(r,g,b))
+
 rs.CurrentLayer('Default')
 rs.LayerVisible(target_layer, False)
 rs.LayerVisible(ub_layer, False)
@@ -189,3 +211,5 @@ rs.LayerVisible(thrust_layer, True)
 rs.LayerVisible(reac_layer, True)
 rs.LayerVisible(thrust_limits, True)
 rs.LayerVisible(pipes_layer, False)
+rs.LayerVisible(pipes_color, False)
+print(max(fs))
