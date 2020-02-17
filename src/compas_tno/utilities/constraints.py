@@ -580,6 +580,13 @@ def set_dome_heights(form, center = [0.0,0.0], radius = 10.0, thck = 0.30, set_h
 
     print('After Scaling Load: {0:.2f}'.format(pzt))
 
+    for key in form.vertices_where({'is_fixed': True}):
+        x, y, _ = form.vertex_coordinates(key)
+        theta = math.atan2((y - y0), (x - x0))
+        x_ = thck/2*math.cos(theta)
+        y_ = thck/2*math.sin(theta)
+        form.set_vertex_attribute(key, 'b', [x_, y_])
+
     return form
 
 def _find_r_given_h_l(h,l):
@@ -949,7 +956,39 @@ def set_pointed_vault_heights_lb(form, xy_span = [[0.0,10.0],[0.0,10.0]], hc=8.0
 
     return form
 
-def circular_heights(form , x0 = None, xf = None, thk = 0.5, t = 20):
+def circular_heights(form , x0 = None, xf = None, thk = 0.5, t = 20, density = 20, ly = 1.0, overwrite_weight=False):
+    """ Create constraints for a circular arch.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        linear form diagram to apply he constraints.
+
+    x0: float (optional)
+        Beginning of the linear form diagram.
+
+    xf: float (optional)
+        End of the linear form diagram.
+
+    thk : float
+        Homothetical (extruded to both sides) thickness of arch.
+
+    t: float
+        Parameter to constraint from below the heights of the restraint and/or the nodes that have no vertical projection on arch's intrados.
+
+    density: float
+        Density of the masonry, 20 kN/m3 is taken by default, if not desired put one.
+
+    ly : float
+        Out of plane dimension of the arch. Default = 1.0
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    """
+
 
     if x0 == None or xf == None:
         x = []
@@ -964,7 +1003,16 @@ def circular_heights(form , x0 = None, xf = None, thk = 0.5, t = 20):
     re = r + thk/2
     form.attributes['Re'] = re
     form.attributes['Ri'] = ri
-    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m'.format(2*r, 2*ri, 2*re, thk, (thk/ri), (thk/r)))
+    if overwrite_weight is False:
+        arch_area = (math.pi*re**2 - math.pi*ri**2)/2
+        total_weight = arch_area * density * ly
+        weight_unit = total_weight / (form.number_of_vertices() - 1)
+    else:
+        total_weight = overwrite_weight
+        weight_unit = total_weight / (form.number_of_vertices() - 1)
+
+    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m / Weight: {6:.3}'.format(2*r, 2*ri, 2*re, thk, (thk/ri), (thk/r), total_weight))
+    pzt = 0
 
     for key in form.vertices():
         x, _, _ = form.vertex_coordinates(key)
@@ -987,6 +1035,16 @@ def circular_heights(form , x0 = None, xf = None, thk = 0.5, t = 20):
             form.set_vertex_attribute(key, 'b', value = [thk/2,0.0])
         if x == x0:
             form.attributes['tmax'] = ze
+        if form.get_vertex_attribute(key, 'is_fixed') is True:
+            pi = weight_unit / 2
+            form.set_vertex_attribute(key, 'pz', pi)
+            pzt += pi
+        else:
+            pi = weight_unit
+            form.set_vertex_attribute(key, 'pz', pi)
+            pzt += pi
+    print('Total weight applied: {0:.3}'.format(pzt))
+    form.attributes['selfweight'] = pzt
 
     return form
 

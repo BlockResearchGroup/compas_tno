@@ -5,6 +5,8 @@ from numpy import array
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 
+from compas.utilities import geometric_key
+
 from math import sqrt
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -79,8 +81,8 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         width = max_width if fix_width else (qi / qmax) * max_width
 
         if show_edgeuv:
-            # text = str(u) + ',' + str(v)
-            text = str(i)
+            text = str(u) + ',' + str(v)
+            # text = str(i)
         elif show_q:
             text = round(qi, 2)
         else:
@@ -266,8 +268,8 @@ def plot_dual(form):
     return plotter
 
 
-def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False, joints=False, cracks=False):
-    """ Plor of a 2D diagrma in the XZ plane
+def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False, joints=False, cracks=False, yrange = None, linestyle='solid'):
+    """ Plor of a 2D diagram in the XZ plane
 
     Parameters
     ----------
@@ -290,13 +292,52 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
     """
 
     i_k = form.index_key()
+    gkey_key = form.gkey_key()
     q = [attr[thick] for u, v, attr in form.edges(True)]
     qmax = max(abs(array(q)))
     lines = []
     xs = []
     reac_lines = []
 
-    for key in form.vertices():
+    if yrange == None:
+        edges_considered = list(form.edges())
+        vertices_considered = list(form.vertices())
+    else:
+        edges_considered = []
+        vertices_considered = []
+        edges_added = []
+        for u, v in form.edges():
+            if (yrange[0] <= form.vertex_coordinates(u)[1] <= yrange[1]) and (yrange[0] <= form.vertex_coordinates(v)[1] <= yrange[1]):
+                edges_considered.append((u,v))
+        for key in form.vertices():
+            if yrange[0] < form.vertex_coordinates(key)[1] < yrange[1]:
+                vertices_considered.append(key)
+                edges_added.append(form.vertex_coordinates(key))
+                ngb = list(form.vertex_neighborhood(key))
+                print(ngb)
+                edges_added.append(form.vertex_coordinates(ngb[1]))
+        # print(vertices_considered)
+        print('Drawing initial total of vertices:', len(vertices_considered))
+        print('Drawing initial total of edges:', len(edges_considered))
+        edges_added.sort()
+        if len(edges_considered) == 0:
+            for i in range(len(edges_added)):
+
+                vertices_considered.append(gkey_key[geometric_key(edges_added[i])])
+                if i < len(edges_added)-1:
+                    u = gkey_key[geometric_key(edges_added[i])]
+                    v = gkey_key[geometric_key(edges_added[i+1])]
+                    edges_considered.append((u, v))
+        print('Drawing total of edges:', len(edges_considered))
+        print(edges_considered)
+        print(vertices_considered)
+        # edges_considered = []
+        # vertices_considered = [151, 130, 111, 90, 71, 50, 31, 10, 1, 0, 21, 41, 41, 61, 101, 121, 141]
+        # edges_considered = [(130, 151), (111, 130), (90, 111), (71, 90), (50, 71), (31, 50), (10, 31), (1, 10), (0, 1), (0, 21), (21, 41), (41, 61), (61, 81), (81, 101), (101, 121), (121, 141)]
+        print('Drawing total of vertices:', len(vertices_considered))
+
+
+    for key in vertices_considered:
         xs.append(form.vertex_coordinates(key)[0])
         if form.get_vertex_attribute(key, 'is_fixed') == True:
             x, _, z = form.vertex_coordinates(key)
@@ -311,10 +352,8 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
                 # reac_z.append(z)
                 # rx attributes not right!!
 
-    for u, v in form.edges():
+    for u, v in edges_considered:
         qi = form.get_edge_attribute((u, v), thick)
-        l = form.edge_length(u, v)
-        uv_i = form.uv_index
 
         if simple:
             if qi > 0:
@@ -350,6 +389,7 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
             'color': 'FF0000',
             'width': width,
             'text': text,
+            'linestyle': linestyle
         })
 
     try:
@@ -359,9 +399,10 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
         Re = 1.20  # (max(xs) - min(xs))/2 + thk/2
         Ri = 1.00  # (max(xs) - min(xs))/2 - thk/2
 
-    xc = sum(xs)/len(xs)
+    xc = (max(xs) - min(xs))/2
     discr = 200
-    # print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re,Ri))
+    print('xs:', xc)
+    print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re,Ri))
 
     for R in [Re, Ri]:
         for i in range(discr):
@@ -377,8 +418,8 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
             lines.append({
                 'start': [reac_line[0], reac_line[1]],
                 'end':   [reac_line[2], reac_line[3]],
-                'color': ''.join(colour),
-                'width': width,
+                'color': ''.join(['00', '00', '00']),
+                'width': max_width,
             })
 
     if joints:
@@ -415,7 +456,7 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
 
     nodes = []
     if radius:
-        for key in form.vertices():
+        for key in vertices_considered:
             x, _, z = form.vertex_coordinates(key)
             if form.get_vertex_attribute(key, 'is_fixed') is True:
                 nodes.append({
@@ -424,14 +465,14 @@ def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False,
                     'edgecolor': '000000',
                     'facecolor': 'aaaaaa',
                 })
-            if abs(form.get_vertex_attribute(key, 'ub') - z) < 1e-5:
+            if abs(form.get_vertex_attribute(key, 'ub') - z) < 1e-3:
                 nodes.append({
                     'pos': [x, z],
                     'radius': radius,
-                    'edgecolor': 'FF0000',
-                    'facecolor': 'FF0000',
+                    'edgecolor': '008000',
+                    'facecolor': '008000',
                 })
-            if abs(form.get_vertex_attribute(key, 'lb') - z) < 1e-5:
+            if abs(form.get_vertex_attribute(key, 'lb') - z) < 1e-3:
                 nodes.append({
                     'pos': [x, z],
                     'radius': radius,

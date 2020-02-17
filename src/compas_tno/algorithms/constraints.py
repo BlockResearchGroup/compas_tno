@@ -18,7 +18,8 @@ __all__ = [
     'f_ub_lb',
     'f_compression',
     'f_joints',
-    'f_cracks'
+    'f_cracks',
+    'f_ub_lb_red'
 ]
 
 
@@ -36,7 +37,6 @@ def f_ub_lb(xopt, *args):
     # Constraints on Heights
     upper_limit = ub - z[ub_ind]  # >= 0
     lower_limit = z[lb_ind] - lb  # >= 0
-
     tol = 1e-10
 
     # Constraints on Reactions
@@ -54,11 +54,30 @@ def f_ub_lb(xopt, *args):
     max_f_y = array([1.0]*len(rol_y))
 
     # Reactions on the walls
-    reac_rol_x = (array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1, 1)
-    reac_rol_y = (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1, 1)
+    reac_rol_x = tol #(array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1, 1)
+    reac_rol_y = tol# (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1, 1)
 
     return transpose(vstack([qpos, upper_limit, lower_limit, Rx_angle, Ry_angle, reac_rol_x, reac_rol_y]))[0]
 
+def f_ub_lb_red(xopt, *args):
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+
+    if len(xopt) > k:
+        qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
+        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
+        z, l2, q, _ = zlq_from_qid(qid, args)
+    else:
+        z, l2, q, _ = zlq_from_qid(xopt, args)
+
+    # Constraints on Heights
+    upper_limit = ub - z[ub_ind]  # >= 0
+    lower_limit = z[lb_ind] - lb  # >= 0
+
+    # Positive Qs
+    qpos = (q[dep].ravel() + 10**(-5)).reshape(-1, 1)
+
+    return transpose(vstack([qpos, upper_limit, lower_limit]))[0]
 
 def f_compression(xopt, *args):
 

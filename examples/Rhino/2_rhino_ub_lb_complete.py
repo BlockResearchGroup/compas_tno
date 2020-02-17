@@ -12,13 +12,28 @@ import math
 
 # Mesh
 
-fnm = '/Users/mricardo/compas_dev/me/minmax/cross/square/mixed_fd/mixed_fd_discr_16_lp.json'
+# fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/hor-loads/cross_fd/cross_fd_discr_12_loadpath_t=50_px=0.1.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/dome/r=5/radial_discr_8_16_min_t=30.json'
+# fnm = jsonpath = '/Users/mricardo/compas_dev/me/minmax/dome/diag/diag_discr_8_16_min_t=30.json'
+# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/par-diag/par-diag_discr_8_16_px_-0.35_lp.json'
+
+structure = 'cross/square/' # Or dome instead
+# structure = 'cross'
+type = 'fan_fd'
+folder = '/Users/mricardo/compas_dev/me/minmax/'+ structure + '/' + type + '/'
+file = type + '_discr_16_lp' # On dome
+# file = type + '_discr_16_max_t=418'
+
+
+# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/radial/radial_discr_8_16_min_t=50.json'
+
+fnm = folder + file + '.json'
+
 form = FormDiagram.from_json(fnm)
 k_i = form.key_index()
 i_k = form.index_key()
 
-master = 'MIXED'
+master = file
 
 try:
     cracks_lb, cracks_ub = form.attributes['cracks']
@@ -26,8 +41,9 @@ except:
     cracks_lb = []
     cracks_ub = []
 fs = []
-radius_max = 0.30
-# Usually 0.50 for Cross Form-Diagram
+radius_max = 0.12 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
+# Usually 0.50 for Cross Form-Diagram and 0.30 for fan form diagram
+radius_circlus = 0.14
 
 thrust_layer = master + '::Thrust'
 rs.AddLayer(thrust_layer)
@@ -52,21 +68,25 @@ rs.CurrentLayer(thrust_limits)
 artist = NetworkArtist(form, layer=thrust_limits)
 artist.clear_layer()
 lp = 0.0
-tol_crack = 0.01
+tol_crack = 0.001
 for key in form.vertices():
     x, y, z = form.vertex_coordinates(key)
     try:
         lb = form.get_vertex_attribute(key, 'lb')
         if abs(z - lb) < tol_crack:
             id = rs.AddPoint([x,y,z])
-            rs.ObjectColor(id, color = (0,0,200))
+            rs.ObjectColor(id, color = (0,0,255))
+            id = rs.AddSphere([x,y,z], radius_circlus)
+            rs.ObjectColor(id, color = (0,0,255))
     except:
         pass
     try:
         ub = form.get_vertex_attribute(key, 'ub')
         if abs(z - ub) < tol_crack:
             id = rs.AddPoint([x,y,z])
-            rs.ObjectColor(id, color = (200,0,0))
+            rs.ObjectColor(id, color = (0,128,0))
+            id = rs.AddSphere([x,y,z], radius_circlus)
+            rs.ObjectColor(id, color = (0,128,0))
     except:
         pass
 if cracks_lb:
@@ -120,28 +140,32 @@ for u, v in form.edges():
         rs.ObjectName(id, str(q))
 
 reac_layer = master + '::Reactions'
+reac_val = master + '::Reactions-val'
 rs.AddLayer(reac_layer)
+rs.AddLayer(reac_val)
 rs.CurrentLayer(reac_layer)
 artist = NetworkArtist(form, layer=reac_layer)
 artist.clear_layer()
-#for key in form.vertices_where({'is_fixed': True}):
-#    node = form.vertex_coordinates(key)
-#    ry = form.get_vertex_attribute(key, 'ry')
-#    rx = form.get_vertex_attribute(key, 'rx')
-#    rz = form.get_vertex_attribute(key, 'rz')
-#    norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
-#    if rz < 0.0 and norm > 0.0:
-#        sp = node
-#        print(sp)
-#        dz = rz/norm
-#        mult = node[2]/dz
-#        dz *= mult
-#        dx = mult* rx/norm
-#        dy = mult* ry/norm
-#        ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
-#        id = rs.AddLine(sp, ep)
-#        rs.ObjectName(id, str(norm))
-#        rs.AddTextDot('rx: {0:.1f} / ry: {1:.1f}'.format(rx, ry), node)
+for key in form.vertices_where({'is_fixed': True}):
+    node = form.vertex_coordinates(key)
+    ry = form.get_vertex_attribute(key, 'ry')
+    rx = form.get_vertex_attribute(key, 'rx')
+    rz = form.get_vertex_attribute(key, 'rz')
+    norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
+    if rz < 0.0 and norm > 0.0:
+        sp = node
+        print(sp)
+        dz = rz/norm
+        mult = node[2]/dz
+        dz *= mult
+        dx = mult* rx/norm
+        dy = mult* ry/norm
+        ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
+        #id = rs.AddLine(sp, ep)
+        #rs.ObjectName(id, str(norm))
+        rs.CurrentLayer(reac_val)
+        rs.AddTextDot('rx: {0:.1f} / ry: {1:.1f}'.format(rx, ry), node, )
+        rs.CurrentLayer(reac_layer)
 
 for key in form.vertices_where({'rol_x': True}):
     try:
@@ -165,6 +189,7 @@ for key in form.vertices_where({'rol_y': True}):
     except:
         pass
 
+rs.LayerVisible(reac_val, False)
 pipes_layer = master + '::Pipes'
 rs.AddLayer(pipes_layer)
 rs.CurrentLayer(pipes_layer)
@@ -199,7 +224,7 @@ for u, v in form.edges_where({'is_edge': True}):
         f = math.fabs(q * l)
         coef = f/max(fs)
         r, g, b = i_to_rgb(coef)
-        print(coef)
+        rs.ObjectColor(id, color=(r,g,b))
         pipe = rs.AddPipe(id, 0, 0.08)
         rs.ObjectColor(pipe, color=(r,g,b))
 
@@ -207,9 +232,9 @@ rs.CurrentLayer('Default')
 rs.LayerVisible(target_layer, False)
 rs.LayerVisible(ub_layer, False)
 rs.LayerVisible(lb_layer, False)
-rs.LayerVisible(thrust_layer, True)
-rs.LayerVisible(reac_layer, True)
+rs.LayerVisible(thrust_layer, False)
+rs.LayerVisible(reac_layer, False)
 rs.LayerVisible(thrust_limits, True)
-rs.LayerVisible(pipes_layer, False)
+rs.LayerVisible(pipes_layer, True)
 rs.LayerVisible(pipes_color, False)
 print(max(fs))

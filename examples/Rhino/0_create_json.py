@@ -10,7 +10,8 @@ from compas.utilities import geometric_key
 import rhinoscriptsyntax as rs
 
 # jsonpath = '/Users/mricardo/compas_dev/me/minmax/2D_arch/01_joints.json'
-# jsonpath = '//Users/mricardo/compas_dev/me/bestfit/dome/dome_ortho.json'
+jsonpath = '/Users/mricardo/compas_dev/me/minmax/dome/par-diag/par-diag_discr_8_16.json'
+
 
 
 # for i in range[(2,9)]:
@@ -18,13 +19,14 @@ j = 2
 i = 6
 # jsonpath_complete = '/Users/mricardo/compas_dev/compas_loadpath/data/constraint/vault_comp_2.json'
 # jsonpath = '/Users/mricardo/compas_dev/me/loadpath/Fix/nosym/0'+str(j)+'_0'+str(i)+'_t_60.json'
-jsonpath = '/Users/mricardo/compas_dev/me/loadpath/freeform/test.json'
+# jsonpath = '/Users/mricardo/compas_dev/me/loadpath/freeform/test.json'
 # jsonpath = '/Users/mricardo/compas_dev/me/convex/4bars/diagram.json'
 
 
 # Form
 
-Lines_txt = 'Lines_complete'#_0' + str(j) #_complete '0' + str(j) + '_0' + str(i)
+Lines_txt = 'Lines'#_0' + str(j) #_complete '0' + str(j) + '_0' + str(i)
+Lines_diag = 'Lines-diag'#_0' + str(j) #_complete '0' + str(j) + '_0' + str(i)
 Symmetry_txt = 'Sym' #_complete
 Pins_txt = 'Pins' #_complete
 Dots_txt = 'Dots' #_complete
@@ -37,8 +39,10 @@ dots_3D = 'Dots_3D'
 buttress_Layer = 'Buttress'
 joints_layer = 'Joint_Segments'
 
-guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Symmetry_txt)
+guids_lines = rs.ObjectsByLayer(Lines_txt) 
+guids = rs.ObjectsByLayer(Lines_txt) + rs.ObjectsByLayer(Lines_diag)
 lines = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids if rs.IsCurve(i)]
+lines_main = [[rs.CurveStartPoint(i), rs.CurveEndPoint(i)] for i in guids_lines if rs.IsCurve(i)]
 form = FormDiagram.from_lines(lines, delete_boundary_face=True) # AAAALWAYS CHECK IT
 
 form.update_default_vertex_attributes({'is_roller': False})
@@ -56,7 +60,7 @@ rollers = False
 writepz = False
 nsym = 1 #8
 ind = False
-openings = True
+openings = False
 buttress = False
 joints = False
 
@@ -80,7 +84,7 @@ if rollers:
 # artist = NetworkArtist(form, layer=dots_3D)
 # artist.clear_layer()
 
-loads = FormDiagram.from_lines(lines, delete_boundary_face=True)
+loads = FormDiagram.from_lines(lines_main, delete_boundary_face=True)
 pzt = 0
 
 # Openings - if Any
@@ -97,8 +101,9 @@ if openings:
             print('Deleted area of face {0}'.format(key))
             break
 
+
 for key in form.vertices():
-    form.vertex[key]['pz'] = loads.vertex_area(key=key)
+    form.vertex[key]['pz'] = 1.0# loads.vertex_area(key=key)
     pzt += form.vertex[key]['pz']
 print('Planar load - pzt = {0}'.format(pzt))
 

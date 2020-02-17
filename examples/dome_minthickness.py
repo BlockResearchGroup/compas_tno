@@ -28,9 +28,9 @@ import csv
 if __name__ == "__main__":
 
     # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
-    type_fd = 'radial'
-    objective = 'max'
-    thck = 0.19
+    type_fd = 'diag'
+    objective = 'min'
+    thck = 0.09
     reduction = 0.01
     total = 25
 
@@ -44,8 +44,15 @@ if __name__ == "__main__":
 
     # Open initial formdiagram and output file
 
-    PATH = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/' + type_fd + '_discr_'+ str(n_radial) + '_' + str(n_spikes)
-    FILECSV = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/minthck_via_' + objective + '_' + type_fd + '.csv'
+    if type_fd != 'radial':
+        PATH = '/Users/mricardo/compas_dev/me/minmax/dome/' + type_fd + '/' + type_fd + '_discr_' + str(n_radial) + '_' + str(n_spikes)
+        FILECSV = '/Users/mricardo/compas_dev/me/minmax/dome/' + type_fd + '/minthck_via_' + objective + '_' + type_fd + '.csv'
+    else:
+        PATH = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/' + type_fd + '_discr_'+ str(n_radial) + '_' + str(n_spikes)
+        FILECSV = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/minthck_via_' + objective + '_' + type_fd + '.csv'
+
+    # PATH = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/' + type_fd + '_discr_'+ str(n_radial) + '_' + str(n_spikes)
+    # FILECSV = '/Users/mricardo/compas_dev/me/minmax/dome/r=' + str(int(radius)) + '/minthck_via_' + objective + '_' + type_fd + '.csv'
 
     file_initial = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
     form = FormDiagram.from_json(file_initial)
@@ -60,23 +67,30 @@ if __name__ == "__main__":
     with open(FILECSV, 'w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(["Thickness", "Reaction X", "Reaction Y", "Qmax", "Zb", "fopt", "output"])
-        writer.writerow([thck*100, rx, ry, max(q), zb, fopt, 1.0])
+        writer.writerow([thck*100, rx, ry, round(max(q),3), zb, round(fopt,3), 0])
 
     # Convex Optimisation to find good starting point. Save the starting point, and can load it later if wanted
 
-        exitflag = 1
+        exitflag = 0
         i = 1
-        while exitflag == 1 and i <= total:
+        while exitflag == 0 and i <= total:
 
             objective_load = 'min'
-            file_initial = PATH + '_' + objective_load + '_t=' + str(int(thck*100)) + '.json'
+            # file_initial = PATH + '_' + objective_load + '_t=' + str(int(round(thck*100))) + '.json'
+            file_initial = PATH + '_lp.json'
             form = FormDiagram.from_json(file_initial)
 
-            thck = round(thck - reduction, 3)
+            thck = round(thck - reduction, 2)
+            print(thck)
+            print(str(int(round(thck*100))))
+
             print('----------------------\nOptimisation with thickness: {0}'.format(thck))
             file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
             form = set_dome_heights(form, center = [xc, yc], radius = radius, thck = thck)
             indset = form.attributes['indset']
+
+            print('loaded:', file_initial)
+            plot_form(form, show_q = False).show()
 
             # Initial parameters
 
@@ -104,7 +118,7 @@ if __name__ == "__main__":
             # plot_form(form, show_q = False).show()
             i += 1
 
-            if exitflag == 1:
+            if exitflag == 0:
                 form.to_json(file_save)
                 for key in form.vertices_where({'is_fixed': True}):
                     rx = round(form.get_vertex_attribute(key, 'rx'),3)
@@ -120,6 +134,11 @@ if __name__ == "__main__":
                 # exitflag = 0
 
                 writer.writerow([thck*100, rx, ry, qmax, zb, fopt, exitflag])
+
+            else:
+                print('Optimisation did not find solution for: ', thck)
+
+
 
 
 

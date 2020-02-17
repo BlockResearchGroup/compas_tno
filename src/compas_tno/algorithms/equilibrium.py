@@ -578,7 +578,7 @@ def reactions(form, plot=False):
     n = form.number_of_vertices()
     fixed = [k_i[key] for key in form.fixed()]
     rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
     free = list(set(range(n)) - set(fixed) - set(rol))
 
     # Co-ordinates and loads
@@ -595,17 +595,14 @@ def reactions(form, plot=False):
         py[i] = vertex.get('py', 0)
         pz[i] = vertex.get('pz', 0)
 
-    xy = xyz[:, :2]
-
     # C and E matrices
 
     C = connectivity_matrix(edges, 'csr')
-    Ci = C[:, free]
     uvw = C.dot(xyz)
     U = uvw[:, 0]
     V = uvw[:, 1]
     W = uvw[:, 2]
-    q = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
+    q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
 
     # Horizontal checks
 

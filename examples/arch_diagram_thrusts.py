@@ -10,6 +10,7 @@ from compas_tno.diagrams.form import overview_forces
 from compas_tno.diagrams.form import create_arch
 
 from compas_tno.plotters.plotters import plot_form_xz
+from compas_tno.plotters.plotters import plot_form
 
 from numpy import array
 
@@ -23,16 +24,21 @@ if __name__ == "__main__":
 
     divisions = 20
     blocks = divisions
-    form = create_arch(total_nodes=blocks, total_self_weight=20, lambda_hor=None)
+    form = create_arch(total_nodes=blocks, unit_weight=1.0, lambda_hor=None)
     overview_forces(form)
     print_opt = True
-    plot_sols = False
-    objective = 'min'
-    decrease = 0.005
-    thk = 0.20
+    plot_sols = True
+    objective = 'max'
+    decrease = 0.01
+    thk = 0.1079
     exitflag = 0
-    total = 1
+    total = 125
     count = 0
+
+    form_weight = circular_heights(form, thk=0.20)
+    W = form_weight.attributes['selfweight']
+    print('Selfweight', W)
+    # plot_form(form_weight).show()
 
     PATH = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/diagram_thrust/' + 'Blocks_' + str(blocks)
     FILECSV = '/Users/mricardo/compas_dev/me/minmax/2D_Arch/diagram_thrust/' + '2D_arch_'+ str(blocks) + '_fine_' + objective + '.csv'
@@ -57,10 +63,11 @@ if __name__ == "__main__":
 
         while exitflag == 0 and count < total:
 
-            form = circular_heights(form, thk=thk)
+            form = circular_heights(form, thk=thk, overwrite_weight=W)
             file_save = PATH + '_' + objective + '_t=' + str(int(thk*1000)) + '.json'
             file_img = PATH + '_' + objective + '_t=' + str(int(thk*1000)) + '.tiff'
             print('Radius Ext/Int: ', form.attributes['Re'], form.attributes['Ri'])
+
             # Initial parameters
 
             translation = True
@@ -92,9 +99,9 @@ if __name__ == "__main__":
 
                 print('Optimisation completed - Trial:', count, 't', thk)
                 if plot_sols:
-                    plot_form_xz(form, radius=0.008, save=file_img, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True,).show()
+                    plot_form_xz(form, radius=0.02, save=file_img, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True,).show()
                     images.append(file_img)
-                form.to_json(file_save)
+                # form.to_json(file_save)
                 print('File saved: ', file_save)
 
                 for key in form.vertices_where({'is_fixed': True}):
@@ -105,14 +112,13 @@ if __name__ == "__main__":
                     print('zb: {0:.3f}'.format(zb))
                     break
                 qmax = round(max(qopt).item(), 3)
-                fopt = round(fopt, 3)
-                print('fopt: {0:.3f}'.format(fopt))
+                fopt_ = round(fopt, 3)
+                fopt_adim = round(fopt/W,3)
+                print('fopt: {0:.3f}'.format(fopt_))
                 print('qmax: {0:.3f}'.format(max(qopt).item()))
+                print('FOBJ / W: {0:.3f}'.format(fopt_adim))
+                writer.writerow([thk*100, rx, ry, qmax, zb, fopt_adim, exitflag])
 
-                writer.writerow([thk*100, rx, ry, qmax, zb, fopt, exitflag])
-
-                # if thk <= 0.11:
-                #     decrease = 0.001
                 thk = round(thk - decrease, 4)
 
     print('Optimisation with objective ', objective, ' ended with thickness: ', thk)
@@ -120,7 +126,7 @@ if __name__ == "__main__":
     print('Plotting last feasible solution with thk:', thk)
     file_print = PATH + '_' + objective + '_t=' + str(int(thk*1000)) + '.json'
     form = FormDiagram.from_json(file_print)
-    plot_form_xz(form, radius=0.008, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True,).show()
+    plot_form_xz(form, radius=0.015, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True,).show()
 
     # Make a GIF
     # filepath = PATH + '_' + objective + '_GIF.gif'

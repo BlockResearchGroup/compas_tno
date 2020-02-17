@@ -38,11 +38,11 @@ __email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
-    'optimise_general'
+    'MMA_solver'
 ]
 
 
-def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
+def MMA_solver(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
                      printout=10, plot=False, indset=None, tension=False, planar=False,
                      translation=None, use_bounds=None, bounds_width=5.0,
                      summary=True, objective='loadpath', bmax=False, cracks=False, rollers=False):
@@ -113,116 +113,122 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
         print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         # print('Initial step:', x0)
 
-    # Solve with the appropriate solver
+    # Solve with MMA
+    # Start Time
+    start_time = time.time()
 
-    if solver == 'slsqp':
-        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, printout, fconstr, args)
-        while exitflag == 9:
-            fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, printout, fconstr, args)
-        if exitflag == 0:
-            if translation:
-                q[ind] = xopt[:k].reshape(-1, 1)
-                z[fixed] = xopt[k:].reshape(-1, 1)
-            else:
-                q[ind] = xopt[:k].reshape(-1, 1)
-        else:
-            if printout:
-                print(message)
+    # Logger
+    path = os.path.dirname(os.path.realpath(__file__))
+    file = os.path.join(path, "GCMMA_TEST.log")
+    logger = setup_logger(file)
+    logger.info("Started\n")
+    # Set numpy print options
+    np.set_printoptions(precision=4, formatter={'float': '{: 0.4f}'.format})
+    # Beam initial settings
+    m = len(g0)
+    n = len(x0)
+    epsimin = 0.0000001
+    # epsimin = 0.1
+    eeen = np.ones((n, 1))
+    eeem = np.ones((m, 1))
+    zeron = np.zeros((n, 1))
+    zerom = np.zeros((m, 1))
+    xval = x0
+    xold1 = xval.copy()
+    xold2 = xval.copy()
+    xmin = lower  # eeen.copy()
+    xmax = upper  # 10*eeen
+    low = xmin.copy()
+    upp = xmax.copy()
+    c = 1000*eeem
+    d = eeem.copy()
+    a0 = 1
+    a = zerom.copy()
+    raa0 = 0.01
+    raa = 0.01*eeem
+    raa0eps = 0.000001
+    raaeps = 0.000001*eeem
+    outeriter = 0
+    maxoutit = 50
+    kkttol = 1e-6
+    # Calculate function values and gradients of the objective and constraints functions
+    if outeriter == 0:
+        f0val, df0dx, fval, dfdx = beam2(xval, fobj, fconstr, *args)
+        innerit = 0
+        outvector1 = np.array([outeriter, innerit, f0val, fval])
+        outvector2 = xval.flatten()
+        # Log
+        # logger.info("outvector1 = {}".format(outvector1))
+        logger.info("outvector2 = {}\n".format(outvector2))
+    # The iterations starts
+    kktnorm = kkttol + 10
+    f0val_old = f0val + 10
+    outit = 0
+    while (kktnorm > kkttol) and (outit < maxoutit): # and (abs(f0val_old - f0val) > 10e-4):
+        logger.info("iteration = {}".format(outit))
+        f0val_old = f0val
+        outit += 1
+        outeriter += 1
+        # The parameters low, upp, raa0 and raa are calculated:
+        low, upp, raa0, raa = \
+            asymp(outeriter, n, xval, xold1, xold2, xmin, xmax,
+                  low, upp, raa0, raa, raa0eps, raaeps, df0dx, dfdx)
+        # The MMA subproblem is solved at the point xval:
+        xmma, ymma, zmma, lam, xsi, eta, mu, zet, s, f0app, fapp = \
+            gcmmasub(m, n, iter, epsimin, xval, xmin, xmax, low, upp,
+                     raa0, raa, f0val, df0dx, fval, dfdx, a0, a, c, d)
+        # The user should now calculate function values (no gradients) of the objective- and constraint
+        # functions at the point xmma ( = the optimal solution of the subproblem).
+        f0valnew, fvalnew = beam1(xmma, fobj, fconstr, *args)
+        # It is checked if the approximations are conservative:
+        conserv = concheck(m, epsimin, f0app, f0valnew, fapp, fvalnew)
+        # While the approximations are non-conservative (conserv=0), repeated inner iterations are made:
+        innerit = 0
+        if conserv == 0:
+            while conserv == 0 and innerit <= 15:
+                innerit += 1
+                # New values on the parameters raa0 and raa are calculated:
+                raa0, raa = raaupdate(xmma, xval, xmin, xmax, low, upp, f0valnew, fvalnew, f0app, fapp, raa0,
+                                      raa, raa0eps, raaeps, epsimin)
+                # The GCMMA subproblem is solved with these new raa0 and raa:
+                xmma, ymma, zmma, lam, xsi, eta, mu, zet, s, f0app, fapp = gcmmasub(m, n, iter, epsimin, xval, xmin,
+                                                                                    xmax, low, upp, raa0, raa, f0val, df0dx, fval, dfdx, a0, a, c, d)
+                # The user should now calculate function values (no gradients) of the objective- and
+                # constraint functions at the point xmma ( = the optimal solution of the subproblem).
+                f0valnew, fvalnew = beam1(xmma, fobj, fconstr, *args)
+                # It is checked if the approximations have become conservative:
+                conserv = concheck(m, epsimin, f0app, f0valnew, fapp, fvalnew)
+        # Some vectors are updated:
+        xold2 = xold1.copy()
+        xold1 = xval.copy()
+        xval = xmma.copy()
+        # Re-calculate function values and gradients of the objective and constraints functions
+        f0val, df0dx, fval, dfdx = beam2(xval, fobj, fconstr, *args)
+        # The residual vector of the KKT conditions is calculated
+        residu, kktnorm, residumax = \
+            kktcheck(m, n, xmma, ymma, zmma, lam, xsi, eta, mu, zet,
+                     s, xmin, xmax, df0dx, fval, dfdx, a0, a, c, d)
+        outvector1 = np.array([outeriter, innerit, f0val, fval])
+        outvector2 = xval.flatten()
+        # Log
+        # logger.info("outvector1 = {}".format(outvector1))
+        # logger.info("outvector2 = {}".format(outvector2))
+        logger.info("kktnorm    = {}\n".format(kktnorm))
+        logger.info("Objective Iteration: {}".format(f0val))
+    # Final log
+    elapsed_time = time.time() - start_time
+    logger.info("Finished")
+    logger.info("Objective Value: {}".format(f0val))
+    print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
-    if solver == 'devo':
-        fopt, xopt = _diff_evo(fn=fobj, bounds=bounds, population=500, generations=100, printout=10, plot=False, frange=[], args=args)
-        xopt = array(xopt).reshape(len(xopt), 1)
-        niter = 100
-        exitflag = 0
-        if translation:
-            q[ind] = xopt[:k]
-            z[fixed] = xopt[k:].reshape(-1, 1)
-        else:
-            q[ind] = xopt[:k]
+    fopt = f0val.item()
+    xopt = xval
 
-    if solver == 'ga':
-        GA = _ga(fn=fobj, fit_type='min', num_var=len(x0), boundaries=bounds, num_pop=500, num_gen=300, args=args)
-        fopt = float(GA.best_fit)
-        best_i = GA.best_individual_index
-        xopt = array(GA.current_pop['scaled'][best_i]).reshape(-1, 1)
-        niter = 100
-        exitflag = 0
-        if translation:
-            q[ind] = xopt[:k]
-            z[fixed] = xopt[k:].reshape(-1, 1)
-        else:
-            q[ind] = xopt[:k]
-
-    if solver.split('-')[0] == 'pyOpt':
-        lower = [lw[0] for lw in bounds]
-        upper = [up[1] for up in bounds]
-        solver_pyOpt = solver.split('-')[1]
-        title = 'Solver: ' + solver_pyOpt + 'Objective: ' + objective
-
-        opt_prob = pyOpt.Optimization(title, pyOpt_wrapper)
-        opt_prob.addObj('f', value=f0)
-        opt_prob.addVarGroup('x', len(x0), type='c', value=x0, lower=lower, upper=upper)
-        opt_prob.addConGroup('c', len(g0), type='i', value=g0)
-
-        if solver_pyOpt == 'SLSQP':
-            slv = pyOpt.SLSQP()
-            slv.setOption('MAXIT', 1000)
-
-        if solver_pyOpt == 'PSQP':
-            slv = pyOpt.PSQP()
-
-        if solver_pyOpt == 'CONMIN':
-            slv = pyOpt.CONMIN()
-
-        if solver_pyOpt == 'COBYLA':
-            slv = pyOpt.COBYLA()
-
-        if solver_pyOpt == 'SOLVOPT':
-            slv = pyOpt.SOLVOPT()
-
-        if solver_pyOpt == 'KSOPT':
-            slv = pyOpt.KSOPT()
-
-        if solver_pyOpt == 'NSGA2':
-            slv = pyOpt.NSGA2()
-
-        if solver_pyOpt == 'ALGENCAN':
-            slv = pyOpt.ALGENCAN()
-
-        if solver_pyOpt == 'FILTERSD':
-            slv = pyOpt.FILTERSD()
-
-        if solver_pyOpt == 'SDPEN':
-            slv = pyOpt.SDPEN()
-
-        if solver_pyOpt == 'ALPSO':
-            slv = pyOpt.SDPEN()
-
-        if solver_pyOpt == 'ALHSO':
-            slv = pyOpt.SDPEN()
-
-        if solver_pyOpt == 'MIDACO':
-            slv = pyOpt.SDPEN()
-
-        [fopt, xopt, info] = slv(opt_prob, sens_type='FD', args=args, objective=fobj, constraints=fconstr)
-        # exitflag = info['text']
-        if info['text'] == 'Optimization terminated successfully.':
-            exitflag = 0
-        else:
-            exitflag = 1
-        # exitflag = slv.informs
-        # if printout:
-        #     print(opt_prob.solution(0))
-        print(info['text'])
-        fopt = fopt.item()
-        niter = 100
-        if translation:
-            q[ind] = xopt[:k].reshape(-1, 1)
-            z[fixed] = xopt[k:].reshape(-1, 1)
-        else:
-            q[ind] = xopt[:k].reshape(-1, 1)
-
-    # Recalculate equilibrium and update form-diagram
+    if translation:
+        q[ind] = xopt[:k].reshape(-1, 1)
+        z[fixed] = xopt[k:].reshape(-1, 1)
+    else:
+        q[ind] = xopt[:k].reshape(-1, 1)
 
     g_final = fconstr(xopt, *args)
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
@@ -251,7 +257,7 @@ def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, t
     form.attributes['loadpath'] = lp
 
     # form.attributes['iter'] = niter
-    form.attributes['exitflag'] = exitflag
+    # form.attributes['exitflag'] = exitflag
     form.attributes['fopt'] = fopt
     form.attributes['objective'] = objective
     reactions(form, plot=plot)

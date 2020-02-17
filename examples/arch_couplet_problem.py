@@ -61,7 +61,7 @@ if __name__ == "__main__":
             count += 1
             if qmin > -0.1 and exitflag == 0:
                 print('Optimisation completed - Trial:',count, 't', thk)
-                plot_form_xz(form, radius=0.01, simple=True, fix_width = True, max_width=1.5, heights=True, show_q=False, thk = thk, plot_reactions=True).show()
+                plot_form_xz(form, radius=0.01, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk = thk, plot_reactions=True).show()
                 form.to_json(file_save)
 
         thk = thk - decrease
