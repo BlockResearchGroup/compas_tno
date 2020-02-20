@@ -28,8 +28,6 @@ if __name__ == "__main__":
     form = FormDiagram.from_json(file)
     plot_form(form, show_q = False).show()
 
-
-
     # # Try with 'fan_fd' and 'cross_fd' and for the objective change 'min' and 'max'
     # type_fd = 'cross_fd'
     # objective = 'max'

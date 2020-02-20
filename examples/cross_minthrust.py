@@ -97,15 +97,15 @@ if __name__ == "__main__":
         solver = 'pyOpt-SLSQP'
         # solver = 'slsqp'
 
-        # fopt, qopt, zbopt, exitflag = optimise_general(form,  qmax=qmax, solver=solver,
-        #                                     printout=print_opt,
-        #                                     find_inds=True,
-        #                                     indset=indset,
-        #                                     tol=0.001,
-        #                                     translation = translation,
-        #                                     objective=objective,
-        #                                     bmax = False,
-        #                                     summary=True)
+        fopt, qopt, zbopt, exitflag = optimise_general(form,  qmax=qmax, solver=solver,
+                                            printout=print_opt,
+                                            find_inds=True,
+                                            indset=indset,
+                                            tol=0.001,
+                                            translation = translation,
+                                            objective=objective,
+                                            bmax = False,
+                                            summary=True)
 
         if exitflag == 0:
             print('File saved to: ',file_save)

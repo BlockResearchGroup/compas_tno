@@ -10,14 +10,14 @@ from scipy import interpolate
 from scipy import hstack
 
 
-def set_dome_heighfield(center = [5.0,5.0], radius = 5.0, thk = 0.30, t = 5.0, density=[8, 20]):
+def set_dome_heighfield(center = [5.0,5.0], radius = 5.0, thk = 0.30, t = 5.0, discretisation=[8, 20]):
     tol = 10e-3
     xc = center[0]
     yc = center[1]
     ri = radius - thk/2
     re = radius + thk/2
-    n_radial = density[0]
-    n_spikes = density[1]
+    n_radial = discretisation[0]
+    n_spikes = discretisation[1]
     r_div = radius/n_radial
     theta = 2*math.pi/n_spikes
 

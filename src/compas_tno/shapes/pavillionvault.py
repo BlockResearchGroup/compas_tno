@@ -8,7 +8,7 @@ from compas.datastructures import Mesh
 import math
 
 
-def pavillion_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, density = [100,100]):
+def pavillion_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100,100]):
     """ Set Pavillion-Vault heights.
 
     Parameters
@@ -22,8 +22,8 @@ def pavillion_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, to
     tol : float (optional)
         Approximates the equations avoiding negative square-roots.
 
-    density: int
-        Density of the grid that approximates the surfaces
+    discretisation: int
+        discretisation of the grid that approximates the surfaces
 
     t: float
         Negative lower-bound for the reactions position.
@@ -55,8 +55,8 @@ def pavillion_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, to
     dx = x1 - x0
     dy = y1 - y0
 
-    density_x = density[0]
-    density_y = density[1]
+    density_x = discretisation[0]
+    density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
 
@@ -112,12 +112,12 @@ def pavillion_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, to
     xyz = array([x1d, y1d, z1d]).transpose()
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
 
-    extrados = pavillion_vault_highfields_ub(xy_span=xy_span, thk=thk, tol=tol, density=density)
-    intrados = pavillion_vault_highfields_lb(xy_span=xy_span, thk=thk, tol=tol, density=density, t=t)
+    extrados = pavillion_vault_highfields_ub(xy_span=xy_span, thk=thk, tol=tol, discretisation=discretisation)
+    intrados = pavillion_vault_highfields_lb(xy_span=xy_span, thk=thk, tol=tol, discretisation=discretisation, t=t)
 
     return intrados, extrados, middle
 
-def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, density = [100, 100]):
+def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, discretisation = [100, 100]):
 
     """ Helper function to set the extrados of a parametric Pavillion-Vault.
 
@@ -132,8 +132,8 @@ def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, t
     tol : float
         Approximates the equations avoiding negative square-roots.
 
-    density: int
-        Density of the grid that approximates the surfaces
+    discretisation: int
+        discretisation of the grid that approximates the surfaces
 
     Returns
     -------
@@ -147,8 +147,8 @@ def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, t
     x0 = xy_span[0][0]
     dx = x1 - x0
     dy = y1 - y0
-    density_x = density[0]
-    density_y = density[1]
+    density_x = discretisation[0]
+    density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
 
@@ -209,7 +209,7 @@ def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, t
 
     return extrados
 
-def pavillion_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, density = [100, 100]):
+def pavillion_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100, 100]):
 
     """ Helper function to set the intrados of Pavillion-Vaults.
 
@@ -224,8 +224,8 @@ def pavillion_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None,
     tol : float (optional)
         Approximates the equations avoiding negative square-roots.
 
-    density: int
-        Density of the grid that approximates the surfaces
+    discretisation: int
+        discretisation of the grid that approximates the surfaces
 
     t: float
         Negative lower-bound for the reactions position.
@@ -243,8 +243,8 @@ def pavillion_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None,
     x0 = xy_span[0][0]
     dx = x1 - x0
     dy = y1 - y0
-    density_x = density[0]
-    density_y = density[1]
+    density_x = discretisation[0]
+    density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
 

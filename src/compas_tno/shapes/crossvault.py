@@ -1,14 +1,12 @@
 
 
-from scipy.interpolate import interp2d
 from numpy import arange
-from numpy import zeros
 import math
 from compas.datastructures import Mesh
 from numpy import array
 
 
-def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, density = [100, 100]):
+def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100, 100]):
 
     """ Set Cross-Vault heights.
 
@@ -23,7 +21,7 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
     tol : float (optional)
         Approximates the equations avoiding negative square-roots.
 
-    density: list
+    discretisation: list
         Density of the grid that approximates the surfaces in x- and y- directions.
 
     t: float
@@ -51,8 +49,8 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
 
     dx = x1 - x0
     dy = y1 - y0
-    density_x = density[0]
-    density_y = density[1]
+    density_x = discretisation[0]
+    density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
     # zt = zeros((len(x),len(y)))
@@ -115,12 +113,12 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
     xyz = array([x1d, y1d, z1d]).transpose()
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
 
-    extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol = tol, density = density)
+    extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol = tol, discretisation = discretisation)
     intrados = cross_vault_highfields_lb(xy_span = xy_span, thk = thk, tol = tol, t = t)
 
     return intrados, extrados, middle
 
-def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, density = [100, 100]):
+def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, discretisation = [100, 100]):
 
     """ Helper function to set the extrados of a parametric Cross-Vault.
 
@@ -135,7 +133,7 @@ def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol =
     tol : float
         Approximates the equations avoiding negative square-roots.
 
-    density: int
+    discretisation: int
         Density of the grid that approximates the surfaces
 
     Returns
@@ -151,8 +149,8 @@ def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol =
     x0 = xy_span[0][0]
     dx = x1 - x0
     dy = y1 - y0
-    density_x = density[0]
-    density_y = density[1]
+    density_x = discretisation[0]
+    density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
 
@@ -218,7 +216,7 @@ def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol =
 
     return extrados
 
-def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, density = [100, 100]):
+def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100, 100]):
     """ Helper function to set the intrados of Cross-Vaults.
 
     Parameters
@@ -232,7 +230,7 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
     tol : float (optional)
         Approximates the equations avoiding negative square-roots.
 
-    density: int
+    discretisation: int
         Density of the grid that approximates the surfaces
 
     t: float
@@ -251,8 +249,8 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
     x0 = xy_span[0][0]
     dx = x1 - x0
     dy = y1 - y0
-    density_x = density[0]
-    density_y = density[1]
+    density_x = discretisation[0]
+    density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
 

@@ -51,7 +51,7 @@ from compas_tna.diagrams import FormDiagram
 
 import math
 
-import ipopt
+# import ipopt
 
 # ==============================================================================
 # Main

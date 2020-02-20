@@ -55,7 +55,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
         Independent set to use. If empty the independents are calculated normally.
     tol: float
         Tolerance for check the independent edges equilibrium
-    
+
     Returns
     -------
     args
@@ -172,7 +172,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
                     ind.append(uv_i[(u, v)])
         else:
             ind = find_independents(E)
-        
+
         k   = len(ind)
         dep = list(set(range(m)) - set(ind))
 
@@ -218,7 +218,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
             pass
         else:
             print('Warning: independent edges not equilibrated')
-    
+
     return args
 
 
@@ -230,7 +230,7 @@ def initialise_form(form, indset = None, printout = False, find_inds= True):
     ----------
     form : obj
         The FormDiagram.
-    
+
     Returns
     -------
     form : obj
@@ -241,6 +241,7 @@ def initialise_form(form, indset = None, printout = False, find_inds= True):
     i_uv = form.index_uv()
 
     args = initialise_problem(form, indset = indset, printout = printout, find_inds= find_inds)
+    # form.attributes['args'] = args
     q, ind, dep = args[:3]
 
     form.update_default_edge_attributes({'is_ind': False})
