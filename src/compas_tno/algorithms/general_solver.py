@@ -46,9 +46,7 @@ def set_up_optimisation(analysis):
     form = analysis.form
     optimiser = analysis.optimiser
 
-    k_i = form.key_index()
     i_k = form.index_key()
-    i_uv = form.index_uv()
 
     args = initialise_problem(form) #, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
@@ -118,6 +116,7 @@ def set_up_optimisation(analysis):
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
 
+
     print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
     print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
 
@@ -125,13 +124,82 @@ def set_up_optimisation(analysis):
     optimiser.fconstr = fconstr
     optimiser.args = args
     optimiser.x0 = x0
+    optimiser.bounds = bounds
 
     analysis.form = form
     analysis.optimiser = optimiser
 
     return analysis
 
+
 def run_optimisation(analysis):
+
+    form = analysis.form
+    optimiser = analysis.optimiser
+    solver = optimiser.data['solver']
+    fobj = optimiser.fobj
+    fconstr = optimiser.fconstr
+    args = optimiser.args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+    i_uv = form.index_uv()
+    i_k = form.index_key()
+    k_i = form.key_index()
+    bounds = optimiser.bounds
+    x0 = optimiser.x0
+
+    if solver == 'slsqp':
+        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, True, fconstr, args)
+        while exitflag == 9:
+            fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, True, fconstr, args)
+        if exitflag == 0:
+            q[ind] = xopt[:k].reshape(-1, 1)
+            z[fixed] = xopt[k:].reshape(-1, 1)
+            # else:
+            #     q[ind] = xopt[:k].reshape(-1, 1) # Code the option with only qinds
+        else:
+            print(message)
+
+    g_final = fconstr(xopt, *args)
+    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
+    z, _, q, q_ = zlq_from_qid(q[ind], args)
+
+    gkeys = []
+    for i in ind:
+        u, v = i_uv[i]
+        gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
+    form.attributes['indset'] = gkeys
+
+    for i in range(form.number_of_vertices()):
+        key = i_k[i]
+        form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+
+    for c, qi in enumerate(list(q_.ravel())):
+        u, v = i_uv[c]
+        form.set_edge_attribute((u, v), 'q', float(qi))
+
+    lp = 0
+    for u, v in form.edges_where({'is_edge': True}):
+        if form.get_edge_attribute((u, v), 'is_symmetry') is False:
+            qi = form.get_edge_attribute((u, v), 'q')
+            li = form.edge_length(u, v)
+            lp += abs(qi) * li**2
+    form.attributes['loadpath'] = lp
+
+    # form.attributes['iter'] = niter
+    optimiser.exitflag = exitflag
+    optimiser.fopt = fopt
+
+    reactions(form, plot=False)
+
+    print('\n' + '-' * 50)
+    print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
+    print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
+    print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+    print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
+    print('fopt      : {0:.3f}'.format(fopt))
+    print('-' * 50 + '\n')
+
+    return analysis
 
 
 def optimise_general(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, tol=0.001,

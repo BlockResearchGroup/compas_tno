@@ -1,6 +1,6 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
-from compas.utilities import geometric_key    
+from compas.utilities import geometric_key
 from compas.utilities import reverse_geometric_key
 
 from compas.geometry.transformations.transformations import mirror_point_line
@@ -13,7 +13,7 @@ from compas.geometry.distance import distance_point_point_xy
 from numpy import argmin
 from numpy import sqrt
 from compas_tno.algorithms.equilibrium import z_from_form
-from compas_tno.diagrams.form import overview_forces
+from compas_tno.diagrams.form1 import overview_forces
 
 from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
@@ -230,7 +230,7 @@ def replicate2(form, file, plot=None):
             gkey_mirror = geometric_key(mirror_diag)
 
             q_i[gkey_mirror] = q_i[gkey_mid]
-            
+
             if -tol <= sp[0] <= tol and -tol <= ep[0] <= tol:
                 q_i[gkey_mirror] *= 2
 
@@ -312,7 +312,7 @@ def create_sym(form, keep_q = True):
             lines.append([u_coord,v_coord])
         if 5.0 - tol <= u_coord[0] <= 5.0 + tol and 5.0 - tol <= v_coord[0] <= 5.0 + tol: # Line Vertical at x = 5.0 and y > 5.0
             qs[mid_gkey] *= 0.5
-        if 10 - u_coord[0] - tol <= u_coord[1] <= 10 - u_coord[0] + tol and 10 - v_coord[0] - tol <= v_coord[1] <= 10 - v_coord[0] + tol: # Line Diagonal at y = x 
+        if 10 - u_coord[0] - tol <= u_coord[1] <= 10 - u_coord[0] + tol and 10 - v_coord[0] - tol <= v_coord[1] <= 10 - v_coord[0] + tol: # Line Diagonal at y = x
             qs[mid_gkey] *= 0.5
 
     for key in form.vertices():
@@ -477,7 +477,7 @@ def fix_boundaries_sym(form, plot = False):
 def fix_boundaries_complete(form, plot = False):
 
     tol = 0.001
-    
+
     for key in form.vertices_on_boundary():
         form.set_vertex_attribute(key, 'is_fixed', True)
         form.set_vertex_attribute(key, 'z', 0.0)
@@ -562,7 +562,7 @@ def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
         pzt += form.get_vertex_attribute(key, 'pz')
 
     print('Final Load: {0}'.format(pzt))
-    
+
     return form
 
 

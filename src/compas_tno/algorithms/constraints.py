@@ -44,20 +44,20 @@ def f_ub_lb(xopt, *args):
     xyz = hstack([x, y, z])
     p_fixed = hstack([px, py, pz])[fixed]
     R = CfQC.dot(xyz) - p_fixed
-    Rx_angle = abs(b[:, 0].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 0], R[:, 2]).reshape(-1, 1))) # + tol >= 0
-    Ry_angle = abs(b[:, 1].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 1], R[:, 2]).reshape(-1, 1))) # + tol >= 0
+    Rx_angle = tol #abs(b[:, 0].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 0], R[:, 2]).reshape(-1, 1))) # + tol >= 0
+    Ry_angle = tol #abs(b[:, 1].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 1], R[:, 2]).reshape(-1, 1))) # + tol >= 0
 
     # Positive Qs
     qpos = (q.ravel() + 10**(-5)).reshape(-1, 1)
 
-    max_f_x = array([1.0]*len(rol_x))  # Change to be personalised for each node....
-    max_f_y = array([1.0]*len(rol_y))
+    # max_f_x = array([1.0]*len(rol_x))  # Change to be personalised for each node....
+    # max_f_y = array([1.0]*len(rol_y))
 
     # Reactions on the walls
-    reac_rol_x = tol #(array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1, 1)
-    reac_rol_y = tol# (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1, 1)
+    # reac_rol_x = tol #(array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1, 1)
+    # reac_rol_y = tol# (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1, 1)
 
-    return transpose(vstack([qpos, upper_limit, lower_limit, Rx_angle, Ry_angle, reac_rol_x, reac_rol_y]))[0]
+    return transpose(vstack([qpos, upper_limit, lower_limit, Rx_angle, Ry_angle]))[0]
 
 def f_ub_lb_red(xopt, *args):
 

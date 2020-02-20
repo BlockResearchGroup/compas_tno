@@ -4,6 +4,7 @@ import math
 from compas_tno.algorithms.problems import initialise_form
 from compas_tno.algorithms.problems import initialise_problem
 from compas_tno.algorithms.general_solver import set_up_optimisation
+from compas_tno.algorithms.general_solver import run_optimisation
 
 __all__ = ['Analysis']
 
@@ -136,7 +137,14 @@ class Analysis(object):
     def apply_envelope(self):
         """Apply ub and lb to the nodes based on the shape's intrados and extrados"""
 
+
         form = self.form
+        shape = self.shape
+
+        for key in form.vertices():
+            x, y, _ = form.vertex_coordinates(key)
+            form.set_vertex_attribute(key, 'ub', value = shape.get_ub(x, y))
+            form.set_vertex_attribute(key, 'lb', value = shape.get_lb(x, y))
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
@@ -199,6 +207,15 @@ class Analysis(object):
 
         # self.form = form # With correct forces
 
-
         return
 
+    def run(self):
+        """With the data from the elements of the problem compute the matrices for the optimisation"""
+
+        self = run_optimisation(self)
+
+        # Go over nodes and find node = key and apply the pointed load pz += magnitude
+
+        # self.form = form # With correct forces
+
+        return

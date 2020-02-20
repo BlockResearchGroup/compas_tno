@@ -33,8 +33,8 @@ import math
 if __name__ == "__main__":
 
     exitflag = 0
-    thck = 0.21
-    reduction = 0.001
+    thck = 0.50
+    reduction = 0.01
     data_thk = []
     data_fobj = []
     data_exitflag = []
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         for objective in ['max']:
 
             # Try with 'radial' and 'flower' and for the objective change 'min' and 'max'
-            type_fd = 'radial_spaced'
+            type_fd = 'radial'
             # objective = 'max'
 
             # Create Vault from one of the patterns Fan/Grid with the dimensions or load in case of flower FD
@@ -169,7 +169,7 @@ if __name__ == "__main__":
             print('qmax: {0:.3f}'.format(max(qopt).item()))
             data_fobj.append(fopt)
             data_exitflag.append(exitflag)
-            # plot_form(form, show_q=False, fix_width=False).show()
+            plot_form(form, show_q=False, fix_width=False).show()
         i = i + 1
 
     print(data_exitflag)

@@ -98,6 +98,9 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
     for key in bnds:
         form.set_vertex_attribute(key, 'is_fixed', True)
 
+    for u,v in form.edges_on_boundary():
+        form.set_edge_attribute((u,v), 'is_edge', False)
+
     return form
 
 
