@@ -1,5 +1,3 @@
-
-
 from numpy import arange
 import math
 from compas.datastructures import Mesh

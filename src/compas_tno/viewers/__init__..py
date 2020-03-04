@@ -1,13 +1,14 @@
 """
 ********************************************************************************
-compas_tno.plotters
+compas_tno.viewers
 ********************************************************************************
 
 .. currentmodule:: compas_tno.viewers
 
 """
-# from __future__ import absolute_import
+from __future__ import absolute_import
 
-# from .plotters import *
+from .shapes import *
+from .thrust import *
 
-# __all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [name for name in dir() if not name.startswith('_')]

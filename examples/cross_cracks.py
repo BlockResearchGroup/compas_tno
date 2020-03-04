@@ -11,7 +11,7 @@ from compas_tno.algorithms.equilibrium import reactions
 from compas_tno.algorithms import optimise_general
 from compas_tno.algorithms import optimise_convex
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from compas_tno.utilities.constraints import create_cracks
 from compas_tno.utilities.constraints import rollers_on_openings

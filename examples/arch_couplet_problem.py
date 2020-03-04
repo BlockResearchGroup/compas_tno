@@ -6,7 +6,7 @@ from compas_tno.utilities.constraints import circular_heights
 from compas_tno.diagrams.form import overview_forces
 from compas_tno.diagrams.form import create_arch
 
-from compas_tno.plotters.plotters import plot_form_xz
+from compas_tno.plotters import plot_form_xz
 from numpy import array
 
 # ==============================================================================

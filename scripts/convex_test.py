@@ -1,8 +1,8 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 # from compas_tno.algorithms.equilibrium import reactions
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_force
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_force
 from compas_tno.algorithms import initialize_problem
 from compas_tno.algorithms import update_tna
 from compas_tno.algorithms import z_from_form
@@ -85,7 +85,7 @@ def load_matlab(form,file):
             i = uv_i[(u,v)]
             [qi]= q[i]
             # print(qi)
-            form.set_edge_attribute((u,v), 'q', qi)
+            form.edge_attribute((u,v), 'q', qi)
 
         form = z_from_form(form)
         return form
@@ -105,10 +105,10 @@ def save_matlab(form, file, find_inds=True, heights=False, lb_ub=True):
         zub = []
 
         for key in form.vertices():
-            if form.get_vertex_attribute(key, 'is_fixed') == False:
-                zt.append(form.get_vertex_attribute(key,'target'))
-                zlb.append(form.get_vertex_attribute(key,'lb'))
-                zub.append(form.get_vertex_attribute(key,'ub'))
+            if form.vertex_attribute(key, 'is_fixed') == False:
+                zt.append(form.vertex_attribute(key,'target'))
+                zlb.append(form.vertex_attribute(key,'lb'))
+                zub.append(form.vertex_attribute(key,'ub'))
     else:
         zt = zlb = zub = 1.0
 

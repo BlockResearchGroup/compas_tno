@@ -12,7 +12,7 @@ from compas_tno.diagrams.form import overview_forces
 from compas_tno.diagrams.form import adapt_objective
 from compas_tno.diagrams.form import adapt_tna
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from compas_viewers.meshviewer import MeshViewer
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     # form.to_json(file_scaled)
 
     # for key in form.vertices():
-    #     print(form.get_vertex_attribute(key, 'target'))
+    #     print(form.vertex_attribute(key, 'target'))
 
     # If form has 1 axis of symmetry
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # overview_forces(form)
 
     # for key in form.vertices():
-    #     print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
+    #     print('LB: {0} - UB: {1}'.format(form.vertex_attribute(key,'lb'),form.vertex_attribute(key,'ub')))
 
 
     # Viewer Complete
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     # for u,v in form.edges():
     #     gkey = geometric_key(form.edge_midpoint(u,v)[:2] + [0])
-    #     qs[gkey] = form.get_edge_attribute((u,v), 'q')
+    #     qs[gkey] = form.edge_attribute((u,v), 'q')
 
     # print(qs)
 
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
     # for u,v in form_.edges():
     #     gkey = geometric_key(form_.edge_midpoint(u,v)[:2] + [0])
-    #     form_.set_edge_attribute((u,v), name='q', value=qs[gkey])
+    #     form_.edge_attribute((u,v), name='q', value=qs[gkey])
 
     # plot_form(form_).show()
     # form_.to_json(file_real)

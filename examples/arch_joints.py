@@ -6,8 +6,8 @@ from compas_tno.diagrams.form import overview_forces
 from compas_tno.diagrams.form import create_arch
 from compas_tno.algorithms import optimise_general
 
-from compas_tno.plotters.plotters import plot_form_xz
-from compas_tno.plotters.plotters import plot_form_joints
+from compas_tno.plotters import plot_form_xz
+from compas_tno.plotters import plot_form_joints
 from numpy import array
 
 from compas.geometry import intersection_segment_segment_xy

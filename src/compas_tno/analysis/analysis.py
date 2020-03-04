@@ -3,10 +3,11 @@ import math
 
 from compas_tno.algorithms.problems import initialise_form
 from compas_tno.algorithms.problems import initialise_problem
-from compas_tno.algorithms.general_solver import set_up_optimisation
-from compas_tno.algorithms.general_solver import run_optimisation
-from compas_tno.algorithms.convex_solver import set_up_convex_optimisation
-from compas_tno.algorithms.convex_solver import run_convex_optimisation
+from compas_tno.algorithms import set_up_nonlinear_optimisation
+from compas_tno.algorithms import set_up_convex_optimisation
+
+from compas_tno.algorithms import run_optimisation_scipy
+from compas_tno.algorithms import run_optimisation_MATLAB
 
 __all__ = ['Analysis']
 
@@ -86,20 +87,20 @@ class Analysis(object):
         for key in form_.vertices():
             x, y, _ = form.vertex_coordinates(key)
             z = shape.get_middle(x, y)
-            form_.set_vertex_attribute(key, 'z', value=z)
-            form.set_vertex_attribute(key, 'target', value=z)
+            form_.vertex_attribute(key, 'z', value=z)
+            form.vertex_attribute(key, 'target', value=z)
 
         pzt = 0
         for key in form.vertices():
             pz = form_.vertex_area(key)
-            form.set_vertex_attribute(key, 'pz', value = pz)
+            form.vertex_attribute(key, 'pz', value = pz)
             pzt += pz
 
         factor = total_selfweight/pzt
 
         for key in form.vertices():
-            pzi = factor * form.get_vertex_attribute(key, 'pz')
-            form.set_vertex_attribute(key, 'pz', value = pzi)
+            pzi = factor * form.vertex_attribute(key, 'pz')
+            form.vertex_attribute(key, 'pz', value = pzi)
 
         self.form = form
 
@@ -127,9 +128,9 @@ class Analysis(object):
         pzt = 0
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            pz0 = form.get_vertex_attribute(key, 'pz')
+            pz0 = form.vertex_attribute(key, 'pz')
             pzi = multiplier * pz0
-            form.set_vertex_attribute(key, component, pzi)
+            form.vertex_attribute(key, component, pzi)
             pzt += pzi
 
         print('Load applied in ', component, 'total: ', pzt)
@@ -148,8 +149,8 @@ class Analysis(object):
 
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            form.set_vertex_attribute(key, 'ub', value = shape.get_ub(x, y))
-            form.set_vertex_attribute(key, 'lb', value = shape.get_lb(x, y))
+            form.vertex_attribute(key, 'ub', value = shape.get_ub(x, y))
+            form.vertex_attribute(key, 'lb', value = shape.get_lb(x, y))
 
         self.form = form # With correct forces
 
@@ -164,7 +165,7 @@ class Analysis(object):
 
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            form.set_vertex_attribute(key, 'target', value = shape.get_middle(x, y))
+            form.vertex_attribute(key, 'target', value = shape.get_middle(x, y))
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
@@ -199,7 +200,7 @@ class Analysis(object):
                 theta = math.atan2((y - y0), (x - x0))
                 x_ = thk/2*math.cos(theta)
                 y_ = thk/2*math.sin(theta)
-                form.set_vertex_attribute(key, 'b', [x_, y_])
+                form.vertex_attribute(key, 'b', [x_, y_])
 
         self.form = form # With correct forces
 
@@ -224,7 +225,7 @@ class Analysis(object):
         if self.optimiser.data['library'] == 'MATLAB':
             self = set_up_convex_optimisation(self)
         else:
-            self = set_up_optimisation(self)
+            self = set_up_nonlinear_optimisation(self)
 
         return
 
@@ -232,8 +233,8 @@ class Analysis(object):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
         if self.optimiser.data['library'] == 'MATLAB':
-            self = run_convex_optimisation(self)
+            self = run_optimisation_MATLAB(self)
         else:
-            self = run_optimisation(self)
+            self = run_optimisation_scipy(self)
 
         return

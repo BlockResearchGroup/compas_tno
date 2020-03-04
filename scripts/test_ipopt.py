@@ -15,7 +15,7 @@ from compas_tno.algorithms.general_solver import set_b_constraint
 from compas_tno.algorithms.general_solver import set_joints_constraint
 from compas_tno.algorithms.general_solver import set_cracks_constraint
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from scipy.optimize import fmin_slsqp
 from compas.numerical import devo_numpy
@@ -113,7 +113,7 @@ fobj, fconstr = f_min_thrust, f_ub_lb
 
 if translation:
     x0 = q[ind]
-    zb_bounds = [[form.get_vertex_attribute(i_k[i], 'lb'), form.get_vertex_attribute(i_k[i], 'ub')] for i in fixed]
+    zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
     bounds = [[qmin, qmax]] * k + zb_bounds
     x0 = append(x0, z[fixed]).reshape(-1, 1)
 else:
@@ -127,7 +127,7 @@ g0 = fconstr(x0, *args)
 print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
 print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
 
-from ipopt import minimize_ipopt
+# from ipopt import minimize_ipopt
 
-minimize_ipopt(fobj, x0, args = args, constraints = [fconstr])
+# minimize_ipopt(fobj, x0, args = args, constraints = [fconstr])
 

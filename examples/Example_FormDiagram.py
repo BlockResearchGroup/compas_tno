@@ -1,5 +1,5 @@
 from compas_tno.diagrams.form import FormDiagram
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 # ------------------------------------------------
 # --------- CREATING ARCH FORM DIAGRAM -----------

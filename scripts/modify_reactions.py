@@ -1,8 +1,8 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 # from compas_tno.algorithms.equilibrium import reactions
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_force
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_force
 from compas_tno.algorithms import initialize_problem
 from compas_tno.algorithms import update_tna
 from compas_tno.algorithms import z_from_form

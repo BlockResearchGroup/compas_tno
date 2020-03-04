@@ -14,9 +14,9 @@ from compas_tno.utilities.symmetry import replicate
 from compas_viewers.meshviewer import MeshViewer
 
 from compas_tno.diagrams.form import _form
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 import compas_pattern
 
 from copy import deepcopy
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # form = _form(form)
 
     # for key in form.vertices():
-    #     print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
+    #     print('LB: {0} - UB: {1}'.format(form.vertex_attribute(key,'lb'),form.vertex_attribute(key,'ub')))
 
     # Initial parameters
 

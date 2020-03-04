@@ -80,7 +80,7 @@ class FormDiagram(FormDiagram):
         self.args = None
         self.attributes['loadpath'] = 0.0
         self.attributes['indset'] = None
-        self.data = {
+        self.parameters = {
             'type': None,
             'discretisation': None,
             # 'x0': None,
@@ -320,8 +320,8 @@ class FormDiagram(FormDiagram):
         lp = 0
 
         for u, v in self.edges_where({'is_external': False}):
-            if self.get_edge_attribute((u, v), 'is_edge') is True and self.get_edge_attribute((u, v), 'is_symmetry') is False:
-                qi = self.get_edge_attribute((u, v), 'q')
+            if self.edge_attribute((u, v), 'is_edge') is True and self.edge_attribute((u, v), 'is_symmetry') is False:
+                qi = self.edge_attribute((u, v), 'q')
                 li = self.edge_length(u, v)
                 lp += qi*li**2
                 q.append(qi)
@@ -333,8 +333,8 @@ class FormDiagram(FormDiagram):
         print('q: {0:.3f} : {1:.3f}'.format(float(min(q)), float(max(q))))
         print('f: {0:.3f} : {1:.3f}'.format(float(min(f)), float(max(f))))
         for key in self.vertices():
-            z.append(self.get_vertex_attribute(key, 'z'))
-            pz += self.get_vertex_attribute(key, 'pz')
+            z.append(self.vertex_attribute(key, 'z'))
+            pz += self.vertex_attribute(key, 'pz')
         print('z: {0:.3f} : {1:.3f}'.format(float(min(z)), float(max(z))))
         print('pz: {0:.3f}'.format(pz))
         print('lp: {0:.3f}'.format(lp))
@@ -361,7 +361,7 @@ class FormDiagram(FormDiagram):
 
         edges = [self.edge_coordinates(u, v) for u, v in self.edges()]
         edges = [[sp[:2] + [0], ep[:2] + [0]] for sp, ep in edges]
-        qs = {geometric_key(self.edge_midpoint(u, v)[:2] + [0]): self.get_edge_attribute((u, v), 'q') for u, v in self.edges()}
+        qs = {geometric_key(self.edge_midpoint(u, v)[:2] + [0]): self.edge_attribute((u, v), 'q') for u, v in self.edges()}
         shuffle(edges)
 
         form_ = FormDiagram.from_lines(edges, delete_boundary_face=False)
@@ -369,9 +369,9 @@ class FormDiagram(FormDiagram):
         sym = [geometric_key(self.edge_midpoint(u, v)[:2] + [0])for u, v in self.edges_where({'is_symmetry': True})]
         for u, v in form_.edges():
             if geometric_key(form_.edge_midpoint(u, v)) in sym:
-                form_.set_edge_attribute((u, v), 'is_symmetry', True)
+                form_.edge_attribute((u, v), 'is_symmetry', True)
             if keep_q:
-                form_.set_edge_attribute((u, v), 'q', qs[geometric_key(form_.edge_midpoint(u, v)[:2] + [0])])
+                form_.edge_attribute((u, v), 'q', qs[geometric_key(form_.edge_midpoint(u, v)[:2] + [0])])
 
         # Vertices
 
@@ -404,8 +404,8 @@ class FormDiagram(FormDiagram):
 
         lp = 0
         for u, v in self.edges_where({'is_external': False}):
-            if self.get_edge_attribute((u, v), 'is_edge') is True and form.get_edge_attribute((u, v), 'is_symmetry') is False:
-                qi = self.get_edge_attribute((u, v), 'q')
+            if self.edge_attribute((u, v), 'is_edge') is True and form.edge_attribute((u, v), 'is_symmetry') is False:
+                qi = self.edge_attribute((u, v), 'q')
                 li = self.edge_length(u, v)
                 lp += qi*li**2
 
@@ -418,7 +418,7 @@ class FormDiagram(FormDiagram):
         """
 
         for u, v in self.edges_on_boundary():
-            self.set_edge_attribute((u, v), 'is_edge', False)
+            self.edge_attribute((u, v), 'is_edge', False)
 
         return self
 
@@ -527,14 +527,14 @@ class FormDiagram(FormDiagram):
             s = self.vertex_coordinates(u)
             e = self.vertex_coordinates(v)
             lines.append([s, e])
-            qs[geometric_key(self.edge_midpoint(u, v))] = self.get_edge_attribute((u, v), 'q')
+            qs[geometric_key(self.edge_midpoint(u, v))] = self.edge_attribute((u, v), 'q')
 
         fixed = [geometric_key(self.vertex_coordinates(key)) for key in self.vertices_where({'is_anchor': True})]
         zs = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_coordinates(key)[2] for key in self.vertices_where({'is_external': False})}
-        pz = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.get_vertex_attribute(key, 'pz') for key in self.vertices()}
-        target = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.get_vertex_attribute(key, 'target') for key in self.vertices()}
-        lb = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.get_vertex_attribute(key, 'lb') for key in self.vertices()}
-        ub = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.get_vertex_attribute(key, 'ub') for key in self.vertices()}
+        pz = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'pz') for key in self.vertices()}
+        target = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'target') for key in self.vertices()}
+        lb = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'lb') for key in self.vertices()}
+        ub = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'ub') for key in self.vertices()}
 
         form_ = FormDiagram.from_lines(lines)
         form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False, 'is_edge': True})
@@ -549,7 +549,7 @@ class FormDiagram(FormDiagram):
         gkey_key = form_.gkey_key()
 
         for pt in fixed:
-            form_.set_vertex_attribute(gkey_key[pt], name='is_fixed', value=True)
+            form_.vertex_attribute(gkey_key[pt], name='is_fixed', value=True)
 
         for key, attr in form_.vertices(True):
             pzi = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
@@ -565,9 +565,170 @@ class FormDiagram(FormDiagram):
 
         for u, v in form_.edges():
             qi = qs[geometric_key(form_.edge_midpoint(u, v))]
-            form_.set_edge_attribute((u, v), name='q', value=qi)
+            form_.edge_attribute((u, v), name='q', value=qi)
 
         return form_
+
+
+    def evaluate_scale(self, function, bounds, n = 100, plot = True):
+
+        """ Evaluate a given objective function by scaling the form-diagram in the bounds specified.
+
+        Parameters
+        ----------
+        form : obj
+            The FormDiagram.
+        function : method
+            The objective function.
+        bounds : list
+            the lower and upper bound of the force densities.
+        n : int
+            Thenumbers of divisions inside the interval (bounds).
+        plot : bool
+            Plot form and force if desired.
+
+        Returns
+        -------
+        form : obj
+            The scaled form diagram.
+
+        """
+
+        r0 = bounds[0]
+        stp = (bounds[1]-bounds[0])/n
+        x = []
+        y = []
+        q0 = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'is_edge': True})])[:, newaxis]
+
+        form_ = deepcopy(self)
+
+        k_i  = form_.key_index()
+        uv_i = form_.uv_index()
+
+        for k in range(n):
+            r = r0 + stp * k
+            q = q0 * r
+            x.append(r)
+
+            for u, v in form_.edges_where({'is_edge': True}):
+                i = uv_i[(u,v)]
+                [qi] = q[i]
+                form_.edge_attribute((u,v),'q',value=qi)
+
+            form_ = z_from_form(form_)
+            y.append(function(form_))
+
+        import matplotlib
+        import matplotlib.pyplot as plt
+
+        fig, ax = plt.subplots()
+        ax.plot(x, y)
+
+        ax.set(xlabel='Scale (r)', ylabel='Energy (f)',
+            title='Evaluate Energy by Scaling')
+        ax.grid()
+
+        pos = argmin(y)
+        xmin = x[pos]
+        ymin = y[pos]
+        text= "x={:.3f}, y={:.3f}".format(xmin, ymin)
+        if not ax:
+            ax=plt.gca()
+        bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
+        arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
+        kw = dict(xycoords='data',textcoords="axes fraction",
+                arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
+        ax.annotate(text, xy=(xmin, ymin), xytext=(0.94,0.96), **kw)
+
+        if plot:
+            plt.show()
+
+        return xmin
+
+    def scale_fdm(self, r):
+
+        """ scale the FormDiagram of a factor r using FDM (all coordinates can change).
+
+        Parameters
+        ----------
+        form : obj
+            The FormDiagram.
+        r : float
+            The scaling factor on force densities.
+
+        Returns
+        -------
+        form : obj
+            The scaled form diagram.
+
+        """
+
+        uv_i = self.uv_index()
+        q = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
+        q = q * r
+
+        for u, v in self.edges_where({'is_external': False}):
+            if self.edge_attribute((u,v),'is_edge') is True:
+                i = uv_i[(u,v)]
+                [qi] = q[i]
+                self.edge_attribute((u,v),'q',value=qi)
+
+        self = z_from_form(self)
+
+        return self
+
+    def scale_form(self,r):
+        """ Scale the FormDiagram of a factor r using built-in FDM (only z-coordinates can change).
+
+        Parameters
+        ----------
+        form : obj
+            The FormDiagram.
+        r : float
+            The scaling factor on force densities.
+
+        Returns
+        -------
+        form : obj
+            The scaled form diagram.
+
+        """
+
+        k_i     = self.key_index()
+        uv_i    = self.uv_index()
+        vcount  = len(self.vertex)
+        anchors = list(self.anchors())
+        fixed   = list(self.fixed())
+        fixed   = set(anchors + fixed)
+        fixed   = [k_i[key] for key in fixed]
+        free    = list(set(range(vcount)) - set(fixed))
+        edges   = [(k_i[u], k_i[v]) for u, v in self.edges_where({'is_edge': True})]
+        xyz     = array(self.get_vertices_attributes('xyz'), dtype=float64)
+        p       = array(self.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
+        q       = [attr.get('q', 1.0) for u, v, attr in self.edges_where({'is_edge': True}, True)]
+        q       = array(q, dtype=float64).reshape((-1, 1))
+        C       = connectivity_matrix(edges, 'csr')
+        Ci      = C[:, free]
+        Cf      = C[:, fixed]
+        Cit     = Ci.transpose()
+
+        q = q * r
+        Q = diags([q.ravel()], [0])
+
+        A       = Cit.dot(Q).dot(Ci)
+        B       = Cit.dot(Q).dot(Cf)
+
+        xyz[free, 2] = spsolve(A,p[free, 2] - B.dot(xyz[fixed, 2]))
+
+        for key, attr in self.vertices(True):
+            index = k_i[key]
+            attr['z']  = xyz[index, 2]
+
+        for u, v, attr in self.edges_where({'is_edge': True}, True):
+            index = uv_i[(u, v)]
+            attr['q'] = q[index, 0]
+
+        return self
 
 
 # ------------------------------------------------------------------- #
@@ -588,7 +749,7 @@ class FormDiagram(FormDiagram):
 
     #     form0 = copy(form)
     #     form_ = scale_form(form0, 1.0)
-    #     z = [form_.get_vertex_attribute(key, 'z') for key in form_.vertices()]
+    #     z = [form_.vertex_attribute(key, 'z') for key in form_.vertices()]
     #     z_ = max(z)
     #     scale = (z_ / zmax)
     #     form = scale_form(form0, scale)
@@ -628,7 +789,7 @@ class FormDiagram(FormDiagram):
 
     #     scale = []
     #     form0 = scale_form(form, 1.0)
-    #     z = [form0.get_vertex_attribute(key, 'z') for key in form0.vertices()]
+    #     z = [form0.vertex_attribute(key, 'z') for key in form0.vertices()]
     #     z_ = max(z)
     #     scale.append(z_ / zrange[1])
     #     scale.append(z_ / zrange[0])
@@ -662,7 +823,7 @@ class FormDiagram(FormDiagram):
     #     lines = [form.edge_coordinates(u, v) for u, v in form.edges()]
 
     #     for key in bndr:
-    #         if form.get_vertex_attribute(key, 'is_fixed') == False:
+    #         if form.vertex_attribute(key, 'is_fixed') == False:
     #             x, y, _ = form.vertex_coordinates(key)
     #             if x == x1:
     #                 lines.append([[x, y, 0.0], [x + exc_length, y, 0.0]])
@@ -686,29 +847,29 @@ class FormDiagram(FormDiagram):
     #         coord_ = form_.vertex_coordinates(key_)
     #         try:
     #             key = gkey_key[geometric_key(coord_)]
-    #             pz = form.get_vertex_attribute(key, 'pz')
-    #             px = form.get_vertex_attribute(key, 'px')
-    #             py = form.get_vertex_attribute(key, 'py')
-    #             fixed = form.get_vertex_attribute(key, 'is_fixed')
-    #             lb = form.get_vertex_attribute(key, 'lb')
-    #             ub = form.get_vertex_attribute(key, 'ub')
-    #             target = form.get_vertex_attribute(key, 'target')
-    #             form_.set_vertex_attribute(key_, 'pz', value=pz)
-    #             form_.set_vertex_attribute(key_, 'px', value=px)
-    #             form_.set_vertex_attribute(key_, 'py', value=py)
-    #             form_.set_vertex_attribute(key_, 'is_fixed', value=fixed)
-    #             form_.set_vertex_attribute(key_, 'lb', value=lb)
-    #             form_.set_vertex_attribute(key_, 'ub', value=ub)
-    #             form_.set_vertex_attribute(key_, 'target', value=target)
+    #             pz = form.vertex_attribute(key, 'pz')
+    #             px = form.vertex_attribute(key, 'px')
+    #             py = form.vertex_attribute(key, 'py')
+    #             fixed = form.vertex_attribute(key, 'is_fixed')
+    #             lb = form.vertex_attribute(key, 'lb')
+    #             ub = form.vertex_attribute(key, 'ub')
+    #             target = form.vertex_attribute(key, 'target')
+    #             form_.vertex_attribute(key_, 'pz', value=pz)
+    #             form_.vertex_attribute(key_, 'px', value=px)
+    #             form_.vertex_attribute(key_, 'py', value=py)
+    #             form_.vertex_attribute(key_, 'is_fixed', value=fixed)
+    #             form_.vertex_attribute(key_, 'lb', value=lb)
+    #             form_.vertex_attribute(key_, 'ub', value=ub)
+    #             form_.vertex_attribute(key_, 'target', value=target)
     #         except:
-    #             form_.set_vertex_attribute(key_, 'is_fixed', value=True)
-    #             form_.set_vertex_attribute(key_, 'pz', value=0.0)
-    #             form_.set_vertex_attribute(key_, 'px', value=0.0)
-    #             form_.set_vertex_attribute(key_, 'py', value=0.0)
-    #             form_.set_vertex_attribute(key_, 'lb', value=0.0)
-    #             form_.set_vertex_attribute(key_, 'ub', value=0.0)
-    #             form_.set_vertex_attribute(key_, 'target', value=0.0)
+    #             form_.vertex_attribute(key_, 'is_fixed', value=True)
+    #             form_.vertex_attribute(key_, 'pz', value=0.0)
+    #             form_.vertex_attribute(key_, 'px', value=0.0)
+    #             form_.vertex_attribute(key_, 'py', value=0.0)
+    #             form_.vertex_attribute(key_, 'lb', value=0.0)
+    #             form_.vertex_attribute(key_, 'ub', value=0.0)
+    #             form_.vertex_attribute(key_, 'target', value=0.0)
     #             ngb = form_.vertex_neighbors(key_)[0]
-    #             form_.set_edge_attribute((key_, ngb), 'is_symmetry', True)
+    #             form_.edge_attribute((key_, ngb), 'is_symmetry', True)
 
     #     return form_

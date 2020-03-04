@@ -1,61 +1,32 @@
 
-from numpy import abs
-from numpy import argmin
 from numpy import array
 from numpy import float64
-from numpy import dot
-from numpy import hstack
-from numpy import isnan
 from numpy import max
-from numpy import min
 from numpy import newaxis
 from numpy import sqrt
-from numpy import sum
-from numpy import vstack
 from numpy import zeros
-from numpy import ones
-from numpy import append
-from numpy.linalg import pinv
-from numpy.linalg import matrix_rank
-from numpy.random import rand
-from numpy.random import randint
-from numpy.linalg import det
 
 from scipy.sparse.linalg import spsolve
-from scipy.optimize import fmin_slsqp
-from scipy.sparse import csr_matrix
 from scipy.sparse import diags
-from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import factorized
 from compas.numerical import normrow
 from compas.numerical import normalizerow
 from compas_tna.utilities import apply_bounds
 from compas_tna.utilities import parallelise_sparse
-from compas_tna.utilities import parallelise_nodal
 from compas.numerical import fd_numpy
 
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 from compas_tna.equilibrium import horizontal
-from compas_tna.equilibrium import horizontal_nodal
-from compas_tna.equilibrium import vertical_from_zmax
-from compas_tna.equilibrium import vertical_from_q
 from compas_tna.utilities import rot90
 from compas.geometry import angle_vectors_xy
 
 from compas.numerical import connectivity_matrix
-from compas.numerical import devo_numpy
-from compas.numerical import equilibrium_matrix
-from compas.numerical import normrow
-from compas.numerical import nonpivots
-from compas.numerical.linalg import _chofactor
 from compas_plotters import MeshPlotter
-from compas.utilities import geometric_key
-from copy import deepcopy
-from compas.geometry.distance import distance_point_point_xy
+from compas.geometry import distance_point_point_xy
 
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_force
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_force
 
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -70,7 +41,6 @@ __all__ = [
     'q_from_qid',
     'z_update',
     'z_from_form',
-    'horizontal_check',
     'update_tna',
     'update_form',
     'paralelise_form',
@@ -195,7 +165,7 @@ def update_qid(file, value, ind_i=0):
     q0 = []
     for i in ind:
         key = i_uv[i]
-        q0.append(form.get_edge_attribute(key, 'q'))
+        q0.append(form.edge_attribute(key, 'q'))
 
     print(q0)
 
@@ -264,69 +234,6 @@ def z_update(form):
 
     return form
 
-
-def horizontal_check(form, plot=False):  # Duplicated Function (Decide this or .diagrams.form residual)
-
-    # Mapping
-
-    k_i = form.key_index()
-    uv_i = form.uv_index()
-
-    # Vertices and edges
-
-    n = form.number_of_vertices()
-    fixed = [k_i[key] for key in form.fixed()]
-    rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
-    free = list(set(range(n)) - set(fixed) - set(rol))
-
-    # Co-ordinates and loads
-
-    xyz = zeros((n, 3))
-    px = zeros((n, 1))
-    py = zeros((n, 1))
-    pz = zeros((n, 1))
-
-    for key, vertex in form.vertex.items():
-        i = k_i[key]
-        xyz[i, :] = form.vertex_coordinates(key)
-        px[i] = vertex.get('px', 0)
-        py[i] = vertex.get('py', 0)
-        pz[i] = vertex.get('pz', 0)
-
-    xy = xyz[:, :2]
-    px = px[free]
-    py = py[free]
-    pz = pz[free]
-
-    # C and E matrices
-
-    C = connectivity_matrix(edges, 'csr')
-    Ci = C[:, free]
-    Cf = C[:, fixed]
-    Cit = Ci.transpose()
-    uvw = C.dot(xyz)
-    U = uvw[:, 0]
-    V = uvw[:, 1]
-    q = array([attr['q'] for u, v, attr in form.edges(True)])[:, newaxis]
-
-    # Horizontal checks
-
-    Rx = Cit.dot(U * q.ravel()) - px.ravel()
-    Ry = Cit.dot(V * q.ravel()) - py.ravel()
-    R = sqrt(Rx**2 + Ry**2)
-    Rmax = max(R)
-
-    if plot:
-        eq_node = {key: R[k_i[key]] for key in form.vertices_where({'is_fixed': False})}
-        plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-        plotter.draw_vertices(text=eq_node)
-        plotter.draw_edges()
-        plotter.show()
-
-    return Rmax
-
-
 def update_tna(form, delete_face=True, plots=False, save=False):
 
     if delete_face:
@@ -338,21 +245,21 @@ def update_tna(form, delete_face=True, plots=False, save=False):
     form.update_boundaries(feet=2)
 
     # for key in form.edges_where({'is_external': True}):
-    #     form.set_edge_attribute(key,'q',value=x_reaction)
-    #     form.set_edge_attribute(key,'fmin',value=x_reaction)
-    #     form.set_edge_attribute(key,'fmax',value=x_reaction)
-    #     form.set_edge_attribute(key,'lmin',value=1.00)
-    #     form.set_edge_attribute(key,'lmax',value=1.00)
+    #     form.edge_attribute(key,'q',value=x_reaction)
+    #     form.edge_attribute(key,'fmin',value=x_reaction)
+    #     form.edge_attribute(key,'fmax',value=x_reaction)
+    #     form.edge_attribute(key,'lmin',value=1.00)
+    #     form.edge_attribute(key,'lmax',value=1.00)
 
     for u, v in form.edges_where({'is_external': False}):
-        qi = form.get_edge_attribute((u, v), 'q')
+        qi = form.edge_attribute((u, v), 'q')
         a = form.vertex_coordinates(u)
         b = form.vertex_coordinates(v)
         lh = distance_point_point_xy(a, b)
-        form.set_edge_attribute((u, v), 'fmin', value=qi*lh)
-        form.set_edge_attribute((u, v), 'fmax', value=qi*lh)
-        form.set_edge_attribute((u, v), 'lmin', value=lh)
-        form.set_edge_attribute((u, v), 'lmax', value=lh)
+        form.edge_attribute((u, v), 'fmin', value=qi*lh)
+        form.edge_attribute((u, v), 'fmax', value=qi*lh)
+        form.edge_attribute((u, v), 'lmin', value=lh)
+        form.edge_attribute((u, v), 'lmax', value=lh)
 
     force = ForceDiagram.from_formdiagram(form)
     horizontal(form, force, display=False)
@@ -417,17 +324,17 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
     for u, v in form.edges_where({'is_edge': True, 'is_external': False}):
         i = uv_i[(u, v)]
         key = (u, v)
-        form.set_edge_attribute(key, 'q', value=q[i])
+        form.edge_attribute(key, 'q', value=q[i])
         # print(q[i])
         a = form.vertex_coordinates(u)
         b = form.vertex_coordinates(v)
         lh = distance_point_point_xy(a, b)
         f_target = q[i]*lh
         # print(f_target)
-        form.set_edge_attribute(key, 'fmin', value=f_target)
-        form.set_edge_attribute(key, 'fmax', value=f_target)
-        # form.set_edge_attribute(key,'lmin',value=lh)
-        # form.set_edge_attribute(key,'lmax',value=lh)
+        form.edge_attribute(key, 'fmin', value=f_target)
+        form.edge_attribute(key, 'fmax', value=f_target)
+        # form.edge_attribute(key,'lmin',value=lh)
+        # form.edge_attribute(key,'lmax',value=lh)
 
     if plot:
         plot_form(form).show()
@@ -602,7 +509,7 @@ def reactions(form, plot=False):
     U = uvw[:, 0]
     V = uvw[:, 1]
     W = uvw[:, 2]
-    q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
 
     # Horizontal checks
 
@@ -614,9 +521,9 @@ def reactions(form, plot=False):
 
     for i in fixed:
         key = i_k[i]
-        form.set_vertex_attribute(key, 'rx', value=Rx[i])
-        form.set_vertex_attribute(key, 'ry', value=Ry[i])
-        form.set_vertex_attribute(key, 'rz', value=Rz[i])
+        form.vertex_attribute(key, 'rx', value=Rx[i])
+        form.vertex_attribute(key, 'ry', value=Ry[i])
+        form.vertex_attribute(key, 'rz', value=Rz[i])
         if plot:
             print('Reactions in key: {0} are:'.format(key))
             print(Rx[i], Ry[i], Rz[i])
@@ -624,7 +531,7 @@ def reactions(form, plot=False):
     for key in form.vertices_where({'rol_x': True}):
         i = k_i[key]
         eq_node[key] = round(Rx[i], 2)
-        form.set_vertex_attribute(key, 'rx', value=Rx[i])
+        form.vertex_attribute(key, 'rx', value=Rx[i])
         if plot:
             print('Reactions in Partial X-Key: {0} :'.format(key))
             print(Rx[i])
@@ -632,7 +539,7 @@ def reactions(form, plot=False):
     for key in form.vertices_where({'rol_y': True}):
         i = k_i[key]
         eq_node[key] = round(Ry[i], 2)
-        form.set_vertex_attribute(key, 'ry', value=Ry[i])
+        form.vertex_attribute(key, 'ry', value=Ry[i])
         if plot:
             print('Reactions in Partial Y-Key: {0} :'.format(key))
             print(Ry[i])

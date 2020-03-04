@@ -16,7 +16,7 @@ from compas_tno.algorithms import optimise_convex
 
 from compas.datastructures import mesh_quads_to_triangles
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 import math
 
@@ -74,9 +74,9 @@ if __name__ == "__main__":
     plot_form(form, show_q = False, fix_width=True).show()
 
     # for u,v in form.edges():
-    #     qi = form.get_edge_attribute((u,v),'q')
+    #     qi = form.edge_attribute((u,v),'q')
     #     if qi == 1.0 or qi == None:
-    #         form.set_edge_attribute((u,v),'q',value=0.0)
+    #         form.edge_attribute((u,v),'q',value=0.0)
 
     pxt = 0
     for key in form.vertices():
@@ -105,9 +105,9 @@ if __name__ == "__main__":
     reactions(form)
 
     for key in form.vertices_where({'is_fixed': True}):
-        rx = round(form.get_vertex_attribute(key, 'rx'),3)
-        ry = round(form.get_vertex_attribute(key, 'ry'),3)
-        zb = round(form.get_vertex_attribute(key,'z'),3)
+        rx = round(form.vertex_attribute(key, 'rx'),3)
+        ry = round(form.vertex_attribute(key, 'ry'),3)
+        zb = round(form.vertex_attribute(key,'z'),3)
         print('Reaction on Corner {0}: rx: {1:.3f}/ ry: {2:.3f}/ r: {3:.3f}'.format(key, rx, ry, math.sqrt(rx**2 + ry**2)))
         break
     qmax = round(max(qopt).item(),3)

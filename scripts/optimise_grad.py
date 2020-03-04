@@ -16,7 +16,7 @@ from compas_tno.diagrams.form import adapt_tna
 from compas_tno.diagrams.form import evaluate_a
 
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from copy import deepcopy
 from numpy import array

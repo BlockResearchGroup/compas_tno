@@ -88,12 +88,12 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
     ub = []
     for i in range(n):
         key = i_k[i]
-        if form.get_vertex_attribute(key, 'lb', None):
+        if form.vertex_attribute(key, 'lb', None):
             lb_ind.append(i)
-            lb.append(form.get_vertex_attribute(key, 'lb'))
-        if form.get_vertex_attribute(key, 'ub', None):
+            lb.append(form.vertex_attribute(key, 'lb'))
+        if form.vertex_attribute(key, 'ub', None):
             ub_ind.append(i)
-            ub.append(form.get_vertex_attribute(key, 'ub'))
+            ub.append(form.vertex_attribute(key, 'ub'))
 
     lb = array(lb)
     ub = array(ub)
@@ -184,7 +184,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
             print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
         for u, v in form.edges_where({'is_edge': True}):
-            form.set_edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
+            form.edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
 
         Edinv  = -csr_matrix(pinv(E[:, dep]))
         Ei     = E[:, ind]
@@ -200,7 +200,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
 
     lh     = normrow(C.dot(xy))**2
     p      = vstack([px[free_x], py[free_y]])
-    q      = array([form.get_edge_attribute((u,v), 'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q      = array([form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
 
     if any(p) == True:
         check_hor = check_horizontal(E,p)
@@ -249,7 +249,7 @@ def initialise_form(form, indset = None, printout = False, find_inds= True):
     for i in ind:
         u, v = i_uv[i]
         gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-        form.set_edge_attribute((u,v), 'is_ind', value = True)
+        form.edge_attribute((u,v), 'is_ind', value = True)
     form.attributes['indset'] = gkeys
 
     return form

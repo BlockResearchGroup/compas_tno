@@ -63,14 +63,14 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
 
     for i in rs.ObjectsByLayer(Pins_txt):
         gkey = geometric_key(rs.PointCoordinates(i))
-        form.set_vertex_attribute(gkey_key[gkey], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[gkey], 'is_fixed', True)
 
     # Rollers
 
     if rollers:
         for i in rs.ObjectsByLayer(rollers_txt):
             gkey = geometric_key(rs.PointCoordinates(i))
-            form.set_vertex_attributes(gkey_key[gkey], {'is_roller': True})
+            form.vertex_attributes(gkey_key[gkey], {'is_roller': True})
 
     # Loads
 
@@ -114,7 +114,7 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
                 except:
                     key = gkey_key[geometric_key(ep)]
                     b = sp - ep
-                form.set_vertex_attribute(key, name = 'b', value = [b[0], b[1]])
+                form.vertex_attribute(key, name = 'b', value = [b[0], b[1]])
                 print('Butress for key: {0}'.format(key))
                 print([b[0], b[1]])
                 print(form.vertex_coordinates(key))
@@ -145,8 +145,8 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
             point_ground = [point_target[0],point_target[1],0.0]
             gkey = geometric_key(point_ground)
             z_target = point_target[2]
-            loads.set_vertex_attribute(gkey_key[gkey], 'z', z_target)
-        
+            loads.vertex_attribute(gkey_key[gkey], 'z', z_target)
+
         pvt = 0
         for key in form.vertices():
                 pz = loads.vertex_area(key=key)
@@ -170,16 +170,16 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
             point_ground = [point_target[0],point_target[1],0.0]
             gkey = geometric_key(point_ground)
             z_target = point_target[2]
-            form.set_vertex_attribute(gkey_key[gkey], 'lb', z_target)
+            form.vertex_attribute(gkey_key[gkey], 'lb', z_target)
             lb_constraints += 1
-        
-        
+
+
         for i in rs.ObjectsByLayer(ub_layer):
             point_target = rs.PointCoordinates(i)
             point_ground = [point_target[0],point_target[1],0.0]
             gkey = geometric_key(point_ground)
             z_target = point_target[2]
-            form.set_vertex_attribute(gkey_key[gkey], 'ub', z_target)
+            form.vertex_attribute(gkey_key[gkey], 'ub', z_target)
             ub_constraints += 1
 
     if target == True:
@@ -189,7 +189,7 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
             point_ground = [point_target[0],point_target[1],0.0]
             gkey = geometric_key(point_ground)
             z_target = point_target[2]
-            form.set_vertex_attribute(gkey_key[gkey], 'target', z_target)
+            form.vertex_attribute(gkey_key[gkey], 'target', z_target)
             targets += 1
 
         print('Got {0} lb contraints {1} ub and {2} target constraints'.format(lb_constraints,ub_constraints,targets))
@@ -197,31 +197,31 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
     # Symmetry
 
     for i in rs.ObjectsByLayer(Symmetry_txt):
-        
+
         if rs.IsCurve(i):
             u = gkey_key[geometric_key(rs.CurveStartPoint(i))]
             v = gkey_key[geometric_key(rs.CurveEndPoint(i))]
-            form.set_edge_attribute((u, v), name='is_symmetry', value=True)
-        if writepz == False:        
+            form.edge_attribute((u, v), name='is_symmetry', value=True)
+        if writepz == False:
             if rs.IsPoint(i):
                 u = gkey_key[geometric_key(rs.PointCoordinates(i))]
                 name = rs.ObjectName(i)
-                form.set_vertex_attribute(u, name='pz', value=float(name))
+                form.vertex_attribute(u, name='pz', value=float(name))
         else:
             if rs.IsPoint(i):
                 u = gkey_key[geometric_key(rs.PointCoordinates(i))]
-                pz = form.get_vertex_attribute(u,'pz')
+                pz = form.vertex_attribute(u,'pz')
                 rs.ObjectName(i, str(pz))
 
     # Inds
 
     if ind:
         ind = []
-        for i in rs.ObjectsByLayer(inds_layer):  
+        for i in rs.ObjectsByLayer(inds_layer):
             if rs.IsCurve(i):
                 u = gkey_key[geometric_key(rs.CurveStartPoint(i))]
                 v = gkey_key[geometric_key(rs.CurveEndPoint(i))]
-                form.set_edge_attribute((u, v), name='is_ind', value=True)
+                form.edge_attribute((u, v), name='is_ind', value=True)
                 key = form.edge_midpoint(u, v)[:2] + [0.0]
                 print(key)
                 ind.append(geometric_key(key))
@@ -245,7 +245,7 @@ for i in ['B1','B2','B3','C1','C2','C3','C4','C5','D1','D2','D3','D4','D5']:
     pzt = 0
     for key in form.vertices():
         pz = form.vertex[key].get('pz', 0)
-        form.set_vertex_attribute(key, 'z', 0.0)
+        form.vertex_attribute(key, 'z', 0.0)
         pzt += pz
         if pz:
             rs.AddTextDot('{0:.2f}'.format(pz), form.vertex_coordinates(key))

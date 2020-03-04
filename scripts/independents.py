@@ -1,7 +1,7 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_force
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_force
 from compas_tno.algorithms import initialize_problem
 from compas_tno.diagrams.form import overview_forces
 from compas_tno.algorithms import update_tna
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     print(ind)
     # q[ind] = [ change as you want]
     # q[dep] = -Edinv.dot(p - Ei.dot(q[ind]))
-    # Assign the vector q to you mesh as for.set_edge_attribute(key, 'q', value = q[i])
+    # Assign the vector q to you mesh as for.edge_attribute(key, 'q', value = q[i])

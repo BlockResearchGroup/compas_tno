@@ -95,10 +95,10 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:
-        form.set_vertex_attribute(key, 'is_fixed', True)
+        form.vertex_attribute(key, 'is_fixed', True)
 
     for u,v in form.edges_on_boundary():
-        form.set_edge_attribute((u,v), 'is_edge', False)
+        form.edge_attribute((u,v), 'is_edge', False)
 
     return form
 
@@ -197,7 +197,7 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:
-        form.set_vertex_attribute(key, 'is_fixed', True)
+        form.vertex_attribute(key, 'is_fixed', True)
 
     return form
 
@@ -291,6 +291,6 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:
-        form.set_vertex_attribute(key, 'is_fixed', True)
+        form.vertex_attribute(key, 'is_fixed', True)
 
     return form

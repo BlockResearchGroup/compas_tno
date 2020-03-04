@@ -80,9 +80,9 @@ for j in [2]: # j = 1
 
         for uv in form.edges():
             u, v = uv
-            q = form.get_edge_attribute(uv, 'q')
+            q = form.edge_attribute(uv, 'q')
             l = form.edge_length(u,v)
-            if form.get_edge_attribute((u,v), 'is_symmetry') == False and form.get_edge_attribute((u,v), 'is_edge') == True and form.get_edge_attribute((u,v), 'is_external') == False :
+            if form.edge_attribute((u,v), 'is_symmetry') == False and form.edge_attribute((u,v), 'is_edge') == True and form.edge_attribute((u,v), 'is_external') == False :
                 lp += q * l * l
                 sp = form.vertex_coordinates(u)
                 sp[0] += dx
@@ -90,9 +90,9 @@ for j in [2]: # j = 1
                 ep = form.vertex_coordinates(v)
                 ep[0] += dx
                 ep[1] += dy
-                pz = form.get_vertex_attribute(u, 'pz')
-                # sp[2] = form.get_vertex_attribute(u, 'target')
-                # ep[2] = form.get_vertex_attribute(v, 'target')
+                pz = form.vertex_attribute(u, 'pz')
+                # sp[2] = form.vertex_attribute(u, 'target')
+                # ep[2] = form.vertex_attribute(v, 'target')
                 # sp[2] += t
                 # ep[2] += t
                 id = rs.AddLine(sp, ep)
@@ -108,14 +108,14 @@ for j in [2]: # j = 1
 
         # pzt=0
         # for key in form.vertices():
-        #     pz = form.get_vertex_attribute(key,'pz')
+        #     pz = form.vertex_attribute(key,'pz')
         #     pzt+= pz
         #     if form.vertex[key]['is_fixed'] is True:
         #         node = form.vertex_coordinates(key)
         #         node[2] += t
-        #         ry = form.get_vertex_attribute(key, 'ry')
-        #         rx = form.get_vertex_attribute(key, 'rx')
-        #         rz = form.get_vertex_attribute(key, 'rz', 0.0)
+        #         ry = form.vertex_attribute(key, 'ry')
+        #         rx = form.vertex_attribute(key, 'rx')
+        #         rz = form.vertex_attribute(key, 'rz', 0.0)
         #         norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
         #         print(rx,ry,rz)
         #         print(norm)

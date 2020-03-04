@@ -5,6 +5,12 @@ compas_tno.diagrams
 
 .. currentmodule:: compas_tno.diagrams
 
+.. autosummary::
+    :toctree: generated/
+    :nosignatures:
+
+    FormDiagram
+
 """
 from __future__ import absolute_import
 

@@ -16,7 +16,7 @@ from compas_tno.algorithms.equilibrium import reactions
 from compas_tno.algorithms import optimise_general
 from compas_tno.algorithms import optimise_convex
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas_tno.utilities import check_constraints
 
 from compas_tno.algorithms import z_update
@@ -81,14 +81,14 @@ if __name__ == "__main__":
         gkey_zb = {}
 
         for key in form_radial.vertices():
-            pz_radial = form_radial.get_vertex_attribute(key, 'pz')
+            pz_radial = form_radial.vertex_attribute(key, 'pz')
             gkey = geometric_key(form_radial.vertex_coordinates(key)[:2] + [0])
             gkey_pz[gkey] = pz_radial
-            if form_radial.get_vertex_attribute(key, 'is_fixed') == True:
-                gkey_zb[gkey] = form_radial.get_vertex_attribute(key, 'z')
+            if form_radial.vertex_attribute(key, 'is_fixed') == True:
+                gkey_zb[gkey] = form_radial.vertex_attribute(key, 'z')
 
         for u,v in form_radial.edges():
-            q_radial = form_radial.get_edge_attribute((u,v), 'q')
+            q_radial = form_radial.edge_attribute((u,v), 'q')
             gkey = geometric_key(form_radial.edge_midpoint(u,v)[:2] + [0])
             mid_q[gkey] = q_radial
 
@@ -96,20 +96,20 @@ if __name__ == "__main__":
             gkey = geometric_key(form.vertex_coordinates(key)[:2] + [0])
             try:
                 pz_radial = gkey_pz[gkey]
-                form.set_vertex_attribute(key, 'pz', pz_radial)
-                form.set_vertex_attribute(key, 'px', pz_radial*px)
+                form.vertex_attribute(key, 'pz', pz_radial)
+                form.vertex_attribute(key, 'px', pz_radial*px)
             except:
                 print(gkey)
-            if form.get_vertex_attribute(key, 'is_fixed') == True:
-                form.set_vertex_attribute(key, 'z', gkey_zb[gkey])
+            if form.vertex_attribute(key, 'is_fixed') == True:
+                form.vertex_attribute(key, 'z', gkey_zb[gkey])
 
         for u,v in form.edges():
             gkey = geometric_key(form.edge_midpoint(u,v)[:2] + [0])
             try:
                 q_radial = mid_q[gkey]
-                form.set_edge_attribute((u,v), 'q', q_radial)
+                form.edge_attribute((u,v), 'q', q_radial)
             except:
-                form.set_edge_attribute((u,v), 'q', 0.0)
+                form.edge_attribute((u,v), 'q', 0.0)
 
         file_initial = PATH + '_lp.json'
 
@@ -167,9 +167,9 @@ if __name__ == "__main__":
         reactions(form)
 
         for key in form.vertices_where({'is_fixed': True}):
-            rx = round(form.get_vertex_attribute(key, 'rx'), 3)
-            ry = round(form.get_vertex_attribute(key, 'ry'), 3)
-            zb = round(form.get_vertex_attribute(key, 'z'), 3)
+            rx = round(form.vertex_attribute(key, 'rx'), 3)
+            ry = round(form.vertex_attribute(key, 'ry'), 3)
+            zb = round(form.vertex_attribute(key, 'z'), 3)
             print('Reaction on Corner {0}: rx: {1:.3f}/ ry: {2:.3f}/ r: {3:.3f}'.format(key, rx, ry, math.sqrt(rx**2 + ry**2)))
             break
         qmax = round(max(qopt).item(), 3)

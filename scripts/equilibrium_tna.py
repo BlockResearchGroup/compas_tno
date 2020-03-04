@@ -18,7 +18,7 @@ from compas_tno.diagrams.form import adapt_tna
 from compas_tno.diagrams.form import remove_feet
 from compas_tno.diagrams.form import evaluate_a
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas.utilities import geometric_key
 
 from copy import deepcopy

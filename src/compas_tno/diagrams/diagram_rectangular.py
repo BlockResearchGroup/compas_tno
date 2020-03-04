@@ -1,6 +1,7 @@
 
 import math
 from compas.utilities import geometric_key
+from compas.geometry import mirror_points_line
 
 
 def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
@@ -90,14 +91,14 @@ def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
     gkey_key = form.gkey_key()
 
     if fix == 'corners':
-        form.set_vertex_attribute(gkey_key[geometric_key([x0, y0, 0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x0, y1, 0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x1, y0, 0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x1, y1, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x0, y0, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x0, y1, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x1, y0, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x1, y1, 0.0])], 'is_fixed', True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.set_vertex_attribute(key, 'is_fixed', True)
+            form.vertex_attribute(key, 'is_fixed', True)
 
     return form
 
@@ -122,8 +123,6 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
         FormDiagram.
 
     """
-
-    from compas.geometry.transformations.transformations import mirror_point_line
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -154,14 +153,11 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
             yb = y0 + dy * j * (i + 1) / nx
             lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
 
-            a_mirror = mirror_point_line([xa, ya, 0.0], line_hor)
-            b_mirror = mirror_point_line([xb, yb, 0.0], line_hor)
+            a_mirror, b_mirror = mirror_points_line([[xa, ya, 0.0], [xb, yb, 0.0]], line_hor)
             lines.append([a_mirror, b_mirror])
-            a_mirror = mirror_point_line(a_mirror, line_ver)
-            b_mirror = mirror_point_line(b_mirror, line_ver)
+            a_mirror, b_mirror = mirror_points_line([a_mirror, b_mirror], line_ver)
             lines.append([a_mirror, b_mirror])
-            a_mirror = mirror_point_line([xa, ya, 0.0], line_ver)
-            b_mirror = mirror_point_line([xb, yb, 0.0], line_ver)
+            a_mirror, b_mirror = mirror_points_line([[xa, ya, 0.0],[xb, yb, 0.0]], line_ver)
             lines.append([a_mirror, b_mirror])
 
             xa_ = x0 + dy * j * i / nx
@@ -170,14 +166,11 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
             yb_ = y0 + dx * (i + 1)
             lines.append([[xa_, ya_, 0.0], [xb_, yb_, 0.0]])
 
-            a_mirror = mirror_point_line([xa_, ya_, 0.0], line_hor)
-            b_mirror = mirror_point_line([xb_, yb_, 0.0], line_hor)
+            a_mirror, b_mirror = mirror_points_line([[xa_, ya_, 0.0], [xb_, yb_, 0.0]], line_hor)
             lines.append([a_mirror, b_mirror])
-            a_mirror = mirror_point_line(a_mirror, line_ver)
-            b_mirror = mirror_point_line(b_mirror, line_ver)
+            a_mirror, b_mirror = mirror_points_line([a_mirror, b_mirror], line_ver)
             lines.append([a_mirror, b_mirror])
-            a_mirror = mirror_point_line([xa_, ya_, 0.0], line_ver)
-            b_mirror = mirror_point_line([xb_, yb_, 0.0], line_ver)
+            a_mirror, b_mirror = mirror_points_line([[xa_, ya_, 0.0], [xb_, yb_, 0.0]], line_ver)
             lines.append([a_mirror, b_mirror])
 
             if j < ny:
@@ -188,14 +181,11 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
                 yd = y0 + dy * (j + 1) * (i + 1) / nx
                 lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
 
-                c_mirror = mirror_point_line([xc, yc, 0.0], line_hor)
-                d_mirror = mirror_point_line([xd, yd, 0.0], line_hor)
+                c_mirror, d_mirror = mirror_points_line([[xc, yc, 0.0], [xd, yd, 0.0]], line_hor)
                 lines.append([c_mirror, d_mirror])
-                c_mirror = mirror_point_line(c_mirror, line_ver)
-                d_mirror = mirror_point_line(d_mirror, line_ver)
+                c_mirror, d_mirror = mirror_points_line([c_mirror, d_mirror], line_ver)
                 lines.append([c_mirror, d_mirror])
-                c_mirror = mirror_point_line([xc, yc, 0.0], line_ver)
-                d_mirror = mirror_point_line([xd, yd, 0.0], line_ver)
+                c_mirror, d_mirror = mirror_points_line([[xc, yc, 0.0], [xd, yd, 0.0]], line_ver)
                 lines.append([c_mirror, d_mirror])
 
                 xc_ = x0 + dy * j * (i + 1) / nx
@@ -204,14 +194,11 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
                 yd_ = y0 + dx * (i + 1)
                 lines.append([[xc_, yc_, 0.0], [xd_, yd_, 0.0]])
 
-                c_mirror = mirror_point_line([xc_, yc_, 0.0], line_hor)
-                d_mirror = mirror_point_line([xd_, yd_, 0.0], line_hor)
+                c_mirror, d_mirror = mirror_points_line([[xc_, yc_, 0.0], [xd_, yd_, 0.0]], line_hor)
                 lines.append([c_mirror, d_mirror])
-                c_mirror = mirror_point_line(c_mirror, line_ver)
-                d_mirror = mirror_point_line(d_mirror, line_ver)
+                c_mirror, d_mirror = mirror_points_line([c_mirror, d_mirror], line_ver)
                 lines.append([c_mirror, d_mirror])
-                c_mirror = mirror_point_line([xc_, yc_, 0.0], line_ver)
-                d_mirror = mirror_point_line([xd_, yd_, 0.0], line_ver)
+                c_mirror, d_mirror = mirror_points_line([[xc_, yc_, 0.0], [xd_, yd_, 0.0]], line_ver)
                 lines.append([c_mirror, d_mirror])
 
     form = cls.from_lines(lines)
@@ -219,13 +206,13 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
     gkey_key = form.gkey_key()
 
     if fix == 'corners':
-        form.set_vertex_attribute(gkey_key[geometric_key([x0, y0, 0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x0, y1, 0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x1, y0, 0.0])], 'is_fixed', True)
-        form.set_vertex_attribute(gkey_key[geometric_key([x1, y1, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x0, y0, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x0, y1, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x1, y0, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x1, y1, 0.0])], 'is_fixed', True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.set_vertex_attribute(key, 'is_fixed', True)
+            form.vertex_attribute(key, 'is_fixed', True)
 
     return form

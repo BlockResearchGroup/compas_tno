@@ -41,7 +41,7 @@ def create_arch(FormDiag, D=2.00, x0=0.0, total_nodes=100):
     form = FormDiag.from_lines(lines, delete_boundary_face=False)
     gkey_key = form.gkey_key(precision=6)
 
-    form.set_vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
-    form.set_vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
 
     return form

@@ -17,10 +17,10 @@ from compas_tno.utilities.symmetry import replicate
 from compas_viewers.meshviewer import MeshViewer
 
 from compas_tno.diagrams.form import _form
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_form_xz
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_form_xz
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 import compas_pattern
 
 from copy import deepcopy
@@ -55,18 +55,18 @@ if __name__ == "__main__":
         print('\n\n\n-----------------------PX ',px,'\n\n\n')
         for key in form.vertices():
             if key == 9:
-                lb.append(form.get_vertex_attribute(key,'lb'))
-                ub.append(form.get_vertex_attribute(key,'ub'))
+                lb.append(form.vertex_attribute(key,'lb'))
+                ub.append(form.vertex_attribute(key,'ub'))
                 x, y, z = form.vertex_coordinates(key)
-                form.set_vertex_attribute(key, 'px', value = px)
-            # if form.get_vertex_attribute(key, 'b') is not None:
-                # form.set_vertex_attribute(key, 'b', value = [0.10, 0.0] )
-                # print(form.get_vertex_attribute(key, 'b'))
+                form.vertex_attribute(key, 'px', value = px)
+            # if form.vertex_attribute(key, 'b') is not None:
+                # form.vertex_attribute(key, 'b', value = [0.10, 0.0] )
+                # print(form.vertex_attribute(key, 'b'))
             # print(x)
             # except:
             #     pass
             # xs.append(x)
-        #     print('LB: {0} - UB: {1}'.format(form.get_vertex_attribute(key,'lb'),form.get_vertex_attribute(key,'ub')))
+        #     print('LB: {0} - UB: {1}'.format(form.vertex_attribute(key,'lb'),form.vertex_attribute(key,'ub')))
         # print(len(ub))
         # print(len(lb))
         # print(max(xs))

@@ -4,7 +4,7 @@ from compas_tno.diagrams.form import overview_forces
 
 from compas_tno.algorithms.equilibrium import reactions
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 import math
 
@@ -58,14 +58,14 @@ if __name__ == "__main__":
             form = FormDiagram.from_json(file_open)
             pzt = 0.0
             for key in form.vertices():
-                pzt +=form.get_vertex_attribute(key, 'pz')
+                pzt +=form.vertex_attribute(key, 'pz')
             for key in form.vertices_where({'is_fixed': True}):
-                rx = round(form.get_vertex_attribute(key, 'rx'),3)
-                ry = round(form.get_vertex_attribute(key, 'ry'),3)
-                zb = round(form.get_vertex_attribute(key,'z'),3)
+                rx = round(form.vertex_attribute(key, 'rx'),3)
+                ry = round(form.vertex_attribute(key, 'ry'),3)
+                zb = round(form.vertex_attribute(key,'z'),3)
                 break
             exitflag = form.attributes['exitflag']
-            q = [form.get_edge_attribute(key, 'q') for key in form.edges()]
+            q = [form.edge_attribute(key, 'q') for key in form.edges()]
             fopt = round(form.attributes['fopt'],3)
             qmax = round(max(q),3)
             f_adim = round(form.attributes['fopt']/pzt,4)
@@ -83,14 +83,14 @@ if __name__ == "__main__":
         form = FormDiagram.from_json(file_open)
         pzt = 0.0
         for key in form.vertices():
-            pzt +=form.get_vertex_attribute(key, 'pz')
+            pzt +=form.vertex_attribute(key, 'pz')
         for key in form.vertices_where({'is_fixed': True}):
-            rx = round(form.get_vertex_attribute(key, 'rx'),3)
-            ry = round(form.get_vertex_attribute(key, 'ry'),3)
-            zb = round(form.get_vertex_attribute(key,'z'),3)
+            rx = round(form.vertex_attribute(key, 'rx'),3)
+            ry = round(form.vertex_attribute(key, 'ry'),3)
+            zb = round(form.vertex_attribute(key,'z'),3)
             break
         exitflag = form.attributes['exitflag']
-        q = [form.get_edge_attribute(key, 'q') for key in form.edges()]
+        q = [form.edge_attribute(key, 'q') for key in form.edges()]
         fopt = round(form.attributes['fopt'],3)
         qmax = round(max(q),3)
         f_adim = round(form.attributes['fopt']/pzt,4)

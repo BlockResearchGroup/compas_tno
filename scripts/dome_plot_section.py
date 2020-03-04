@@ -1,11 +1,11 @@
 from compas_tno.diagrams.form import create_dome_flower
 from compas_tno.diagrams.form import create_dome_form
 from compas_tno.diagrams.form import create_dome_form_spaced
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas_tno.algorithms.problems import initialise_problem
 from compas_tno.diagrams.form import delete_boundary_edges
 from compas_tna.diagrams import FormDiagram
-from compas_tno.plotters.plotters import plot_form_xz
+from compas_tno.plotters import plot_form_xz
 from compas_plotters import MeshPlotter
 
 # xc = 5.0

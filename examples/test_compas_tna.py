@@ -19,7 +19,7 @@ corners = list(form.vertices_where({'vertex_degree': 2}))
 print(corners)
 
 for i in corners:
-    form.set_vertex_attribute(i, 'is_anchor', True)
+    form.vertex_attribute(i, 'is_anchor', True)
 
 form.plot()
 

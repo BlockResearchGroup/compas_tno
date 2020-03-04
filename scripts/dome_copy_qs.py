@@ -14,7 +14,7 @@ from compas_tno.algorithms.equilibrium import reactions
 from compas_tno.algorithms import optimise_general
 from compas_tno.algorithms import optimise_convex
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from compas_tno.utilities import check_constraints
 
@@ -72,22 +72,22 @@ if __name__ == "__main__":
 
     for u, v in old_form.edges():
         gkey = geometric_key(old_form.edge_midpoint(u, v)[:2] + [0.0])
-        old_qs[gkey] = old_form.get_edge_attribute((u, v), 'q')
+        old_qs[gkey] = old_form.edge_attribute((u, v), 'q')
     for key in old_form.vertices_where({'is_fixed': True}):
         gkey = geometric_key(old_form.vertex_coordinates(key)[:2] + [0.0])
-        old_zbs[gkey] = old_form.get_vertex_attribute(key, 'z')
+        old_zbs[gkey] = old_form.vertex_attribute(key, 'z')
 
     for u, v in form.edges():
         gkey = geometric_key(form.edge_midpoint(u,v))
         try:
             old_q = old_qs[gkey]
-            form.set_edge_attribute((u,v), 'q', old_q)
+            form.edge_attribute((u,v), 'q', old_q)
         except:
-            form.set_edge_attribute((u,v), 'q', 0.0)
+            form.edge_attribute((u,v), 'q', 0.0)
     for key in form.vertices_where({'is_fixed': True}):
         gkey = geometric_key(form.vertex_coordinates(key))
         zb = old_zbs[gkey]
-        form.set_vertex_attribute(key, 'z', zb)
+        form.vertex_attribute(key, 'z', zb)
 
     print(len(old_qs))
     print(old_form.number_of_edges())

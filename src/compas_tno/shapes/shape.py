@@ -147,7 +147,7 @@ class Shape(object):
     def get_ub(self, x, y):
         """Get the height of the extrados in the point."""
 
-        vertices = array(self.extrados.get_vertices_attributes('xyz'))
+        vertices = array(self.extrados.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
 
         return z
@@ -155,7 +155,7 @@ class Shape(object):
     def get_lb(self, x, y):
         """Get the height of the intrados in the point."""
 
-        vertices = array(self.intrados.get_vertices_attributes('xyz'))
+        vertices = array(self.intrados.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
 
         return z
@@ -163,7 +163,7 @@ class Shape(object):
     def get_middle(self, x, y):
         """Get the height of the target/middle surface in the point."""
 
-        vertices = array(self.middle.get_vertices_attributes('xyz'))
+        vertices = array(self.middle.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
 
         return z
@@ -171,7 +171,7 @@ class Shape(object):
     def get_target(self, x, y):
         """Get the height of the target/middle surface in the point."""
 
-        z = get_middle(x,y)
+        z = self.get_middle(x,y)
 
         return z
 

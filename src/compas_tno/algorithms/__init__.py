@@ -15,8 +15,6 @@ compas_tno.algorithms
     q_from_qid
     z_update
     z_from_form
-    horizontal_check
-    update_tna
     update_form
     paralelise_form
     reactions
@@ -24,16 +22,16 @@ compas_tno.algorithms
 """
 from __future__ import absolute_import
 
-from .equilibrium import *
-from .grad_based import *
-from .ind_based import *
-from .general_solver import *
-from .scale import *
-from .airy import *
-from .cvx_thrust import *
-from .problems import *
 from .constraints import *
-from .objectives import *
+from .derivatives import *
+from .equilibrium import *
 from .independents import *
+from .objectives import *
+from .problems import *
+from .setup import *
+from .solver_MATLAB import *
+# from .solver_MMA import *
+# from .solver_pyOpt import *
+from .solver_scipy import *
 
 __all__ = [name for name in dir() if not name.startswith('_')]

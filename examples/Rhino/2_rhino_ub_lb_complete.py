@@ -47,7 +47,7 @@ artist = NetworkArtist(form, layer=thrust_layer)
 artist.clear_layer()
 lp = 0.0
 for u, v in form.edges_where({'is_edge': True}):
-    q = form.get_edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u,v), 'q')
     l = form.edge_length(u,v)
     fs.append(q*l)
     sp = form.vertex_coordinates(u)
@@ -67,7 +67,7 @@ tol_crack = 0.001
 for key in form.vertices():
     x, y, z = form.vertex_coordinates(key)
     try:
-        lb = form.get_vertex_attribute(key, 'lb')
+        lb = form.vertex_attribute(key, 'lb')
         if abs(z - lb) < tol_crack:
             id = rs.AddPoint([x,y,z])
             rs.ObjectColor(id, color = (0,0,255))
@@ -76,7 +76,7 @@ for key in form.vertices():
     except:
         pass
     try:
-        ub = form.get_vertex_attribute(key, 'ub')
+        ub = form.vertex_attribute(key, 'ub')
         if abs(z - ub) < tol_crack:
             id = rs.AddPoint([x,y,z])
             rs.ObjectColor(id, color = (0,128,0))
@@ -97,11 +97,11 @@ rs.CurrentLayer(target_layer)
 artist = NetworkArtist(form, layer=target_layer)
 artist.clear_layer()
 for u, v in form.edges():
-    q = form.get_edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u,v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
-    sp[2] = form.get_vertex_attribute(u, 'target')
-    ep[2] = form.get_vertex_attribute(v, 'target')
+    sp[2] = form.vertex_attribute(u, 'target')
+    ep[2] = form.vertex_attribute(v, 'target')
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
 
@@ -111,11 +111,11 @@ rs.CurrentLayer(ub_layer)
 artist = NetworkArtist(form, layer=ub_layer)
 artist.clear_layer()
 for u, v in form.edges():
-    q = form.get_edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u,v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
-    sp[2] = form.get_vertex_attribute(u, 'ub')
-    ep[2] = form.get_vertex_attribute(v, 'ub')
+    sp[2] = form.vertex_attribute(u, 'ub')
+    ep[2] = form.vertex_attribute(v, 'ub')
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
 
@@ -125,11 +125,11 @@ rs.CurrentLayer(lb_layer)
 artist = NetworkArtist(form, layer=lb_layer)
 artist.clear_layer()
 for u, v in form.edges():
-    q = form.get_edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u,v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
-    sp[2] = form.get_vertex_attribute(u, 'lb')
-    ep[2] = form.get_vertex_attribute(v, 'lb')
+    sp[2] = form.vertex_attribute(u, 'lb')
+    ep[2] = form.vertex_attribute(v, 'lb')
     if sp[2] >= -1e-3 and ep[2] >= -1e-3:
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(q))
@@ -143,9 +143,9 @@ artist = NetworkArtist(form, layer=reac_layer)
 artist.clear_layer()
 for key in form.vertices_where({'is_fixed': True}):
     node = form.vertex_coordinates(key)
-    ry = form.get_vertex_attribute(key, 'ry')
-    rx = form.get_vertex_attribute(key, 'rx')
-    rz = form.get_vertex_attribute(key, 'rz')
+    ry = form.vertex_attribute(key, 'ry')
+    rx = form.vertex_attribute(key, 'rx')
+    rz = form.vertex_attribute(key, 'rz')
     norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
     if rz < 0.0 and norm > 0.0:
         sp = node
@@ -163,7 +163,7 @@ for key in form.vertices_where({'is_fixed': True}):
 
 for key in form.vertices_where({'rol_x': True}):
     try:
-        rx = form.get_vertex_attribute(key, 'rx')
+        rx = form.vertex_attribute(key, 'rx')
         sp = form.vertex_coordinates(key)
         ep = [sp[0] + rx, sp[1], sp[2]]
         id = rs.AddLine(sp, ep)
@@ -174,7 +174,7 @@ for key in form.vertices_where({'rol_x': True}):
 
 for key in form.vertices_where({'rol_y': True}):
     try:
-        ry = form.get_vertex_attribute(key, 'ry')
+        ry = form.vertex_attribute(key, 'ry')
         sp = form.vertex_coordinates(key)
         ep = [sp[0], sp[1] + ry, sp[2]]
         id = rs.AddLine(sp, ep)
@@ -192,7 +192,7 @@ artist.clear_layer()
 rs.CurrentLayer(pipes_layer)
 for u, v in form.edges_where({'is_edge': True}):
     l = form.edge_length(u, v)
-    q = form.get_edge_attribute((u, v), 'q')
+    q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     if q > 0.001:
@@ -210,7 +210,7 @@ artist.clear_layer()
 rs.CurrentLayer(pipes_color)
 for u, v in form.edges_where({'is_edge': True}):
     l = form.edge_length(u, v)
-    q = form.get_edge_attribute((u, v), 'q')
+    q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     if q > 0.001:

@@ -9,8 +9,8 @@ from numpy import transpose
 from compas.geometry import is_intersection_segment_segment_xy
 from compas.geometry import intersection_line_segment_xy
 from compas.geometry import distance_point_point_xy
-from compas_tno.algorithms import zlq_from_qid
-from compas_tno.algorithms import q_from_qid
+from compas_tno.algorithms.equilibrium import zlq_from_qid
+from compas_tno.algorithms.equilibrium import q_from_qid
 from scipy.sparse import diags
 
 

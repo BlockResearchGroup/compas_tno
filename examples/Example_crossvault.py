@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.viewers.shapes import view_shapes
 from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 
 # ----------------------------------------------------------------------
@@ -20,7 +20,7 @@ type_formdiagram = 'cross_fd'
 
 data_shape = {
     'type': type_structure,
-    'thk': 1.0,
+    'thk': 0.5,
     'discretisation': [10, 10],
     'xy_span': [[0.0,10.0],[0.0,10.0]],
     't' : 0.0
@@ -43,11 +43,10 @@ data_diagram = {
 }
 
 form = FormDiagram.from_library(data_diagram)
-form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/reformulation/test.json')
 form.overview_forces()
 print('Form Diagram Created!')
 print(form)
-# plot_form(form, show_q=False, fix_width=True).show()
+plot_form(form, show_q=False, fix_width=True).show()
 
 # --------------------- Create Convex Optimiser ---------------------
 

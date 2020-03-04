@@ -1,6 +1,6 @@
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
-from compas.utilities import geometric_key    
+from compas.utilities import geometric_key
 from compas.utilities import reverse_geometric_key
 
 from compas.geometry.transformations.transformations import mirror_point_line
@@ -22,7 +22,7 @@ from copy import deepcopy
 
 import math
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -46,12 +46,12 @@ def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
     for key in form.vertices():
         x, _, _ = form.vertex_coordinates(key)
         if x > x0 - tol and x < x1 + tol:
-            pz0 = form.get_vertex_attribute(key, 'pz')
+            pz0 = form.vertex_attribute(key, 'pz')
             if x > x1 - tol:
-                form.set_vertex_attribute(key, 'pz', value = ((magnitude-1)/2 +1) * pz0)
+                form.vertex_attribute(key, 'pz', value = ((magnitude-1)/2 +1) * pz0)
             else:
-                form.set_vertex_attribute(key, 'pz', value = magnitude * pz0)
-    
+                form.vertex_attribute(key, 'pz', value = magnitude * pz0)
+
     return form
 
 def fill_load(form, t = 0.5, ro = 1.0, scale = 100):
@@ -63,7 +63,7 @@ def fill_load(form, t = 0.5, ro = 1.0, scale = 100):
 
     form0 = deepcopy(form)
     for key in form0.vertices():
-        form0.set_vertex_attribute(key, 'z', value = 0.0)
+        form0.vertex_attribute(key, 'z', value = 0.0)
     z0 = [form0.vertex_coordinates(key)[2] for key in form0.vertices()]
 
     for key in form.vertices():
@@ -71,7 +71,7 @@ def fill_load(form, t = 0.5, ro = 1.0, scale = 100):
         ai = form0.vertex_area(key=key)
         hi = zmax - zi
         pzi = (hi + t) + ro * ai
-        form.set_vertex_attribute(key, 'pz', value = pzi)
+        form.vertex_attribute(key, 'pz', value = pzi)
         pzt += pzi
 
     print('Total Load (filling) applied equals: {0:.2f}'.format(pzt))
@@ -111,9 +111,9 @@ def set_cross_vault_loads(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = N
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
-        form.set_vertex_attribute(key,'target',value=z)
+        form.vertex_attribute(key,'target',value=z)
         if set_heights:
-            form.set_vertex_attribute(key,'z',value=round(z,2))
+            form.vertex_attribute(key,'z',value=round(z,2))
 
     return form
 
@@ -152,9 +152,9 @@ def set_pavillion_vault_loads(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
-        form.set_vertex_attribute(key,'target',value=z)
+        form.vertex_attribute(key,'target',value=z)
         if set_heights:
-            form.set_vertex_attribute(key,'z',value=round(z,2))
+            form.vertex_attribute(key,'z',value=round(z,2))
 
     return form
 
@@ -182,7 +182,7 @@ def set_oct_vault_loads(form, xy_span = [[0.0,10.0],[0.0,10.0]], thickness = Non
         else:
             print('Vertex {0} did not belong to any Q. (x,y) = ({1},{2})'.format(key,xi,yi))
             z = 0.0
-        form.set_vertex_attribute(key,'target',value=z)
+        form.vertex_attribute(key,'target',value=z)
 
     return form
 
@@ -198,17 +198,17 @@ def set_dome_loads(form, center = [0.0,0.0], radius = 10.0, thickness = None, to
         z2 = + radius**2 - (xi - x0)**2 - (yi - y0)**2
         if -0.01 <= z2 <= 0.0:
             z2 = 0.0
-        try: 
+        try:
             z = math.sqrt(z2)
         except:
             print(xi,yi)
             z=0
-        loads.set_vertex_attribute(key,'z',value=z)
-    
+        loads.vertex_attribute(key,'z',value=z)
+
     pzt = 0.0
     for key in form.vertices():
         pz = loads.vertex_area(key)
-        form.set_vertex_attribute(key,'pz',value=pz)
+        form.vertex_attribute(key,'pz',value=pz)
         pzt += pz
 
     print('Total_Load: {0:.2f}'.format(pzt))

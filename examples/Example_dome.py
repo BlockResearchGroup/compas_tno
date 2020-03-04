@@ -2,9 +2,8 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.viewers.shapes import view_shapes
 from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
-from compas_tno.algorithms import optimise_convex
 
 # ----------------------------------------------------------------------
 # -----------EXAMPLE OF MIN and MAX THRUST FOR DOME --------------------
@@ -72,7 +71,7 @@ analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()
 analysis.set_up_optimiser() # Find independent edges
 analysis.run()
-# plot_form(form, show_q=False).show()
+plot_form(form, show_q=False).show()
 
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_adress)

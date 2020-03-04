@@ -39,7 +39,7 @@ from compas_tno.diagrams.form import delete_boundary_edges
 from compas_tno.diagrams.form import adapt_tna
 from compas_tno.diagrams.form import remove_feet
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas_viewers.meshviewer import MeshViewer
 from compas_tno.algorithms import z_from_form
 from compas_tno.algorithms import z_update
@@ -95,8 +95,8 @@ if __name__ == "__main__":
             # viewer.show()
 
             # for u,v in form.edges():
-            #     # tgt = form.get_vertex_attribute(key,'target')
-            #     form.set_edge_attribute((u,v), 'q', value=1.0)
+            #     # tgt = form.vertex_attribute(key,'target')
+            #     form.edge_attribute((u,v), 'q', value=1.0)
             # plot_form(form, show_q=False, simple=True, max_width=3.0).show()
 
             # overview_forces(form)
@@ -106,7 +106,7 @@ if __name__ == "__main__":
             # viewer.show()
 
             # for u,v in form.edges():
-            #     form.set_edge_attribute((u,v), 'q', value = 1.0)
+            #     form.edge_attribute((u,v), 'q', value = 1.0)
 
             # form = create_sym(form, keep_q= True)
             # form = delete_boundary_edges(form)

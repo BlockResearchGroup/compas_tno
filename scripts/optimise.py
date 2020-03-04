@@ -20,7 +20,7 @@ from compas_tno.diagrams.form import adapt_tna
 from compas_tno.diagrams.form import adapt_objective
 from compas_tno.diagrams.form import remove_feet
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from compas_viewers.meshviewer import MeshViewer
 
@@ -99,7 +99,7 @@ if __name__ == "__main__":
             print('Shuffle the form')
             # tmax = 10
         if k > 0 and k % 3 is not 0:
-            q = [[form.get_edge_attribute((u,v), 'q')] for u, v in form.edges_where({'is_ind' : True})]
+            q = [[form.edge_attribute((u,v), 'q')] for u, v in form.edges_where({'is_ind' : True})]
             qi_max  = max(array(q))
             if qi_max > 0.95 * qmax:
                 qmax = qmax * 1.25

@@ -14,9 +14,9 @@ from compas_tno.diagrams.form import oveview_forces
 from compas_tno.utilities.symmetry import replicate
 
 from compas_tno.diagrams.form import _form
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 # from compas_viewers.meshviewer import MeshViewer
 from compas_tno.viewers.meshviewer import MeshViewer
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
     # q0 = []
     # for i in ind:
     #     key = i_uv[i]
-    #     q0.append(form.get_edge_attribute(key, 'q'))
+    #     q0.append(form.edge_attribute(key, 'q'))
 
     # print(q0)
 

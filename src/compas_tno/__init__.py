@@ -10,16 +10,21 @@ compas_tno
     :maxdepth: 1
 
     compas_tno.algorithms
+    compas_tno.analysis
+    compas_tno.blender
     compas_tno.diagrams
+    compas_tno.optimisers
+    compas_tno.plottters
+    compas_tno.rhino
+    compas_tno.shapes
     compas_tno.utilities
-
+    compas_tno.viewers
 
 """
 
 from __future__ import print_function
 
 import os
-
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Block Research Group - ETH Zurich'

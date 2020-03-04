@@ -6,7 +6,7 @@ from numpy import hstack
 from numpy import zeros
 from numpy import array
 
-from compas_tno.algorithms import zlq_from_qid
+from compas_tno.algorithms.equilibrium import zlq_from_qid
 from compas.numerical import normrow
 from compas.geometry import is_intersection_segment_segment_xy
 from compas.geometry import intersection_line_segment_xy

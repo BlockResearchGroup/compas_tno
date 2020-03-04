@@ -21,7 +21,7 @@ import compas
 
 from compas.datastructures import Network
 from compas_viewers.meshviewer import MeshViewer
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 from compas_tna.diagrams import FormDiagram
 
 from compas.numerical import fd_numpy

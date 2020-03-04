@@ -27,8 +27,8 @@ from compas_tno.diagrams.form import evaluate_a
 from compas.geometry import Plane
 
 
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_dual
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_dual
 
 # from scipy import array
 # from scipy import tensordot
@@ -78,7 +78,7 @@ def view_form(form, plot_z = None):
     if plot_z is not None:
         for key in form.vertices():
             zi = float(plot_z[k_i[key]])
-            form.set_vertex_attribute(key, 'z', zi)
+            form.vertex_attribute(key, 'z', zi)
 
     viewer = MeshViewer()
     viewer.mesh = form
@@ -89,7 +89,7 @@ def view_form(form, plot_z = None):
 def update_heights(form, f):
 
     for key in form.vertices():
-        form.set_vertex_attribute(key, 'z', value=float(f[k_i[key]]))
+        form.vertex_attribute(key, 'z', value=float(f[k_i[key]]))
 
 # ==============================================================================
 # Main
@@ -113,10 +113,10 @@ if __name__ == "__main__":
 
     # mesh_quads_to_triangles(form)
     for u,v in form.edges():
-        qi = form.get_edge_attribute((u,v),'q')
+        qi = form.edge_attribute((u,v),'q')
         # if qi == 1.0 or qi == None:
-        #     form.set_edge_attribute((u,v),'q',value=0.0)
-        Rm_.append(form.get_edge_attribute((u,v),'q'))
+        #     form.edge_attribute((u,v),'q',value=0.0)
+        Rm_.append(form.edge_attribute((u,v),'q'))
 
     plot_form(form, fix_width=True, max_width=2.0, show_q=True).show()
     print('Form Has {0} edges and {1} nodes'.format(form.number_of_edges(),form.number_of_vertices()))
@@ -150,14 +150,14 @@ if __name__ == "__main__":
         # zi = dome(xi,yi,10.1)
         phii = zi
         # zi = surf.evaluate_single(((xi+5)/10,(yi+5)/10))[2]
-        q.append(form.get_vertex_attribute(key,'pz'))
+        q.append(form.vertex_attribute(key,'pz'))
         if key in N_bound:
             nodes_bound.append(k_i[key])
         # q.append(0.0)
-        # form.set_vertex_attribute(key, 'z', zi)
-        # form.set_vertex_attribute(key, 'phi', phii)
+        # form.vertex_attribute(key, 'z', zi)
+        # form.vertex_attribute(key, 'phi', phii)
         # phi.append(phii)
-        zs.append(form.get_vertex_attribute(key,'z'))
+        zs.append(form.vertex_attribute(key,'z'))
 
     # view_form(form)
     print('zs: {0:.3f} : {1:.3f}'.format(float(min(zs)), float(max(zs))))
@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
     form.update_default_edge_attributes({'Rm' : 0.0}) # Change to RM attribute
     for u,v in form.edges():
-        form.set_edge_attribute((u,v), 'Rm', value= float(Rm[uv_i[(u,v)]]))
+        form.edge_attribute((u,v), 'Rm', value= float(Rm[uv_i[(u,v)]]))
 
     plot_form(form, thick='Rm', show_q= False, heights=True, radius=0.3).show()
 
