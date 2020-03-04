@@ -30,7 +30,7 @@ from compas.geometry import is_ccw_xy
 from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 
-from compas_tno.plotters.plotters import plot_form
+from compas_tno.plotters import plot_form
 
 from copy import deepcopy
 from numpy import array
@@ -350,11 +350,11 @@ def A_heights(form):
 
     for key in form.vertices():
         ngb = form.vertex_neighbors(key, ordered=True)
-        zi = form.get_vertex_attribute(key, 'z')
+        zi = form.vertex_attribute(key, 'z')
         i_vertex = k_i[key]
         for m in ngb:
             if m not in form.edges_on_boundary():
-                zm = form.get_vertex_attribute(m, 'z')
+                zm = form.vertex_attribute(m, 'z')
                 try:
                     i_edge = uv_i[key, m]
                     h_ij = form.edge_length(key, m)
@@ -400,7 +400,7 @@ def hessian(form):
     # Method per Node
 
     for key in form.vertices():
-        area = form.get_vertex_attribute(key, 'pz')
+        area = form.vertex_attribute(key, 'pz')
         neighbors = form.vertex_neighborhood(key)
         # jump = Array([[0,0],[0,0]])
         u = key
@@ -412,24 +412,24 @@ def hessian(form):
             # print(Hi) # Check if it should be planar
             df = form.vertex_coordinates(v)[2] - form.vertex_coordinates(u)[2]
             jump += df * Hi
-        form.set_vertex_attribute(key, 'jump', jump)
-        form.set_vertex_attribute(key, 'hessian', jump/area)
+        form.vertex_attribute(key, 'jump', jump)
+        form.vertex_attribute(key, 'hessian', jump/area)
         print(jump/area)
 
     # Method per edge connected to the node
 
     for key in form.vertices():
-        area = form.get_vertex_attribute(key, 'pz')
+        area = form.vertex_attribute(key, 'pz')
         neighbors = form.vertex_neighborhood(key)
         hess = Array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         u = key
         for v in neighbors:
             try:
-                dfHi = form.get_edge_attribute((u, v), 'jump')
+                dfHi = form.edge_attribute((u, v), 'jump')
             except:
-                dfHi = form.get_edge_attribute((v, u), 'jump')
+                dfHi = form.edge_attribute((v, u), 'jump')
             hess += dfHi
-        form.set_vertex_attribute(key, 'hessian', hess)
+        form.vertex_attribute(key, 'hessian', hess)
         print(hess)
 
     return

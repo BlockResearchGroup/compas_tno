@@ -1,0 +1,369 @@
+from compas_plotters import MeshPlotter
+from numpy import array
+from compas_tna.diagrams import FormDiagram
+from compas.utilities import geometric_key
+from math import sqrt
+
+__all__ = [
+    'plot_form',
+    'plot_form_xz',
+]
+
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None):
+    """ Extended plotting of a FormDiagram
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    max_width : bool
+        Maximum width of the plot.
+    max_width : float
+        Maximum edge width.
+    simple : bool
+        Simple red and blue colour plotting.
+    show_q : bool
+        Show the force densities on the edges.
+    thick : str
+        Attribute that the thickness of the form should be related to.
+    heights : bool
+        Plot the heights of the nodes.
+    show_edgeuv : bool
+        Show u,v of the edges.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    uv_i = form.uv_index()
+    q = [form.edge_attribute((u,v), thick) for u, v in form.edges_where({'is_edge': True})]
+    qmax = max(abs(array(q)))
+    lines = []
+    i = 0
+
+    for u, v in form.edges_where({'is_edge': True}):
+        qi = form.edge_attribute((u, v), thick)
+        l = form.edge_length(u, v)
+        uv_i = form.uv_index
+
+        if simple:
+            if qi > 0:
+                colour = ['ff', '00', '00']
+            elif qi < 0:
+                colour = ['00', '00', 'ff']
+            else:
+                colour = ['aa', 'aa', 'aa']
+
+        else:
+            colour = ['ff', '00', '00']
+            if qi > 0:
+                colour[0] = 'ff'
+            if form.edge_attribute((u, v), 'is_symmetry'):
+                colour[1] = 'cc'
+            if form.edge_attribute((u, v), 'is_ind'):
+                # colour[2] = 'ff'
+                colour[0] = '00'
+                colour[2] = '80'
+
+        width = max_width if fix_width else (qi / qmax) * max_width
+
+        if show_edgeuv:
+            text = str(u) + ',' + str(v)
+            # text = str(i)
+        elif show_q:
+            text = round(qi, 2)
+        else:
+            text = ''
+
+        lines.append({
+            'start': form.vertex_coordinates(u),
+            'end':   form.vertex_coordinates(v),
+            'color': ''.join(colour),
+            'width': width,
+            'text': text,
+        })
+
+        i = i + 1
+
+    rad_colors = {}
+    for key in form.vertices_where({'is_fixed': True}):
+        rad_colors[key] = '#aaaaaa'
+    for key in form.vertices_where({'rol_x': True}):
+        rad_colors[key] = '#ffb733'
+    for key in form.vertices_where({'rol_y': True}):
+        rad_colors[key] = '#ffb733'
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    if radius:
+        if heights:
+            plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
+                                  radius=radius, text={i: i for i in form.vertices()})  # form.vertex_attribute(i, 'z')
+        else:
+            plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+
+    plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+
+def plot_form_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False, joints=False, cracks=False, yrange = None, linestyle='solid'):
+    """ Plot of a 2D diagram in the XZ plane
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    max_width : bool
+        Maximum width of the plot.
+    simple : bool
+        Simple red and blue colour plotting.
+    show_q : bool
+        Show the force densities on the edges.
+    heights : str
+        Plot the heights of the nodes.
+    show_edgeuv : bool
+        Show u,v of the edges.
+    thck : float
+        Thickness of the structure to plot.
+    plot_reactions : bool
+        Plot the reaction's extension.
+    joints : bool
+        Plot joints.
+    cracks : bool
+        Highlight crack points.
+    yrange : list
+        If 3D structure sliced, it restricts the yrange to plot.
+    linestyle : str
+        linestyle for the thrust.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    i_k = form.index_key()
+    gkey_key = form.gkey_key()
+    q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'is_edge': True})]
+    qmax = max(abs(array(q)))
+    lines = []
+    xs = []
+    reac_lines = []
+
+    if yrange == None:
+        edges_considered = list(form.edges())
+        vertices_considered = list(form.vertices())
+    else:
+        edges_considered = []
+        vertices_considered = []
+        edges_added = []
+        for u, v in form.edges():
+            if (yrange[0] <= form.vertex_coordinates(u)[1] <= yrange[1]) and (yrange[0] <= form.vertex_coordinates(v)[1] <= yrange[1]):
+                edges_considered.append((u,v))
+        for key in form.vertices():
+            if yrange[0] < form.vertex_coordinates(key)[1] < yrange[1]:
+                vertices_considered.append(key)
+                edges_added.append(form.vertex_coordinates(key))
+                ngb = list(form.vertex_neighborhood(key))
+                print(ngb)
+                edges_added.append(form.vertex_coordinates(ngb[1]))
+        # print(vertices_considered)
+        print('Drawing initial total of vertices:', len(vertices_considered))
+        print('Drawing initial total of edges:', len(edges_considered))
+        edges_added.sort()
+        if len(edges_considered) == 0:
+            for i in range(len(edges_added)):
+
+                vertices_considered.append(gkey_key[geometric_key(edges_added[i])])
+                if i < len(edges_added)-1:
+                    u = gkey_key[geometric_key(edges_added[i])]
+                    v = gkey_key[geometric_key(edges_added[i+1])]
+                    edges_considered.append((u, v))
+        print('Drawing total of edges:', len(edges_considered))
+        print(edges_considered)
+        print(vertices_considered)
+        # edges_considered = []
+        # vertices_considered = [151, 130, 111, 90, 71, 50, 31, 10, 1, 0, 21, 41, 41, 61, 101, 121, 141]
+        # edges_considered = [(130, 151), (111, 130), (90, 111), (71, 90), (50, 71), (31, 50), (10, 31), (1, 10), (0, 1), (0, 21), (21, 41), (41, 61), (61, 81), (81, 101), (101, 121), (121, 141)]
+        print('Drawing total of vertices:', len(vertices_considered))
+
+
+    for key in vertices_considered:
+        xs.append(form.vertex_coordinates(key)[0])
+        if form.vertex_attribute(key, 'is_fixed') == True:
+            x, _, z = form.vertex_coordinates(key)
+            if z > 0.0:
+                rz = abs(form.vertex_attribute(key, 'rz'))
+                rx = form.vertex_attribute(key, 'rx')
+                reac_line = [x, z, x + z * rx / rz, 0.0]
+                reac_lines.append(reac_line)
+                # reac_x.append(x + z*rx/rz)
+                # reac_z.append(0.0)
+                # reac_x.append(x)
+                # reac_z.append(z)
+                # rx attributes not right!!
+
+    for u, v in edges_considered:
+        qi = form.edge_attribute((u, v), thick)
+
+        if simple:
+            if qi > 0:
+                colour = ['00', '00', '00']
+            elif qi < 0:
+                colour = ['00', '00', 'ff']
+            else:
+                colour = ['aa', 'aa', 'aa']
+
+        else:
+            colour = ['ff', '00', '00']
+            if qi > 0:
+                colour[0] = 'ff'
+            if form.edge_attribute((u, v), 'is_symmetry'):
+                colour[1] = 'cc'
+            if form.edge_attribute((u, v), 'is_ind'):
+                # colour[2] = 'ff'
+                colour[0] = '00'
+                colour[2] = '80'
+
+        width = max_width if fix_width else (qi / qmax) * max_width
+
+        if show_edgeuv:
+            text = str(u) + ',' + str(v)
+        elif show_q:
+            text = round(qi, 2)
+        else:
+            text = ''
+
+        lines.append({
+            'start': [form.vertex_coordinates(u)[0], form.vertex_coordinates(u)[2]],
+            'end':   [form.vertex_coordinates(v)[0], form.vertex_coordinates(v)[2]],
+            'color': 'FF0000',
+            'width': width,
+            'text': text,
+            'linestyle': linestyle
+        })
+
+    try:
+        Re = form.attributes['Re']
+        Ri = form.attributes['Ri']
+    except:
+        Re = 1.20  # (max(xs) - min(xs))/2 + thk/2
+        Ri = 1.00  # (max(xs) - min(xs))/2 - thk/2
+
+    xc = (max(xs) - min(xs))/2
+    discr = 200
+    print('xs:', xc)
+    print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re,Ri))
+
+    for R in [Re, Ri]:
+        for i in range(discr):
+            lines.append({
+                'start': [xc-R+2*R*i/discr, sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
+                'end':   [xc-R+2*R*(i+1)/discr, sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
+                'color': '000000',
+                'width': 0.5,
+            })
+
+    if plot_reactions:
+        for reac_line in reac_lines:
+            lines.append({
+                'start': [reac_line[0], reac_line[1]],
+                'end':   [reac_line[2], reac_line[3]],
+                'color': ''.join(['00', '00', '00']),
+                'width': max_width,
+            })
+
+    if joints:
+        joints = form.attributes['joints']
+        for i in joints:
+            lines.append({
+                'start': [joints[i][0][0], joints[i][0][2]],
+                'end':   [joints[i][1][0], joints[i][1][2]],
+                'color': '000000',
+                'width': 0.25,
+            })
+
+    vertices = []
+    if cracks:
+        cracks_lb, cracks_ub = form.attributes['cracks']
+        for i in cracks_ub:
+            key = i_k[i]
+            x, _, _ = form.vertex_coordinates(key)
+            z = form.vertex_attribute(key, 'ub')
+            vertices.append({
+                'pos': [x, z],
+                'radius': radius,
+                'color': '000000',
+            })
+        for i in cracks_lb:
+            key = i_k[i]
+            x, _, _ = form.vertex_coordinates(key)
+            z = form.vertex_attribute(key, 'lb')
+            vertices.append({
+                'pos': [x, z],
+                'radius': radius,
+                'color': '000000',
+            })
+
+    nodes = []
+    if radius:
+        for key in vertices_considered:
+            x, _, z = form.vertex_coordinates(key)
+            if form.vertex_attribute(key, 'is_fixed') is True:
+                nodes.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '000000',
+                    'facecolor': 'aaaaaa',
+                })
+            if abs(form.vertex_attribute(key, 'ub') - z) < 1e-3:
+                nodes.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '008000',
+                    'facecolor': '008000',
+                })
+            if abs(form.vertex_attribute(key, 'lb') - z) < 1e-3:
+                nodes.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '0000FF',
+                    'facecolor': '0000FF',
+                })
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    # round(form.vertex_attribute(i, 'pz'), 2)
+    # if radius:
+    #     if heights:
+    #         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
+    #         radius=radius, text={i: i for i in form.vertices()}) # form.vertex_attribute(i, 'z')
+    #     else:
+    #         plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
+    #         radius=radius)
+
+    # plotter.draw_vertices(radius= {i : form.vertex_attribute(i, 'px')/100 for i in form.vertices()}) # form.vertex_attribute(i, 'z')
+
+    plotter.draw_lines(lines)
+    plotter.draw_points(vertices)
+    plotter.draw_points(nodes)
+
+    if save:
+        plotter.save(save)
+
+    return plotter

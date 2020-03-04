@@ -48,9 +48,9 @@ from compas_tno.algorithms.equilibrium import paralelise_form
 from compas_tna.diagrams import FormDiagram
 from compas_tna.diagrams import ForceDiagram
 
-from compas_tno.plotters.plotters import plot_form
-from compas_tno.plotters.plotters import plot_force
-from compas_tno.plotters.plotters import plot_grad
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_force
+from compas_tno.plotters import plot_grad
 
 from copy import deepcopy
 
@@ -108,7 +108,7 @@ def optimise_fdm(form, plot= True, surf=False):
             py[i] = vertex.get('py', 0)
             pz[i] = vertex.get('pz', 0)
 
-    q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
+    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
     p = pz[free]
 
     # Interpolate Target Surface
@@ -196,7 +196,7 @@ def optimise_fdm(form, plot= True, surf=False):
             form = form_
             stepsave = step
             incrsave = incr
-            q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
             for key, vertex in form_.vertex.items():
                 i = k_i[key]
                 z[i]  = vertex.get('z')
@@ -208,7 +208,7 @@ def optimise_fdm(form, plot= True, surf=False):
                 for key, vertex in form.vertex.items():
                     xi, yi, _ = form.vertex_coordinates(key)
                     [si] = surf(xi,yi).tolist()
-                    form.set_vertex_attribute(key,'target',value=si)
+                    form.vertex_attribute(key,'target',value=si)
                 print('Updating constraints. Energy: {0:.1f}'.format(energy(form)))
 
         else:
@@ -265,7 +265,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
         pz[i] = vertex.get('pz', 0)
         w[i] = vertex.get('weight', 1.0)
 
-    q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
     Wfree = diags(w[free].flatten())
 
     C   = connectivity_matrix(edges, 'csr')
@@ -340,7 +340,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
             if plot and k == 1:
                 for u, v in form_.edges_where({'is_edge': True}):
                     [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
-                    form_.set_edge_attribute((u,v),'dq',value = dq)
+                    form_.edge_attribute((u,v),'dq',value = dq)
 
                 plot_grad(form_).show()
 
@@ -353,7 +353,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
                 f += 10*a
                 # print('f penalized = {0:.2f}'.format(f))
 
-            # qout = array([form_.get_edge_attribute((u,v),'q') for u, v in form_.edges_where({'is_edge': True})])[:, newaxis]
+            # qout = array([form_.edge_attribute((u,v),'q') for u, v in form_.edges_where({'is_edge': True})])[:, newaxis]
             # print('q range after grad  : {0:.3f} : {1:.3f}'.format(min(qout), max(qout)))
 
             # plot_form(form_).show()
@@ -379,7 +379,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
         for u, v in form_.edges_where({'is_edge': True}):
                 [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
-                form_.set_edge_attribute((u,v),'dq',value = dq)
+                form_.edge_attribute((u,v),'dq',value = dq)
 
         for key, vertex in form_.vertex.items():
             i = k_i[key]
@@ -390,7 +390,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
         if f < f0:
             form = form_
-            q = array([form.get_edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
             # stepsave = step
             # incrsave = incr
             print('End of Iteration {0} / Step number: {1} / Stepsize: {2:.5f} / Evergy Var: {3:.1f}% / Energy: {4:.1f} / Angle Dev: {5:.3f}'.format(it, k, step, (f-f0)/f0*100, f, a))

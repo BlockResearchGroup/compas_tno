@@ -41,7 +41,6 @@ __all__ = [
     'MMA_solver'
 ]
 
-
 def MMA_solver(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
                      printout=10, plot=False, indset=None, tension=False, planar=False,
                      translation=None, use_bounds=None, bounds_width=5.0,
@@ -96,7 +95,7 @@ def MMA_solver(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, tol=0.0
 
     if translation:
         x0 = q[ind]
-        zb_bounds = [[form.get_vertex_attribute(i_k[i], 'lb'), form.get_vertex_attribute(i_k[i], 'ub')] for i in fixed]
+        zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
         bounds = [[qmin, qmax]] * k + zb_bounds
         x0 = append(x0, z[fixed]).reshape(-1, 1)
     else:
@@ -242,16 +241,16 @@ def MMA_solver(form, solver='slsqp', qmin=1e-6, qmax=10, find_inds=True, tol=0.0
 
     for i in range(form.number_of_vertices()):
         key = i_k[i]
-        form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+        form.vertex_attribute(key=key, name='z', value=float(z[i]))
 
     for c, qi in enumerate(list(q_.ravel())):
         u, v = i_uv[c]
-        form.set_edge_attribute((u, v), 'q', float(qi))
+        form.edge_attribute((u, v), 'q', float(qi))
 
     lp = 0
     for u, v in form.edges_where({'is_edge': True}):
-        if form.get_edge_attribute((u, v), 'is_symmetry') is False:
-            qi = form.get_edge_attribute((u, v), 'q')
+        if form.edge_attribute((u, v), 'is_symmetry') is False:
+            qi = form.edge_attribute((u, v), 'q')
             li = form.edge_length(u, v)
             lp += abs(qi) * li**2
     form.attributes['loadpath'] = lp
@@ -327,7 +326,7 @@ def set_b_constraint(form, bmax, printout):
         b = []
         for key in form.vertices_where({'is_fixed': True}):
             try:
-                [b_] = form.get_vertex_attributes(key, 'b')
+                [b_] = form.vertex_attributes(key, 'b')
                 b.append(b_)
             except:
                 pass

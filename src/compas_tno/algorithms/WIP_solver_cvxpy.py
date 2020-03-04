@@ -75,16 +75,16 @@ def optimise_convex(form, qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
 
     for i in range(form.number_of_vertices()):
         key = i_k[i]
-        form.set_vertex_attribute(key=key, name='z', value=float(z[i]))
+        form.vertex_attribute(key=key, name='z', value=float(z[i]))
 
     for c, qi in enumerate(list(q_.ravel())):
         u, v = i_uv[c]
-        form.set_edge_attribute((u, v), 'q', float(qi))
+        form.edge_attribute((u, v), 'q', float(qi))
 
     lp = 0
     for u, v in form.edges():
-        if form.get_edge_attribute((u, v), 'is_symmetry') is False:
-            qi = form.get_edge_attribute((u, v), 'q')
+        if form.edge_attribute((u, v), 'is_symmetry') is False:
+            qi = form.edge_attribute((u, v), 'q')
             li = form.edge_length(u, v)
             lp += abs(qi) * li**2
     form.attributes['loadpath'] = lp
@@ -245,7 +245,7 @@ def min_loadpath(form, args, printout=False):
     for u, v in form.edges():
         i = uv_i[(u, v)]
         qi = q.value[i]
-        form.set_edge_attribute((u, v), 'q', qi)
+        form.edge_attribute((u, v), 'q', qi)
 
     form = z_from_form(form)
 
@@ -288,7 +288,7 @@ def min_thrust(form, args, zmin, zmax, printout=False):
     for u, v in form.edges():
         i = uv_i[(u, v)]
         qi = q.value[i]
-        form.set_edge_attribute((u, v), 'q', qi)
+        form.edge_attribute((u, v), 'q', qi)
 
     form = z_from_form(form)
 
