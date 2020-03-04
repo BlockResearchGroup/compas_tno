@@ -205,7 +205,7 @@ def initialise_problem(form, indset = None, printout = None, find_inds=True, tol
     if any(p) == True:
         check_hor = check_horizontal(E,p)
         if check_hor:
-            print('Horizoc]ntal Loads can be taken!')
+            print('Horizontal Loads can be taken!')
         else:
             print('Horizontal Loads are not suitable for this FD!')
 

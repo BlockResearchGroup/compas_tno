@@ -114,7 +114,7 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
 
     extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol = tol, discretisation = discretisation)
-    intrados = cross_vault_highfields_lb(xy_span = xy_span, thk = thk, tol = tol, t = t)
+    intrados = cross_vault_highfields_lb(xy_span = xy_span, thk = thk, tol = tol, t = t, discretisation = discretisation)
 
     return intrados, extrados, middle
 
@@ -269,12 +269,18 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
     x1d = []
     y1d = []
     z1d = []
+    print('intervals')
+    print((min(x),max(x),min(y),max(y)))
 
     for i in range(len(x)):
         for j in range(len(y)):
             uv_i[(i, j)] = index
             xi, yi = x[i], y[j]
-            if ((yi) > y1 and ((xi) > x1 or (xi) < x0 )) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
+
+            x1d.append(xi)
+            y1d.append(yi)
+
+            if ((yi) > y1 and ((xi) > x1 or (xi) < x0)) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
                 z = - 1*t
                 print(z)
             else:
@@ -302,8 +308,6 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
                     print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi,yi))
                     z = 0.0
 
-            x1d.append(xi)
-            y1d.append(yi)
             z1d.append(z)
 
             if i < len(x) - 1 and j < len(y) - 1:

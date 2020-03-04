@@ -12,22 +12,15 @@ import math
 
 # Mesh
 
-# fnm = '/Users/mricardo/compas_dev/me/minmax/pavillion/hor-loads/cross_fd/cross_fd_discr_12_loadpath_t=50_px=0.1.json'
-# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/r=5/radial_discr_8_16_min_t=30.json'
-# fnm = jsonpath = '/Users/mricardo/compas_dev/me/minmax/dome/diag/diag_discr_8_16_min_t=30.json'
-# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/par-diag/par-diag_discr_8_16_px_-0.35_lp.json'
-
-structure = 'cross/square/' # Or dome instead
+structure = 'dome/' # Or dome instead
 # structure = 'cross'
-type = 'fan_fd'
+type = 'radial_fd'
 folder = '/Users/mricardo/compas_dev/me/minmax/'+ structure + '/' + type + '/'
-file = type + '_discr_16_lp' # On dome
+file = type + '_test' # On dome
 # file = type + '_discr_16_max_t=418'
 
-
-# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/radial/radial_discr_8_16_min_t=50.json'
-
 fnm = folder + file + '.json'
+fnm = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 
 form = FormDiagram.from_json(fnm)
 k_i = form.key_index()
@@ -41,9 +34,11 @@ except:
     cracks_lb = []
     cracks_ub = []
 fs = []
-radius_max = 0.12 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
+radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
 # Usually 0.50 for Cross Form-Diagram and 0.30 for fan form diagram
-radius_circlus = 0.14
+radius_circlus = 0.15 # Radius of the speres that mark when it touches upper bound and lower bound.
+radius_colored_pipes = 0.10
+max_length_reaction = 0.5
 
 thrust_layer = master + '::Thrust'
 rs.AddLayer(thrust_layer)
@@ -51,7 +46,7 @@ rs.CurrentLayer(thrust_layer)
 artist = NetworkArtist(form, layer=thrust_layer)
 artist.clear_layer()
 lp = 0.0
-for u, v in form.edges():
+for u, v in form.edges_where({'is_edge': True}):
     q = form.get_edge_attribute((u,v), 'q')
     l = form.edge_length(u,v)
     fs.append(q*l)
@@ -154,7 +149,6 @@ for key in form.vertices_where({'is_fixed': True}):
     norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
     if rz < 0.0 and norm > 0.0:
         sp = node
-        print(sp)
         dz = rz/norm
         mult = node[2]/dz
         dz *= mult
@@ -164,7 +158,7 @@ for key in form.vertices_where({'is_fixed': True}):
         #id = rs.AddLine(sp, ep)
         #rs.ObjectName(id, str(norm))
         rs.CurrentLayer(reac_val)
-        rs.AddTextDot('rx: {0:.1f} / ry: {1:.1f}'.format(rx, ry), node, )
+        rs.AddTextDot('({0:.1f};{1:.1f})'.format(rx, ry), node, )
         rs.CurrentLayer(reac_layer)
 
 for key in form.vertices_where({'rol_x': True}):
@@ -203,11 +197,11 @@ for u, v in form.edges_where({'is_edge': True}):
     ep = form.vertex_coordinates(v)
     if q > 0.001:
         id = rs.AddLine(sp, ep)
-        f = math.sqrt(math.fabs(q * l))
+        f = math.fabs(q * l)
         coef = f/max(fs)*radius_max
         pipe = rs.AddPipe(id, 0, coef)
         rs.ObjectColor(pipe, color=(255,0,0))
-
+        rs.DeleteObject(id)
 pipes_color = master + '::Pipes-Color'
 rs.AddLayer(pipes_color)
 rs.CurrentLayer(pipes_color)
@@ -225,9 +219,9 @@ for u, v in form.edges_where({'is_edge': True}):
         coef = f/max(fs)
         r, g, b = i_to_rgb(coef)
         rs.ObjectColor(id, color=(r,g,b))
-        pipe = rs.AddPipe(id, 0, 0.08)
+        pipe = rs.AddPipe(id, 0, radius_colored_pipes)
         rs.ObjectColor(pipe, color=(r,g,b))
-
+        rs.DeleteObject(id)
 rs.CurrentLayer('Default')
 rs.LayerVisible(target_layer, False)
 rs.LayerVisible(ub_layer, False)

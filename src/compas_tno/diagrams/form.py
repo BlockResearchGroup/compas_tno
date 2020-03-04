@@ -79,7 +79,7 @@ class FormDiagram(FormDiagram):
         })
         self.args = None
         self.attributes['loadpath'] = 0.0
-        self.attributes['indset'] = []
+        self.attributes['indset'] = None
         self.data = {
             'type': None,
             'discretisation': None,

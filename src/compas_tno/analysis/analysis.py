@@ -5,6 +5,8 @@ from compas_tno.algorithms.problems import initialise_form
 from compas_tno.algorithms.problems import initialise_problem
 from compas_tno.algorithms.general_solver import set_up_optimisation
 from compas_tno.algorithms.general_solver import run_optimisation
+from compas_tno.algorithms.convex_solver import set_up_convex_optimisation
+from compas_tno.algorithms.convex_solver import run_convex_optimisation
 
 __all__ = ['Analysis']
 
@@ -116,20 +118,23 @@ class Analysis(object):
         return
 
 
-    def apply_hor_multiplier(self, multiplier, direction):
+    def apply_hor_multiplier(self, multiplier, component):
         """Apply a multiplier on the selfweight to the nodes of the form diagram based"""
 
         form = self.form
         shape = self.shape
 
+        pzt = 0
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            form.set_vertex_attribute(key, 'ub', value = shape.get_ub(x, y))
-            form.set_vertex_attribute(key, 'lb', value = shape.get_lb(x, y))
+            pz0 = form.get_vertex_attribute(key, 'pz')
+            pzi = multiplier * pz0
+            form.set_vertex_attribute(key, component, pzi)
+            pzt += pzi
 
-        # Go over nodes and find node = key and apply the pointed load pz += magnitude
+        print('Load applied in ', component, 'total: ', pzt)
 
-        self.form = form # With correct forces
+        self.form = form
 
         return
 
@@ -145,6 +150,21 @@ class Analysis(object):
             x, y, _ = form.vertex_coordinates(key)
             form.set_vertex_attribute(key, 'ub', value = shape.get_ub(x, y))
             form.set_vertex_attribute(key, 'lb', value = shape.get_lb(x, y))
+
+        self.form = form # With correct forces
+
+        return
+
+    def apply_target(self):
+        """Apply ub and lb to the nodes based on the shape's intrados and extrados"""
+
+
+        form = self.form
+        shape = self.shape
+
+        for key in form.vertices():
+            x, y, _ = form.vertex_coordinates(key)
+            form.set_vertex_attribute(key, 'target', value = shape.get_middle(x, y))
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
@@ -201,21 +221,19 @@ class Analysis(object):
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        self = set_up_optimisation(self)
-
-        # Go over nodes and find node = key and apply the pointed load pz += magnitude
-
-        # self.form = form # With correct forces
+        if self.optimiser.data['library'] == 'MATLAB':
+            self = set_up_convex_optimisation(self)
+        else:
+            self = set_up_optimisation(self)
 
         return
 
     def run(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        self = run_optimisation(self)
-
-        # Go over nodes and find node = key and apply the pointed load pz += magnitude
-
-        # self.form = form # With correct forces
+        if self.optimiser.data['library'] == 'MATLAB':
+            self = run_convex_optimisation(self)
+        else:
+            self = run_optimisation(self)
 
         return

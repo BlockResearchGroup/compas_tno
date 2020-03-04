@@ -1,7 +1,6 @@
 
 import math
 
-
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
     """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.
 
@@ -51,7 +50,6 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                 lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
 
             if nr <= n_radial - 1:
-
                 # Radial Elements
                 xa = xc + (r_oculus + nr * r_div) * math.cos(theta * nc)
                 xb = xc + (r_oculus + (nr + 1) * r_div) * math.cos(theta * nc)
@@ -76,6 +74,7 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                     xb_ = xc + (r_oculus + (nr + 1) * r_div) * math.cos(theta * (nc + 1))
                     ya_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * nc)
                     yb_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * (nc + 1))
+
 
                     if partial_diagonal == True:
                         if nc + 1 > n_spikes/2:
