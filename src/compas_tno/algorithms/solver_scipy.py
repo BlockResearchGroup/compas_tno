@@ -22,8 +22,6 @@ from compas_tno.algorithms.equilibrium import reactions
 from compas_tno.algorithms import zlq_from_qid
 from compas.utilities import geometric_key
 
-import pyOpt
-
 from numpy.random import rand
 from numpy import append
 from numpy import array

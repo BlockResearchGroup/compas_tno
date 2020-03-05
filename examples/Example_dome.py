@@ -4,6 +4,7 @@ from compas_tno.viewers.shapes import view_shapes
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
+from compas_tno.viewers.thrust import view_thrust
 
 # ----------------------------------------------------------------------
 # -----------EXAMPLE OF MIN and MAX THRUST FOR DOME --------------------
@@ -16,7 +17,7 @@ radius = 5.0
 type_structure = 'dome'
 type_formdiagram = 'radial_fd'
 
-# ----------------------- Create Dome shape ---------------------------
+# ----------------------- 1. Create Dome shape ---------------------------
 
 data_shape = {
     'type': type_structure,
@@ -29,12 +30,10 @@ data_shape = {
 
 dome = Shape.from_library(data_shape)
 swt = dome.compute_selfweight()
-
 print('Dome created!')
-
 # view_shapes(dome).show()
 
-# ----------------------- Create Form Diagram ---------------------------
+# ----------------------- 2. Create Form Diagram ---------------------------
 
 data_diagram = {
     'type': type_formdiagram,
@@ -51,7 +50,7 @@ print('Form Diagram Created!')
 print(form)
 plot_form(form, show_q=False, fix_width=False).show()
 
-# --------------------- Create Convex Optimiser ---------------------
+# --------------------- 3.1. Create Convex Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'MATLAB'
@@ -65,13 +64,14 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 150.0
 print(optimiser.data)
 
-# -------------- Create Analysis Model and Run Convex Opt --------------
+# -------------- 3.2. Create Analysis Model and Run Convex Opt --------------
 
 analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()
 analysis.set_up_optimiser() # Find independent edges
 analysis.run()
 plot_form(form, show_q=False).show()
+# view_thrust(form).show()
 
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_adress)
@@ -101,6 +101,8 @@ analysis.run()
 
 form = analysis.form
 plot_form(form, show_q=False).show()
+
+view_thrust(form).show()
 
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_adress)

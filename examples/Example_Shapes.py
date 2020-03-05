@@ -1,6 +1,6 @@
 
 from compas_tno.diagrams import FormDiagram
-from compas_tno.shapes.shape import Shape
+from compas_tno.shapes import Shape
 from compas_tno.viewers.shapes import view_shapes
 from compas_tno.viewers.shapes import view_intrados
 
@@ -8,14 +8,15 @@ from compas_tno.viewers.shapes import view_intrados
 # -----------PARAMERIC SHAPES (uncomment data) -----------------
 # --------------------------------------------------------------
 
+# WIP ADD CIRCULAR ARCH
 
-data = {
-    'type': 'crossvault',
-    'thk': 0.5,
-    'discretisation': [10, 10],
-    'xy_span': [[0.0,10.0],[0.0,10.0]],
-    't' : 10.0
-}
+# data = {
+#     'type': 'crossvault',
+#     'thk': 0.5,
+#     'discretisation': [50, 50],
+#     'xy_span': [[0.0,10.0],[0.0,10.0]],
+#     't' : 0.0
+# }
 
 # data = {
 #     'type': 'pavillionvault',
@@ -25,14 +26,14 @@ data = {
 #     't' : 0.0
 # }
 
-# data = {
-#     'type': 'dome',
-#     'thk': 0.5,
-#     'discretisation': [50, 50],
-#     'center': [5.0, 5.0],
-#     'radius': 5.0,
-#     't' : 0.0
-# }
+data = {
+    'type': 'dome',
+    'thk': 0.5,
+    'discretisation': [50, 50],
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+    't' : 0.0
+}
 
 vault = Shape.from_library(data)
 
@@ -51,5 +52,5 @@ for pt in points:
     print(vault.get_ub(pt[0],pt[1]))
     print(vault.get_lb(pt[0],pt[1]))
 
-# view_shapes(vault).show()
-view_intrados(vault).show()
+view_shapes(vault).show()
+# view_intrados(vault).show()

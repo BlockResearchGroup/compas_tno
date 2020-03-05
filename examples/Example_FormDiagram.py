@@ -1,4 +1,4 @@
-from compas_tno.diagrams.form import FormDiagram
+from compas_tno.diagrams import FormDiagram
 from compas_tno.plotters import plot_form
 
 # ------------------------------------------------
