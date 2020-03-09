@@ -77,32 +77,3 @@ analysis.run()
 
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_adress)
-
-# --------------------- Create Minimisation Optimiser ---------------------
-
-optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = True
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
-
-# --------------------- Create Minimisation Optimiser ---------------------
-
-analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser() # Find independent edges
-analysis.run()
-
-form = analysis.form
-plot_form(form, show_q=False).show()
-
-file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
-form.to_json(file_adress)

@@ -7,8 +7,9 @@ from compas_tno.plotters import plot_form
 
 data = {
     'type': 'arch',
-    'D': 3.0,
-    'total_nodes': 7,
+    'H': 1.0,
+    'L': 2.0,
+    'total_nodes': 11,
     'x0': 0.0,
 }
 

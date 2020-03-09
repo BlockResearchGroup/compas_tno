@@ -14,6 +14,7 @@ import math
 
 for t in [0.14]:
     for objective in ['min']:
+
         fnm = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/7,5x10/fan_fd/fan_fd_discr_16_'+ objective + '_t='+ str(int(t*100)) +'.json'
 
         fnm = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular-rollers/7,5x10/cross_fd/cross_fd_discr_20_rol-all_min_t=14.json'

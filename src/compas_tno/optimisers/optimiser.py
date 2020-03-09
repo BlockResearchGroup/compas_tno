@@ -53,6 +53,7 @@ class Optimiser(object):
         'exitflag'          : None,
         'fopt'              : None,
         'xopt'              : None,
+        'qmin'              : -1e-6,
         }
         self.fobj = None
         self.fconstr = None

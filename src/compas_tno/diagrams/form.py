@@ -102,7 +102,7 @@ class FormDiagram(FormDiagram):
         form_type = data['type']
 
         if form_type == 'arch':
-            form = cls().create_arch(D=data['D'], x0=data['x0'], total_nodes=data['total_nodes'])
+            form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'cross_fd':
             form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'fan_fd':
@@ -119,7 +119,7 @@ class FormDiagram(FormDiagram):
         return form
 
     @classmethod
-    def create_arch(cls, D=2.00, x0=0.0, total_nodes=100):
+    def create_arch(cls, H=1.00, L=2.00, x0=0.0, total_nodes=100):
         """ Construct a FormDiagram based on an arch linear discretisation.
 
         Parameters
@@ -140,7 +140,7 @@ class FormDiagram(FormDiagram):
 
         """
 
-        form = create_arch(cls(), D=D, x0=x0, total_nodes=total_nodes)
+        form = create_arch(cls(), L=L, H=H, x0=x0, total_nodes=total_nodes)
 
         return form
 

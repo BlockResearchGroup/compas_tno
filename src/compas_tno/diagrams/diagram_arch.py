@@ -3,13 +3,16 @@ from compas.utilities import geometric_key
 import math
 
 
-def create_arch(FormDiag, D=2.00, x0=0.0, total_nodes=100):
+def create_arch(FormDiag, H=1.00, L=2.0, x0=0.0, total_nodes=100):
     """ Helper to create a arch linear form-diagram.
 
     Parameters
     ----------
-    D : float
-        Central diameter of the arch.
+    H : float
+        Rise of the arch measured with regards to the center line.
+
+    L : float
+        Span of the arch considered as center, to center. (L <= 2*H).
 
     x0: float
         Beginning of the linear form diagram.
@@ -23,19 +26,29 @@ def create_arch(FormDiag, D=2.00, x0=0.0, total_nodes=100):
         FormDiagram.
 
     """
-    r = D/2
-    xc = x0 + r
+
+    # Add option for starting from Hi and Li for a given thk.
+
+    radius = radius = H / 2 + (L**2 / (8 * H))
+    print('radius =', radius)
+    spr = math.atan2((L/2),(radius - H))
+    print('springing angle =', math.degrees(spr), spr)
+    tot_angle = 2*spr
+    angle_init = (math.pi - tot_angle)/2
+    print('init angle =', math.degrees(angle_init))
+    an = tot_angle / (total_nodes - 1)
     lines = []
-    total_edges = total_nodes - 1
     gkey_fix = []
 
-    for i in range(total_edges):
-        xi = xc - r*math.cos(i/total_edges*math.pi)
-        xf = xc - r*math.cos((i+1)/total_edges*math.pi)
+    for i in range(total_nodes-1):
+        angle_i = angle_init + i * an
+        angle_f = angle_init + (i + 1) * an
+        xi = L/2 - radius * math.cos(angle_i)
+        xf = L/2 - radius * math.cos(angle_f)
         lines.append([[xi, 0.0, 0.0], [xf, 0.0, 0.0]])
         if i == 0:
             gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))
-        elif i == total_edges - 1:
+        elif i == total_nodes - 2:
             gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
 
     form = FormDiag.from_lines(lines, delete_boundary_face=False)

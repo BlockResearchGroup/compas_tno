@@ -1,9 +1,7 @@
 from compas_tno.algorithms.problems import initialise_problem
 
 from compas_tno.algorithms.objectives import f_min_loadpath
-from compas_tno.algorithms.objectives import f_min_loadpath_pen
 from compas_tno.algorithms.objectives import f_min_thrust
-from compas_tno.algorithms.objectives import f_min_thrust_pen
 from compas_tno.algorithms.objectives import f_max_thrust
 from compas_tno.algorithms.objectives import f_target
 from compas_tno.algorithms.objectives import f_constant
@@ -12,9 +10,11 @@ from compas_tno.algorithms.constraints import f_compression
 from compas_tno.algorithms.constraints import f_ub_lb
 from compas_tno.algorithms.constraints import f_joints
 from compas_tno.algorithms.constraints import f_cracks
+from compas_tno.algorithms.constraints import constr_wrapper
 
 from numpy import append
 from numpy import array
+from numpy import asscalar
 
 from compas_tno.diagrams import FormDiagram
 
@@ -30,62 +30,54 @@ def set_up_nonlinear_optimisation(analysis):
     indset = form.attributes['indset']
     find_inds = optimiser.data['find_inds']
     printout = optimiser.data['printout']
+    objective = optimiser.data['objective']
+    variables = optimiser.data['variables']
+    qmax = optimiser.data['qmax']
+    qmin = optimiser.data['qmin']
+    constraints = optimiser.data['constraints']
 
     i_k = form.index_key()
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
-    if 'reac_bounds' in optimiser.data['constraints']:
+    # Set constraints
+
+    if 'reac_bounds' in constraints:
         b = set_b_constraint(form, True, True)
     else:
         b = None
 
-    if 'cracks' in optimiser.data['constraints']:
+    if 'cracks' in constraints:
         cracks_lb, cracks_ub = set_cracks_constraint(form, True, True)
     else:
         cracks_lb, cracks_ub = None, None
 
-    if 'joints' in optimiser.data['constraints']:
+    if 'joints' in constraints:
         joints = set_joints_constraint(form, True)
     else:
         joints = None
 
-
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
-            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
+            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints)
 
-    objective = optimiser.data['objective']
+    fconstr = constr_wrapper
+    # fconstr = f_ub_lb
 
     # Select Objetive
 
     if objective == 'loadpath':
-        fobj, fconstr = f_min_loadpath, f_compression
-    if objective == 'constr_lp':
-        fobj, fconstr = f_min_loadpath, f_ub_lb
-    if objective == 'lp_cracks':
-        fobj, fconstr = f_min_loadpath, f_cracks
-    if objective == 'lp_joints':
-        fobj, fconstr = f_min_loadpath_pen, f_joints
+        fobj = f_min_loadpath
     if objective == 'target':
-        fobj, fconstr = f_target, f_compression
+        fobj = f_target
     if objective == 'min':
-        fobj, fconstr = f_min_thrust, f_ub_lb
-    if objective == 'min_joints':
-        fobj, fconstr = f_min_thrust_pen, f_joints
-    if objective == 'min_cracks':
-        fobj, fconstr = f_min_thrust, f_cracks
+        fobj = f_min_thrust
     if objective == 'max':
-        fobj, fconstr = f_max_thrust, f_ub_lb
-    if objective == 'max_cracks':
-        fobj, fconstr = f_max_thrust, f_cracks
+        fobj = f_max_thrust
     if objective == 'feasibility':
-        fobj, fconstr = f_constant, f_ub_lb
+        fobj = f_constant
 
     # Definition of the Variables and starting point
-
-    variables = optimiser.data['variables']
-    qmax = optimiser.data['qmax']
 
     if 'ind' in variables and 'zb' in variables:
         x0 = q[ind]

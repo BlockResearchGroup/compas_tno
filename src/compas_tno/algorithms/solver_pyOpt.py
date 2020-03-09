@@ -39,103 +39,10 @@ __email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
-    'optimise_general'
+    'run_optimisation_pyOpt'
 ]
 
-def set_up_optimisation(analysis):
-
-    form = analysis.form
-    optimiser = analysis.optimiser
-    indset = form.attributes['indset']
-    find_inds = optimiser.data['find_inds']
-    printout = optimiser.data['printout']
-
-    i_k = form.index_key()
-
-    args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
-
-    if 'reac_bounds' in optimiser.data['constraints']:
-        b = set_b_constraint(form, True, True)
-    else:
-        b = None
-
-    if 'cracks' in optimiser.data['constraints']:
-        cracks_lb, cracks_ub = set_cracks_constraint(form, True, True)
-    else:
-        cracks_lb, cracks_ub = None, None
-
-    if 'joints' in optimiser.data['constraints']:
-        joints = set_joints_constraint(form, True)
-    else:
-        joints = None
-
-
-    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
-            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
-
-    objective = optimiser.data['objective']
-
-    # Select Objetive
-
-    if objective == 'loadpath':
-        fobj, fconstr = f_min_loadpath, f_compression
-    if objective == 'constr_lp':
-        fobj, fconstr = f_min_loadpath, f_ub_lb
-    if objective == 'lp_cracks':
-        fobj, fconstr = f_min_loadpath, f_cracks
-    if objective == 'lp_joints':
-        fobj, fconstr = f_min_loadpath_pen, f_joints
-    if objective == 'target':
-        fobj, fconstr = f_target, f_compression
-    if objective == 'min':
-        fobj, fconstr = f_min_thrust, f_ub_lb
-    if objective == 'min_joints':
-        fobj, fconstr = f_min_thrust_pen, f_joints
-    if objective == 'min_cracks':
-        fobj, fconstr = f_min_thrust, f_cracks
-    if objective == 'max':
-        fobj, fconstr = f_max_thrust, f_ub_lb
-    if objective == 'max_cracks':
-        fobj, fconstr = f_max_thrust, f_cracks
-    if objective == 'feasibility':
-        fobj, fconstr = f_constant, f_ub_lb
-
-    # Definition of the Variables and starting point
-
-    variables = optimiser.data['variables']
-    qmax = optimiser.data['qmax']
-
-    if 'ind' in variables and 'zb' in variables:
-        x0 = q[ind]
-        zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
-        bounds = [[-10e-6, qmax]] * k + zb_bounds
-        x0 = append(x0, z[fixed]).reshape(-1, 1)
-    else:
-        x0 = q[ind]
-        bounds = [[-10e-6, qmax]] * k
-
-    print('Total of Independents:', len(ind))
-    print('Number of Variables:', len(x0))
-    f0 = fobj(x0, *args)
-    g0 = fconstr(x0, *args)
-
-    print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
-    print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
-
-    optimiser.fobj = fobj
-    optimiser.fconstr = fconstr
-    optimiser.args = args
-    optimiser.x0 = x0
-    optimiser.bounds = bounds
-
-    analysis.form = form
-    analysis.optimiser = optimiser
-
-    return analysis
-
-
-def run_optimisation(analysis):
+def run_optimisation_pyOpt(analysis):
 
     form = analysis.form
     optimiser = analysis.optimiser
@@ -151,17 +58,74 @@ def run_optimisation(analysis):
     x0 = optimiser.x0
     plot = optimiser.data['plot']
 
-    if solver == 'slsqp':
-        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, True, fconstr, args)
-        while exitflag == 9:
-            fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, True, fconstr, args)
-        if exitflag == 0:
+    if solver.split('-')[0] == 'pyOpt':
+        lower = [lw[0] for lw in bounds]
+        upper = [up[1] for up in bounds]
+        solver_pyOpt = solver.split('-')[1]
+        title = 'Solver: ' + solver_pyOpt + 'Objective: ' + objective
+
+        opt_prob = pyOpt.Optimization(title, pyOpt_wrapper)
+        opt_prob.addObj('f', value=f0)
+        opt_prob.addVarGroup('x', len(x0), type='c', value=x0, lower=lower, upper=upper)
+        opt_prob.addConGroup('c', len(g0), type='i', value=g0)
+
+        if solver_pyOpt == 'SLSQP':
+            slv = pyOpt.SLSQP()
+            slv.setOption('MAXIT', 1000)
+
+        if solver_pyOpt == 'PSQP':
+            slv = pyOpt.PSQP()
+
+        if solver_pyOpt == 'CONMIN':
+            slv = pyOpt.CONMIN()
+
+        if solver_pyOpt == 'COBYLA':
+            slv = pyOpt.COBYLA()
+
+        if solver_pyOpt == 'SOLVOPT':
+            slv = pyOpt.SOLVOPT()
+
+        if solver_pyOpt == 'KSOPT':
+            slv = pyOpt.KSOPT()
+
+        if solver_pyOpt == 'NSGA2':
+            slv = pyOpt.NSGA2()
+
+        if solver_pyOpt == 'ALGENCAN':
+            slv = pyOpt.ALGENCAN()
+
+        if solver_pyOpt == 'FILTERSD':
+            slv = pyOpt.FILTERSD()
+
+        if solver_pyOpt == 'SDPEN':
+            slv = pyOpt.SDPEN()
+
+        if solver_pyOpt == 'ALPSO':
+            slv = pyOpt.SDPEN()
+
+        if solver_pyOpt == 'ALHSO':
+            slv = pyOpt.SDPEN()
+
+        if solver_pyOpt == 'MIDACO':
+            slv = pyOpt.SDPEN()
+
+        [fopt, xopt, info] = slv(opt_prob, sens_type='FD', args=args, objective=fobj, constraints=fconstr)
+        # exitflag = info['text']
+        if info['text'] == 'Optimization terminated successfully.':
+            exitflag = 0
+        else:
+            exitflag = 1
+        # exitflag = slv.informs
+        # if printout:
+        #     print(opt_prob.solution(0))
+        print(info['text'])
+        fopt = fopt.item()
+        niter = 100
+        if translation:
             q[ind] = xopt[:k].reshape(-1, 1)
             z[fixed] = xopt[k:].reshape(-1, 1)
-            # else:
-            #     q[ind] = xopt[:k].reshape(-1, 1) # Code the option with only qinds
         else:
-            print(message)
+            q[ind] = xopt[:k].reshape(-1, 1)
 
     g_final = fconstr(xopt, *args)
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)

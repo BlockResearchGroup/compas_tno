@@ -48,7 +48,7 @@ data_diagram = {
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 print(form)
-plot_form(form, show_q=False, fix_width=False).show()
+# plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3.1. Create Convex Optimiser ---------------------
 
@@ -70,7 +70,7 @@ analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()
 analysis.set_up_optimiser() # Find independent edges
 analysis.run()
-plot_form(form, show_q=False).show()
+# plot_form(form, show_q=False).show()
 # view_thrust(form).show()
 
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
@@ -102,7 +102,7 @@ analysis.run()
 form = analysis.form
 plot_form(form, show_q=False).show()
 
-view_thrust(form).show()
-
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_adress)
+
+view_thrust(form).show()

@@ -22,10 +22,40 @@ __all__ = [
     'f_ub_lb_red'
 ]
 
+def constr_wrapper(xopt, *args):
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr = args
+
+    if len(xopt) > k:
+        qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
+        args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
+        z, l2, q, _ = zlq_from_qid(qid, args)
+    else:
+        z, l2, q, _ = zlq_from_qid(xopt, args)
+
+    constraints = zeros([0,1])
+
+    if 'funicular' in dict_constr:
+        constraints = vstack([constraints, (q.ravel() - qmin).reshape(-1, 1)])  # >= 0
+    if 'envelope' in dict_constr:
+        constraints = vstack([constraints, ub - z[ub_ind], z[lb_ind] - lb])  # >= 0
+    if 'reac_bounds' in dict_constr:
+        CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
+        xyz = hstack([x, y, z])
+        p_fixed = hstack([px, py, pz])[fixed]
+        R = CfQC.dot(xyz) - p_fixed
+        Rx = abs(b[:, 0].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 0], R[:, 2]).reshape(-1, 1)))
+        Ry = abs(b[:, 1].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 1], R[:, 2]).reshape(-1, 1)))
+        constraints = vstack([constraints, Rx, Ry])
+    if 'cracks' in dict_constr:
+        crack_tol = 10e-4
+        constraints = vstack([constraints, (lb[cracks_lb] - z[cracks_lb]) + crack_tol, (z[cracks_ub] - ub[cracks_ub]) + crack_tol])
+
+    return transpose(constraints)[0] #.reshape(-1, 1)
 
 def f_ub_lb(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr = args
 
     if len(xopt) > k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
@@ -57,7 +87,7 @@ def f_ub_lb(xopt, *args):
     # reac_rol_x = tol #(array(max_f_x) - abs(array(Cftx.dot(U * q.ravel()) - px[rol_x].ravel()))).reshape(-1, 1)
     # reac_rol_y = tol# (array(max_f_y) - abs(array(Cfty.dot(V * q.ravel()) - px[rol_y].ravel()))).reshape(-1, 1)
 
-    return transpose(vstack([qpos, upper_limit, lower_limit, Rx_angle, Ry_angle]))[0]
+    return transpose(vstack([qpos, upper_limit, lower_limit]))[0]#, Rx_angle, Ry_angle]))[0]
 
 def f_ub_lb_red(xopt, *args):
 

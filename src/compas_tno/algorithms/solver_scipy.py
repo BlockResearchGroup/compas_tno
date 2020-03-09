@@ -1,32 +1,12 @@
 from scipy.optimize import fmin_slsqp
+from scipy.optimize import shgo
 from compas.numerical import devo_numpy
 from compas.numerical import ga
-
-from compas_tno.algorithms.problems import initialise_problem
-
-from compas_tno.algorithms.objectives import f_min_loadpath
-from compas_tno.algorithms.objectives import f_min_loadpath_pen
-from compas_tno.algorithms.objectives import f_min_thrust
-from compas_tno.algorithms.objectives import f_min_thrust_pen
-from compas_tno.algorithms.objectives import f_max_thrust
-from compas_tno.algorithms.objectives import f_target
-from compas_tno.algorithms.objectives import f_constant
-
-from compas_tno.algorithms.constraints import f_compression
-from compas_tno.algorithms.constraints import f_ub_lb
-from compas_tno.algorithms.constraints import f_joints
-from compas_tno.algorithms.constraints import f_cracks
 
 from compas_tno.algorithms.equilibrium import reactions
 
 from compas_tno.algorithms import zlq_from_qid
 from compas.utilities import geometric_key
-
-from numpy.random import rand
-from numpy import append
-from numpy import array
-
-from compas_tno.diagrams import FormDiagram
 
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -48,7 +28,7 @@ def run_optimisation_scipy(analysis):
     fobj = optimiser.fobj
     fconstr = optimiser.fconstr
     args = optimiser.args
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints = args
     i_uv = form.index_uv()
     i_k = form.index_key()
     k_i = form.key_index()
@@ -61,6 +41,37 @@ def run_optimisation_scipy(analysis):
         while exitflag == 9:
             fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, True, fconstr, args)
         if exitflag == 0:
+            q[ind] = xopt[:k].reshape(-1, 1)
+            z[fixed] = xopt[k:].reshape(-1, 1)
+            # else:
+            #     q[ind] = xopt[:k].reshape(-1, 1) # Code the option with only qinds
+        else:
+            print(message)
+    elif solver == 'shgo':
+        dict_constr = []
+        for i in range(len(fconstr(x0, *args))):
+            args_constr = list(args)
+            args_constr.append(i)
+            args_constr.append(fconstr)
+            dict_ = {
+                'type': 'ineq',
+                'fun': _shgo_constraint_wrapper,
+                'args': args_constr,
+                }
+            dict_constr.append(dict_)
+        print(fconstr(x0, *args))
+        print(len(fconstr(x0, *args)))
+        print(_shgo_constraint_wrapper(x0,*args_constr))
+        args_constr[len(args_constr)-2] = 0
+        print(_shgo_constraint_wrapper(x0,*args_constr))
+        result = _shgo(fobj, bounds, True, dict_constr, args)
+        print(result)
+        fopt = result['fun']
+        xopt = result['x']
+        sucess = result['success']
+        message = result['message']
+        if sucess == True:
+            exitflag = 0
             q[ind] = xopt[:k].reshape(-1, 1)
             z[fixed] = xopt[k:].reshape(-1, 1)
             # else:
@@ -118,6 +129,20 @@ def _slsqp(fn, qid0, bounds, printout, fieq, args):
 
     return opt[1], opt[0], opt[3], opt[2], opt[4]
 
+def _shgo(fn, bounds, printout, dict_constr, args):
+
+    res = shgo(fn, bounds, args=args, constraints=dict_constr, n=3, iters=3, options={'disp': True})
+
+    return res
+
+def _shgo_constraint_wrapper(x, *args_constr):
+    length = len(args_constr)
+    args = args_constr[:length-2]
+    i = args_constr[length-2]
+    fconstr = args_constr[length-1]
+    gi = fconstr(x, *args)[i]
+
+    return gi
 
 def _cobyla(fn, qid0, bounds, printout, fieq, args):
 
