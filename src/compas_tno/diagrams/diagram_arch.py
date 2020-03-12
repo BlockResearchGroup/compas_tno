@@ -1,4 +1,4 @@
-
+from compas.datastructures import Mesh
 from compas.utilities import geometric_key
 import math
 
@@ -31,7 +31,7 @@ def create_arch(FormDiag, H=1.00, L=2.0, x0=0.0, total_nodes=100):
 
     radius = radius = H / 2 + (L**2 / (8 * H))
     print('radius =', radius)
-    spr = math.atan2((L/2),(radius - H))
+    spr = math.atan2((L/2), (radius - H))
     print('springing angle =', math.degrees(spr), spr)
     tot_angle = 2*spr
     angle_init = (math.pi - tot_angle)/2
@@ -51,7 +51,8 @@ def create_arch(FormDiag, H=1.00, L=2.0, x0=0.0, total_nodes=100):
         elif i == total_nodes - 2:
             gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
 
-    form = FormDiag.from_lines(lines, delete_boundary_face=False)
+    form = Mesh.from_lines(lines)
+    form = FormDiag.from_mesh(form)
     gkey_key = form.gkey_key(precision=6)
 
     form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)

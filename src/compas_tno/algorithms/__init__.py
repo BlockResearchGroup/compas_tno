@@ -30,7 +30,7 @@ from .objectives import *
 from .problems import *
 from .setup import *
 from .solver_MATLAB import *
-# from .solver_MMA import *
+from .solver_MMA import *
 # from .solver_pyOpt import *
 from .solver_scipy import *
 

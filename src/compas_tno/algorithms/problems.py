@@ -59,7 +59,6 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
 
     k_i = form.key_index()
     i_k = form.index_key()
-    i_uv = form.index_uv()
     uv_i = form.uv_index()
 
     # Vertices and edges

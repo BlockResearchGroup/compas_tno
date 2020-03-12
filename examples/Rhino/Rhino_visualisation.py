@@ -11,7 +11,7 @@ import json
 import math
 
 # Give a name to your project
-master = 'Min-thrust Dome'
+master = 'TEST'
 
 # Put here the .json file for the optimisation
 fnm = '/Users/mricardo/compas_dev/me/reformulation/test.json'

@@ -92,6 +92,7 @@ def set_up_nonlinear_optimisation(analysis):
     print('Number of Variables:', len(x0))
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
+    print('Number of Constraints:', len(g0))
 
     print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
     print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
@@ -101,6 +102,8 @@ def set_up_nonlinear_optimisation(analysis):
     optimiser.args = args
     optimiser.x0 = x0
     optimiser.bounds = bounds
+    optimiser.f0 = f0
+    optimiser.g0 = g0
 
     analysis.form = form
     analysis.optimiser = optimiser

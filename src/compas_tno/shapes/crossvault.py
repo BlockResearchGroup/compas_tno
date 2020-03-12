@@ -53,8 +53,8 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
     y = arange(y0, y1 + dy/density_y, dy/density_y)
     # zt = zeros((len(x),len(y)))
 
-    print( max(x),min(x),max(y),min(y) )
-    print( len(x),len(x),len(y),len(y) )
+    print(max(x),min(x),max(y),min(y) )
+    print(len(x),len(x),len(y),len(y) )
 
     rx = (x1 - x0)/2
     ry = (y1 - y0)/2

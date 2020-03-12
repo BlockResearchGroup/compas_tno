@@ -303,6 +303,10 @@ class FormDiagram(FormDiagram):
 
         return form
 
+    @classmethod
+    def from_assembly():
+        NotImplementedError
+
 
 # --------------------------------------------------------------- #
 # -----------------------ULTILITIES------------------------------ #

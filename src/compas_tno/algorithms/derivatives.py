@@ -29,18 +29,19 @@ __all__ = [
 
 
 def d_fobj(fobj, x0, eps, *args):
-    f0val = fobj(x0,*args)
+    f0val = fobj(x0, *args)
     n = len(x0)
-    df0dx = zeros((n,1))
+    df0dx = zeros((n, 1))
     for i in range(n):
-        diff = zeros((n,1))
+        diff = zeros((n, 1))
         diff[i] = eps
         df0dx[i] = (fobj(x0 + diff, *args) - f0val)/diff[i]
 
     return df0dx
 
+
 def d_fconstr(fconstr, x0, eps, *args):
-    fval = fconstr(x0, *args).reshape(-1,1)
+    fval = fconstr(x0, *args).reshape(-1, 1)
     m = len(fval)
     n = len(x0)
     dfdx = zeros((m, n))
@@ -48,18 +49,18 @@ def d_fconstr(fconstr, x0, eps, *args):
         for j in range(n):
             diff = zeros((n, 1))
             diff[j] = eps
-            dfdx[i, j] = (fconstr(x0 + diff, *args).reshape(-1,1) - fval)[i]/diff[j]
+            dfdx[i, j] = (fconstr(x0 + diff, *args).reshape(-1, 1) - fval)[i]/diff[j]
     return dfdx
 
 
 def d_min_thrust(fobj, x0, eps, *args):
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
-    f0val = fobj(x0,*args)
+    f0val = fobj(x0, *args)
     n = len(x0)
-    df0dx = zeros((n,1))
+    df0dx = zeros((n, 1))
     for i in range(n):
-        diff = zeros((n,1))
+        diff = zeros((n, 1))
         diff[i] = eps
         df0dx[i] = (fobj(x0 + diff, *args) - f0val)/diff[i]
 
@@ -69,11 +70,11 @@ def d_min_thrust(fobj, x0, eps, *args):
 def d_f_ub_lb(fobj, x0, eps, *args):
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
-    f0val = fobj(x0,*args)
+    f0val = fobj(x0, *args)
     n = len(x0)
-    df0dx = zeros((n,1))
+    df0dx = zeros((n, 1))
     for i in range(n):
-        diff = zeros((n,1))
+        diff = zeros((n, 1))
         diff[i] = eps
         df0dx[i] = (fobj(x0 + diff, *args) - f0val)/diff[i]
 
@@ -81,9 +82,6 @@ def d_f_ub_lb(fobj, x0, eps, *args):
     m_qpos = B.shape[0]
     qpos_contribution = B
 
-
-
     # transpose(vstack([qpos, upper_limit, lower_limit]))[0]
-
 
     return df0dx

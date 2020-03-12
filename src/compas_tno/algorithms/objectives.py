@@ -8,10 +8,6 @@ from numpy import array
 
 from compas_tno.algorithms.equilibrium import zlq_from_qid
 from compas.numerical import normrow
-from compas.geometry import is_intersection_segment_segment_xy
-from compas.geometry import intersection_line_segment_xy
-from compas.geometry import distance_point_point_xy
-from compas.geometry import norm_vector
 
 from scipy.sparse import diags
 
@@ -63,7 +59,7 @@ def f_min_thrust(xopt, *args):
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
     xy = hstack([x, y])
     Rh = CfQC.dot(xy)
-    f = sum(normrow(Rh))   # Updated this, there was a mistake before
+    f = sum(normrow(Rh))
 
     if isnan(f) == True or any(xopt) == False:
         return 10**10

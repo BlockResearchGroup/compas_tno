@@ -5,6 +5,7 @@ from __future__ import division
 from compas_tno.shapes.crossvault import cross_vault_highfields
 from compas_tno.shapes.pavillionvault import pavillion_vault_highfields
 from compas_tno.shapes.dome import set_dome_heighfield
+from compas_tno.shapes.circular_arch import arch_shape
 
 from numpy import array
 
@@ -117,6 +118,12 @@ class Shape(object):
             center = data['center']
             radius = data['radius']
             intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
+        elif typevault == 'arch':
+            H = data['H']
+            L = data['L']
+            b = data['b']
+            x0 = data['x0']
+            intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
 
         shape.data = data
         shape.intrados = intrados
@@ -133,16 +140,16 @@ class Shape(object):
     @classmethod
     def from_rhinosurface(cls):
         ''' Work in progress'''
-        shape = cls()
-
-        return shape
+        NotImplementedError
 
     @classmethod
     def from_rhinomesh(cls, data):
         ''' Work in progress'''
-        shape = cls()
+        NotImplementedError
 
-        return shape
+    @classmethod
+    def from_assembly():
+        NotImplementedError
 
     def get_ub(self, x, y):
         """Get the height of the extrados in the point."""

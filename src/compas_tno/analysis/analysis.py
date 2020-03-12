@@ -8,6 +8,7 @@ from compas_tno.algorithms import set_up_convex_optimisation
 
 from compas_tno.algorithms import run_optimisation_scipy
 from compas_tno.algorithms import run_optimisation_MATLAB
+from compas_tno.algorithms import run_optimisation_MMA
 
 __all__ = ['Analysis']
 
@@ -96,6 +97,14 @@ class Analysis(object):
             form.vertex_attribute(key, 'pz', value = pz)
             pzt += pz
 
+        if shape.data['type'] == 'arch':
+            pzt = 0
+            for key in form.vertices():
+                form.vertex_attribute(key, 'pz', value = 1.0)
+                if form.vertex_attribute(key, 'is_fixed') == True:
+                    form.vertex_attribute(key, 'pz', value = 0.5)
+                pzt += form.vertex_attribute(key, 'pz')
+
         factor = total_selfweight/pzt
 
         for key in form.vertices():
@@ -180,7 +189,7 @@ class Analysis(object):
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
-        self.form = form # With correct forces
+        self.form = form  # With correct forces
 
         return
 
@@ -201,6 +210,17 @@ class Analysis(object):
                 x_ = thk/2*math.cos(theta)
                 y_ = thk/2*math.sin(theta)
                 form.vertex_attribute(key, 'b', [x_, y_])
+
+        if shape.data['type'] == 'arch':
+            H = shape.data['H']
+            L = shape.data['L']
+            thk = shape.data['thk']
+            radius = H / 2 + (L**2 / (8 * H))
+            zc = radius - H
+            re = radius + thk/2
+            x = math.sqrt(re**2 - zc**2)
+            for key in form.vertices_where({'is_fixed': True}):
+                form.vertex_attribute(key, 'b', [x - L/2, 0.0])
 
         self.form = form # With correct forces
 
@@ -234,6 +254,8 @@ class Analysis(object):
 
         if self.optimiser.data['library'] == 'MATLAB':
             self = run_optimisation_MATLAB(self)
+        elif self.optimiser.data['library'] == 'MMA':
+            self = run_optimisation_MMA(self)
         else:
             self = run_optimisation_scipy(self)
 

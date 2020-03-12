@@ -59,13 +59,8 @@ def run_optimisation_scipy(analysis):
                 'args': args_constr,
                 }
             dict_constr.append(dict_)
-        print(fconstr(x0, *args))
-        print(len(fconstr(x0, *args)))
-        print(_shgo_constraint_wrapper(x0,*args_constr))
         args_constr[len(args_constr)-2] = 0
-        print(_shgo_constraint_wrapper(x0,*args_constr))
         result = _shgo(fobj, bounds, True, dict_constr, args)
-        print(result)
         fopt = result['fun']
         xopt = result['x']
         sucess = result['success']
