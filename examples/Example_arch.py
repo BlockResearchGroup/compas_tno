@@ -55,7 +55,7 @@ form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 print(form)
 
-# --------------------- Create Minimisation for minimum thrust ---------------------
+# --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
@@ -69,7 +69,7 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 print(optimiser.data)
 
-# --------------------------- Run optimisation with scipy ---------------------------
+# --------------------------- 3.2 Run optimisation with scipy ---------------------------
 
 analysis = Analysis.from_elements(arch, form, optimiser)
 analysis.apply_selfweight()
@@ -83,7 +83,7 @@ form.to_json(file_adress)
 
 plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
 
-# --------------------- Create Minimisation for maximum thrust ---------------------
+# --------------------- 3.3 Create Minimisation for maximum thrust ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
