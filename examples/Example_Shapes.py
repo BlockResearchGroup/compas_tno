@@ -8,15 +8,13 @@ from compas_tno.viewers.shapes import view_intrados
 # -----------PARAMERIC SHAPES (uncomment data) -----------------
 # --------------------------------------------------------------
 
-# WIP ADD CIRCULAR ARCH
-
-# data = {
-#     'type': 'crossvault',
-#     'thk': 0.5,
-#     'discretisation': [50, 50],
-#     'xy_span': [[0.0,10.0],[0.0,10.0]],
-#     't' : 0.0
-# }
+data = {
+    'type': 'crossvault',
+    'thk': 0.5,
+    'discretisation': [50, 50],
+    'xy_span': [[0.0,10.0],[0.0,10.0]],
+    't' : 0.0
+}
 
 # data = {
 #     'type': 'pavillionvault',
@@ -35,15 +33,16 @@ from compas_tno.viewers.shapes import view_intrados
 #     't' : 0.0
 # }
 
-data = {
-    'type': 'arch',
-    'H': 0.50,
-    'L': 2.0,
-    'thk': 0.10,
-    'discretisation': 13,
-    'b': 0.5,
-    't': 0.4,
-}
+# data = {
+#     'type': 'arch',
+#     'H': 0.50,
+#     'L': 2.0,
+#     'thk': 0.10,
+#     'discretisation': 13,
+#     'b': 0.5,
+#     't': 0.4,
+#     'x0': 0.0,
+# }
 
 vault = Shape.from_library(data)
 

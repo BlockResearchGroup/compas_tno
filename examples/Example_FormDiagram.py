@@ -100,7 +100,7 @@ data = {
     'center': [5.0, 5.0],
     'radius': 5.0,
     'discretisation': [8, 20],
-    'r_oculus': 2.0,
+    'r_oculus': 0.0,
 }
 
 form = FormDiagram.from_library(data)

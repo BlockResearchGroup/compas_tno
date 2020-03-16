@@ -3,7 +3,7 @@ from compas.utilities import geometric_key
 import math
 
 
-def create_arch(FormDiag, H=1.00, L=2.0, x0=0.0, total_nodes=100):
+def create_arch(cls, H=1.00, L=2.0, x0=0.0, total_nodes=100):
     """ Helper to create a arch linear form-diagram.
 
     Parameters
@@ -51,8 +51,8 @@ def create_arch(FormDiag, H=1.00, L=2.0, x0=0.0, total_nodes=100):
         elif i == total_nodes - 2:
             gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
 
-    form = Mesh.from_lines(lines)
-    form = FormDiag.from_mesh(form)
+    mesh = Mesh.from_lines(lines)
+    form = cls.from_mesh(mesh)
     gkey_key = form.gkey_key(precision=6)
 
     form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)

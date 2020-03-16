@@ -78,7 +78,7 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()  # Find independent edges
 analysis.run()
 form = analysis.form
-file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+file_adress = '/Users/mricardo/compas_dev/me/reformulation/test_min.json'
 form.to_json(file_adress)
 
 plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
@@ -106,7 +106,7 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()  # Find independent edges
 analysis.run()
 form = analysis.form
-file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+file_adress = '/Users/mricardo/compas_dev/me/reformulation/test_max.json'
 form.to_json(file_adress)
 
 plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()

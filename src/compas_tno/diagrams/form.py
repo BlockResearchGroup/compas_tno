@@ -1,6 +1,5 @@
 
 from compas.utilities import geometric_key
-from compas_tna.diagrams import FormDiagram
 from compas.numerical import connectivity_matrix
 from random import shuffle
 from numpy import max
@@ -16,6 +15,18 @@ from compas_tno.diagrams.diagram_rectangular import create_fan_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_form
 from compas_tno.diagrams.diagram_circular import create_circular_spiral_form
+from compas_tno.diagrams.diagram_rectangular import create_ortho_form
+
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_force
+
+from compas_tno.diagrams import ForceDiagram
+from compas_tna.diagrams import FormDiagram
+
+from compas_tna.equilibrium import horizontal
+from compas_tna.equilibrium import horizontal_nodal
+from compas_tna.equilibrium import vertical_from_zmax
+
 
 
 __all__ = [
@@ -107,6 +118,8 @@ class FormDiagram(FormDiagram):
             form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'fan_fd':
             form = cls().create_fan_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+        if form_type == 'ortho':
+            form = cls().create_ortho_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'radial_fd':
             form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'],
                                                      r_oculus=data['r_oculus'], diagonal=data['diagonal'], partial_diagonal=data['partial_diagonal'])
@@ -193,6 +206,32 @@ class FormDiagram(FormDiagram):
         """
 
         form = create_fan_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+
+        return form
+
+    @classmethod
+    def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
+        """ Helper to construct a FormDiagram based on a simple orthogonal discretisation.
+
+        Parameters
+        ----------
+        xy_span : list
+            List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+        division: int
+            Set the density of the grid in x and y directions.
+
+        fix : string
+            Option to select the constrained nodes: 'corners', 'all' are accepted.
+
+        Returns
+        -------
+        obj
+            FormDiagram.
+
+        """
+
+        form = create_ortho_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
 
         return form
 
@@ -508,15 +547,16 @@ class FormDiagram(FormDiagram):
 # -----------------------TNA-CONECTION--------------------------- #
 # --------------------------------------------------------------- #
 
-    def add_feet(self, delete_face=False):
+
+    def add_feet_(self, delete_face=False):
         """ Add feet to the support as in compas_tna.
         """
 
         if delete_face:
             self.delete_face(0)
         corners = list(self.vertices_where({'is_fixed': True}))
-        self.set_vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
-        self.update_boundaries(feet=2)
+        self.vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
+        self.update_boundaries(self, feet=2)
 
         return self
 
@@ -572,7 +612,6 @@ class FormDiagram(FormDiagram):
             form_.edge_attribute((u, v), name='q', value=qi)
 
         return form_
-
 
     def evaluate_scale(self, function, bounds, n = 100, plot = True):
 
@@ -739,31 +778,45 @@ class FormDiagram(FormDiagram):
 # -----------------------CHECK IMPORTANCE---------------------------- #
 # ------------------------------------------------------------------- #
 
-    # def adapt_tna(form, zmax=5.0, method='nodal', plot=False, delete_face=False, alpha=100.0, kmax=100, display=False):
+    def initialise_tna(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, display=False):
 
-    #     form = add_feet(form, delete_face=delete_face, plot=plot)
-    #     force = ForceDiagram.from_formdiagram(form)
+        corners = list(self.vertices_where({'is_fixed': True}))
+        self.vertices_attribute('is_anchor', True, keys=corners)
+        self.edges_attribute('fmin', 0.0)
+        self.update_boundaries(feet=2)
+        force = ForceDiagram.from_formdiagram(self)
+        if plot:
+            print('Plot of Dual')
+            force.plot()
+            plot_form(self, show_q=False, fix_width=True).show()
 
-    #     if method == 'nodal':
-    #         horizontal_nodal(form, force, alpha=alpha, kmax=kmax, display=False)
-    #     else:
-    #         horizontal(form, force, alpha=alpha, kmax=kmax, display=False)
+        if method == 'nodal':
+            horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
+        else:
+            horizontal(form, self, alpha=alpha, kmax=kmax, display=False)
 
-    #     # Vertical Equilibrium with no updated loads
+        # Vertical Equilibrium with no updated loads
 
-    #     form0 = copy(form)
-    #     form_ = scale_form(form0, 1.0)
-    #     z = [form_.vertex_attribute(key, 'z') for key in form_.vertices()]
-    #     z_ = max(z)
-    #     scale = (z_ / zmax)
-    #     form = scale_form(form0, scale)
+        vertical_from_zmax(self, zmax)
+        self = self.remove_feet()
 
-    #     if plot:
-    #         plot_form(form).show()
-    #         plot_force(force, form).show()
-    #         force.plot()
+        # form0 = copy(self)
+        # form_ = scale_form(form0, 1.0)
+        # z = [form_.vertex_attribute(key, 'z') for key in form_.vertices()]
+        # z_ = max(z)
+        # scale = (z_ / zmax)
+        # form = scale_form(form0, scale)
 
-    #     return form
+        if plot:
+            print('Plot of Reciprocal')
+            force.plot()
+
+        # if plot:
+        #     plot_form(self).show()
+        #     plot_force(force, self).show()
+        #     force.plot()
+
+        return self
 
     # def adapt_objective(form, zrange=[3.0, 8.0], objective='loadpath', method='nodal', discr=100, plot=False,
     #                     delete_face=False, alpha=100.0, kmax=100, display=False, amax=2.0, rmax=0.01):

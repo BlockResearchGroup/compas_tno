@@ -40,6 +40,9 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
 
     """
 
+    if isinstance(discretisation, int):
+        discretisation = [discretisation, discretisation]
+
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
     x1 = xy_span[0][1]

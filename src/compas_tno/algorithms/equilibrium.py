@@ -66,9 +66,9 @@ def z_from_form(mesh):
     # preprocess
 
     k_i = mesh.key_index()
-    xyz = mesh.get_vertices_attributes(('x', 'y', 'z'))
-    loads = mesh.get_vertices_attributes(('px', 'py', 'pz'))
-    q = mesh.get_edges_attribute('q')
+    xyz = mesh.vertices_attributes(('x', 'y', 'z'))
+    loads = mesh.vertices_attributes(('px', 'py', 'pz'))
+    q = mesh.edges_attribute('q')
     fixed = mesh.vertices_where({'is_fixed': True})
     fixed = [k_i[k] for k in fixed]
     edges = [(k_i[u], k_i[v]) for u, v in mesh.edges()]
