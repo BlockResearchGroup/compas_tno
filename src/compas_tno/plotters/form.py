@@ -118,7 +118,41 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     return plotter
 
 def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, save=False):
+    """ Plot a FormDiagram in axis xz
 
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    shape: obj
+        Shape to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    max_width : bool
+        Maximum width of the plot.
+    max_width : float
+        Maximum edge width.
+    simple : bool
+        Simple red and blue colour plotting.
+    show_q : bool
+        Show the force densities on the edges.
+    thick : str
+        Attribute that the thickness of the form should be related to.
+    heights : bool
+        Plot the heights of the nodes.
+    show_edgeuv : bool
+        Show u,v of the edges.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
     i_k = form.index_key()
     gkey_key = form.gkey_key()
     q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'is_edge': True})]

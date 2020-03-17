@@ -65,44 +65,7 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">Forcediagram</span></code> class imports the attributes and set ups from compas_tna.diagrams.FormDiagram and include some functionalities useful for the assessment of masonry structures.</p>
 <p>It defined the form-diagram that will be the layout of the forces within the structure</p>
 <p class="rubric">Notes</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Shape</span></code> has the following constructor functions</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">from_library</span></code> : Construct the shape from a dictionary with instructions, the library supports the creation of parametric arches, domes, and vaults.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">from_rhinomesh</span></code> : Construct Extrados, Intrados and Middle surfaces from RhinoMeshes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">from_rhinosurface</span></code> : Construct Extrados, Intrados and Middle surfaces using the U and V isolines.</p></li>
-</ul>
-<p>A <code class="docutils literal notranslate"><span class="pre">Shape</span></code> has the following elements:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">data</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>  : The type of the vault to be constructed.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">xy_span</span></code>  : Planar range of the structure.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">density</span></code>  : Density of the highfield.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">thickness</span></code> : Mean thickness of the vault.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">t</span></code> : The numerical for the negative bounds on the height of the fixed nodes.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">discretisation</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">array</span></code>    : (2 x n) array with the coordinate of the n points with intrados, extrados and middle evaluated.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">intrados</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Mesh</span></code>    : Mesh representing intrados.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">extrados</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Mesh</span></code>    : Mesh representing extrados.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">middle</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Mesh</span></code>    : Mesh representing middle surface</p></li>
-</ul>
-</li>
-</ul>
+<p>A <code class="docutils literal notranslate"><span class="pre">ForceDiagram</span></code> is generated as the dual of the <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> and it makes sense for structural analysis when both diagrams are reciprocal, i.e. when each edge in the Force diagram parallel to its corresponding edge in the Form diagram.</p>
 <p class="rubric">Attributes</p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -688,6 +651,8 @@
 <li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.diagrams.html">compas_tno.diagrams</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.plotters.html">compas_tno.plotters</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.viewers.html">compas_tno.viewers</a></li>
 </ul>
 </li>
 </ul>

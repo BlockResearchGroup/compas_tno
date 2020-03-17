@@ -58,8 +58,56 @@
 
                     <div class="section" id="getting-started">
 <h1>Getting Started</h1>
-<div class="section" id="installation">
-<h2>Installation</h2>
+<div class="section" id="create-an-environment">
+<h2>Create an environment</h2>
+<p>We highly recommend to install <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> and related packages in a separate conda environment. In this guide, we will create and use an environmenment based on Python 3.7 with the name “tno”, referring to “Thrust Network Analysis”, but you can use any other name you like (except for “base”, which is the name of the root environment of your conda installation).</p>
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#replace_python_windows">Windows</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#replace_python_osx">OSX</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content"><div class="tab-pane active" id="replace_python_windows"><div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda create -n tno -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 COMPAS shapely
+</code></pre></div>
+</div>
+</div>
+<div class="tab-pane" id="replace_python_osx"><div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda create -n tno -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 python.app COMPAS shapely
+</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<div class="section" id="activate-the-environment">
+<h2>Activate the environment</h2>
+<p>The root environment is active by default. Therefore, you should not forget to activate the “tno” environment whenever you want to work with <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> and its related packages.</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda activate tno
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="installing-parent-package-compas-tna">
+<h2>Installing parent package compas_tna</h2>
+<p>One of the requisites of <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> is the installation alongside its parent package <code class="docutils literal notranslate"><span class="pre">compas_tna</span></code>.</p>
+<p>With pip, <code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tna</span></code> can be installed directly from the GitHub repo.</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>pip install git+https://github.com/BlockResearchGroup/compas_tna.git#egg<span class="o">=</span>compas_tna
+</code></pre></div>
+</div>
+<p>Or from local source files, you need to navigate to your code folder (folder in which you place you packages) and then do:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>git clone https://github.com/BlockResearchGroup/compas_tna.git
+<span class="nb">cd</span> compas_tna
+pip install -e .
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="installing-compas-tno">
+<h2>Installing compas_tno</h2>
+<p>Now the installation of <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> is done in a similar fashion.</p>
 <p>With pip, <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> can be installed directly from the GitHub repo.</p>
 <div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>pip install git+https://github.com/BlockResearchGroup/compas_tno.git#egg<span class="o">=</span>compas_tno
 </code></pre></div>
@@ -78,20 +126,9 @@ pip install -e .
 </code></pre></div>
 </div>
 </div>
-<div class="section" id="main-dependency">
-<h2>Main dependency</h2>
-<p>The main dependency of the program is the parent package <code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tna</span></code>. To install it follow the instructions of installation on the website:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://blockresearchgroup.github.io/compas_tna/tutorial.html">https://blockresearchgroup.github.io/compas_tna/tutorial.html</a></p></li>
-<li><p><a class="reference external" href="https://blockresearchgroup.github.io/compas_tna/examples.html">https://blockresearchgroup.github.io/compas_tna/examples.html</a></p></li>
-<li><p><a class="reference external" href="https://blockresearchgroup.github.io/compas_tna/api.html">https://blockresearchgroup.github.io/compas_tna/api.html</a></p></li>
-</ul>
-</div>
 <div class="section" id="solver-s-dependency">
 <h2>Solver’s dependency</h2>
-<p>Note that with the insntallation of <a class="reference external" href="https://compas-dev.github.io/main/api/compas.html#module-compas" title="(in COMPAS v0.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas</span></code></a> the packages scipy and numpy are already installed. Thie package scipy contains the nonlinear solver SLSQP
-that will be the main tool of this package. However, to fully use the functionalities of <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> you should add to your installation a series of optimisation
-packages, that are listed here in order of importance.</p>
+<p>Note that with the installation of <code class="docutils literal notranslate"><span class="pre">compas</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_tna</span></code> the packages scipy and numpy are already installed. Thie package scipy contains the nonlinear solver SLSQP that will be the main tool of this package. However, to fully use the functionalities of <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> you should add to your installation a series of optimisation packages, that are listed here in order of importance.</p>
 <ol class="arabic simple">
 <li><p>CVX via MATLAB:</p></li>
 </ol>
@@ -178,9 +215,11 @@ packages, that are listed here in order of importance.</p>
 
                 <ul class="nav flex-column" id="compas-localnav">
 <li class="nav-item"><a class="nav-link reference internal" href="#">Getting Started</a><ul class="nav">
-<li class="nav-item"><a class="nav-link reference internal" href="#installation">Installation</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#create-an-environment">Create an environment</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#activate-the-environment">Activate the environment</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#installing-parent-package-compas-tna">Installing parent package compas_tna</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#installing-compas-tno">Installing compas_tno</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#rhino-configuration">Rhino Configuration</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#main-dependency">Main dependency</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#solver-s-dependency">Solver’s dependency</a></li>
 </ul>
 </li>

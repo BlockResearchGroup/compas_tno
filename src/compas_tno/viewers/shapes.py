@@ -7,7 +7,7 @@ __all__ = [
     'view_intrados',
     'view_extrados',
     'view_middle',
-    'view_shapes',
+    'view_shapes'
 ]
 
 

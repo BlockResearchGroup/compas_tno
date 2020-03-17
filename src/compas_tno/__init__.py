@@ -11,13 +11,10 @@ compas_tno
 
     compas_tno.algorithms
     compas_tno.analysis
-    compas_tno.blender
     compas_tno.diagrams
     compas_tno.optimisers
-    compas_tno.plottters
-    compas_tno.rhino
     compas_tno.shapes
-    compas_tno.utilities
+    compas_tno.plotters
     compas_tno.viewers
 
 """

@@ -19,7 +19,11 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/compas-reference.css" />
 
     
+        <link rel="next" title="plot_dual" href="compas_tno.plotters.plot_dual.html" />
     
+    
+    
+        <link rel="prev" title="plot_form" href="compas_tno.plotters.plot_form.html" />
     
 
     <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
@@ -57,7 +61,29 @@
 <dl class="function">
 <dt id="compas_tno.plotters.plot_form_xz">
 <code class="sig-prename descclassname">compas_tno.plotters.</code><code class="sig-name descname">plot_form_xz</code><span class="sig-paren">(</span><em class="sig-param">form</em>, <em class="sig-param">shape</em>, <em class="sig-param">radius=0.05</em>, <em class="sig-param">fix_width=False</em>, <em class="sig-param">max_width=10</em>, <em class="sig-param">simple=False</em>, <em class="sig-param">show_q=False</em>, <em class="sig-param">plot_reactions=True</em>, <em class="sig-param">cracks=False</em>, <em class="sig-param">save=False</em><span class="sig-paren">)</span></dt>
-<dd></dd></dl>
+<dd><p>Plot a FormDiagram in axis xz</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>form</strong> (<em>obj</em>) – FormDiagram to plot.</p></li>
+<li><p><strong>shape</strong> (<em>obj</em>) – Shape to plot.</p></li>
+<li><p><strong>radius</strong> (<em>float</em>) – Radius of vertex markers.</p></li>
+<li><p><strong>fix_width</strong> (<em>bool</em>) – Fix edge widths as constant.</p></li>
+<li><p><strong>max_width</strong> (<em>bool</em>) – Maximum width of the plot.</p></li>
+<li><p><strong>max_width</strong> (<em>float</em>) – Maximum edge width.</p></li>
+<li><p><strong>simple</strong> (<em>bool</em>) – Simple red and blue colour plotting.</p></li>
+<li><p><strong>show_q</strong> (<em>bool</em>) – Show the force densities on the edges.</p></li>
+<li><p><strong>thick</strong> (<em>str</em>) – Attribute that the thickness of the form should be related to.</p></li>
+<li><p><strong>heights</strong> (<em>bool</em>) – Plot the heights of the nodes.</p></li>
+<li><p><strong>show_edgeuv</strong> (<em>bool</em>) – Show u,v of the edges.</p></li>
+<li><p><strong>save</strong> (<em>str</em>) – Path to save the figure, if desired.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>obj</em> – Plotter object.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 
@@ -87,12 +113,24 @@
                         <div class="navbar-expand-md">
                             <div id="compas-navigation" class="collapse navbar-collapse compas-navigation">
 
-                            <ul class="nav flex-column">
+                            <ul class="nav flex-column active">
 <li class="nav-item"><a class="nav-link reference internal" href="../../intro.html">Introduction</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../gettingstarted.html">Getting Started</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../examples.html">Examples</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="../../api.html">API Reference</a></li>
+<li class="nav-item active"><a class="nav-link reference internal" href="../../api.html">API Reference</a><ul class="nav active">
+<li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.html">compas_tno</a><ul class="nav active">
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.diagrams.html">compas_tno.diagrams</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.plotters.html">compas_tno.plotters</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.viewers.html">compas_tno.viewers</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../license.html">License</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../citing.html">Citing</a></li>
 </ul>

@@ -17,6 +17,7 @@ compas_tno.viewers
     view_thrust
 
 """
+
 from __future__ import absolute_import
 
 from .shapes import *
