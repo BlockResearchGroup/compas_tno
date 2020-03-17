@@ -42,37 +42,21 @@ class FormDiagram(FormDiagram):
 
     Notes
     -----
-    A ``Shape`` has the following constructor functions
+    A ``FormDiagram`` has the following constructor functions
 
     *   ``from_library`` : Construct the shape from a dictionary with instructions, the library supports the creation of parametric arches, domes, and vaults.
     *   ``from_rhinomesh`` : Construct Extrados, Intrados and Middle surfaces from RhinoMeshes.
     *   ``from_rhinosurface`` : Construct Extrados, Intrados and Middle surfaces using the U and V isolines.
 
-    A ``Shape`` has the following elements:
+    A parametric ``FormDiagram`` contains the following information:
 
     *   ``data``
 
-        *   ``type``  : The type of the vault to be constructed.
+        *   ``type``  : The type of the Form Diafram to be constructed.
         *   ``xy_span``  : Planar range of the structure.
-        *   ``density``  : Density of the highfield.
-        *   ``thickness`` : Mean thickness of the vault.
-        *    ``t`` : The numerical for the negative bounds on the height of the fixed nodes.
-
-    *   ``discretisation``
-
-        *   ``array``    : (2 x n) array with the coordinate of the n points with intrados, extrados and middle evaluated.
-
-    *   ``intrados``
-
-        *   ``Mesh``    : Mesh representing intrados.
-
-    *   ``extrados``
-
-        *   ``Mesh``    : Mesh representing extrados.
-
-    *   ``middle``
-
-        *   ``Mesh``    : Mesh representing middle surface
+        *   ``radius``  : In case of a circular diagram.
+        *   ``center``  : In case of a circular diagram.
+        *   ``density``  : Density of the diagram.
 
     """
 

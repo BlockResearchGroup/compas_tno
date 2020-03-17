@@ -9,19 +9,11 @@ class Optimiser(object):
 
     Notes
     -----
-    An ``Optimiser`` has the following solvers that can be created.
+    An ``Optimiser`` keeps track in the following information in the dictionary stored in Optimiser.data:
 
-    *   ``from_SciPy`` : Choses from one of the several options of Scipy solvers
-    *   ``from_PyOpt`` : Choses from one of the several options of PyOpt solvers
-    *   ``from_IPOPT`` : Choses from one of the several options of IPopt solvers
-    *   ``from_Matlab`` : Choses from one of the several options of MATLAB solvers
-    *   ``from_MMA`` : Use MMA solver
-
-    The main parameters to be set in the optimiser vary from the solver and generally are are:
-
-        *  'library'           : 'Scipy',
-        *  'solver'            : 'slsqp',
-        *  'objective'         : 'min-thrust',
+        *  'library'           : ['Scipy','MATLAB','MMA','IPOPT','Scipy', ... others to come]
+        *  'solver'            : ['slsqp','SDPT3','MMA', ... others to come],
+        *  'objective'         : ['min','max','loadpath','target'],
         *  'constraints'       : ['funicular', 'envelope', 'reac_bounds', 'partial_reactions', 'cracks'],
         *  'variables'         : ['ind', 'zb', 'all-qs'],
         *  'use_indset'        : True,

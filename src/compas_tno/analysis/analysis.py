@@ -22,7 +22,7 @@ class Analysis(object):
 
     *   ``initialise`` : Construct the Analysis for a given FormDiagram, Shape and Optimiser.
 
-    A ``Shape`` has the following elements:
+    A ``Analysis`` is composed by the following elements:
 
     *   ``FormDiagram``
 
@@ -51,7 +51,7 @@ class Analysis(object):
     To run the optimisation and see results one can use:
 
         *   ``run``    : Method that will run the specified optimiser in the problem
-        *  ``results_summary``:
+        *  ``results_summary``: Work in progress
 
     """
 

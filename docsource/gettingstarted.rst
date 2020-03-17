@@ -5,7 +5,7 @@ Getting Started
 Create an environment
 =====================
 
-We highly recommend to install ``compas_tno`` and related packages in a separate conda environment. In this guide, we will create and use an environmenment based on Python 3.7 with the name "tno", referring to "Thrust Network Analysis", but you can use any other name you like (except for "base", which is the name of the root environment of your conda installation).
+We highly recommend to install ``compas_tno`` and related packages in a separate conda environment. In this guide, we will create and use an environmenment based on Python 3.7 with the name "tno", referring to "Thrust Network Optimisation", but you can use any other name you like (except for "base", which is the name of the root environment of your conda installation).
 
 .. raw:: html
 
