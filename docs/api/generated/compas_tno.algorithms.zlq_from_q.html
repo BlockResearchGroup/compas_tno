@@ -61,7 +61,25 @@
 <dl class="function">
 <dt id="compas_tno.algorithms.zlq_from_q">
 <code class="sig-prename descclassname">compas_tno.algorithms.</code><code class="sig-name descname">zlq_from_q</code><span class="sig-paren">(</span><em class="sig-param">q</em>, <em class="sig-param">args</em><span class="sig-paren">)</span></dt>
-<dd></dd></dl>
+<dd><p>Calculate z’s from all q’s.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> (<em>array</em>) – Force densities of all edges.</p></li>
+<li><p><strong>args</strong> (<em>tuple</em>) – Arrays and matrices relevant to the operation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>z</strong> (<em>array</em>) – Heights of the nodes</p></li>
+<li><p><strong>l2</strong> (<em>array</em>) – Lenghts squared</p></li>
+<li><p><strong>q</strong> (<em>array</em>) – Force densities without symetrical edges (q[sym] = 0)</p></li>
+<li><p><strong>q_</strong> (<em>array</em>) – Force densities with symetrical edges</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 
@@ -94,17 +112,21 @@
                             <ul class="nav flex-column active">
 <li class="nav-item"><a class="nav-link reference internal" href="../../intro.html">Introduction</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../tutorial.html">Tutorial</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../examples.html">Examples</a></li>
 <li class="nav-item active"><a class="nav-link reference internal" href="../../api.html">API Reference</a><ul class="nav active">
 <li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.html">compas_tno</a><ul class="nav active">
 <li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.diagrams.html">compas_tno.diagrams</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="nav-item"><a class="nav-link reference internal" href="../../license.html">License</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../citing.html">Citing</a></li>
 </ul>
 
 
@@ -135,7 +157,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Dec 13, 2019.
+                Last updated on Mar 17, 2020.
             
 
             

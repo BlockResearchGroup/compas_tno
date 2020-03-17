@@ -30,12 +30,6 @@ class Optimiser(object):
         *  'fopt'              : None,
         *  'xopt'              : None,
 
-
-    To run the optimisation and see results one can use:
-
-        *   ``run``    : Method that will run the specified optimiser in the problem
-        *  ``results_summary``:
-
     """
 
     __module__ = 'compas_tna.optimiser'

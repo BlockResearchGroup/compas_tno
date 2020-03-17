@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>compas_tno</title>
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <meta name="author" content="" />
+    <meta name="description" content="" />
+
+    <link rel="shortcut icon" href="../../_static/images/compas.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/styles/default.min.css">
+    <!-- <link rel="stylesheet" type="text/css" href="../../_static/css/prism.css" /> -->
+    <link rel="stylesheet" type="text/css" href="../../_static/css/compas.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/compas-reference.css" />
+
+    
+        <link rel="next" title="Analysis.__init__" href="compas_tno.analysis.Analysis.__init__.html" />
+    
+    
+    
+        <link rel="prev" title="compas_tno.analysis" href="../compas_tno.analysis.html" />
+    
+
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+</head>
+
+<body data-spy="scroll" data-target="#compas-localnav">
+
+    <nav class="navbar navbar-expand compas-navbar">
+        <a class="navbar-brand" href="/">
+            <img src="../../_static/images/compas_icon_white.png" width="36px" height="36px" alt="compas" />
+        </a>
+
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="../../index.html">compas_tno</a></li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" target="_blank" href="">Github</a></li>
+            <li class="nav-item"><a class="nav-link" target="_blank" href="https://compas-dev.github.io">COMPAS framework</a></li>
+        </ul>
+    </nav>    
+
+    <div class="container-fluid">
+        <div class="row flex-xl-nowrap">
+
+            <main class="col-12 col-md-9 col-xl-8 compas-content" role="main">
+                <div class="container">
+                
+
+                    
+
+                    <div class="detail section" id="analysis">
+<h1>Analysis</h1>
+<dl class="class">
+<dt id="compas_tno.analysis.Analysis">
+<em class="property">class </em><code class="sig-prename descclassname">compas_tno.analysis.</code><code class="sig-name descname">Analysis</code></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Analysis</span></code> class puts together the FormDiagram, the Shape and the Optimiser, assign loads, partial supports, cracks and much more to come…</p>
+<p class="rubric">Notes</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">Analysis</span></code> has the following constructor functions</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">initialise</span></code> : Construct the Analysis for a given FormDiagram, Shape and Optimiser.</p></li>
+</ul>
+<p>A <code class="docutils literal notranslate"><span class="pre">Shape</span></code> has the following elements:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code>  : Layout for the forces to follow</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Optimiser</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Optimiser</span></code>    : Information about the solver and other specificities.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Shape</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Shape</span></code>    : Intrados, Extrados and Middle surface of the structure.</p></li>
+</ul>
+</li>
+</ul>
+<p>The main methods available with the <code class="docutils literal notranslate"><span class="pre">Analysis</span></code> previous to runing the optimisation are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_selfweight</span></code>        : Apply deadload to the structure based on the shape.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_pointed_load</span></code>      : Apply pointed load to the structure in a given key, in a direction ‘px’, ‘py’, ‘pz’.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_hor_multiplier</span></code>    : Apply horizontal multiplier in a direction ‘px’, ‘py’, ‘pz’.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_envelope</span></code>          : Apply Envelope to the nodes’ attributes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">aplpy_cracks</span></code>            : Create aditional constraints on the cracks.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_reaction_bounds</span></code>   : Create bounds on the position of the reactions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">apply_partial_reactions</span></code> : Allow for partial reactions to form on the open edges.</p></li>
+</ul>
+</div></blockquote>
+<p>To run the optimisation and see results one can use:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">run</span></code>    : Method that will run the specified optimiser in the problem</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">results_summary</span></code>:</p></li>
+</ul>
+</div></blockquote>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.__init__.html#compas_tno.analysis.Analysis.__init__" title="compas_tno.analysis.Analysis.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p>Initialize self.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_cracks.html#compas_tno.analysis.Analysis.apply_cracks" title="compas_tno.analysis.Analysis.apply_cracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_cracks</span></code></a>(key, position)</p></td>
+<td><p>Apply cracks on the nodes (key) and in the positions up / down</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_envelope.html#compas_tno.analysis.Analysis.apply_envelope" title="compas_tno.analysis.Analysis.apply_envelope"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_envelope</span></code></a>()</p></td>
+<td><p>Apply ub and lb to the nodes based on the shape’s intrados and extrados</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_hor_multiplier.html#compas_tno.analysis.Analysis.apply_hor_multiplier" title="compas_tno.analysis.Analysis.apply_hor_multiplier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_hor_multiplier</span></code></a>(multiplier, component)</p></td>
+<td><p>Apply a multiplier on the selfweight to the nodes of the form diagram based</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_partial_reactions.html#compas_tno.analysis.Analysis.apply_partial_reactions" title="compas_tno.analysis.Analysis.apply_partial_reactions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_partial_reactions</span></code></a>(key, direction, …)</p></td>
+<td><p>Apply ub and lb to the nodes based on the shape’s intrados and extrados</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_pointed_load.html#compas_tno.analysis.Analysis.apply_pointed_load" title="compas_tno.analysis.Analysis.apply_pointed_load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_pointed_load</span></code></a>(key, direction, magnitude)</p></td>
+<td><p>Apply pointed load a node of the form diagram based on the shape</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_reaction_bounds.html#compas_tno.analysis.Analysis.apply_reaction_bounds" title="compas_tno.analysis.Analysis.apply_reaction_bounds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_reaction_bounds</span></code></a>()</p></td>
+<td><p>Apply limit thk to be respected by the anchor points</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_selfweight.html#compas_tno.analysis.Analysis.apply_selfweight" title="compas_tno.analysis.Analysis.apply_selfweight"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_selfweight</span></code></a>()</p></td>
+<td><p>Apply selfweight to the nodes of the form diagram based on the shape</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.apply_target.html#compas_tno.analysis.Analysis.apply_target" title="compas_tno.analysis.Analysis.apply_target"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_target</span></code></a>()</p></td>
+<td><p>Apply ub and lb to the nodes based on the shape’s intrados and extrados</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.from_elements.html#compas_tno.analysis.Analysis.from_elements" title="compas_tno.analysis.Analysis.from_elements"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_elements</span></code></a>(shape, form, optimiser)</p></td>
+<td><p>Create a analysis from the elements of the problem</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.run.html#compas_tno.analysis.Analysis.run" title="compas_tno.analysis.Analysis.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a>()</p></td>
+<td><p>With the data from the elements of the problem compute the matrices for the optimisation</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.set_up_optimiser.html#compas_tno.analysis.Analysis.set_up_optimiser" title="compas_tno.analysis.Analysis.set_up_optimiser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_up_optimiser</span></code></a>()</p></td>
+<td><p>With the data from the elements of the problem compute the matrices for the optimisation</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Inherited Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+                    
+                
+                </div>
+            </main>
+
+            <!-- site navigation sidebar -->
+
+            <div class="col-12 col-md-3 col-xl-2 compas-sidebar" role="navigation"> 
+                <div class="navbar-light">
+
+                    <form id="" class="d-flex compas-searchbox" action="../../search.html" method="get">
+                        <input class="form-control" type="text" name="q" placeholder="Search docs" />
+                        <input type="hidden" name="check_keywords" value="yes" />
+                        <input type="hidden" name="area" value="default" />
+
+                        <button class="navbar-toggler d-md-none compas-navigation-toggler" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                    </form>
+
+                    
+                    
+
+                        <div class="navbar-expand-md">
+                            <div id="compas-navigation" class="collapse navbar-collapse compas-navigation">
+
+                            <ul class="nav flex-column active">
+<li class="nav-item"><a class="nav-link reference internal" href="../../intro.html">Introduction</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../tutorial.html">Tutorial</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../examples.html">Examples</a></li>
+<li class="nav-item active"><a class="nav-link reference internal" href="../../api.html">API Reference</a><ul class="nav active">
+<li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.html">compas_tno</a><ul class="nav active">
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="nav-item active"><a class="nav-link reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.diagrams.html">compas_tno.diagrams</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../license.html">License</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="../../citing.html">Citing</a></li>
+</ul>
+
+
+                            </div>
+                        </div>
+
+                    
+
+                </div>
+            </div>
+
+            <!-- table of contents of main content -->
+            
+            <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+
+                
+
+                <ul class="nav flex-column" id="compas-localnav">
+<li class="nav-item"><a class="nav-link reference internal" href="#">Analysis</a><ul class="nav">
+</ul>
+</li>
+</ul>
+
+
+            </div>
+
+        </div>
+    </div>
+
+    <footer class="bg-dark pb-5">
+        <div class="container text-center pt-5 pb-5 text-muted">
+            
+                Last updated on Mar 17, 2020.
+            
+
+            
+                Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.1.2.
+            
+        </div>
+    </footer>
+
+    
+        <script type="text/javascript">
+            var DOCUMENTATION_OPTIONS = {
+            URL_ROOT          : '',
+            VERSION           : '0.1.0',
+            COLLAPSE_INDEX    : false,
+            FILE_SUFFIX       : '.html',
+            HAS_SOURCE        : 'false',
+            SOURCELINK_SUFFIX : '.txt'
+            };
+        </script>
+
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.7.1/clipboard.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.9/highlight.min.js"></script>
+
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/js/searchtools_.js"></script>
+        <!-- <script src="../../_static/js/prism.js"></script> -->
+
+        <script>
+        $(document).ready(function() {
+        $(".language-default code").addClass("python");
+        $(".language-python code").addClass("python");
+        $(".language-bash code").addClass("bash");
+        $(".language-cpp code").addClass("cpp");
+        $(".language-json code").addClass("json");
+        $(".language-none code").addClass("plaintext");
+
+        hljs.initHighlighting();
+        anchors.add();
+        });
+        </script>
+    
+</body>
+</html>

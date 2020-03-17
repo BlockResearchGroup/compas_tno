@@ -10,6 +10,7 @@ compas_tno.diagrams
     :nosignatures:
 
     FormDiagram
+    ForceDiagram
 
 """
 from __future__ import absolute_import

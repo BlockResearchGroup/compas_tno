@@ -125,6 +125,22 @@ def zlq_from_qid(qid, args):
 
 
 def q_from_qid(qid, args):
+    """ Calculate q's from all qid's.
+
+    Parameters
+    ----------
+    qid : list
+        Force densities of the independent edges.
+    args : tuple
+        Arrays and matrices relevant to the operation.
+
+
+    Returns
+    -------
+    q : array
+        Force densities on all edges.
+
+    """
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
 
@@ -138,6 +154,28 @@ def q_from_qid(qid, args):
 
 
 def zlq_from_q(q, args):
+    """ Calculate z's from all q's.
+
+    Parameters
+    ----------
+    q : array
+        Force densities of all edges.
+    args : tuple
+        Arrays and matrices relevant to the operation.
+
+
+    Returns
+    -------
+    z : array
+        Heights of the nodes
+    l2 : array
+        Lenghts squared
+    q : array
+        Force densities without symetrical edges (q[sym] = 0)
+    q_ : array
+        Force densities with symetrical edges
+
+    """
 
     q_old, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
     q_ = 1 * q
@@ -233,6 +271,7 @@ def z_update(form):
         attr['z'] = xyz[index, 2]
 
     return form
+
 
 def update_tna(form, delete_face=True, plots=False, save=False):
 
@@ -474,6 +513,21 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
 
 
 def reactions(form, plot=False):
+    """ Compute and plot the reaction on the supports.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        FormDiagram to calculate the reactions.
+    plot : bool
+        True/False to plot the reactions.
+
+
+    Returns
+    -------
+
+    """
+
 
     # Mapping
 

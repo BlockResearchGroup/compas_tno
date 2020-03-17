@@ -1,8 +1,6 @@
 
-from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.viewers.shapes import view_shapes
-from compas_tno.viewers.shapes import view_intrados
 
 # --------------------------------------------------------------
 # -----------PARAMERIC SHAPES (uncomment data) -----------------
@@ -55,13 +53,6 @@ points = [
     [0.0, 5.0],
 ]
 
-points = [
-    [0,0],
-    [1.0,0.0],
-    [2.0,0.0],
-    [0.5,0.0],
-]
-
 for pt in points:
     print('Point:', pt, 'evaluated on Target / Extrados / Intrados:', pt)
     print(vault.get_middle(pt[0], pt[1]))
@@ -69,4 +60,3 @@ for pt in points:
     print(vault.get_lb(pt[0], pt[1]))
 
 view_shapes(vault).show()
-view_intrados(vault).show()

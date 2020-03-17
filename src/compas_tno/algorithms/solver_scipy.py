@@ -21,6 +21,19 @@ __all__ = [
 
 
 def run_optimisation_scipy(analysis):
+    """ Run nonlinear optimisation problem with scipy
+
+    Parameters
+    ----------
+    obj : analysis
+        Analysis object with information about optimiser, form and shape.
+
+    Returns
+    -------
+    obj : analysis
+        Analysis object optimised.
+
+    """
 
     form = analysis.form
     optimiser = analysis.optimiser

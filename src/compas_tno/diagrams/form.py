@@ -788,7 +788,7 @@ class FormDiagram(FormDiagram):
         if plot:
             print('Plot of Dual')
             force.plot()
-            plot_form(self, show_q=False, fix_width=True).show()
+            # plot_form(self, show_q=False, fix_width=True).show()
 
         if method == 'nodal':
             horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)

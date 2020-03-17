@@ -4,6 +4,7 @@ from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
+from compas_tno.viewers.thrust import view_solution
 
 # ----------------------------------------------------------------------------
 # -----------EXAMPLE OF MIN and MAX THRUST FOR CROSSVAULT --------------------
@@ -81,3 +82,6 @@ file_address = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_address)
 
 view_thrust(form).show()
+
+# If you wish to visualise the upper and lower bound together
+# view_solution(form, vault).show()

@@ -73,7 +73,7 @@ analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()
 analysis.set_up_optimiser() # Find independent edges
 analysis.run()
-# plot_form(form, show_q=False).show()
+plot_form(form, show_q=False).show()
 
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 form.to_json(file_adress)

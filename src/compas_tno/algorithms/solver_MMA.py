@@ -35,6 +35,19 @@ __all__ = [
 
 
 def run_optimisation_MMA(analysis):
+    """ Run convex optimisation problem with MMA.
+
+    Parameters
+    ----------
+    obj : analysis
+        Analysis object with information about optimiser, form and shape.
+
+    Returns
+    -------
+    obj : analysis
+        Analysis object optimised.
+
+    """
 
     form = analysis.form
     optimiser = analysis.optimiser

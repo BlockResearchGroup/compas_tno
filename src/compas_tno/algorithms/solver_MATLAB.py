@@ -18,6 +18,19 @@ __all__ = [
 ]
 
 def run_optimisation_MATLAB(analysis):
+    """ Run convex optimisation problem with MATLAB.
+
+    Parameters
+    ----------
+    obj : analysis
+        Analysis object with information about optimiser, form and shape.
+
+    Returns
+    -------
+    obj : analysis
+        Analysis object optimised.
+
+    """
 
     # Initiate Matlab Engine
 

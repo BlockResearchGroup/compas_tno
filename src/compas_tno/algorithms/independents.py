@@ -26,6 +26,19 @@ __all__ = [
 
 
 def find_independents(E):
+    """ Find inndependent edges in a given equilibrium matrix.
+
+    Parameters
+    ----------
+    array : E
+        Equilibrium matrix.
+
+    Returns
+    -------
+    list : ind
+        Independent columns.
+
+    """
 
     ind = []
     _, m = E.shape
@@ -55,6 +68,22 @@ def find_independents(E):
 
 
 def independents_exclude(E, outs):
+    """ Find inndependent edges with certain to exclude.
+
+    Parameters
+    ----------
+    array : E
+        Equilibrium matrix.
+
+    list : outs
+        List to exclude.
+
+    Returns
+    -------
+    list : ind
+        Independent columns.
+
+    """
 
     _, m = E.shape
     possible = list(set(range(m)) - set(outs))
@@ -78,6 +107,22 @@ def independents_exclude(E, outs):
 
 
 def independents_include(E, ins):
+    """ Find inndependent edges with certain to include.
+
+    Parameters
+    ----------
+    array : E
+        Equilibrium matrix.
+
+    list : ins
+        List to include.
+
+    Returns
+    -------
+    list : ind
+        Independent columns.
+
+    """
 
     n, m = E.shape
     if len(ins) > (m-n):
@@ -111,6 +156,25 @@ def independents_include(E, ins):
 
 
 def inds_incl_excl(E, ins, outs):
+    """ Find inndependent edges with certain to exclude and include.
+
+    Parameters
+    ----------
+    array : E
+        Equilibrium matrix.
+
+    list : outs
+        List to exclude.
+
+    list : ins
+        List to include.
+
+    Returns
+    -------
+    list : ind
+        Independent columns.
+
+    """
 
     n, m = E.shape
     if len(ins) > (m-n):
@@ -151,6 +215,22 @@ def inds_incl_excl(E, ins, outs):
 
 
 def check_independents(args_inds, tol=0.001):
+    """ Run checks to verify the independennts.
+
+    Parameters
+    ----------
+    list : args_inds
+        Arguments from the optimisation.
+
+    tol : float (0.001)
+        Allowed error.
+
+    Returns
+    -------
+    bool : checked
+        True if independents are checked.
+
+    """
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Citx, City, Cf, U, V, p, px, py, pz, z, free_x, free_y, fixed, lh, sym, k = args_inds
     checked = True
@@ -170,6 +250,22 @@ def check_independents(args_inds, tol=0.001):
 
 
 def check_horizontal(E, p):
+    """ Run checks to verify of a certain horizontal distribution can be taken by the fixed form diagram.
+
+    Parameters
+    ----------
+    array : E
+        Equilibrium matrix.
+
+    array : p
+        Vector of horizontal loads.
+
+    Returns
+    -------
+    bool : checked
+        True if loads can be taken.
+
+    """
 
     r = matrix_rank(E)
     r_ = matrix_rank(hstack([E, p]))

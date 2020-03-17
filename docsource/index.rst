@@ -8,6 +8,8 @@ compas_tno
 
    intro
    gettingstarted
+   tutorial
    examples
    api
    license
+   citing

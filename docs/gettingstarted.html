@@ -19,7 +19,7 @@
     <link rel="stylesheet" type="text/css" href="_static/css/compas-reference.css" />
 
     
-        <link rel="next" title="Examples" href="examples.html" />
+        <link rel="next" title="Tutorial" href="tutorial.html" />
     
     
     
@@ -58,6 +58,71 @@
 
                     <div class="section" id="getting-started">
 <h1>Getting Started</h1>
+<div class="section" id="installation">
+<h2>Installation</h2>
+<p>With pip, <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> can be installed directly from the GitHub repo.</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>pip install git+https://github.com/BlockResearchGroup/compas_tno.git#egg<span class="o">=</span>compas_tno
+</code></pre></div>
+</div>
+<p>Or from local source files, you need to navigate to your code folder (folder in which you place you packages) and then do:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>git clone https://github.com/BlockResearchGroup/compas_tno.git
+<span class="nb">cd</span> compas_tno
+pip install -e .
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="rhino-configuration">
+<h2>Rhino Configuration</h2>
+<p>Next, let Rhinoceros know that you installed <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a>  by typinng in the terminal the following code line:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>python -m compas_rhino.install -p compas compas_rhino compas_tna compas_tno
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="main-dependency">
+<h2>Main dependency</h2>
+<p>The main dependency of the program is the parent package <code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tna</span></code>. To install it follow the instructions of installation on the website:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://blockresearchgroup.github.io/compas_tna/tutorial.html">https://blockresearchgroup.github.io/compas_tna/tutorial.html</a></p></li>
+<li><p><a class="reference external" href="https://blockresearchgroup.github.io/compas_tna/examples.html">https://blockresearchgroup.github.io/compas_tna/examples.html</a></p></li>
+<li><p><a class="reference external" href="https://blockresearchgroup.github.io/compas_tna/api.html">https://blockresearchgroup.github.io/compas_tna/api.html</a></p></li>
+</ul>
+</div>
+<div class="section" id="solver-s-dependency">
+<h2>Solver’s dependency</h2>
+<p>Note that with the insntallation of <a class="reference external" href="https://compas-dev.github.io/main/api/compas.html#module-compas" title="(in COMPAS v0.15)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas</span></code></a> the packages scipy and numpy are already installed. Thie package scipy contains the nonlinear solver SLSQP
+that will be the main tool of this package. However, to fully use the functionalities of <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> you should add to your installation a series of optimisation
+packages, that are listed here in order of importance.</p>
+<ol class="arabic simple">
+<li><p>CVX via MATLAB:</p></li>
+</ol>
+<p>Install MATLAB, version R2019b is recommended:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.mathworks.com/products/matlab.html">https://www.mathworks.com/products/matlab.html</a></p></li>
+</ul>
+<p>Install CVX as a MATLAB package:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://cvxr.com/cvx/download/">http://cvxr.com/cvx/download/</a></p></li>
+</ul>
+<p>Install Python API for MATLAB to control MATLAB direclty from Python scripts:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html">https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html</a></p></li>
+</ul>
+<p>You will need CVX installed to run convex optimisation in <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a>.</p>
+<ol class="arabic simple" start="2">
+<li><p>pyOpt:</p></li>
+</ol>
+<p>Library with extensive list of solvers, some adequate for nonlinear optimisation:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="http://www.pyopt.org/download.html">http://www.pyopt.org/download.html</a></p></li>
+</ul>
+<ol class="arabic simple" start="3">
+<li><p>IPOPT:</p></li>
+</ol>
+<p>Library with extensive list of solvers for nonlinear optimisation:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.org/project/ipopt/">https://pypi.org/project/ipopt/</a></p></li>
+</ul>
+</div>
 </div>
 
                     
@@ -89,9 +154,11 @@
                             <ul class="nav flex-column active">
 <li class="nav-item"><a class="nav-link reference internal" href="intro.html">Introduction</a></li>
 <li class="nav-item active"><a class="nav-link active current reference internal" href="#">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="examples.html">Examples</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="api.html">API Reference</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="license.html">License</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="citing.html">Citing</a></li>
 </ul>
 
 
@@ -110,7 +177,13 @@
                 
 
                 <ul class="nav flex-column" id="compas-localnav">
-<li class="nav-item"><a class="nav-link reference internal" href="#">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#">Getting Started</a><ul class="nav">
+<li class="nav-item"><a class="nav-link reference internal" href="#installation">Installation</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#rhino-configuration">Rhino Configuration</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#main-dependency">Main dependency</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#solver-s-dependency">Solver’s dependency</a></li>
+</ul>
+</li>
 </ul>
 
 
@@ -122,7 +195,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Dec 13, 2019.
+                Last updated on Mar 17, 2020.
             
 
             

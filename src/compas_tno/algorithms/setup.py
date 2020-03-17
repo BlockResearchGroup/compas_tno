@@ -24,6 +24,19 @@ __all__ =[
 ]
 
 def set_up_nonlinear_optimisation(analysis):
+    """ Set up a nonlinear optimisation problem.
+
+    Parameters
+    ----------
+    obj : analysis
+        Analysis object with information about optimiser, form and shape.
+
+    Returns
+    -------
+    obj : analysis
+        Analysis object set up for optimise.
+
+    """
 
     form = analysis.form
     optimiser = analysis.optimiser
@@ -156,6 +169,19 @@ def set_cracks_constraint(form, cracks, printout):
 
 
 def set_up_convex_optimisation(analysis):
+    """ Set up a nonlinear optimisation problem.
+
+    Parameters
+    ----------
+    obj : analysis
+        Analysis object with information about optimiser, form and shape.
+
+    Returns
+    -------
+    obj : analysis
+        Analysis object set up for optimise.
+
+    """
 
     form = analysis.form
     optimiser = analysis.optimiser

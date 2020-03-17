@@ -1,44 +1,3 @@
-
-# from numpy import abs
-# from numpy import argmin
-# from numpy import array
-# from numpy import float64
-# from numpy import dot
-# from numpy import hstack
-# from numpy import isnan
-# from numpy import max
-# from numpy import min
-# from numpy import newaxis
-# from numpy import sqrt
-# from numpy import sum
-# from numpy import vstack
-# from numpy import zeros
-# from numpy import ones
-# from numpy import append
-# from numpy.linalg import pinv
-# from numpy.linalg import matrix_rank
-# from numpy.random import rand
-# from numpy.random import randint
-
-# from scipy.sparse.linalg import spsolve
-# from scipy.optimize import fmin_slsqp
-# from scipy.sparse import csr_matrix
-# from scipy.sparse import diags
-# from scipy.sparse.linalg import spsolve
-# from scipy.sparse.linalg import factorized
-# from compas.numerical import normrow
-# from compas.numerical import normalizerow
-
-# from compas.numerical import connectivity_matrix
-# from compas.numerical import devo_numpy
-# from compas.numerical import equilibrium_matrix
-# from compas.numerical import normrow
-# from compas.numerical import nonpivots
-# from compas.numerical.linalg import _chofactor
-# from compas_plotters import MeshPlotter
-# from compas.utilities import geometric_key
-# from compas.numerical.linalg import spsolve_with_known
-
 from compas_tna.diagrams import ForceDiagram
 
 __author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -60,37 +19,7 @@ class ForceDiagram(ForceDiagram):
 
     Notes
     -----
-    A ``Shape`` has the following constructor functions
-
-    *   ``from_library`` : Construct the shape from a dictionary with instructions, the library supports the creation of parametric arches, domes, and vaults.
-    *   ``from_rhinomesh`` : Construct Extrados, Intrados and Middle surfaces from RhinoMeshes.
-    *   ``from_rhinosurface`` : Construct Extrados, Intrados and Middle surfaces using the U and V isolines.
-
-    A ``Shape`` has the following elements:
-
-    *   ``data``
-
-        *   ``type``  : The type of the vault to be constructed.
-        *   ``xy_span``  : Planar range of the structure.
-        *   ``density``  : Density of the highfield.
-        *   ``thickness`` : Mean thickness of the vault.
-        *    ``t`` : The numerical for the negative bounds on the height of the fixed nodes.
-
-    *   ``discretisation``
-
-        *   ``array``    : (2 x n) array with the coordinate of the n points with intrados, extrados and middle evaluated.
-
-    *   ``intrados``
-
-        *   ``Mesh``    : Mesh representing intrados.
-
-    *   ``extrados``
-
-        *   ``Mesh``    : Mesh representing extrados.
-
-    *   ``middle``
-
-        *   ``Mesh``    : Mesh representing middle surface
+    A ``ForceDiagram`` is generated as the dual of the ``FormDiagram`` and it makes sense for structural analysis when both diagrams are reciprocal, i.e. when each edge in the Force diagram parallel to its corresponding edge in the Form diagram.
 
     """
 
