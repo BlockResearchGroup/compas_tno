@@ -144,7 +144,9 @@
 <span class="n">form</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">form</span>
 <span class="n">file_adress</span> <span class="o">=</span> <span class="s1">&#39;/Users/mricardo/compas_dev/me/reformulation/test_min.json&#39;</span>
 <span class="n">form</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">file_adress</span><span class="p">)</span>
-
+<span class="n">optimiser</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">optimiser</span>
+<span class="n">fopt</span> <span class="o">=</span> <span class="n">optimiser</span><span class="o">.</span><span class="n">fopt</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fopt</span><span class="p">)</span>
 <span class="n">plot_form_xz</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">arch</span><span class="p">,</span> <span class="n">show_q</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_reactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_width</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
 <span class="c1"># --------------------- 3.3 Create Minimisation for maximum thrust ---------------------</span>
@@ -212,6 +214,8 @@
 <li class="nav-item active"><a class="nav-link active current reference internal" href="#">Circular Arch</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="crossvault(cross).html">Cross Vault (cross)</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="crossvault(fan).html">Cross Vault (fan)</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="dome(radial).html">Dome (radial)</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="dome(spiral).html">Dome (spiral)</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="formdiagrams.html">Parametric Form Diagrams</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="shapes.html">Parametric Shapes</a></li>
 </ul>
@@ -249,7 +253,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 17, 2020.
+                Last updated on Mar 18, 2020.
             
 
             

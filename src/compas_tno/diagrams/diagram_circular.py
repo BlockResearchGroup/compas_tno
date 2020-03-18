@@ -293,4 +293,7 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
     for key in bnds:
         form.vertex_attribute(key, 'is_fixed', True)
 
+    form.delete_boundary_edges() # Check what happens if there is oculus
+
+
     return form

@@ -65,41 +65,21 @@
 <p>The <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> class imports the attributes and set ups from compas_tna.diagrams.FormDiagram and include some functionalities useful for the assessment of masonry structures.</p>
 <p>It defined the form-diagram that will be the layout of the forces within the structure</p>
 <p class="rubric">Notes</p>
-<p>A <code class="docutils literal notranslate"><span class="pre">Shape</span></code> has the following constructor functions</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> has the following constructor functions</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">from_library</span></code> : Construct the shape from a dictionary with instructions, the library supports the creation of parametric arches, domes, and vaults.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">from_rhinomesh</span></code> : Construct Extrados, Intrados and Middle surfaces from RhinoMeshes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">from_rhinosurface</span></code> : Construct Extrados, Intrados and Middle surfaces using the U and V isolines.</p></li>
 </ul>
-<p>A <code class="docutils literal notranslate"><span class="pre">Shape</span></code> has the following elements:</p>
+<p>A parametric <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> contains the following information:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">data</span></code></p>
 <ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>  : The type of the vault to be constructed.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code>  : The type of the Form Diafram to be constructed.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">xy_span</span></code>  : Planar range of the structure.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">density</span></code>  : Density of the highfield.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">thickness</span></code> : Mean thickness of the vault.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">t</span></code> : The numerical for the negative bounds on the height of the fixed nodes.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">discretisation</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">array</span></code>    : (2 x n) array with the coordinate of the n points with intrados, extrados and middle evaluated.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">intrados</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Mesh</span></code>    : Mesh representing intrados.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">extrados</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Mesh</span></code>    : Mesh representing extrados.</p></li>
-</ul>
-</li>
-<li><p><code class="docutils literal notranslate"><span class="pre">middle</span></code></p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">Mesh</span></code>    : Mesh representing middle surface</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">radius</span></code>  : In case of a circular diagram.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">center</span></code>  : In case of a circular diagram.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">density</span></code>  : Density of the diagram.</p></li>
 </ul>
 </li>
 </ul>
@@ -824,7 +804,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 17, 2020.
+                Last updated on Mar 18, 2020.
             
 
             

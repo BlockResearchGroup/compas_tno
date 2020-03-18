@@ -80,7 +80,9 @@ analysis.run()
 form = analysis.form
 file_adress = '/Users/mricardo/compas_dev/me/reformulation/test_min.json'
 form.to_json(file_adress)
-
+optimiser = analysis.optimiser
+fopt = optimiser.fopt
+print(fopt)
 plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
 
 # --------------------- 3.3 Create Minimisation for maximum thrust ---------------------

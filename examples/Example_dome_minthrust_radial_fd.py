@@ -1,6 +1,5 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
-from compas_tno.viewers.shapes import view_shapes
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
@@ -15,7 +14,7 @@ from compas_tno.viewers.thrust import view_thrust
 thk = 0.5
 radius = 5.0
 type_structure = 'dome'
-type_formdiagram = 'radial_fd'
+type_formdiagram = 'spiral_fd'
 discretisation = [8, 16]
 
 # ----------------------- 1. Create Dome shape ---------------------------
@@ -54,7 +53,6 @@ plot_form(form, show_q=False, fix_width=False).show()
 form = form.initialise_tna(plot=True)
 plot_form(form).show()
 
-
 # --------------------- Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
@@ -64,7 +62,7 @@ optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
 optimiser.data['printout'] = True
-optimiser.data['plot'] = True
+optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 print(optimiser.data)

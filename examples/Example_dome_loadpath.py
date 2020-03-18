@@ -33,7 +33,7 @@ swt = dome.compute_selfweight()
 
 print('Dome created!')
 
-# Try uncomment the line below to see the sahpe created...
+# Try uncomment the line below to see the shape created...
 # view_shapes(dome).show()
 
 # ----------------------- Create Form Diagram ---------------------------

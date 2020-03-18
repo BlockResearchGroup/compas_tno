@@ -29,7 +29,7 @@ We highly recommend to install ``compas_tno`` and related packages in a separate
 
 .. code-block:: bash
 
-    conda create -n tno -c conda-forge python=3.7 COMPAS shapely
+    conda create -n tno -c conda-forge python=3.7 COMPAS
 
 .. raw:: html
 
@@ -38,7 +38,7 @@ We highly recommend to install ``compas_tno`` and related packages in a separate
 
 .. code-block:: bash
 
-    conda create -n tno -c conda-forge python=3.7 python.app COMPAS shapely
+    conda create -n tno -c conda-forge python=3.7 python.app COMPAS
 
 .. raw:: html
 
@@ -107,7 +107,6 @@ Next, let Rhinoceros know that you installed :mod:`compas_tno`  by typinng in th
 .. code-block:: bash
 
     python -m compas_rhino.install -p compas compas_rhino compas_tna compas_tno
-
 
 
 Solver's dependency

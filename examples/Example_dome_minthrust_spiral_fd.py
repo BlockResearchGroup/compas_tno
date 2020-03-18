@@ -1,6 +1,5 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
-from compas_tno.viewers.shapes import view_shapes
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
@@ -12,26 +11,25 @@ from compas_tno.viewers.thrust import view_thrust
 
 # Basic parameters
 
-thk = 0.5
+thk = 0.6
 radius = 5.0
 type_structure = 'dome'
-type_formdiagram = 'radial_fd'
+type_formdiagram = 'spiral_fd'
+discretisation = [8, 16]
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
 data_shape = {
     'type': type_structure,
     'thk': thk,
-    'discretisation': [8, 16],
+    'discretisation': [16, 32],
     'center': [5.0, 5.0],
     'radius': radius,
     't' : 10.0
 }
 
 dome = Shape.from_library(data_shape)
-swt = dome.compute_selfweight()
 print('Dome created!')
-# view_shapes(dome).show()
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -48,33 +46,12 @@ data_diagram = {
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 print(form)
-# plot_form(form, show_q=False, fix_width=False).show()
+plot_form(form, show_q=False, fix_width=False).show()
 
-# --------------------- 3.1. Create Convex Optimiser ---------------------
+# --------------------- 3. Create Starting point with TNA ---------------------
 
-optimiser = Optimiser()
-optimiser.data['library'] = 'MATLAB'
-optimiser.data['solver'] = 'SDPT3'
-optimiser.data['constraints'] = ['funicular']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'loadpath'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 150.0
-print(optimiser.data)
-
-# -------------- 3.2. Create Analysis Model and Run Convex Opt --------------
-
-analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight()
-analysis.set_up_optimiser() # Find independent edges
-analysis.run()
-# plot_form(form, show_q=False).show()
-# view_thrust(form).show()
-
-file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
-form.to_json(file_adress)
+form = form.initialise_tna(plot=True)
+plot_form(form).show()
 
 # --------------------- Create Minimisation Optimiser ---------------------
 
@@ -85,7 +62,7 @@ optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
 optimiser.data['printout'] = True
-optimiser.data['plot'] = True
+optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 print(optimiser.data)
@@ -96,7 +73,7 @@ analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
-analysis.set_up_optimiser() # Find independent edges
+analysis.set_up_optimiser()
 analysis.run()
 
 form = analysis.form

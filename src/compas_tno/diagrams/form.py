@@ -767,7 +767,13 @@ class FormDiagram(FormDiagram):
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attribute('is_anchor', True, keys=corners)
         self.edges_attribute('fmin', 0.0)
-        self.update_boundaries(feet=2)
+        leaves = False
+        for u, v in self.edges_on_boundary():
+            if self.edge_attribute((u,v), 'is_edge') == False:
+                leaves = True
+                break
+        if leaves is False:
+            self.update_boundaries(feet=2)
         force = ForceDiagram.from_formdiagram(self)
         if plot:
             print('Plot of Dual')
@@ -777,12 +783,13 @@ class FormDiagram(FormDiagram):
         if method == 'nodal':
             horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
         else:
-            horizontal(form, self, alpha=alpha, kmax=kmax, display=False)
+            horizontal(self, self, alpha=alpha, kmax=kmax, display=False)
 
         # Vertical Equilibrium with no updated loads
 
         vertical_from_zmax(self, zmax)
-        self = self.remove_feet()
+        if leaves is False:
+            self = self.remove_feet()
 
         # form0 = copy(self)
         # form_ = scale_form(form0, 1.0)

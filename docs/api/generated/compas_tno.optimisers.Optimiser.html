@@ -64,20 +64,12 @@
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Optimiser</span></code> sets the parameters of the optimisation.</p>
 <p class="rubric">Notes</p>
-<p>An <code class="docutils literal notranslate"><span class="pre">Optimiser</span></code> has the following solvers that can be created.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">from_SciPy</span></code> : Choses from one of the several options of Scipy solvers</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">from_PyOpt</span></code> : Choses from one of the several options of PyOpt solvers</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">from_IPOPT</span></code> : Choses from one of the several options of IPopt solvers</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">from_Matlab</span></code> : Choses from one of the several options of MATLAB solvers</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">from_MMA</span></code> : Use MMA solver</p></li>
-</ul>
-<p>The main parameters to be set in the optimiser vary from the solver and generally are are:</p>
+<p>An <code class="docutils literal notranslate"><span class="pre">Optimiser</span></code> keeps track in the following information in the dictionary stored in Optimiser.data:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>‘library’           : ‘Scipy’,</p></li>
-<li><p>‘solver’            : ‘slsqp’,</p></li>
-<li><p>‘objective’         : ‘min-thrust’,</p></li>
+<li><p>‘library’           : [‘Scipy’,’MATLAB’,’MMA’,’IPOPT’,’Scipy’, … others to come]</p></li>
+<li><p>‘solver’            : [‘slsqp’,’SDPT3’,’MMA’, … others to come],</p></li>
+<li><p>‘objective’         : [‘min’,’max’,’loadpath’,’target’],</p></li>
 <li><p>‘constraints’       : [‘funicular’, ‘envelope’, ‘reac_bounds’, ‘partial_reactions’, ‘cracks’],</p></li>
 <li><p>‘variables’         : [‘ind’, ‘zb’, ‘all-qs’],</p></li>
 <li><p>‘use_indset’        : True,</p></li>
@@ -190,7 +182,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 17, 2020.
+                Last updated on Mar 18, 2020.
             
 
             

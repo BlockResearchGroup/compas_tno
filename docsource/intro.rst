@@ -6,7 +6,7 @@ Introduction
     :figclass: figure
     :class: figure-img img-fluid
 
-`compas_tno` is a Python package that extends compas_tna for solving the specific problem of assessment of masonry structures according to the Safe Theorem of Limit Analysis. From Heyman [1] and this means that, if a path of compressive and equilibrated forces is found within the structural geometry, the structure is safe under the applied loads and this set of compressive, internal forces corresponds to a lower-bound equilibrium solution.
+``compas_tno`` is a Python package that extends compas_tna for solving the specific problem of assessment of masonry structures according to the Safe Theorem of Limit Analysis. From Heyman [1] and this means that, if a path of compressive and equilibrated forces is found within the structural geometry, the structure is safe under the applied loads and this set of compressive, internal forces corresponds to a lower-bound equilibrium solution.
 
 Block [2] introduced Thrust Network Analysis (TNA), in which the force network is described by its vertical projection in plan, named form diagram, and the equilibrium of the horizontal forces is visualised by a reciprocal graph, named force diagram. This theory is now applied to the openn-source Python package :mod:`compas_tna`.
 
