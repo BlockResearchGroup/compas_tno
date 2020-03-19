@@ -36,7 +36,7 @@ print('Dome created!')
 # Try uncomment the line below to see the shape created...
 # view_shapes(dome).show()
 
-# ----------------------- Create Form Diagram ---------------------------
+# ----------------------- 2. Create Form Diagram ---------------------------
 
 data_diagram = {
     'type': type_formdiagram,
@@ -53,7 +53,7 @@ print('Form Diagram Created!')
 print(form)
 plot_form(form, show_q=False, fix_width=False).show()
 
-# --------------------- Create Convex Optimiser ---------------------
+# --------------------- 3. Create Convex Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'MATLAB'
@@ -67,7 +67,7 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 150.0
 print(optimiser.data)
 
-# -------------- Create Analysis Model and Run Convex Opt --------------
+# -------------- 4. Create Analysis Model and Run Convex Opt --------------
 
 analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()

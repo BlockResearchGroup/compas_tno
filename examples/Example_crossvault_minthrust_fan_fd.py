@@ -67,7 +67,7 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 900.0
 print(optimiser.data)
 
-# --------------------- 5. Create Minimisation Optimiser ---------------------
+# --------------------- 5. Set up and run analysis ---------------------
 
 analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.apply_selfweight()
