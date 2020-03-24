@@ -5,6 +5,7 @@ from numpy import newaxis
 from numpy import hstack
 from numpy import zeros
 from numpy import array
+import torch as th
 
 from compas_tno.algorithms.equilibrium import zlq_from_qid
 from compas.numerical import normrow
@@ -109,4 +110,16 @@ def f_constant(xopt, *args):
 
     f = 1.0
 
+    return f
+
+
+def f_min_thrust_pytorch(xopt, *args):
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
+    qid = xopt[:k].reshape(-1, 1)
+    q[ind] = array(qid).reshape(-1, 1)
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
+    CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
+    xy = hstack([x, y])
+    Rh = CfQC.dot(xy)
+    f = sum(normrow(Rh))
     return f

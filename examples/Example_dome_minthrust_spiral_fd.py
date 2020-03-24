@@ -53,7 +53,7 @@ plot_form(form, show_q=False, fix_width=False).show()
 form = form.initialise_tna(plot=True)
 plot_form(form).show()
 
-# --------------------- Create Minimisation Optimiser ---------------------
+# --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
@@ -67,7 +67,7 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 print(optimiser.data)
 
-# --------------------- Create Minimisation Optimiser ---------------------
+# --------------------- 5. Set up and run analysis ---------------------
 
 analysis = Analysis.from_elements(dome, form, optimiser)
 analysis.apply_selfweight()

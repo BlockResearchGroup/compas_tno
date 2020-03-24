@@ -16,7 +16,7 @@ radius = 5.0
 type_structure = 'crossvault'
 type_formdiagram = 'cross_fd'
 
-# ----------------------- Create CrossVault shape ---------------------------
+# ----------------------- 1. Create CrossVault shape ---------------------------
 
 data_shape = {
     'type': type_structure,
@@ -33,7 +33,7 @@ print('Crossvault created!')
 
 # view_shapes(vault).show()
 
-# ----------------------- Create Form Diagram ---------------------------
+# ----------------------- 2. Create Form Diagram ---------------------------
 
 data_diagram = {
     'type': type_formdiagram,
@@ -48,7 +48,7 @@ print('Form Diagram Created!')
 print(form)
 # plot_form(form, show_q=False, fix_width=True).show()
 
-# --------------------- Create Convex Optimiser ---------------------
+# --------------------- 3. Create Convex Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'MATLAB'
@@ -62,7 +62,7 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 900.0
 print(optimiser.data)
 
-# -------------- Create Analysis Model and Run Convex Opt --------------
+# -------------- 4. Create Analysis Model and Run Convex Opt --------------
 
 analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.apply_selfweight()

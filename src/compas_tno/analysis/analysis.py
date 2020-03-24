@@ -10,6 +10,8 @@ from compas_tno.algorithms import run_optimisation_scipy
 from compas_tno.algorithms import run_optimisation_MATLAB
 from compas_tno.algorithms import run_optimisation_MMA
 
+from compas_tno.algorithms.WIP_solver_IPOPT import run_optimisation_ipopt
+
 __all__ = ['Analysis']
 
 class Analysis(object):
@@ -256,6 +258,8 @@ class Analysis(object):
             self = run_optimisation_MATLAB(self)
         elif self.optimiser.data['library'] == 'MMA':
             self = run_optimisation_MMA(self)
+        elif self.optimiser.data['library'] == 'IPOPT':
+            self = run_optimisation_ipopt(self)
         else:
             self = run_optimisation_scipy(self)
 

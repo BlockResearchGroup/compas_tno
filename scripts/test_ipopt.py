@@ -1,133 +1,174 @@
-from compas_tna.diagrams import FormDiagram
-
-from compas_tno.diagrams.form import overview_forces
-from compas_tno.diagrams.form import create_cross_form
-from compas_tno.diagrams.form import create_fan_form
-
-from compas_tno.utilities.constraints import set_cross_vault_heights
-
-from compas_tno.algorithms.equilibrium import reactions
-
-from compas_tno.algorithms import optimise_general
-from compas_tno.algorithms import optimise_convex
-
-from compas_tno.algorithms.general_solver import set_b_constraint
-from compas_tno.algorithms.general_solver import set_joints_constraint
-from compas_tno.algorithms.general_solver import set_cracks_constraint
-
-from compas_tno.plotters import plot_form
-
-from scipy.optimize import fmin_slsqp
-from compas.numerical import devo_numpy
-from compas.numerical import ga
-
-from compas_tno.algorithms.problems import initialise_problem
-
-from compas_tno.algorithms.objectives import f_min_loadpath
-from compas_tno.algorithms.objectives import f_min_loadpath_pen
-from compas_tno.algorithms.objectives import f_min_thrust
-from compas_tno.algorithms.objectives import f_min_thrust_pen
-from compas_tno.algorithms.objectives import f_max_thrust
-from compas_tno.algorithms.objectives import f_target
-from compas_tno.algorithms.objectives import f_constant
-
-from compas_tno.algorithms.constraints import f_compression
-from compas_tno.algorithms.constraints import f_ub_lb
-from compas_tno.algorithms.constraints import f_joints
-from compas_tno.algorithms.constraints import f_cracks
-
-from compas_tno.algorithms.equilibrium import reactions
-
-from compas_tno.algorithms import zlq_from_qid
-from compas.utilities import geometric_key
-
-import pyOpt
-
-from numpy.random import rand
-from numpy import append
-from numpy import array
-
-from compas_tna.diagrams import FormDiagram
-
-import math
-
-# import ipopt
-
-# ==============================================================================
-# Main
-# ==============================================================================
-
-if __name__ == "__main__":
-
-type_fd = 'cross_fd'
-objective = 'min'
-thck = 0.50
-
-x_span = 5.0
-y_span = 10.0
-example = 'rectangular/5x10/'
-
-if type_fd == 'cross_fd':
-    divisions = 20
-    form = create_cross_form(xy_span=[[0.0, x_span], [0.0, y_span]], division=divisions)
-
-if type_fd == 'fan_fd':
-    divisions = 16
-    form = create_fan_form(xy_span=[[0.0, x_span], [0.0, y_span]], division=divisions)
-
-PATH = '/Users/mricardo/compas_dev/me/minmax/cross/' + example + type_fd + '/' + type_fd + '_discr_' + str(divisions)
-file_initial = PATH + '_lp.json'
-# file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '.json'
-
-form = FormDiagram.from_json(file_initial)
-indset = form.attributes['indset']
-
-translation = True
-bounds_width = 5.0
-use_bounds = False
-qmax = 100
-qmin = -1e-6
-print_opt = True
-
-form = set_cross_vault_heights(form, xy_span=[[0.0, x_span], [0.0, y_span]], thk=thck, b=5.0, set_heights=False, ub_lb=True, update_loads=True)
-
-k_i = form.key_index()
-i_k = form.index_key()
-i_uv = form.index_uv()
-printout = True
-
-find_inds = True
-tol = 0.0001
-args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
-q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
-
-bmax = True
-cracks = False
-b = set_b_constraint(form, bmax, printout)
-joints = set_joints_constraint(form, printout)
-cracks_lb, cracks_ub = set_cracks_constraint(form, cracks, printout)
-
-args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
-
-fobj, fconstr = f_min_thrust, f_ub_lb
-
-if translation:
-    x0 = q[ind]
-    zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
-    bounds = [[qmin, qmax]] * k + zb_bounds
-    x0 = append(x0, z[fixed]).reshape(-1, 1)
-else:
-    x0 = q[ind]
-    bounds = [[qmin, qmax]] * k
-
-print('Total of Independents:', len(ind))
-print('Number of Variables:', len(x0))
-f0 = fobj(x0, *args)
-g0 = fconstr(x0, *args)
-print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
-print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
-
-# from ipopt import minimize_ipopt
-
+from ipopt import minimize_ipopt
 # minimize_ipopt(fobj, x0, args = args, constraints = [fconstr])
+from compas_tno.diagrams import FormDiagram
+from compas_tno.shapes.shape import Shape
+from compas_tno.optimisers.optimiser import Optimiser
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_independents
+from compas_tno.analysis.analysis import Analysis
+from compas_tno.viewers.thrust import view_thrust
 
+# ----------------------------------------------------------------------
+# -----------EXAMPLE OF MIN and MAX THRUST FOR DOME --------------------
+# ----------------------------------------------------------------------
+
+# Basic parameters
+
+thk = 0.5
+radius = 5.0
+type_structure = 'dome'
+type_formdiagram = 'radial_fd'
+discretisation = [8, 16]
+
+# ----------------------- 1. Create Dome shape ---------------------------
+
+data_shape = {
+    'type': type_structure,
+    'thk': thk,
+    'discretisation': discretisation,
+    'center': [5.0, 5.0],
+    'radius': radius,
+    't' : 10.0
+}
+
+dome = Shape.from_library(data_shape)
+print('Dome created!')
+
+# ----------------------- 2. Create Form Diagram ---------------------------
+
+data_diagram = {
+    'type': type_formdiagram,
+    'center': [5.0, 5.0],
+    'radius': radius,
+    'discretisation': discretisation,
+    'r_oculus': 0.0,
+    'diagonal': False,
+    'partial_diagonal': False,
+}
+
+form = FormDiagram.from_library(data_diagram)
+print('Form Diagram Created!')
+print(form)
+# plot_form(form, show_q=False, fix_width=False).show()
+
+# --------------------- 3. Create Starting point with TNA ---------------------
+
+form = form.initialise_tna(plot=False, kmax=50)
+# plot_form(form).show()
+
+# --------------------- 3.1. Analyse by hand here ---------------------
+
+optimiser = Optimiser()
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
+
+# optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+# optimiser.data['variables'] = ['ind', 'zb']
+# optimiser.data['objective'] = 'min'
+
+optimiser.data['constraints'] = ['funicular']
+optimiser.data['variables'] = ['ind']
+optimiser.data['objective'] = 'loadpath'
+
+
+optimiser.data['printout'] = True
+optimiser.data['plot'] = False
+optimiser.data['find_inds'] = True
+optimiser.data['qmax'] = 1000.0
+print(optimiser.data)
+
+analysis = Analysis.from_elements(dome, form, optimiser)
+analysis.apply_selfweight()
+analysis.apply_envelope()
+analysis.apply_reaction_bounds()
+analysis.set_up_optimiser()
+# plot_independents(form).show()
+analysis.run()
+
+
+# from compas_tno.algorithms import set_up_nonlinear_optimisation
+# analysis = set_up_nonlinear_optimisation(analysis)
+
+# form = analysis.form
+# optimiser = analysis.optimiser
+# solver = optimiser.data['solver']
+# fobj = optimiser.fobj
+# fconstr = optimiser.fconstr
+# args = optimiser.args
+# q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints = args
+# i_uv = form.index_uv()
+# i_k = form.index_key()
+# k_i = form.key_index()
+# bounds = optimiser.bounds
+# x0 = optimiser.x0
+# g0 = optimiser.g0
+# plot = optimiser.data['plot']
+
+# lower = [lw[0] for lw in bounds]
+# upper = [up[1] for up in bounds]
+# cu = [10e20]*len(g0)
+# cl = [0]*len(g0)
+
+# problem_obj = wrapper_ipopt()
+# problem_obj.fobj = fobj
+# problem_obj.fconstr = fconstr
+# problem_obj.args = args
+# problem_obj.bounds = bounds
+# problem_obj.x0 = x0
+
+# nlp = ipopt.problem(
+#         n=len(x0),
+#         m=len(g0),
+#         problem_obj=problem_obj,
+#         lb=lower,
+#         ub=upper,
+#         cl=cl,
+#         cu=cu
+#         )
+
+# xopt, info = nlp.solve(x0)
+
+# print(xopt)
+# print(info)
+
+
+# Find independent edges
+analysis.run()
+# plot_form(form, show_q=False).show()
+# view_thrust(form).show()
+
+file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+form.to_json(file_adress)
+# form.from_json(file_adress)
+
+# # --------------------- 4.1 Create Minimisation Optimiser ---------------------
+
+# optimiser = Optimiser()
+# optimiser.data['library'] = 'MMA'
+# optimiser.data['solver'] = 'MMA'
+# optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+# optimiser.data['variables'] = ['ind', 'zb']
+# optimiser.data['objective'] = 'min'
+# optimiser.data['printout'] = True
+# optimiser.data['solver_options']['derivatives'] = 'DF_reduced'  # 'DF_brute' 'DF_reduced' and 'analytical' in process.
+# optimiser.data['plot'] = True
+# optimiser.data['find_inds'] = True
+# optimiser.data['qmax'] = 50.0
+# print(optimiser.data)
+
+# # --------------------- 4.2 Create Minimisation Optimiser ---------------------
+
+# analysis = Analysis.from_elements(dome, form, optimiser)
+# analysis.apply_selfweight()
+# analysis.apply_envelope()
+# analysis.apply_reaction_bounds()
+# analysis.set_up_optimiser() # Find independent edges
+# analysis.run()
+
+# form = analysis.form
+plot_form(form, show_q=False).show()
+
+file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+form.to_json(file_adress)
+
+view_thrust(form).show()

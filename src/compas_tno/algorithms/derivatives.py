@@ -28,6 +28,7 @@ __all__ = [
 ]
 
 
+# Gradient "approximated by hand"
 def d_fobj(fobj, x0, eps, *args):
     f0val = fobj(x0, *args)
     n = len(x0)
@@ -39,7 +40,7 @@ def d_fobj(fobj, x0, eps, *args):
 
     return df0dx
 
-
+# Jacobian "approximated by hand"
 def d_fconstr(fconstr, x0, eps, *args):
     fval = fconstr(x0, *args).reshape(-1, 1)
     m = len(fval)

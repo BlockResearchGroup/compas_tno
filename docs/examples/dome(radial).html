@@ -64,7 +64,6 @@
 </div>
 <div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="kn">from</span> <span class="nn">compas_tno.diagrams</span> <span class="kn">import</span> <span class="n">FormDiagram</span>
 <span class="kn">from</span> <span class="nn">compas_tno.shapes.shape</span> <span class="kn">import</span> <span class="n">Shape</span>
-<span class="kn">from</span> <span class="nn">compas_tno.viewers</span> <span class="kn">import</span> <span class="n">view_shapes</span>
 <span class="kn">from</span> <span class="nn">compas_tno.optimisers.optimiser</span> <span class="kn">import</span> <span class="n">Optimiser</span>
 <span class="kn">from</span> <span class="nn">compas_tno.plotters</span> <span class="kn">import</span> <span class="n">plot_form</span>
 <span class="kn">from</span> <span class="nn">compas_tno.analysis.analysis</span> <span class="kn">import</span> <span class="n">Analysis</span>
@@ -79,7 +78,7 @@
 <span class="n">thk</span> <span class="o">=</span> <span class="mf">0.5</span>
 <span class="n">radius</span> <span class="o">=</span> <span class="mf">5.0</span>
 <span class="n">type_structure</span> <span class="o">=</span> <span class="s1">&#39;dome&#39;</span>
-<span class="n">type_formdiagram</span> <span class="o">=</span> <span class="s1">&#39;spiral_fd&#39;</span>
+<span class="n">type_formdiagram</span> <span class="o">=</span> <span class="s1">&#39;radial_fd&#39;</span>
 <span class="n">discretisation</span> <span class="o">=</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">]</span>
 
 <span class="c1"># ----------------------- 1. Create Dome shape ---------------------------</span>
@@ -118,7 +117,7 @@
 <span class="n">form</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">initialise_tna</span><span class="p">(</span><span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plot_form</span><span class="p">(</span><span class="n">form</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="c1"># --------------------- Create Minimisation Optimiser ---------------------</span>
+<span class="c1"># --------------------- 4. Create Minimisation Optimiser ---------------------</span>
 
 <span class="n">optimiser</span> <span class="o">=</span> <span class="n">Optimiser</span><span class="p">()</span>
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Scipy&#39;</span>
@@ -127,12 +126,12 @@
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;variables&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ind&#39;</span><span class="p">,</span> <span class="s1">&#39;zb&#39;</span><span class="p">]</span>
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;objective&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;min&#39;</span>
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;printout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;plot&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;find_inds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;qmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1000.0</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-<span class="c1"># --------------------- Create Minimisation Optimiser ---------------------</span>
+<span class="c1"># --------------------- 5. Set up and run analysis ---------------------</span>
 
 <span class="n">analysis</span> <span class="o">=</span> <span class="n">Analysis</span><span class="o">.</span><span class="n">from_elements</span><span class="p">(</span><span class="n">dome</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">optimiser</span><span class="p">)</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_selfweight</span><span class="p">()</span>
@@ -225,7 +224,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 18, 2020.
+                Last updated on Mar 24, 2020.
             
 
             
