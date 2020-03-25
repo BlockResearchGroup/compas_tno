@@ -15,6 +15,16 @@ from compas_tno.algorithms.equilibrium import reactions
 from compas_tno.algorithms import zlq_from_qid
 from compas.utilities import geometric_key
 
+import torch as th
+from torch.autograd.gradcheck import zero_gradients
+
+from numpy import zeros
+from numpy import identity
+from numpy import vstack
+from numpy import hstack
+from numpy import multiply
+from numpy import divide
+
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -25,6 +35,112 @@ __email__ = 'mricardo@ethz.ch'
 __all__ = [
     'run_optimisation_scipy'
 ]
+
+def q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik):
+    q = th.mm(A_Ik, p) + th.mm(B_Ik, qid)
+    return q
+
+
+def z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zfixed, pzfree):
+    q = th.mm(A_Ik, p) + th.mm(B_Ik, qid)
+    Q = th.diagflat(q)
+    Ai = th.mm(th.mm(Cit, Q), Ci)
+    Af = th.mm(th.mm(Cit, Q), Cf)
+    b = pzfree - th.mm(Af, zfixed)
+    X, LU = th.solve(b, Ai)
+    zi = X
+    return zi
+
+
+def reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zfixed, pfixed, xyz):
+    q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
+    Q = th.diagflat(q)
+    CfQC = th.mm(th.mm(Cf.t(), Q), C)
+    R = th.mm(CfQC, xyz) - pfixed
+    length_x = abs(th.mul(zfixed, th.div(R[:, 0], R[:, 2]).reshape(-1, 1)))
+    length_y = abs(th.mul(zfixed, th.div(R[:, 1], R[:, 2]).reshape(-1, 1)))
+    length = th.cat([length_x, length_y])
+    return length
+
+
+def f_min_thrust_pytorch(qid, p, A_Ik, B_Ik, C, Cf, xy):
+    q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
+    Q = th.diagflat(q)
+    CfQC = th.mm(th.mm(Cf.t(), Q), C)
+    Rh = th.mm(CfQC, xy)
+    R = th.norm(Rh, dim=1)
+    f = th.sum(R)
+    return f
+
+
+def f_objective(qid, *args):
+    A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k = args
+    f = f_min_thrust_pytorch(qid, p, A_Ik, B_Ik, C, Cf, xy)
+    return f
+
+
+def f_constraints(qid, zb, *args):
+    A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b = args
+    z = th.tensor(zeros((len(free)+len(fixed), 1)))
+    # Funicular
+    qpos = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
+    # Envelope
+    zi = z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zb, pzfree)
+    z[free] = zi
+    z[fixed] = zb
+    upper = th.tensor(ub) - z[ub_ind]
+    lower = -th.tensor(lb) + z[lb_ind]
+    # Reac_Bound
+    length = reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zb, pfixed, xyz)
+    reac_bound = th.cat([th.tensor(b[:, 0]), th.tensor(b[:, 1])]).reshape(-1,1) - length
+    constraints = th.cat([qpos, upper, lower, reac_bound])
+    return constraints
+
+
+def f_deal_constraints(qid, zb, *args):
+    A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b = args
+    z = th.tensor(zeros((len(free)+len(fixed), 1)))
+    # Funicular
+    qpos = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
+    d_qpos_qid = compute_jacobian(qid, qpos)
+    d_qpos_zb = th.tensor(zeros((len(pfixed),1)))
+    # Envelope
+    zi = z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zb, pzfree)
+    z[free] = zi
+    z[fixed] = zb
+    upper = th.tensor(ub) - z[ub_ind]
+    lower = -th.tensor(lb) + z[lb_ind]
+    d_upper_qid = compute_jacobian(qid, upper)
+    d_upper_zb = compute_jacobian(zb, upper)
+    d_lower_qid = compute_jacobian(qid, lower)
+    d_lower_zb = compute_jacobian(zb, lower)
+    # Reac_Bound
+    length = reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zb, pfixed, xyz)
+    reac_bound = th.cat([th.tensor(b[:, 0]), th.tensor(b[:, 1])]) - length
+    d_reac_bound_qid = compute_jacobian(qid, reac_bound)
+    d_reac_bound_zb = compute_jacobian(zb, reac_bound)
+    jac = th.cat([d_qpos_qid, d_qpos_zb, d_upper_qid, d_upper_zb, d_lower_qid, d_lower_zb, d_reac_bound_qid, d_reac_bound_zb])
+    return jac
+
+
+def compute_grad(variables, f):
+    f.backward(retain_graph=True)
+    grad = variables.grad.data
+    return grad
+
+
+def compute_jacobian(inputs, outputs):
+    d_otp = outputs.size()[0]
+    d_inp = inputs.size()[0]
+    jacobian = th.zeros(d_otp, d_inp)
+    grad_output = th.zeros(d_otp, 1)
+    for i in range(d_otp):
+        zero_gradients(inputs)
+        grad_output.zero_()
+        grad_output[i] = 1
+        outputs.backward(grad_output, retain_graph=True)
+        jacobian[i] = inputs.grad.data.flatten()
+    return jacobian.flatten()
 
 
 def run_optimisation_ipopt(analysis):
@@ -62,12 +178,52 @@ def run_optimisation_ipopt(analysis):
     cu = [10e20]*len(g0)
     cl = [0]*len(g0)
 
+    # Tensor modification
+
+    m = len(q)
+    B_Ik = zeros((m, len(ind)))
+    A_Ik = zeros((m, len(p)))
+    B_Ik[ind, :] = identity(len(ind))
+    B_Ik[dep, :] = Edinv*Ei
+    A_Ik[dep, :] = -1*Edinv.toarray()
+
+    A_Ik_th = th.tensor(A_Ik)
+    B_Ik_th = th.tensor(B_Ik)
+    p_th = th.tensor(p)
+    C_th = th.tensor(C.toarray())
+    Ci_th = th.tensor(Ci.toarray())
+    Cit_th = Ci_th.t()
+    Cf_th = th.tensor(Cf.toarray())
+    pzfree = th.tensor(pz[free])
+    xyz = th.tensor(hstack([x, y, z]))
+    xy = th.tensor(hstack([x, y]))
+    pfixed = th.tensor(hstack([px, py, pz])[fixed])
+
+    args_obj = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k)
+    args_constr = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b)
+
     problem_obj = wrapper_ipopt()
-    problem_obj.fobj = fobj
-    problem_obj.fconstr = fconstr
-    problem_obj.args = args
+    problem_obj.fobj = f_objective
+    problem_obj.fconstr = f_constraints
+    problem_obj.args_obj = args_obj
+    problem_obj.args_constr = args_constr
     problem_obj.bounds = bounds
     problem_obj.x0 = x0
+    print(x0.shape)
+    print(len(pfixed))
+    print(x0[-len(pfixed):])
+    qid = th.tensor(x0[:k], requires_grad=True)
+    zb = th.tensor(x0[-len(pfixed):], requires_grad=True)
+    print(qid.shape)
+    print(zb.shape)
+    g0 = f_constraints(qid, zb, *args_constr)
+    print(g0.shape)
+    f = f_objective(qid, *args_obj)
+    grad_qid = compute_grad(qid, f)
+    print('shape gradients') #wrong
+    print(grad_qid.shape)
+    grad = th.cat(grad_qid, th.tensor(zeros((len(pfixed), 1))))
+    print(grad.shape)
 
     nlp = ipopt.problem(
             n=len(x0),
@@ -178,7 +334,8 @@ class wrapper_ipopt(object):
     def __init__(self):
         self.fobj = None
         self.fconstr = None
-        self.args = None
+        self.args_obj = None
+        self.args_constr = None
         self.bounds = None
         self.x0 = None
         self.eps = 1e-8
@@ -187,22 +344,35 @@ class wrapper_ipopt(object):
         #
         # The callback for calculating the objective
         #
-        return self.fobj(x.reshape(-1,1), *self.args)
+        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
+        qid = th.tensor(x[:k].reshape(-1, 1), requires_grad=True)
+        return self.fobj(qid, *self.args_obj)
     def gradient(self, x):
         #
         # The callback for calculating the gradient
         #
-        return approx_fprime(x, self.fobj, self.eps, *self.args)
+        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
+        qid = th.tensor(x[:k].reshape(-1, 1), requires_grad=True)
+        f = self.fobj(qid, *self.args_obj)
+        grad_qid = compute_grad(qid, f)
+        grad = th.cat(grad_qid, th.tensor(zeros((len(pfixed), 1))))
+        return grad
     def constraints(self, x):
         #
         # The callback for calculating the constraints
         #
-        return self.fconstr(x.reshape(-1,1), *self.args)
+        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
+        qid = th.tensor(x[:k], requires_grad=True)
+        zb = th.tensor(x[len(pfixed):], requires_grad=True)
+        return self.fconstr(qid, zb, *self.args_constr)
     def jacobian(self, x):
         #
         # The callback for calculating the Jacobian
         #
-        return d_fconstr(self.fobj, x.reshape(-1,1), self.eps, *self.args).flatten()
+        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
+        qid = th.tensor(x[:k], requires_grad=True)
+        zb = th.tensor(x[len(pfixed):], requires_grad=True)
+        return f_deal_constraints(qid, zb, *args)
     # def hessianstructure(self):
     #     #
     #     # The structure of the Hessian

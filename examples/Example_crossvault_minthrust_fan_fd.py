@@ -78,7 +78,7 @@ analysis.run()
 
 plot_form(form, show_q=False).show()
 
-file_address = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+file_address = compas_tno.get('test.json')
 form.to_json(file_address)
 
 view_thrust(form).show()

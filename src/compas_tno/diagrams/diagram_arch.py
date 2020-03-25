@@ -29,13 +29,12 @@ def create_arch(cls, H=1.00, L=2.0, x0=0.0, total_nodes=100):
 
     # Add option for starting from Hi and Li for a given thk.
 
-    radius = radius = H / 2 + (L**2 / (8 * H))
+    radius = H / 2 + (L**2 / (8 * H))
     print('radius =', radius)
     spr = math.atan2((L/2), (radius - H))
-    print('springing angle =', math.degrees(spr), spr)
+    print('springing angle =', math.degrees(spr))
     tot_angle = 2*spr
     angle_init = (math.pi - tot_angle)/2
-    print('init angle =', math.degrees(angle_init))
     an = tot_angle / (total_nodes - 1)
     lines = []
     gkey_fix = []

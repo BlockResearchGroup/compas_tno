@@ -1,4 +1,4 @@
-
+import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
@@ -79,7 +79,7 @@ analysis.run()
 
 plot_form(form, show_q=False).show()
 
-file_address = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+file_address = compas_tno.get('test.json')
 form.to_json(file_address)
 
 view_thrust(form).show()

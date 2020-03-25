@@ -1,12 +1,17 @@
 import compas_tno
+from ipopt import minimize_ipopt
+# minimize_ipopt(fobj, x0, args = args, constraints = [fconstr])
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.plotters import plot_form_xz
+from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_independents
 from compas_tno.analysis.analysis import Analysis
+from compas_tno.viewers.thrust import view_thrust
+from compas_tno.plotters import plot_form_xz
 
 # ----------------------------------------------------------------------
-# -----------EXAMPLE OF MIN and MAX THRUST FOR ARCH --------------------
+# ------ EXAMPLE OF MIN MAX THRUST FOR ARCH WITH REDUCED THK -----------
 # ----------------------------------------------------------------------
 
 # Basic parameters
@@ -59,15 +64,15 @@ print(form)
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
+optimiser.data['qmax'] = 10000.0
 print(optimiser.data)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
@@ -84,32 +89,4 @@ form.to_json(file_address)
 optimiser = analysis.optimiser
 fopt = optimiser.fopt
 print(fopt)
-plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
-
-# --------------------- 3.3 Create Minimisation for maximum thrust ---------------------
-
-optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'max'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
-
-# --------------------------- Run optimisation with scipy ---------------------------
-
-analysis = Analysis.from_elements(arch, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()  # Find independent edges
-analysis.run()
-form = analysis.form
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
-
 plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()

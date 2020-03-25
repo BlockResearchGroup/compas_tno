@@ -41,10 +41,8 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
     re = radius + thk/2
     print('radius/ ri / re =', radius, ri, re)
     spr = math.atan2((L/2),(radius - H))
-    print('springing angle =', math.degrees(spr), spr)
     tot_angle = 2*spr
     angle_init = (math.pi - tot_angle)/2
-    print('init angle =', math.degrees(angle_init))
     an = tot_angle / (total_nodes - 1)
     zc = radius - H
     xc = L/2
