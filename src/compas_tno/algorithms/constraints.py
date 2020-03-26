@@ -33,7 +33,7 @@ def constr_wrapper(xopt, *args):
     else:
         z, l2, q, _ = zlq_from_qid(xopt, args)
 
-    constraints = zeros([0,1])
+    constraints = zeros([0, 1])
 
     if 'funicular' in dict_constr:
         constraints = vstack([constraints, (q.ravel() - qmin).reshape(-1, 1)])  # >= 0

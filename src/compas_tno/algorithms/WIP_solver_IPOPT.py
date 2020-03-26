@@ -24,6 +24,7 @@ from numpy import vstack
 from numpy import hstack
 from numpy import multiply
 from numpy import divide
+from numpy import array
 
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -36,12 +37,19 @@ __all__ = [
     'run_optimisation_scipy'
 ]
 
-def q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik):
+
+def q_from_qid_matrix_pythorch(variables, p, A_Ik, B_Ik):
+    k = B_Ik.shape[1]
+    qid = variables[:k]
     q = th.mm(A_Ik, p) + th.mm(B_Ik, qid)
     return q
 
 
-def z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zfixed, pzfree):
+def zi_from_qid_matrix_pytorch(variables, p, A_Ik, B_Ik, Ci, Cit, Cf, pzfree):
+    k = B_Ik.shape[1]
+    k_zb = Cf.shape[1]
+    qid = variables[:k]
+    zfixed = variables[-k_zb:]
     q = th.mm(A_Ik, p) + th.mm(B_Ik, qid)
     Q = th.diagflat(q)
     Ai = th.mm(th.mm(Cit, Q), Ci)
@@ -52,7 +60,29 @@ def z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zfixed, pzfree):
     return zi
 
 
-def reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zfixed, pfixed, xyz):
+def z_from_variables_matrix_pythorch(variables, p, A_Ik, B_Ik, Ci, Cit, Cf, pzfree, free, fixed):
+    k = B_Ik.shape[1]
+    k_zb = Cf.shape[1]
+    qid = variables[:k]
+    zfixed = variables[-k_zb:]
+    q = th.mm(A_Ik, p) + th.mm(B_Ik, qid)
+    Q = th.diagflat(q)
+    Ai = th.mm(th.mm(Cit, Q), Ci)
+    Af = th.mm(th.mm(Cit, Q), Cf)
+    b = pzfree - th.mm(Af, zfixed)
+    X, LU = th.solve(b, Ai)
+    zi = X
+    z = th.tensor(zeros((len(free)+len(fixed), 1)))
+    z[free] = zi
+    z[fixed] = zfixed
+    return z
+
+
+def reac_bound_matrix_pytorch(variables, p, A_Ik, B_Ik, C, Cf, pfixed, xyz):
+    k = B_Ik.shape[1]
+    k_zb = Cf.shape[1]
+    qid = variables[:k]
+    zfixed = variables[-k_zb:]
     q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
     Q = th.diagflat(q)
     CfQC = th.mm(th.mm(Cf.t(), Q), C)
@@ -63,7 +93,9 @@ def reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zfixed, pfixed, xyz):
     return length
 
 
-def f_min_thrust_pytorch(qid, p, A_Ik, B_Ik, C, Cf, xy):
+def f_min_thrust_pytorch(variables, p, A_Ik, B_Ik, C, Cf, xy):
+    k = B_Ik.shape[1]
+    qid = variables[:k]
     q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
     Q = th.diagflat(q)
     CfQC = th.mm(th.mm(Cf.t(), Q), C)
@@ -73,54 +105,26 @@ def f_min_thrust_pytorch(qid, p, A_Ik, B_Ik, C, Cf, xy):
     return f
 
 
-def f_objective(qid, *args):
+def f_objective(variables, *args):
     A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k = args
-    f = f_min_thrust_pytorch(qid, p, A_Ik, B_Ik, C, Cf, xy)
+    f = f_min_thrust_pytorch(variables, p, A_Ik, B_Ik, C, Cf, xy)
     return f
 
 
-def f_constraints(qid, zb, *args):
-    A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b = args
-    z = th.tensor(zeros((len(free)+len(fixed), 1)))
-    # Funicular
-    qpos = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
-    # Envelope
-    zi = z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zb, pzfree)
-    z[free] = zi
-    z[fixed] = zb
-    upper = th.tensor(ub) - z[ub_ind]
-    lower = -th.tensor(lb) + z[lb_ind]
-    # Reac_Bound
-    length = reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zb, pfixed, xyz)
-    reac_bound = th.cat([th.tensor(b[:, 0]), th.tensor(b[:, 1])]).reshape(-1,1) - length
-    constraints = th.cat([qpos, upper, lower, reac_bound])
+def f_constraints(variables, *args):
+    A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr = args
+    if 'funicular' in dict_constr:
+        constraints = q_from_qid_matrix_pythorch(variables, p, A_Ik, B_Ik)
+    if  'envelope' in dict_constr:
+        z = z_from_variables_matrix_pythorch(variables, p, A_Ik, B_Ik, Ci, Cit, Cf, pzfree, free, fixed)
+        upper = th.tensor(ub) - z[ub_ind]
+        lower = z[lb_ind] - th.tensor(lb)
+        constraints = th.cat([constraints, upper, lower])
+    if 'reac_bounds' in dict_constr:
+        length = reac_bound_matrix_pytorch(variables, p, A_Ik, B_Ik, C, Cf, pfixed, xyz)
+        reac_bound = abs(th.cat([th.tensor(b[:, 0]), th.tensor(b[:, 1])]).reshape(-1,1)) - length
+        constraints = th.cat([constraints, reac_bound])
     return constraints
-
-
-def f_deal_constraints(qid, zb, *args):
-    A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b = args
-    z = th.tensor(zeros((len(free)+len(fixed), 1)))
-    # Funicular
-    qpos = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
-    d_qpos_qid = compute_jacobian(qid, qpos)
-    d_qpos_zb = th.tensor(zeros((len(pfixed),1)))
-    # Envelope
-    zi = z_from_qid_matrix_pytorch(qid, p, A_Ik, B_Ik, Ci, Cit, Cf, zb, pzfree)
-    z[free] = zi
-    z[fixed] = zb
-    upper = th.tensor(ub) - z[ub_ind]
-    lower = -th.tensor(lb) + z[lb_ind]
-    d_upper_qid = compute_jacobian(qid, upper)
-    d_upper_zb = compute_jacobian(zb, upper)
-    d_lower_qid = compute_jacobian(qid, lower)
-    d_lower_zb = compute_jacobian(zb, lower)
-    # Reac_Bound
-    length = reac_bound_matrix_pytorch(qid, p, A_Ik, B_Ik, C, Cf, zb, pfixed, xyz)
-    reac_bound = th.cat([th.tensor(b[:, 0]), th.tensor(b[:, 1])]) - length
-    d_reac_bound_qid = compute_jacobian(qid, reac_bound)
-    d_reac_bound_zb = compute_jacobian(zb, reac_bound)
-    jac = th.cat([d_qpos_qid, d_qpos_zb, d_upper_qid, d_upper_zb, d_lower_qid, d_lower_zb, d_reac_bound_qid, d_reac_bound_zb])
-    return jac
 
 
 def compute_grad(variables, f):
@@ -165,6 +169,7 @@ def run_optimisation_ipopt(analysis):
     fconstr = optimiser.fconstr
     args = optimiser.args
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints = args
+    constraints = optimiser.data['constraints']
     i_uv = form.index_uv()
     i_k = form.index_key()
     k_i = form.key_index()
@@ -175,8 +180,8 @@ def run_optimisation_ipopt(analysis):
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
-    cu = [10e20]*len(g0)
-    cl = [0]*len(g0)
+    cu = [10e10]*len(g0)
+    cl = [-10e-10]*len(g0)
 
     # Tensor modification
 
@@ -186,6 +191,8 @@ def run_optimisation_ipopt(analysis):
     B_Ik[ind, :] = identity(len(ind))
     B_Ik[dep, :] = Edinv*Ei
     A_Ik[dep, :] = -1*Edinv.toarray()
+
+    # Tensor Transformation
 
     A_Ik_th = th.tensor(A_Ik)
     B_Ik_th = th.tensor(B_Ik)
@@ -200,7 +207,7 @@ def run_optimisation_ipopt(analysis):
     pfixed = th.tensor(hstack([px, py, pz])[fixed])
 
     args_obj = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k)
-    args_constr = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b)
+    args_constr = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, constraints)
 
     problem_obj = wrapper_ipopt()
     problem_obj.fobj = f_objective
@@ -209,21 +216,23 @@ def run_optimisation_ipopt(analysis):
     problem_obj.args_constr = args_constr
     problem_obj.bounds = bounds
     problem_obj.x0 = x0
-    print(x0.shape)
-    print(len(pfixed))
-    print(x0[-len(pfixed):])
-    qid = th.tensor(x0[:k], requires_grad=True)
-    zb = th.tensor(x0[-len(pfixed):], requires_grad=True)
-    print(qid.shape)
-    print(zb.shape)
-    g0 = f_constraints(qid, zb, *args_constr)
-    print(g0.shape)
-    f = f_objective(qid, *args_obj)
-    grad_qid = compute_grad(qid, f)
-    print('shape gradients') #wrong
-    print(grad_qid.shape)
-    grad = th.cat(grad_qid, th.tensor(zeros((len(pfixed), 1))))
-    print(grad.shape)
+    print('shape variables:', x0.shape)
+    print('shape inds:', len(ind))
+    print('shape fixed:', len(pfixed))
+    variables = th.tensor(x0, requires_grad=True)
+    # qid = th.tensor(x0[:k], requires_grad=True)
+    # zb = th.tensor(x0[-len(pfixed):], requires_grad=True)
+    # print(qid.shape)
+    print('variables tensor shape', variables.shape)
+    g0 = f_constraints(variables, *args_constr)
+    print('g0 shape', g0.shape)
+    jac = compute_jacobian(variables, g0)
+    print('jac.shape', jac.shape)
+    f = f_objective(variables, *args_obj)
+    print('f0: ', f)
+    grad = compute_grad(variables, f)
+    print('shape gradients', grad.shape)
+    print('------------------ ALL WORk')
 
     nlp = ipopt.problem(
             n=len(x0),
@@ -235,57 +244,26 @@ def run_optimisation_ipopt(analysis):
             cu=cu
             )
 
-    nlp.addOption('mu_strategy', 'adaptive')
-    nlp.addOption('tol', 1e-7)
+    nlp.addOption(b'hessian_approximation', b'limited-memory')
+    # nlp.addOption('mu_strategy', 'adaptive')
+    nlp.addOption('tol', 1e-6)
+    # nlp.addOption('linear_solver', 'HSL_MA97')
+
+    # Possible values:
+
+    # ma27: use the Harwell routine MA27
+    # ma57: use the Harwell routine MA57
+    # ma77: use the Harwell routine HSL_MA77
+    # ma86: use the Harwell routine HSL_MA86
+    # ma97: use the Harwell routine HSL_MA97
+    # pardiso: use the Pardiso package
+    # wsmp: use WSMP package
+    # mumps: use MUMPS package
 
     xopt, info = nlp.solve(x0)
-
-    print(xopt)
-    # print(info)
-
-    # dict_constr = {'fun': fconstr}
-
-    # exit_ = minimize_ipopt(fobj, x0, args=args, constraints=[dict_constr])
-
-    # print(exit_)
-
-
-    #     fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, True, fconstr, args)
-    #     while exitflag == 9:
-    #         fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, True, fconstr, args)
-    #     if exitflag == 0:
-    #         q[ind] = xopt[:k].reshape(-1, 1)
-    #         z[fixed] = xopt[k:].reshape(-1, 1)
-    #         # else:
-    #         #     q[ind] = xopt[:k].reshape(-1, 1) # Code the option with only qinds
-    #     else:
-    #         print(message)
-    # elif solver == 'shgo':
-    #     dict_constr = []
-    #     for i in range(len(fconstr(x0, *args))):
-    #         args_constr = list(args)
-    #         args_constr.append(i)
-    #         args_constr.append(fconstr)
-    #         dict_ = {
-    #             'type': 'ineq',
-    #             'fun': _shgo_constraint_wrapper,
-    #             'args': args_constr,
-    #             }
-    #         dict_constr.append(dict_)
-    #     args_constr[len(args_constr)-2] = 0
-    #     result = _shgo(fobj, bounds, True, dict_constr, args)
-    #     fopt = result['fun']
-    #     xopt = result['x']
-    #     sucess = result['success']
-    #     message = result['message']
-    #     if sucess == True:
-    #         exitflag = 0
-    #         q[ind] = xopt[:k].reshape(-1, 1)
-    #         z[fixed] = xopt[k:].reshape(-1, 1)
-    #         # else:
-    #         #     q[ind] = xopt[:k].reshape(-1, 1) # Code the option with only qinds
-    #     else:
-    #         print(message)
+    fopt = info['obj_val']
+    exitflag = info['status']
+    print(info['status_msg'])
 
     g_final = fconstr(xopt, *args)
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
@@ -344,35 +322,28 @@ class wrapper_ipopt(object):
         #
         # The callback for calculating the objective
         #
-        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
-        qid = th.tensor(x[:k].reshape(-1, 1), requires_grad=True)
-        return self.fobj(qid, *self.args_obj)
+        variables = th.tensor(x.reshape(-1,1))
+        return array(self.fobj(variables, *self.args_obj))
     def gradient(self, x):
         #
         # The callback for calculating the gradient
         #
-        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
-        qid = th.tensor(x[:k].reshape(-1, 1), requires_grad=True)
-        f = self.fobj(qid, *self.args_obj)
-        grad_qid = compute_grad(qid, f)
-        grad = th.cat(grad_qid, th.tensor(zeros((len(pfixed), 1))))
-        return grad
+        variables = th.tensor(x.reshape(-1,1), requires_grad=True)
+        f = self.fobj(variables, *self.args_obj)
+        return array(compute_grad(variables, f))
     def constraints(self, x):
         #
         # The callback for calculating the constraints
         #
-        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
-        qid = th.tensor(x[:k], requires_grad=True)
-        zb = th.tensor(x[len(pfixed):], requires_grad=True)
-        return self.fconstr(qid, zb, *self.args_constr)
+        variables = th.tensor(x.reshape(-1,1))
+        return array(self.fconstr(variables, *self.args_constr))
     def jacobian(self, x):
         #
         # The callback for calculating the Jacobian
         #
-        A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k = self.args_obj
-        qid = th.tensor(x[:k], requires_grad=True)
-        zb = th.tensor(x[len(pfixed):], requires_grad=True)
-        return f_deal_constraints(qid, zb, *args)
+        variables = th.tensor(x.reshape(-1,1), requires_grad=True)
+        constraints = self.fconstr(variables, *self.args_constr)
+        return array(compute_jacobian(variables, constraints))
     # def hessianstructure(self):
     #     #
     #     # The structure of the Hessian
@@ -428,4 +399,4 @@ class wrapper_ipopt(object):
     #     #
     #     # Example for the use of the intermediate callback.
     #     #
-    #     print "Objective value at iteration #%d is - %g" % (iter_count, obj_value)
+    #     print"Objective value at iteration #%d is - %g" % (iter_count, obj_value)

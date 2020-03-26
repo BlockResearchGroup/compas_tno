@@ -115,7 +115,7 @@ while exitflag == 0:
 
 # --------------- 6 . After exit print the list of solutions obtained ------------
 
-print('\n SUMARY')
+print('\n SUMMARY')
 print('\nSizes calculated')
 print(size_parameters)
 print('Solutions Found')

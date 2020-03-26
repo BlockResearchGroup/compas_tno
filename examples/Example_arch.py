@@ -14,7 +14,6 @@ from compas_tno.analysis.analysis import Analysis
 H = 1.0
 L = 2.0
 thk = 0.2
-radius = 5.0
 discretisation = 20
 b = 0.5
 t = 10.0

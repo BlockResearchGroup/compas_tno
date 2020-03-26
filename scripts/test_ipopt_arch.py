@@ -15,78 +15,72 @@ from compas_tno.plotters import plot_form_xz
 # ----------------------------------------------------------------------
 
 # Basic parameters
+# Basic parameters
 
-H = 1.0
-L = 2.0
-thk = 0.2
-radius = 5.0
-discretisation = 20
-b = 0.5
-t = 10.0
-type_structure = 'arch'
-type_formdiagram = 'arch'
+thk = 0.5
+type_structure = 'crossvault'
+type_formdiagram = 'cross_fd'
+discretisation = 10
 
-# ----------------------- 1. Create Arch shape ---------------------------
+# ----------------------- 1. Create CrossVault shape ---------------------------
 
 data_shape = {
     'type': type_structure,
-    'H': H,
-    'L': L,
     'thk': thk,
     'discretisation': discretisation,
-    'b': b,
-    't': t,
-    'x0': 0.0
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0
 }
 
-arch = Shape.from_library(data_shape)
-area = arch.middle.area()
-swt = arch.compute_selfweight()
-print('Arch created!')
-print('Self-weight is:', swt)
-print('Area is:', area)
-# view_shapes(arch).show()
+vault = Shape.from_library(data_shape)
+swt = vault.compute_selfweight()
+
+print('Crossvault created!')
+# view_shapes(vault).show()
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 
 data_diagram = {
     'type': type_formdiagram,
-    'H': H,
-    'L': L,
-    'total_nodes': discretisation,
-    'x0': 0.0
+    'xy_span': [[0, 10], [0, 10]],
+    'discretisation': discretisation,
+    'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data_diagram)
+form.overview_forces()
 print('Form Diagram Created!')
 print(form)
+
+form = form.initialise_tna(plot=False)
 
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'IPOPT'
 optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10000.0
+optimiser.data['qmax'] = 1000.0
 print(optimiser.data)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
 
-analysis = Analysis.from_elements(arch, form, optimiser)
+analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()  # Find independent edges
+analysis.set_up_optimiser()
 analysis.run()
+
 form = analysis.form
 file_address = compas_tno.get('test.json')
 form.to_json(file_address)
 optimiser = analysis.optimiser
 fopt = optimiser.fopt
-print(fopt)
-plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
+view_thrust(form).show()
+# plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
