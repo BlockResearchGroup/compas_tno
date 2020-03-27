@@ -6,7 +6,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 
 # ----------------------------------------------------------------------
-# -----------EXAMPLE OF LOADPATH FOR CROSS FORM DIAGRAM ----------------
+# -----------EXAMPLE OF MIN THRUST FOR CROSS FORM DIAGRAM ----------------
 # ----------------------------------------------------------------------
 
 # Basic parameters

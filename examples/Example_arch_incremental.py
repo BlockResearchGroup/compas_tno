@@ -6,7 +6,7 @@ from compas_tno.plotters import plot_form_xz
 from compas_tno.analysis.analysis import Analysis
 
 # ----------------------------------------------------------------------
-# -----------EXAMPLE OF MIN and MAX THRUST FOR ARCH --------------------
+# ---- EXAMPLE OF MIN and MAX THRUST FOR ARCH WITH INCREMENTAL THK -----
 # ----------------------------------------------------------------------
 
 

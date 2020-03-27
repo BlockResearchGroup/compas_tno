@@ -40,9 +40,26 @@ from .independents import *
 from .objectives import *
 from .problems import *
 from .setup import *
-from .solver_MATLAB import *
+
 from .solver_MMA import *
 from .solver_scipy import *
-# from .solver_pyOpt import *
+from .solver_IPOPT import *
+from .solver_pyOpt import *
+from .solver_MATLAB import *
+
+# Maybe add warnings to this section ?
+# try:
+#     from .solver_IPOPT import *
+# except:
+#     print('Warning: Solver IPOPT not available, calling it won\'t be possible.')
+# try:
+#     from .solver_pyOpt import *
+# except:
+#     print('Warning: Solver pyOpt not available, calling it won\'t be possible.')
+# try:
+#     from .solver_MATLAB import *
+# except:
+#     print('Warning: MATLAB engine not available, calling it won\'t be possible.')
+
 
 __all__ = [name for name in dir() if not name.startswith('_')]

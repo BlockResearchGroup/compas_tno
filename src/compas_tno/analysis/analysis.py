@@ -9,8 +9,7 @@ from compas_tno.algorithms import set_up_convex_optimisation
 from compas_tno.algorithms import run_optimisation_scipy
 from compas_tno.algorithms import run_optimisation_MATLAB
 from compas_tno.algorithms import run_optimisation_MMA
-
-from compas_tno.algorithms.WIP_solver_IPOPT import run_optimisation_ipopt
+from compas_tno.algorithms import run_optimisation_ipopt
 
 __all__ = ['Analysis']
 

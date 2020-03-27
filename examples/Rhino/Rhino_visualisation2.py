@@ -9,12 +9,14 @@ from compas.utilities import i_to_rgb
 import rhinoscriptsyntax as rs
 import json
 import math
+import compas_tno
 
 # Give a name to your project
-master = 'TEST'
+master = 'PAVILLION2'
 
 # Put here the .json file for the optimisation
-fnm = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+# fnm = compas_tno.get('test.json')
 
 # Parameters for the visualisation
 radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault

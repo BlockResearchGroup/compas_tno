@@ -1,11 +1,21 @@
 from compas_tno.solvers import mma_numpy
+# from torch import tensor
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import diags
 from compas.numerical import normrow
+
+from numpy import identity
 from numpy import hstack
 from numpy import vstack
 from numpy import transpose
+from numpy import array
+from numpy import zeros
+
+from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
+from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+from compas_tno.algorithms.equilibrium_pytorch import compute_grad
+from compas_tno.algorithms.equilibrium_pytorch import compute_jacobian
 
 import logging
 
@@ -16,9 +26,6 @@ from compas_tno.algorithms import d_fconstr
 
 from compas_tno.algorithms import zlq_from_qid
 from compas.utilities import geometric_key
-
-from numpy import array
-from numpy import zeros
 
 from numpy import multiply
 from numpy import divide
@@ -69,39 +76,55 @@ def run_optimisation_MMA(analysis):
     if solver != 'MMA':
         print('Error, Only MMA solver is available for this library!')
 
-    if optimiser.data['solver_options']['derivatives'] == 'DF_brute':
-        args_MMA = list(args)
-        args_MMA.append([fobj, fconstr])
-        f_g_eval = brute_f_g_eval
-        f_g_df_dg_eval = brute_f_g_df_dg_eval
-    elif optimiser.data['solver_options']['derivatives'] == 'DF_reduced':
-        args_MMA = list(args)
-        args_MMA.append([variables, constraints, objective])
-        f_g_eval = reduced_f_g_eval
-        f_g_df_dg_eval = reduced_f_g_df_dg_eval
-    elif optimiser.data['solver_options']['derivatives'] == 'analytical':
-        args_MMA = list(args)
-        args_MMA.append([fobj, fconstr])
+    args_MMA = list(args)
+    args_MMA.append([fobj, fconstr])
+    f_g_eval = pytorch_f_g
+    f_g_df_dg_eval = pytorch_f_g_df_dg
 
-    # print(args_MMA[-1])
-    # f0val, fval = f_g_eval(x0, *args_MMA)
-    # print(f0val.shape, fval.shape)
-    # f0val, df0dx, fval, dfdx = f_g_df_dg_eval(x0, *args_MMA)
-    # print(f0val.shape, df0dx.shape, fval.shape, dfdx.shape)
+    # if optimiser.data['solver_options']['derivatives'] == 'DF_brute':
+    #     args_MMA = list(args)
+    #     args_MMA.append([fobj, fconstr])
+    #     f_g_eval = brute_f_g_eval
+    #     f_g_df_dg_eval = brute_f_g_df_dg_eval
+    # elif optimiser.data['solver_options']['derivatives'] == 'DF_reduced':
+    #     args_MMA = list(args)
+    #     args_MMA.append([variables, constraints, objective])
+    #     f_g_eval = reduced_f_g_eval
+    #     f_g_df_dg_eval = reduced_f_g_df_dg_eval
+    # elif optimiser.data['solver_options']['derivatives'] == 'analytical':
+    #     args_MMA = list(args)
+    #     args_MMA.append([fobj, fconstr])
 
-    # print(dfdx[0,0], dfdx[50,0], dfdx[10,0])
-    # print(dfdx[0,10], dfdx[5,10], dfdx[10,10])
-    # print(dfdx[0,36], dfdx[5,36], dfdx[10,36])
+    # Tensor modification
 
-    # print(dfdx[120,0], dfdx[220,0], dfdx[300,0])
-    # print(dfdx[120,10], dfdx[220,10], dfdx[300,10])
-    # print(dfdx[120,36], dfdx[220,36], dfdx[300,36])
+    m = len(q)
+    B_Ik = zeros((m, len(ind)))
+    A_Ik = zeros((m, len(p)))
+    B_Ik[ind, :] = identity(len(ind))
+    B_Ik[dep, :] = Edinv*Ei
+    A_Ik[dep, :] = -1*Edinv.toarray()
 
-    # # print(dfdx[500,0], dfdx[529,0])
-    # # print(dfdx[500,10], dfdx[529,10])
-    # # print(dfdx[500,36], dfdx[529,36])
+    # Tensor Transformation
 
-    fopt, xopt = mma_numpy(f_g_eval, f_g_df_dg_eval, x0, bounds, args_MMA, 10e-4, 100)
+    A_Ik_th = tensor(A_Ik)
+    B_Ik_th = tensor(B_Ik)
+    p_th = tensor(p)
+    C_th = tensor(C.toarray())
+    Ci_th = tensor(Ci.toarray())
+    Cit_th = Ci_th.t()
+    Cf_th = tensor(Cf.toarray())
+    pzfree = tensor(pz[free])
+    xyz = tensor(hstack([x, y, z]))
+    xy = tensor(hstack([x, y]))
+    pfixed = tensor(hstack([px, py, pz])[fixed])
+
+    args_obj = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
+    args_constr = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, constraints)
+
+    args_MMA = [args_obj, args_constr]
+
+    fopt, xopt, exitflag = mma_numpy(f_g_eval, f_g_df_dg_eval, x0, bounds, args_MMA, 10e-4, 100)
+    print('This is exitflag', exitflag)
 
     if 'ind' in variables and 'zb' in variables:
         q[ind] = xopt[:k].reshape(-1, 1)
@@ -139,7 +162,7 @@ def run_optimisation_MMA(analysis):
     optimiser.exitflag = exitflag
     optimiser.fopt = fopt
     analysis.form = form
-    reactions(form, plot=plot)
+    reactions(form)
 
     print('\n' + '-' * 50)
     print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
@@ -150,6 +173,34 @@ def run_optimisation_MMA(analysis):
     print('-' * 50 + '\n')
 
     return analysis
+
+
+# ---------------------------------------------------------------
+# Calulation with pytorch
+# ---------------------------------------------------------------
+
+
+def pytorch_f_g(variables, *args):
+    variables = tensor(variables, requires_grad=False)
+    args_obj = args[0]
+    args_constr = args[1]
+    f0val = array(f_objective_pytorch(variables, *args_obj))
+    fval = -1 * array(f_constraints_pytorch(variables, *args_constr))
+    return f0val, fval
+
+
+def pytorch_f_g_df_dg(variables, *args):
+    variables = tensor(variables, requires_grad=True)
+    args_obj = args[0]
+    args_constr = args[1]
+    fval_tensor = -1 * f_constraints_pytorch(variables, *args_constr)
+    dfdx = array(compute_jacobian(variables, fval_tensor))
+    f0val_tensor = f_objective_pytorch(variables, *args_obj)
+    df0dx = array(compute_grad(variables, f0val_tensor))
+    f0val = f0val_tensor.detach().numpy()
+    fval = fval_tensor.detach().numpy()
+    return f0val, df0dx, fval, dfdx
+
 
 # ----------------------------------------------------------------
 # Helpers Calculation of Derivatives and function evaluation

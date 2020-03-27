@@ -1,3 +1,4 @@
+import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
@@ -6,7 +7,7 @@ from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
 
 # ----------------------------------------------------------------------
-# -----------EXAMPLE OF MIN and MAX THRUST FOR DOME --------------------
+# ----------- EXAMPLE OF MIN THRUST FOR DOME WITH SPIRAL FD ------------
 # ----------------------------------------------------------------------
 
 # Basic parameters
@@ -79,7 +80,7 @@ analysis.run()
 form = analysis.form
 plot_form(form, show_q=False).show()
 
-file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
-form.to_json(file_adress)
+file_address = compas_tno.get('test.json')
+form.to_json(file_address)
 
 view_thrust(form).show()

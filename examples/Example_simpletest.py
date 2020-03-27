@@ -2,9 +2,10 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_form_xz
 from compas_tno.shapes import Shape
+import compas_tno
 
-file_address = '/Users/mricardo/compas_dev/me/reformulation/test.json'
-form = FormDiagram.from_json(file_address)
+file_address = compas_tno.get('test.json')
+form.from_json(file_address)
 
 # Basic parameters
 

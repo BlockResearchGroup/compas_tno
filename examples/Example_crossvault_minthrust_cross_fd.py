@@ -8,7 +8,7 @@ from compas_tno.viewers.thrust import view_thrust
 from compas_tno.viewers.thrust import view_solution
 
 # ----------------------------------------------------------------------------
-# -----------EXAMPLE OF MIN and MAX THRUST FOR CROSSVAULT --------------------
+# ---------- EXAMPLE OF MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
 # ----------------------------------------------------------------------------
 
 # Basic parameters

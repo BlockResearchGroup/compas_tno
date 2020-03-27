@@ -104,7 +104,6 @@ def mma_numpy(f_g_eval, f_df_g_dg_eval, x0, bounds, args=(), kkttol=1e-6, maxout
     raa0eps = 0.000001
     raaeps = 0.000001*eeem
     outeriter = 0
-    maxoutit = 50
     kkttol = kkttol
     maxoutit = maxoutit
 

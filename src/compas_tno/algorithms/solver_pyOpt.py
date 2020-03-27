@@ -1,35 +1,10 @@
-from scipy.optimize import fmin_slsqp
-from scipy.optimize import fmin_slsqp
-from compas.numerical import devo_numpy
-from compas.numerical import ga
-
-from compas_tno.algorithms.problems import initialise_problem
-
-from compas_tno.algorithms.objectives import f_min_loadpath
-from compas_tno.algorithms.objectives import f_min_loadpath_pen
-from compas_tno.algorithms.objectives import f_min_thrust
-from compas_tno.algorithms.objectives import f_min_thrust_pen
-from compas_tno.algorithms.objectives import f_max_thrust
-from compas_tno.algorithms.objectives import f_target
-from compas_tno.algorithms.objectives import f_constant
-
-from compas_tno.algorithms.constraints import f_compression
-from compas_tno.algorithms.constraints import f_ub_lb
-from compas_tno.algorithms.constraints import f_joints
-from compas_tno.algorithms.constraints import f_cracks
+import pyOpt
 
 from compas_tno.algorithms.equilibrium import reactions
-
 from compas_tno.algorithms import zlq_from_qid
 from compas.utilities import geometric_key
 
-import pyOpt
-
-from numpy.random import rand
-from numpy import append
 from numpy import array
-
-from compas_tno.diagrams import FormDiagram
 
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']

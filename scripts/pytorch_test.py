@@ -207,8 +207,8 @@ def f_max_thrust_variables(variables, p, A_Ik, B_Ik, C, Cf, xy):
 
 
 def compute_grad(variables, f):
+    zero_gradients(variables)
     f.backward(retain_graph=True)
-    f.backward()
     grad = variables.grad.data
     return grad
 

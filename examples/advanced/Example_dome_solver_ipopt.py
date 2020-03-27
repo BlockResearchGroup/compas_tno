@@ -1,4 +1,3 @@
-import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
@@ -7,7 +6,7 @@ from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
 
 # ----------------------------------------------------------------------
-# ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
+# -----------EXAMPLE OF MIN and MAX THRUST FOR DOME --------------------
 # ----------------------------------------------------------------------
 
 # Basic parameters
@@ -51,14 +50,14 @@ plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=True)
-plot_form(form).show()
+# form = form.initialise_tna(plot=False)
+# plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
@@ -75,12 +74,18 @@ analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
+import time
+start_time = time.time()
+
 analysis.run()
+
+elapsed_time = time.time() - start_time
+print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
 form = analysis.form
 plot_form(form, show_q=False).show()
 
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
+file_adress = '/Users/mricardo/compas_dev/me/reformulation/test.json'
+form.to_json(file_adress)
 
 view_thrust(form).show()
