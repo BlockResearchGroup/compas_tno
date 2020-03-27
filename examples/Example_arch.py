@@ -11,7 +11,7 @@ from compas_tno.analysis.analysis import Analysis
 
 # Basic parameters
 
-H = 0.5
+H = 1.0
 L = 2.0
 thk = 0.2
 discretisation = 20

@@ -1,10 +1,10 @@
-import ipopt
-from torch import tensor
+# import ipopt
+# from torch import tensor
 
-from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
-from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
-from compas_tno.algorithms.equilibrium_pytorch import compute_grad
-from compas_tno.algorithms.equilibrium_pytorch import compute_jacobian
+# from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
+# from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+# from compas_tno.algorithms.equilibrium_pytorch import compute_grad
+# from compas_tno.algorithms.equilibrium_pytorch import compute_jacobian
 
 from compas_tno.algorithms.equilibrium import reactions
 

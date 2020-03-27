@@ -269,7 +269,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
 
     """
 
-    import torch as th
+    # import torch as th
 
     # Mapping
 

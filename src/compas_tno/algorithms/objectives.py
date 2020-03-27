@@ -5,7 +5,7 @@ from numpy import newaxis
 from numpy import hstack
 from numpy import zeros
 from numpy import array
-import torch as th
+# import torch as th
 
 from compas_tno.algorithms.equilibrium import zlq_from_qid
 from compas.numerical import normrow

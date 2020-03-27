@@ -11,8 +11,8 @@ from compas_tno.analysis.analysis import Analysis
 
 
 exitflag = 0  # means that optimisation found a solution
-thk = 0.200  # in meters
-thk_reduction = 0.005  # in meters
+thk = 0.200  # thickness on the start in meters
+thk_reduction = 0.010  # in meters
 solutions = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
 
@@ -28,7 +28,7 @@ while exitflag == 0:
     type_structure = 'arch'
     type_formdiagram = 'arch'
     t_over_R = thk/R
-    print('\n----- The ', type_formdiagram, 'problem for thk/R:', t_over_R, '\n')
+    print('\n----- The' , type_formdiagram, 'problem for thk/R:', t_over_R, '\n')
 
     # ----------------------- 1. Create Arch shape ---------------------------
 
@@ -72,7 +72,7 @@ while exitflag == 0:
     optimiser.data['solver'] = 'slsqp'
     optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
     optimiser.data['variables'] = ['ind', 'zb']
-    optimiser.data['objective'] = 'min'  # Set the objective
+    optimiser.data['objective'] = 'max'  # Set the objective
     optimiser.data['printout'] = True
     optimiser.data['plot'] = False
     optimiser.data['find_inds'] = True
@@ -94,7 +94,7 @@ while exitflag == 0:
     file_address = compas_tno.get('test.json')
     form.to_json(file_address)
     exitflag = optimiser.exitflag  # get info if optimisation was succeded ot not
-    fopt = optimiser.fopt
+    fopt = optimiser.fopt  # objective function optimum value
     fopt_over_weight = fopt/swt
     print('Thickness', thk)
     print('thk/R:', t_over_R)
@@ -120,3 +120,4 @@ print('\nSizes calculated')
 print(size_parameters)
 print('Solutions Found')
 print(solutions)
+

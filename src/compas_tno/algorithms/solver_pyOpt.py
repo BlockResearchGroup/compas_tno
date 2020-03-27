@@ -1,4 +1,4 @@
-import pyOpt
+# import pyOpt
 
 from compas_tno.algorithms.equilibrium import reactions
 from compas_tno.algorithms import zlq_from_qid
