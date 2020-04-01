@@ -11,32 +11,34 @@ __all__ = [
     'plot_independents',
 ]
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, save=None):
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, cracks=False, save=None):
     """ Extended plotting of a FormDiagram
 
     Parameters
     ----------
     form : obj
         FormDiagram to plot.
-    radius : float
+    radius : float (0.05)
         Radius of vertex markers.
-    fix_width : bool
+    fix_width : bool (False)
         Fix edge widths as constant.
-    max_width : bool
+    max_width : bool (10)
         Maximum width of the plot.
-    max_width : float
+    max_width : float (False)
         Maximum edge width.
-    simple : bool
+    simple : bool (True)
         Simple red and blue colour plotting.
-    show_q : bool
+    show_q : bool (True)
         Show the force densities on the edges.
-    thick : str
+    thick : str ('q')
         Attribute that the thickness of the form should be related to.
-    heights : bool
+    heights : bool (False)
         Plot the heights of the nodes.
-    show_edgeuv : bool
+    show_edgeuv : bool (False)
         Show u,v of the edges.
-    save : str
+    cracks : bool (False)
+        If true highlight the location of the nodes touching intrados (blue) and extrados (green).
+    save : str (None)
         Path to save the figure, if desired.
 
     Returns
@@ -97,6 +99,20 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         i = i + 1
 
     rad_colors = {}
+    if cracks:
+        for key in form.vertices():
+            ub = form.vertex_attribute(key, 'ub')
+            lb = form.vertex_attribute(key, 'lb')
+            z = form.vertex_attribute(key, 'z')
+            if abs(z - ub) < 10e-4:
+                rad_colors[key] = '#008000' # Green extrados
+            elif abs(z - lb) < 10e-4:
+                rad_colors[key] = '#0000FF' # Blue intrados
+            elif z - ub > 0 or lb - z > 0:
+                rad_colors[key] = '#000000' # Black outside
+
+
+
     for key in form.vertices_where({'is_fixed': True}):
         rad_colors[key] = '#aaaaaa'
     for key in form.vertices_where({'rol_x': True}):

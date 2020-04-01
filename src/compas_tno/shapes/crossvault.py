@@ -54,10 +54,6 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
     density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
-    # zt = zeros((len(x),len(y)))
-
-    print(max(x),min(x),max(y),min(y) )
-    print(len(x),len(x),len(y),len(y) )
 
     rx = (x1 - x0)/2
     ry = (y1 - y0)/2
@@ -270,8 +266,6 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
     x1d = []
     y1d = []
     z1d = []
-    print('intervals')
-    print((min(x),max(x),min(y),max(y)))
 
     for i in range(len(x)):
         for j in range(len(y)):
@@ -283,7 +277,6 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
 
             if ((yi) > y1 and ((xi) > x1 or (xi) < x0)) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
                 z = - 1*t
-                print(z)
             else:
                 if yi > y1:
                     yi = y1
