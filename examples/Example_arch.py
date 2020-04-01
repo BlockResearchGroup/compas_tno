@@ -85,7 +85,7 @@ fopt = optimiser.fopt
 print(fopt)
 plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
 
-# --------------------- 3.3 Create Minimisation for maximum thrust ---------------------
+# --------------------- 4.1 Create Minimisation for maximum thrust ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
@@ -99,7 +99,7 @@ optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 print(optimiser.data)
 
-# --------------------------- Run optimisation with scipy ---------------------------
+# ------------------------- 4.2 Run optimisation with scipy ---------------------------
 
 analysis = Analysis.from_elements(arch, form, optimiser)
 analysis.apply_selfweight()
