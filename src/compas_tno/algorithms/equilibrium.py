@@ -250,10 +250,10 @@ def z_update(form):
     fixed = set(anchors + fixed)
     fixed = [k_i[key] for key in fixed]
     free = list(set(range(vcount)) - set(fixed))
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     xyz = array(form.get_vertices_attributes('xyz'), dtype=float64)
     p = array(form.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-    q = [attr.get('q', 1.0) for u, v, attr in form.edges_where({'is_edge': True}, True)]
+    q = [attr.get('q', 1.0) for u, v, attr in form.edges_where({'_is_edge': True}, True)]
     q = array(q, dtype=float64).reshape((-1, 1))
     C = connectivity_matrix(edges, 'csr')
     Ci = C[:, free]
@@ -284,14 +284,14 @@ def update_tna(form, delete_face=True, plots=False, save=False):
     form.set_vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
     form.update_boundaries(feet=2)
 
-    # for key in form.edges_where({'is_external': True}):
+    # for key in form.edges_where({'_is_external': True}):
     #     form.edge_attribute(key,'q',value=x_reaction)
     #     form.edge_attribute(key,'fmin',value=x_reaction)
     #     form.edge_attribute(key,'fmax',value=x_reaction)
     #     form.edge_attribute(key,'lmin',value=1.00)
     #     form.edge_attribute(key,'lmax',value=1.00)
 
-    for u, v in form.edges_where({'is_external': False}):
+    for u, v in form.edges_where({'_is_external': False}):
         qi = form.edge_attribute((u, v), 'q')
         a = form.vertex_coordinates(u)
         b = form.vertex_coordinates(v)
@@ -328,7 +328,7 @@ def update_form(form, q):
     fixed = set(anchors + fixed)
     fixed = [k_i[key] for key in fixed]
     free = list(set(range(vcount)) - set(fixed))
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     xyz = array(form.get_vertices_attributes('xyz'), dtype=float64)
     p = array(form.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
     q = array(q, dtype=float64).reshape((-1, 1))
@@ -348,7 +348,7 @@ def update_form(form, q):
         index = k_i[key]
         attr['z'] = xyz[index, 2]
 
-    for u, v, attr in form.edges_where({'is_edge': True}, True):
+    for u, v, attr in form.edges_where({'_is_edge': True}, True):
         index = uv_i[(u, v)]
         attr['q'] = q[index, 0]
 
@@ -361,7 +361,7 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
 
     uv_i = form.uv_index()
 
-    for u, v in form.edges_where({'is_edge': True, 'is_external': False}):
+    for u, v in form.edges_where({'_is_edge': True, '_is_external': False}):
         i = uv_i[(u, v)]
         key = (u, v)
         form.edge_attribute(key, 'q', value=q[i])
@@ -390,12 +390,12 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
     fixed = set(anchors + fixed)
     fixed = [k_i[key] for key in fixed]
     free = list(set(range(vcount)) - set(fixed))
-    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
+    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True})]
     xy = array(form.get_vertices_attributes('xy'), dtype=float64)
-    lmin = array([attr.get('lmin', 1e-7) for u, v, attr in form.edges_where({'is_edge': True}, True)], dtype=float64).reshape((-1, 1))
-    lmax = array([attr.get('lmax', 1e+7) for u, v, attr in form.edges_where({'is_edge': True}, True)], dtype=float64).reshape((-1, 1))
-    fmin = array([attr.get('fmin', 1e-7) for u, v, attr in form.edges_where({'is_edge': True}, True)], dtype=float64).reshape((-1, 1))
-    fmax = array([attr.get('fmax', 1e+7) for u, v, attr in form.edges_where({'is_edge': True}, True)], dtype=float64).reshape((-1, 1))
+    lmin = array([attr.get('lmin', 1e-7) for u, v, attr in form.edges_where({'_is_edge': True}, True)], dtype=float64).reshape((-1, 1))
+    lmax = array([attr.get('lmax', 1e+7) for u, v, attr in form.edges_where({'_is_edge': True}, True)], dtype=float64).reshape((-1, 1))
+    fmin = array([attr.get('fmin', 1e-7) for u, v, attr in form.edges_where({'_is_edge': True}, True)], dtype=float64).reshape((-1, 1))
+    fmax = array([attr.get('fmax', 1e+7) for u, v, attr in form.edges_where({'_is_edge': True}, True)], dtype=float64).reshape((-1, 1))
     C = connectivity_matrix(edges, 'csr')
     Ct = C.transpose()
     CtC = Ct.dot(C)
@@ -462,11 +462,11 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
         i = k_i[key]
         attr['x'] = xy[i, 0]
         attr['y'] = xy[i, 1]
-    for u, v, attr in form.edges_where({'is_edge': True}, True):
+    for u, v, attr in form.edges_where({'_is_edge': True}, True):
         i = uv_i[(u, v)]
         attr['q'] = q[i, 0]
         attr['f'] = f[i, 0]
-        attr['l'] = l[i, 0]
+        attr['_l'] = l[i, 0]
         attr['a'] = a[i]
 
     for key, attr in force.vertices(True):
@@ -494,10 +494,10 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
     for key, attr in form.vertices(True):
         index = k_i[key]
         attr['z'] = xyz[index, 2].tolist()
-        attr['rx'] = r[index, 0]
-        attr['ry'] = r[index, 1]
-        attr['rz'] = r[index, 2]
-    for u, v, attr in form.edges_where({'is_edge': True}, True):
+        attr['_rx'] = r[index, 0]
+        attr['_ry'] = r[index, 1]
+        attr['_rz'] = r[index, 2]
+    for u, v, attr in form.edges_where({'_is_edge': True}, True):
         index = uv_i[(u, v)]
         attr['f'] = f[index, 0]
 
@@ -540,7 +540,7 @@ def reactions(form, plot=False):
     n = form.number_of_vertices()
     fixed = [k_i[key] for key in form.fixed()]
     rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     free = list(set(range(n)) - set(fixed) - set(rol))
 
     # Co-ordinates and loads
@@ -564,7 +564,7 @@ def reactions(form, plot=False):
     U = uvw[:, 0]
     V = uvw[:, 1]
     W = uvw[:, 2]
-    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
 
     # Horizontal checks
 
@@ -576,9 +576,9 @@ def reactions(form, plot=False):
 
     for i in fixed:
         key = i_k[i]
-        form.vertex_attribute(key, 'rx', value=Rx[i])
-        form.vertex_attribute(key, 'ry', value=Ry[i])
-        form.vertex_attribute(key, 'rz', value=Rz[i])
+        form.vertex_attribute(key, '_rx', value=Rx[i])
+        form.vertex_attribute(key, '_ry', value=Ry[i])
+        form.vertex_attribute(key, '_rz', value=Rz[i])
         if plot:
             print('Reactions in key: {0} are:'.format(key))
             print(Rx[i], Ry[i], Rz[i])
@@ -586,7 +586,7 @@ def reactions(form, plot=False):
     for key in form.vertices_where({'rol_x': True}):
         i = k_i[key]
         eq_node[key] = round(Rx[i], 2)
-        form.vertex_attribute(key, 'rx', value=Rx[i])
+        form.vertex_attribute(key, '_rx', value=Rx[i])
         if plot:
             print('Reactions in Partial X-Key: {0} :'.format(key))
             print(Rx[i])
@@ -594,7 +594,7 @@ def reactions(form, plot=False):
     for key in form.vertices_where({'rol_y': True}):
         i = k_i[key]
         eq_node[key] = round(Ry[i], 2)
-        form.vertex_attribute(key, 'ry', value=Ry[i])
+        form.vertex_attribute(key, '_ry', value=Ry[i])
         if plot:
             print('Reactions in Partial Y-Key: {0} :'.format(key))
             print(Ry[i])

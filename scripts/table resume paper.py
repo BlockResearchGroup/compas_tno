@@ -33,8 +33,8 @@ for t in [0.50, 0.305]:
             reactions(form, plot= False)
             fopt = 0
             for key in form.vertices_where({'is_fixed': True}):
-                rx = form.vertex_attribute(key, 'rx')
-                ry = form.vertex_attribute(key, 'ry')
+                rx = form.vertex_attribute(key, '_rx')
+                ry = form.vertex_attribute(key, '_ry')
                 R = math.sqrt(rx**2 + ry**2)
                 fopt += R
             form.attributes['fopt'] = fopt

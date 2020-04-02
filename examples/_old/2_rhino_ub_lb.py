@@ -126,9 +126,9 @@ artist = NetworkArtist(form, layer=reac_layer)
 artist.clear_layer()
 #for key in form.vertices_where({'is_fixed': True}):
 #    node = form.vertex_coordinates(key)
-#    ry = form.vertex_attribute(key, 'ry')
-#    rx = form.vertex_attribute(key, 'rx')
-#    rz = form.vertex_attribute(key, 'rz')
+#    ry = form.vertex_attribute(key, '_ry')
+#    rx = form.vertex_attribute(key, '_rx')
+#    rz = form.vertex_attribute(key, '_rz')
 #    norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
 #    if rz < 0.0 and norm > 0.0:
 #        sp = node
@@ -145,7 +145,7 @@ artist.clear_layer()
 
 for key in form.vertices_where({'rol_x': True}):
     try:
-        rx = form.vertex_attribute(key, 'rx')
+        rx = form.vertex_attribute(key, '_rx')
         sp = form.vertex_coordinates(key)
         ep = [sp[0] + rx, sp[1], sp[2]]
         id = rs.AddLine(sp, ep)
@@ -156,7 +156,7 @@ for key in form.vertices_where({'rol_x': True}):
 
 for key in form.vertices_where({'rol_y': True}):
     try:
-        ry = form.vertex_attribute(key, 'ry')
+        ry = form.vertex_attribute(key, '_ry')
         sp = form.vertex_coordinates(key)
         ep = [sp[0], sp[1] + ry, sp[2]]
         id = rs.AddLine(sp, ep)
@@ -171,7 +171,7 @@ rs.CurrentLayer(pipes_layer)
 artist = NetworkArtist(form, layer=pipes_layer)
 artist.clear_layer()
 rs.CurrentLayer(pipes_layer)
-for u, v in form.edges_where({'is_edge': True}):
+for u, v in form.edges_where({'_is_edge': True}):
     l = form.edge_length(u, v)
     q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
@@ -189,7 +189,7 @@ rs.CurrentLayer(pipes_color)
 artist = NetworkArtist(form, layer=pipes_color)
 artist.clear_layer()
 rs.CurrentLayer(pipes_color)
-for u, v in form.edges_where({'is_edge': True}):
+for u, v in form.edges_where({'_is_edge': True}):
     l = form.edge_length(u, v)
     q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)

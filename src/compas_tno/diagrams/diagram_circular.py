@@ -91,14 +91,14 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
         for key in form.faces():
             centroid = form.face_centroid(key)
             if centroid[0] == xc and centroid[1] == yc:
-                form.set_face_attribute(key, 'is_loaded', False)
+                form.set_face_attribute(key, '_is_loaded', False)
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:
         form.vertex_attribute(key, 'is_fixed', True)
 
     for u,v in form.edges_on_boundary():
-        form.edge_attribute((u,v), 'is_edge', False)
+        form.edge_attribute((u,v), '_is_edge', False)
 
     return form
 
@@ -193,7 +193,7 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
         for key in form.faces():
             centroid = form.face_centroid(key)
             if centroid[0] == xc and centroid[1] == yc:
-                form.set_face_attribute(key, 'is_loaded', False)
+                form.set_face_attribute(key, '_is_loaded', False)
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:
@@ -287,7 +287,7 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
         for key in form.faces():
             centroid = form.face_centroid(key)
             if centroid[0] == xc and centroid[1] == yc:
-                form.set_face_attribute(key, 'is_loaded', False)
+                form.set_face_attribute(key, '_is_loaded', False)
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:

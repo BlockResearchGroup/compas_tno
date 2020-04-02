@@ -49,12 +49,12 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     """
 
     uv_i = form.uv_index()
-    q = [form.edge_attribute((u,v), thick) for u, v in form.edges_where({'is_edge': True})]
+    q = [form.edge_attribute((u,v), thick) for u, v in form.edges_where({'_is_edge': True})]
     qmax = max(abs(array(q)))
     lines = []
     i = 0
 
-    for u, v in form.edges_where({'is_edge': True}):
+    for u, v in form.edges_where({'_is_edge': True}):
         qi = form.edge_attribute((u, v), thick)
         l = form.edge_length(u, v)
         uv_i = form.uv_index
@@ -172,7 +172,7 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     """
     i_k = form.index_key()
     gkey_key = form.gkey_key()
-    q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'is_edge': True})]
+    q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     qmax = max(abs(array(q)))
     lines = []
     xs = []
@@ -184,8 +184,8 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
         if form.vertex_attribute(key, 'is_fixed') == True:
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
-                rz = abs(form.vertex_attribute(key, 'rz'))
-                rx = form.vertex_attribute(key, 'rx')
+                rz = abs(form.vertex_attribute(key, '_rz'))
+                rx = form.vertex_attribute(key, '_rx')
                 reac_line = [x, z, x + z * rx / rz, 0.0]
                 reac_lines.append(reac_line)
 
@@ -374,7 +374,7 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
 
     i_k = form.index_key()
     gkey_key = form.gkey_key()
-    q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'is_edge': True})]
+    q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     qmax = max(abs(array(q)))
     lines = []
     xs = []
@@ -420,8 +420,8 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
         if form.vertex_attribute(key, 'is_fixed') == True:
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
-                rz = abs(form.vertex_attribute(key, 'rz'))
-                rx = form.vertex_attribute(key, 'rx')
+                rz = abs(form.vertex_attribute(key, '_rz'))
+                rx = form.vertex_attribute(key, '_rx')
                 reac_line = [x, z, x + z * rx / rz, 0.0]
                 reac_lines.append(reac_line)
 
@@ -605,7 +605,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     lines = []
     i = 0
 
-    for u, v in form.edges_where({'is_edge': True}):
+    for u, v in form.edges_where({'_is_edge': True}):
         colour = ['66', '66', '66']
         text = ''
         if form.edge_attribute((u, v), 'is_ind'):

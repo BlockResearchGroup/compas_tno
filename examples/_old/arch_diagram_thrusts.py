@@ -46,8 +46,8 @@ if __name__ == "__main__":
     # file_save = PATH + '_' + objective + '_t=' + str(int(thck*100)) + '_px=' + str(px) + '.json'
 
     # for key in form.vertices_where({'is_fixed': True}):
-    #     rx = round(form.vertex_attribute(key, 'rx'), 3)
-    #     ry = round(form.vertex_attribute(key, 'ry'), 3)
+    #     rx = round(form.vertex_attribute(key, '_rx'), 3)
+    #     ry = round(form.vertex_attribute(key, '_ry'), 3)
     #     zb = round(form.vertex_attribute(key, 'z'), 3)
     #     break
     # q = [form.edge_attribute(key, 'q') for key in form.edges()]
@@ -105,8 +105,8 @@ if __name__ == "__main__":
                 print('File saved: ', file_save)
 
                 for key in form.vertices_where({'is_fixed': True}):
-                    rx = round(form.vertex_attribute(key, 'rx'), 3)
-                    ry = round(form.vertex_attribute(key, 'ry'), 3)
+                    rx = round(form.vertex_attribute(key, '_rx'), 3)
+                    ry = round(form.vertex_attribute(key, '_ry'), 3)
                     zb = round(form.vertex_attribute(key, 'z'), 3)
                     print('Reaction on Corner {0}: rx: {1:.3f}/ ry: {2:.3f}/ r: {3:.3f}'.format(key, rx, ry, math.sqrt(rx**2 + ry**2)))
                     print('zb: {0:.3f}'.format(zb))

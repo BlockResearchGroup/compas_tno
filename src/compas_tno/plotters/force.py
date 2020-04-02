@@ -44,10 +44,10 @@ def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_
 
     plotter = MeshPlotter(force, figsize=(12, 8), tight=True)
 
-    vertexcolor = {key: (1.0, 0.9, 0.9) for key in force.vertices() if not form.face_attribute(key, 'is_loaded')}
+    vertexcolor = {key: (1.0, 0.9, 0.9) for key in force.vertices() if not form.face_attribute(key, '_is_loaded')}
 
     radius = {key: 0.05 for key in force.vertices()}
-    radius.update({key: 0.1 for key in force.vertices() if not form.face_attribute(key, 'is_loaded')})
+    radius.update({key: 0.1 for key in force.vertices() if not form.face_attribute(key, '_is_loaded')})
 
     lengths = {}
     color = {}
@@ -55,7 +55,7 @@ def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_
     for key in force.edges():
         u, v = key
         lengths[key] = '{0:.2f}'.format(force.form_edge_attribute(form, key, 'q'))
-        if force.form_edge_attribute(form, key, 'is_external'):
+        if force.form_edge_attribute(form, key, '_is_external'):
             color[key] = '#00ff00'
             width[key] = 2.0
         if color_inds:

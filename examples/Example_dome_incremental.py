@@ -21,8 +21,8 @@ size_parameters = []  # empty lists to keep track of  the parameters
 # Basic parameters
 
 type_structure = 'dome'
-type_formdiagram = 'radial_fd'
-discretisation = [8, 16]
+type_formdiagram = 'radial_fd'  # Try 'radial_spaced_fd' and 'spiral_fd'
+discretisation = [8, 16]  # Try increasing a bit
 R = 5.0
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
@@ -53,7 +53,7 @@ plot_form(form).show()
 while exitflag == 0:
 
     t_over_R = thk/R
-    print('\n----- Starting the' , type_formdiagram, 'problem for thk/R:', t_over_R, '\n')
+    print('\n----- Starting the' , type_structure, 'problem for thk/R:', t_over_R, '\n')
 
     # ------------------ 4. Create the new shape (extrados and intrados) for given thk ----------
 

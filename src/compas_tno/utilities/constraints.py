@@ -145,7 +145,7 @@ def interp_surf(form):
     s = []
 
     for key, vertex in form.vertex.items():
-        if vertex.get('is_external') == False:
+        if vertex.get('_is_external') == False:
             x.append(vertex.get('x'))
             y.append(vertex.get('y'))
             s.append(vertex.get('target'))
@@ -162,7 +162,7 @@ def null_edges(form, plot=False):
     all_edges = []
 
     for u, v in form.edges():
-        if form.edge_attribute((u,v), 'is_external') == False and form.edge_attribute((u,v), 'is_edge') == True:
+        if form.edge_attribute((u,v), '_is_external') == False and form.edge_attribute((u,v), '_is_edge') == True:
             activ = 0
             coord_u = form.vertex_coordinates(u)
             coord_v = form.vertex_coordinates(v)

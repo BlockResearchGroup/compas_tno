@@ -77,7 +77,7 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
-plot_form(form, show_q=False).show()
+plot_form(form, show_q=False, simple=True, cracks=True).show()
 
 file_address = compas_tno.get('test.json')
 form.to_json(file_address)

@@ -76,9 +76,9 @@ def optimise_fdm(form, plot= True, surf=False):
 
     # Vertices and edges
 
-    vertices = [k_i[key] for key in form.vertices_where({'is_external': False})]
-    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True, 'is_external' : False})]
-    fixed = [k_i[key] for key in form.vertices_where({'is_external': False, 'is_fixed': True})]
+    vertices = [k_i[key] for key in form.vertices_where({'_is_external': False})]
+    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True, '_is_external' : False})]
+    fixed = [k_i[key] for key in form.vertices_where({'_is_external': False, 'is_fixed': True})]
     free  = list(set(vertices) - set(fixed))
 
     m = len(edges)
@@ -97,7 +97,7 @@ def optimise_fdm(form, plot= True, surf=False):
     pz  = zeros((n, 1))
 
     for key, vertex in form.vertex.items():
-        if vertex.get('is_external') == False:
+        if vertex.get('_is_external') == False:
             i = k_i[key]
             xyz[i, :] = form.vertex_coordinates(key)
             x[i]  = vertex.get('x')
@@ -108,7 +108,7 @@ def optimise_fdm(form, plot= True, surf=False):
             py[i] = vertex.get('py', 0)
             pz[i] = vertex.get('pz', 0)
 
-    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
+    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True, '_is_external' : False})])[:, newaxis]
     p = pz[free]
 
     # Interpolate Target Surface
@@ -196,7 +196,7 @@ def optimise_fdm(form, plot= True, surf=False):
             form = form_
             stepsave = step
             incrsave = incr
-            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
             for key, vertex in form_.vertex.items():
                 i = k_i[key]
                 z[i]  = vertex.get('z')
@@ -233,7 +233,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
     # Vertices and edges
 
     vertices = [k_i[key] for key in form.vertices()]
-    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
+    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True})]
     fixed = [k_i[key] for key in form.vertices_where({'is_anchor': True})]
     free  = list(set(vertices) - set(fixed))
     if null:
@@ -265,7 +265,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
         pz[i] = vertex.get('pz', 0)
         w[i] = vertex.get('weight', 1.0)
 
-    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
     Wfree = diags(w[free].flatten())
 
     C   = connectivity_matrix(edges, 'csr')
@@ -338,7 +338,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
                 q[null_i] *= 0
 
             if plot and k == 1:
-                for u, v in form_.edges_where({'is_edge': True}):
+                for u, v in form_.edges_where({'_is_edge': True}):
                     [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
                     form_.edge_attribute((u,v),'dq',value = dq)
 
@@ -353,7 +353,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
                 f += 10*a
                 # print('f penalized = {0:.2f}'.format(f))
 
-            # qout = array([form_.edge_attribute((u,v),'q') for u, v in form_.edges_where({'is_edge': True})])[:, newaxis]
+            # qout = array([form_.edge_attribute((u,v),'q') for u, v in form_.edges_where({'_is_edge': True})])[:, newaxis]
             # print('q range after grad  : {0:.3f} : {1:.3f}'.format(min(qout), max(qout)))
 
             # plot_form(form_).show()
@@ -377,7 +377,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
         # a = evaluate_a(form, print=False)
 
-        for u, v in form_.edges_where({'is_edge': True}):
+        for u, v in form_.edges_where({'_is_edge': True}):
                 [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
                 form_.edge_attribute((u,v),'dq',value = dq)
 
@@ -390,7 +390,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
         if f < f0:
             form = form_
-            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
             # stepsave = step
             # incrsave = incr
             print('End of Iteration {0} / Step number: {1} / Stepsize: {2:.5f} / Evergy Var: {3:.1f}% / Energy: {4:.1f} / Angle Dev: {5:.3f}'.format(it, k, step, (f-f0)/f0*100, f, a))

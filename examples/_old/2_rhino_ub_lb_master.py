@@ -97,7 +97,7 @@ for t in [0.14]:
         artist = NetworkArtist(form, layer=pipes_color)
         artist.clear_layer()
         rs.CurrentLayer(pipes_color)
-        for u, v in form.edges_where({'is_edge': True}):
+        for u, v in form.edges_where({'_is_edge': True}):
             l = form.edge_length(u, v)
             q = form.edge_attribute((u, v), 'q')
             sp = form.vertex_coordinates(u)

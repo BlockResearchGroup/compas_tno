@@ -64,10 +64,10 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     # Vertices and edges
 
     n = form.number_of_vertices()
-    m = len(list(form.edges_where({'is_edge': True})))
+    m = len(list(form.edges_where({'_is_edge': True})))
     fixed = [k_i[key] for key in form.fixed()]
     rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     sym = [uv_i[uv] for uv in form.edges_where({'is_symmetry': True})]
     free = list(set(range(n)) - set(fixed) - set(rol))
 
@@ -158,7 +158,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
 
         if indset:
             ind = []
-            for u, v in form.edges_where({'is_edge': True}):
+            for u, v in form.edges_where({'_is_edge': True}):
                 if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
                     ind.append(uv_i[(u, v)])
         else:
@@ -174,7 +174,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
             print('Found {0} independents'.format(k))
             print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
-        for u, v in form.edges_where({'is_edge': True}):
+        for u, v in form.edges_where({'_is_edge': True}):
             form.edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
 
         Edinv = -csr_matrix(pinv(E[:, dep]))
@@ -191,7 +191,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
 
     lh = normrow(C.dot(xy))**2
     p = vstack([px[free_x], py[free_y]])
-    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
 
     if any(p) == True:
         check_hor = check_horizontal(E, p)
@@ -280,10 +280,10 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
     # Vertices and edges
 
     n = form.number_of_vertices()
-    m = len(list(form.edges_where({'is_edge': True})))
+    m = len(list(form.edges_where({'_is_edge': True})))
     fixed = [k_i[key] for key in form.fixed()]
     rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'is_edge': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     sym = [uv_i[uv] for uv in form.edges_where({'is_symmetry': True})]
     free = list(set(range(n)) - set(fixed) - set(rol))
 
@@ -374,7 +374,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
 
         if indset:
             ind = []
-            for u, v in form.edges_where({'is_edge': True}):
+            for u, v in form.edges_where({'_is_edge': True}):
                 if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in indset:
                     ind.append(uv_i[(u, v)])
         else:
@@ -390,7 +390,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
             print('Found {0} independents'.format(k))
             print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
-        for u, v in form.edges_where({'is_edge': True}):
+        for u, v in form.edges_where({'_is_edge': True}):
             form.edge_attribute((u, v), 'is_ind', True if uv_i[(u, v)] in ind else False)
 
         Edinv = -csr_matrix(pinv(E[:, dep]))
@@ -407,7 +407,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
 
     lh = normrow(C.dot(xy))**2
     p = vstack([px[free_x], py[free_y]])
-    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
 
     if any(p) == True:
         check_hor = check_horizontal(E, p)

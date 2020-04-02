@@ -41,12 +41,12 @@ class ForceDiagram(ForceDiagram):
 #         xyz[i, :] = form.vertex_coordinates(key)
 #     xy = xyz[:, :2]
 
-#     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
+#     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True})]
 #     # edges = [[k_i[u], k_i[v]] for u, v in form.edges()]
 #     C	 = connectivity_matrix(edges, 'csr')
-#     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'is_edge': True})]
+#     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True})]
 #     # q = [attr['q'] for u, v, attr in form.edges(True)]
-#     q = [form.edge_attribute((u,v),'q') for u, v in form.edges_where({'is_edge': True})]
+#     q = [form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})]
 #     Q = diags(q)
 #     uv = C.dot(xy)
 

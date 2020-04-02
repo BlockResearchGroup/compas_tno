@@ -82,7 +82,7 @@ for j in [2]: # j = 1
             u, v = uv
             q = form.edge_attribute(uv, 'q')
             l = form.edge_length(u,v)
-            if form.edge_attribute((u,v), 'is_symmetry') == False and form.edge_attribute((u,v), 'is_edge') == True and form.edge_attribute((u,v), 'is_external') == False :
+            if form.edge_attribute((u,v), 'is_symmetry') == False and form.edge_attribute((u,v), '_is_edge') == True and form.edge_attribute((u,v), '_is_external') == False :
                 lp += q * l * l
                 sp = form.vertex_coordinates(u)
                 sp[0] += dx
@@ -113,9 +113,9 @@ for j in [2]: # j = 1
         #     if form.vertex[key]['is_fixed'] is True:
         #         node = form.vertex_coordinates(key)
         #         node[2] += t
-        #         ry = form.vertex_attribute(key, 'ry')
-        #         rx = form.vertex_attribute(key, 'rx')
-        #         rz = form.vertex_attribute(key, 'rz', 0.0)
+        #         ry = form.vertex_attribute(key, '_ry')
+        #         rx = form.vertex_attribute(key, '_rx')
+        #         rz = form.vertex_attribute(key, '_rz', 0.0)
         #         norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
         #         print(rx,ry,rz)
         #         print(norm)

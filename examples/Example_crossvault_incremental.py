@@ -17,13 +17,13 @@ thk = 0.50  # thickness on the start in meters
 thk_reduction = 0.01  # in meters
 solutions = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
-span = 10.0 # square span for analysis
-R = span/2 # Only valid for rounded cross vault
+span = 10.0  # square span for analysis
+R = span/2  # Only valid for rounded cross vault
 
 # Basic parameters
 
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
 discretisation = 10
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------

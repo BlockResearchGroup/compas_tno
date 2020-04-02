@@ -106,7 +106,7 @@ def run_optimisation_scipy(analysis):
         form.edge_attribute((u, v), 'q', float(qi))
 
     lp = 0
-    for u, v in form.edges_where({'is_edge': True}):
+    for u, v in form.edges_where({'_is_edge': True}):
         if form.edge_attribute((u, v), 'is_symmetry') is False:
             qi = form.edge_attribute((u, v), 'q')
             li = form.edge_length(u, v)
@@ -378,7 +378,7 @@ def _ga(fn, fit_type, num_var, boundaries, num_gen, num_pop, args):
 #         form.edge_attribute((u, v), 'q', float(qi))
 
 #     lp = 0
-#     for u, v in form.edges_where({'is_edge': True}):
+#     for u, v in form.edges_where({'_is_edge': True}):
 #         if form.edge_attribute((u, v), 'is_symmetry') is False:
 #             qi = form.edge_attribute((u, v), 'q')
 #             li = form.edge_length(u, v)

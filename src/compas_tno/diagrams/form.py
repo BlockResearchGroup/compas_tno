@@ -346,8 +346,8 @@ class FormDiagram(FormDiagram):
 
         lp = 0
 
-        for u, v in self.edges_where({'is_external': False}):
-            if self.edge_attribute((u, v), 'is_edge') is True and self.edge_attribute((u, v), 'is_symmetry') is False:
+        for u, v in self.edges_where({'_is_external': False}):
+            if self.edge_attribute((u, v), '_is_edge') is True and self.edge_attribute((u, v), 'is_symmetry') is False:
                 qi = self.edge_attribute((u, v), 'q')
                 li = self.edge_length(u, v)
                 lp += qi*li**2
@@ -417,7 +417,7 @@ class FormDiagram(FormDiagram):
 
         f = 0
         for key, vertex in self.vertex.items():
-            if vertex.get('is_external') == False:
+            if vertex.get('_is_external') == False:
                 z = vertex.get('z')
                 s = vertex.get('target')
                 w = vertex.get('weight', 1.0)
@@ -430,8 +430,8 @@ class FormDiagram(FormDiagram):
         """
 
         lp = 0
-        for u, v in self.edges_where({'is_external': False}):
-            if self.edge_attribute((u, v), 'is_edge') is True and form.edge_attribute((u, v), 'is_symmetry') is False:
+        for u, v in self.edges_where({'_is_external': False}):
+            if self.edge_attribute((u, v), '_is_edge') is True and form.edge_attribute((u, v), 'is_symmetry') is False:
                 qi = self.edge_attribute((u, v), 'q')
                 li = self.edge_length(u, v)
                 lp += qi*li**2
@@ -445,7 +445,7 @@ class FormDiagram(FormDiagram):
         """
 
         for u, v in self.edges_on_boundary():
-            self.edge_attribute((u, v), 'is_edge', False)
+            self.edge_attribute((u, v), '_is_edge', False)
 
         return self
 
@@ -513,7 +513,7 @@ class FormDiagram(FormDiagram):
 
         a_total = 0
         a_max = 0
-        for u, v, attr in self.edges_where({'is_edge': True}, True):
+        for u, v, attr in self.edges_where({'_is_edge': True}, True):
             a = attr['a']
             a_total += a
             l = self.edge_length(u, v)
@@ -551,21 +551,21 @@ class FormDiagram(FormDiagram):
         lines = []
         qs = {}
 
-        for u, v in self.edges_where({'is_edge': True, 'is_external': False}):
+        for u, v in self.edges_where({'_is_edge': True, '_is_external': False}):
             s = self.vertex_coordinates(u)
             e = self.vertex_coordinates(v)
             lines.append([s, e])
             qs[geometric_key(self.edge_midpoint(u, v))] = self.edge_attribute((u, v), 'q')
 
         fixed = [geometric_key(self.vertex_coordinates(key)) for key in self.vertices_where({'is_anchor': True})]
-        zs = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_coordinates(key)[2] for key in self.vertices_where({'is_external': False})}
+        zs = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_coordinates(key)[2] for key in self.vertices_where({'_is_external': False})}
         pz = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'pz') for key in self.vertices()}
         target = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'target') for key in self.vertices()}
         lb = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'lb') for key in self.vertices()}
         ub = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'ub') for key in self.vertices()}
 
         form_ = FormDiagram.from_lines(lines)
-        form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False, 'is_edge': True})
+        form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False, '_is_edge': True})
         form_.update_default_vertex_attributes({'is_roller': False})
 
         if openings:
@@ -625,7 +625,7 @@ class FormDiagram(FormDiagram):
         stp = (bounds[1]-bounds[0])/n
         x = []
         y = []
-        q0 = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'is_edge': True})])[:, newaxis]
+        q0 = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'_is_edge': True})])[:, newaxis]
 
         form_ = deepcopy(self)
 
@@ -637,7 +637,7 @@ class FormDiagram(FormDiagram):
             q = q0 * r
             x.append(r)
 
-            for u, v in form_.edges_where({'is_edge': True}):
+            for u, v in form_.edges_where({'_is_edge': True}):
                 i = uv_i[(u,v)]
                 [qi] = q[i]
                 form_.edge_attribute((u,v),'q',value=qi)
@@ -691,11 +691,11 @@ class FormDiagram(FormDiagram):
         """
 
         uv_i = self.uv_index()
-        q = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'is_edge': True, 'is_external' : False})])[:, newaxis]
+        q = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'_is_edge': True, '_is_external' : False})])[:, newaxis]
         q = q * r
 
-        for u, v in self.edges_where({'is_external': False}):
-            if self.edge_attribute((u,v),'is_edge') is True:
+        for u, v in self.edges_where({'_is_external': False}):
+            if self.edge_attribute((u,v),'_is_edge') is True:
                 i = uv_i[(u,v)]
                 [qi] = q[i]
                 self.edge_attribute((u,v),'q',value=qi)
@@ -729,10 +729,10 @@ class FormDiagram(FormDiagram):
         fixed   = set(anchors + fixed)
         fixed   = [k_i[key] for key in fixed]
         free    = list(set(range(vcount)) - set(fixed))
-        edges   = [(k_i[u], k_i[v]) for u, v in self.edges_where({'is_edge': True})]
+        edges   = [(k_i[u], k_i[v]) for u, v in self.edges_where({'_is_edge': True})]
         xyz     = array(self.get_vertices_attributes('xyz'), dtype=float64)
         p       = array(self.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-        q       = [attr.get('q', 1.0) for u, v, attr in self.edges_where({'is_edge': True}, True)]
+        q       = [attr.get('q', 1.0) for u, v, attr in self.edges_where({'_is_edge': True}, True)]
         q       = array(q, dtype=float64).reshape((-1, 1))
         C       = connectivity_matrix(edges, 'csr')
         Ci      = C[:, free]
@@ -751,7 +751,7 @@ class FormDiagram(FormDiagram):
             index = k_i[key]
             attr['z']  = xyz[index, 2]
 
-        for u, v, attr in self.edges_where({'is_edge': True}, True):
+        for u, v, attr in self.edges_where({'_is_edge': True}, True):
             index = uv_i[(u, v)]
             attr['q'] = q[index, 0]
 
@@ -769,7 +769,7 @@ class FormDiagram(FormDiagram):
         self.edges_attribute('fmin', 0.0)
         leaves = False
         for u, v in self.edges_on_boundary():
-            if self.edge_attribute((u,v), 'is_edge') == False:
+            if self.edge_attribute((u,v), '_is_edge') == False:
                 leaves = True
                 break
         if leaves is False:

@@ -60,8 +60,8 @@ if __name__ == "__main__":
             for key in form.vertices():
                 pzt +=form.vertex_attribute(key, 'pz')
             for key in form.vertices_where({'is_fixed': True}):
-                rx = round(form.vertex_attribute(key, 'rx'),3)
-                ry = round(form.vertex_attribute(key, 'ry'),3)
+                rx = round(form.vertex_attribute(key, '_rx'),3)
+                ry = round(form.vertex_attribute(key, '_ry'),3)
                 zb = round(form.vertex_attribute(key,'z'),3)
                 break
             exitflag = form.attributes['exitflag']
@@ -85,8 +85,8 @@ if __name__ == "__main__":
         for key in form.vertices():
             pzt +=form.vertex_attribute(key, 'pz')
         for key in form.vertices_where({'is_fixed': True}):
-            rx = round(form.vertex_attribute(key, 'rx'),3)
-            ry = round(form.vertex_attribute(key, 'ry'),3)
+            rx = round(form.vertex_attribute(key, '_rx'),3)
+            ry = round(form.vertex_attribute(key, '_ry'),3)
             zb = round(form.vertex_attribute(key,'z'),3)
             break
         exitflag = form.attributes['exitflag']
