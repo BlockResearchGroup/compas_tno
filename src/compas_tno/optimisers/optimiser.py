@@ -31,21 +31,17 @@ class Optimiser(object):
         self.data = {
         'library'           : 'Scipy',
         'solver'            : 'slsqp',
-        'objective'         : 'min-thrust',
+        'objective'         : 'min',
         'constraints'       : ['funicular', 'envelope', 'reac_bounds', 'partial_reactions', 'cracks'],
         'variables'         : ['ind', 'zb', 'all-qs'],
         'use_indset'        : True,
         'solver_options'    : {},
-        'exitflag'          : None,
-        'fopt'              : None,
-        'xopt'              : None,
         'qmin'              : -1e-6,
         }
         self.fobj = None
         self.fconstr = None
         self.x0 = None
         self.xopt = None
-
-
+        self.fopt = None
 
     # This class must separate the functions objective functions and etc...

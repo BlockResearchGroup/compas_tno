@@ -96,13 +96,4 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
     extrados = Mesh.from_vertices_and_faces(array([xs, ys, zes]).transpose(), faces)
     middle = Mesh.from_vertices_and_faces(array([xs, ys, zts]).transpose(), faces)
 
-    # form = FormDiag.from_lines(lines, delete_boundary_face=False)
-    # gkey_key = form.gkey_key(precision=6)
-    # form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
-    # form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
-
-    # intrados = None
-    # extrados = None
-    # middle = None
-
     return intrados, extrados, middle

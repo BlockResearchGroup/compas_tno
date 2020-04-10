@@ -7,9 +7,9 @@ from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
 from compas_tno.viewers.thrust import view_solution
 
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------
 # ------ EXAMPLE OF INCREMENTAL MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------
 
 
 exitflag = 0  # means that optimisation found a solution
@@ -97,7 +97,7 @@ while exitflag == 0:
     form.to_json(file_address)
     exitflag = optimiser.exitflag  # get info if optimisation was succeded ot not
     fopt = optimiser.fopt  # objective function optimum value
-    fopt_over_weight = fopt/swt # divide by selfweight
+    fopt_over_weight = fopt/swt  # divide by selfweight
     print('Thickness', thk)
     print('thk/R:', t_over_R)
     print('Thrust over weight: ', fopt_over_weight)

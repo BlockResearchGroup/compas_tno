@@ -4,6 +4,7 @@ from compas.datastructures import Mesh
 
 __all__ = [
     'view_thrust',
+    'view_thrusts',
     'view_solution',
 ]
 
@@ -25,6 +26,27 @@ def view_thrust(form):
     mesh = form
     viewer = MeshViewer()
     viewer.mesh = mesh
+
+    return viewer
+
+def view_thrusts(forms):
+    """ Viewer showing the thrust network.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        FormDiagram to plot
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    meshes = forms
+    viewer = MultiMeshViewer()
+    viewer.meshes = meshes
 
     return viewer
 

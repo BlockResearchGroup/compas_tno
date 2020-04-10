@@ -44,8 +44,8 @@ def constr_wrapper(xopt, *args):
         xyz = hstack([x, y, z])
         p_fixed = hstack([px, py, pz])[fixed]
         R = CfQC.dot(xyz) - p_fixed
-        Rx = abs(b[:, 0].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 0], R[:, 2]).reshape(-1, 1)))
-        Ry = abs(b[:, 1].reshape(-1, 1)) - abs(multiply(z[fixed], divide(R[:, 1], R[:, 2]).reshape(-1, 1)))
+        Rx = abs(b[:, 0].reshape(-1, 1)) - abs(multiply(z[fixed] - s[fixed], divide(R[:, 0], R[:, 2]).reshape(-1, 1)))
+        Ry = abs(b[:, 1].reshape(-1, 1)) - abs(multiply(z[fixed] - s[fixed], divide(R[:, 1], R[:, 2]).reshape(-1, 1)))
         constraints = vstack([constraints, Rx, Ry])
     if 'cracks' in dict_constr:
         crack_tol = 10e-4

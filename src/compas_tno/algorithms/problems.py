@@ -3,6 +3,7 @@ from numpy import zeros
 from numpy import vstack
 from numpy import newaxis
 from numpy.linalg import pinv
+from numpy.linalg import matrix_rank
 
 from scipy.sparse import csr_matrix
 from scipy.sparse import diags
@@ -115,7 +116,6 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
         pz[i] = vertex.get('pz', 0)
         s[i] = vertex.get('target', 0)
         w[i] = vertex.get('weight', 1.0)  # weight used in case of fiting...
-
     Wfree = diags(w[free].flatten())
     xy = xyz[:, :2]
 
@@ -149,6 +149,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     V = diags(uvw[:, 1].flatten())
     E = svstack((Citx.dot(U), City.dot(V))).toarray()
     print('Equilibrium Matrix Shape: ', E.shape)
+    print('Rank Equilibrium Matrix: ', matrix_rank(E))
 
     start_time = time.time()
 

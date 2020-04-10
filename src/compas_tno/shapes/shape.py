@@ -5,7 +5,9 @@ from __future__ import division
 from compas_tno.shapes.crossvault import cross_vault_highfields
 from compas_tno.shapes.pavillionvault import pavillion_vault_highfields
 from compas_tno.shapes.dome import set_dome_heighfield
+from compas_tno.shapes.dome import set_dome_with_spr
 from compas_tno.shapes.circular_arch import arch_shape
+from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
 
 from numpy import array
 
@@ -118,13 +120,23 @@ class Shape(object):
             center = data['center']
             radius = data['radius']
             intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
+        elif typevault == 'dome_spr':
+            center = data['center']
+            radius = data['radius']
+            theta = data['theta']
+            intrados, extrados, middle = set_dome_with_spr(center, radius=radius, thk=thk, theta=theta, discretisation=discretisation, t=t)
         elif typevault == 'arch':
             H = data['H']
             L = data['L']
             b = data['b']
             x0 = data['x0']
             intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
-
+        elif typevault == 'pointed_crossvault':
+            xy_span = data['xy_span']
+            hc = data['hc']
+            hm = data['hm']
+            he = data['he']
+            intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, hc=hc, he=he, hm=hm, thk=thk)
         shape.data = data
         shape.intrados = intrados
         shape.extrados = extrados

@@ -22,5 +22,6 @@ from __future__ import absolute_import
 from .form import *
 from .gradient import *
 from .force import *
+from .data_analysis import *
 
 __all__ = [name for name in dir() if not name.startswith('_')]

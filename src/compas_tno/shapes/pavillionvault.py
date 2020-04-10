@@ -120,6 +120,7 @@ def pavillion_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, to
 
     return intrados, extrados, middle
 
+
 def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, discretisation = [100, 100]):
 
     """ Helper function to set the extrados of a parametric Pavillion-Vault.
@@ -211,6 +212,7 @@ def pavillion_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, t
     extrados = Mesh.from_vertices_and_faces(xyz, faces_i)
 
     return extrados
+
 
 def pavillion_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100, 100]):
 

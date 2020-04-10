@@ -19,6 +19,22 @@ form.overview_forces()
 plot_form(form, show_q=False).show()
 
 # ------------------------------------------------
+# --------- CREATING ORTHO FORM DIAGRAM ----------
+# ------------------------------------------------
+
+data = {
+    'type': 'ortho',
+    'xy_span': [[0,10],[0,10]],
+    'discretisation': 10,
+    'fix': 'corners',
+}
+
+form = FormDiagram.from_library(data)
+print(form)
+form.overview_forces()
+plot_form(form, show_q=False).show()
+
+# ------------------------------------------------
 # --------- CREATING CROSS FORM DIAGRAM ----------
 # ------------------------------------------------
 

@@ -1,15 +1,21 @@
+import compas_tno
 from compas_plotters import MeshPlotter
 from numpy import array
 from compas_tna.diagrams import FormDiagram
 from compas.utilities import geometric_key
+from compas_plotters import Plotter
 from math import sqrt
 import math
+import os
 
 __all__ = [
     'plot_form',
     'plot_form_xz',
+    'plot_forms_xz',
     'plot_independents',
+    'plot_gif_forms_xz',
 ]
+
 
 def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, cracks=False, save=None):
     """ Extended plotting of a FormDiagram
@@ -134,6 +140,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     return plotter
 
+
 def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, save=False):
     """ Plot a FormDiagram in axis xz
 
@@ -171,8 +178,7 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
 
     """
     i_k = form.index_key()
-    gkey_key = form.gkey_key()
-    q = [form.edge_attribute((u,v), 'q') for u, v in form.edges_where({'_is_edge': True})]
+    q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     qmax = max(abs(array(q)))
     lines = []
     xs = []
@@ -237,7 +243,6 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
         re = R + thk/2
         ri = R - thk/2
         x = sqrt(re**2 - zc**2)
-        spr_i = math.acos(zc/ri)
         spr_e = math.acos(zc/re)
         # tot_angle_i = 2*spr_i
         tot_angle_e = 2*spr_e
@@ -329,6 +334,376 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
 
     return plotter
 
+
+def plot_forms_xz(forms, shape, radius=0.05, fix_width=False, max_width=10, plot_reactions=True, cracks=False, save=False):
+    """ Plot multiple FormDiagrams in axis xz
+
+    Parameters
+    ----------
+    form : list
+        List of FormDiagrams to plot.
+    shape: obj
+        Shape to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    max_width : bool
+        Maximum width of the plot.
+    plot_reactions : bool
+        Plot reactions.
+    cracks : bool
+        Show cracks - points where the thrust line touches the masonry limits.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    plotter = Plotter()
+    vertices = []
+    lines = []
+    xs = []
+    reac_lines = []
+    nodes = []
+
+    if shape.data['type'] == 'arch':
+        discr = 100
+        H = shape.data['H']
+        L = shape.data['L']
+        thk = shape.data['thk']
+        R = H / 2 + (L**2 / (8 * H))
+        zc = R - H
+        re = R + thk/2
+        ri = R - thk/2
+        x = sqrt(re**2 - zc**2)
+        spr_e = math.acos(zc/re)
+        tot_angle_e = 2*spr_e
+        angle_init_e = (math.pi - tot_angle_e)/2
+        an_e = tot_angle_e / discr
+        xc = L/2
+
+        for i in range(discr):
+            angle_i = angle_init_e + i * an_e
+            angle_f = angle_init_e + (i + 1) * an_e
+            for r_ in [ri, re]:
+                xi = xc - r_ * math.cos(angle_i)
+                xf = xc - r_ * math.cos(angle_f)
+                zi = r_ * math.sin(angle_i) - zc
+                zf = r_ * math.sin(angle_f) - zc
+                lines.append({
+                    'start': [xi, zi],
+                    'end':   [xf, zf],
+                    'color': '000000',
+                    'width': 0.5,
+                })
+
+    for form in forms:
+        i_k = form.index_key()
+        q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
+        qmax = max(abs(array(q)))
+
+        for key in form.vertices():
+            xs.append(form.vertex_coordinates(key)[0])
+            if form.vertex_attribute(key, 'is_fixed') == True:
+                x, _, z = form.vertex_coordinates(key)
+                if z > 0.0:
+                    rz = abs(form.vertex_attribute(key, '_rz'))
+                    rx = form.vertex_attribute(key, '_rx')
+                    reac_line = [x, z, x + z * rx / rz, 0.0]
+                    reac_lines.append(reac_line)
+
+        for u, v in form.edges():
+            qi = form.edge_attribute((u, v), 'q')
+            width = max_width if fix_width else (qi / qmax) * max_width
+            lines.append({
+                'start': [form.vertex_coordinates(u)[0], form.vertex_coordinates(u)[2]],
+                'end':   [form.vertex_coordinates(v)[0], form.vertex_coordinates(v)[2]],
+                'color': 'FF0000',
+                'width': width,
+            })
+
+        if plot_reactions:
+            for reac_line in reac_lines:
+                lines.append({
+                    'start': [reac_line[0], reac_line[1]],
+                    'end':   [reac_line[2], reac_line[3]],
+                    'color': ''.join(['00', '00', '00']),
+                    'width': max_width,
+                })
+
+        if cracks:
+            cracks_lb, cracks_ub = form.attributes['cracks']
+            for i in cracks_ub:
+                key = i_k[i]
+                x, _, _ = form.vertex_coordinates(key)
+                z = form.vertex_attribute(key, 'ub')
+                vertices.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'color': '000000',
+                })
+            for i in cracks_lb:
+                key = i_k[i]
+                x, _, _ = form.vertex_coordinates(key)
+                z = form.vertex_attribute(key, 'lb')
+                vertices.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'color': '000000',
+                })
+        if radius:
+            for key in form.vertices():
+                x, _, z = form.vertex_coordinates(key)
+                if form.vertex_attribute(key, 'is_fixed') is True:
+                    nodes.append({
+                        'pos': [x, z],
+                        'radius': radius,
+                        'edgecolor': '000000',
+                        'facecolor': 'aaaaaa',
+                    })
+                if abs(form.vertex_attribute(key, 'ub') - z) < 1e-3:
+                    nodes.append({
+                        'pos': [x, z],
+                        'radius': radius,
+                        'edgecolor': '008000',
+                        'facecolor': '008000',
+                    })
+                if abs(form.vertex_attribute(key, 'lb') - z) < 1e-3:
+                    nodes.append({
+                        'pos': [x, z],
+                        'radius': radius,
+                        'edgecolor': '0000FF',
+                        'facecolor': '0000FF',
+                    })
+
+    plotter.draw_lines(lines)
+    plotter.draw_points(vertices)
+    plotter.draw_points(nodes)
+
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+
+def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=False):
+    vertices = []
+    lines = []
+    xs = []
+    reac_lines = []
+    i_k = form.index_key()
+    q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
+    qmax = max(abs(array(q)))
+
+    for key in form.vertices():
+        xs.append(form.vertex_coordinates(key)[0])
+        if form.vertex_attribute(key, 'is_fixed') == True:
+            x, _, z = form.vertex_coordinates(key)
+            if z > 0.0:
+                rz = abs(form.vertex_attribute(key, '_rz'))
+                rx = form.vertex_attribute(key, '_rx')
+                reac_line = [x, z, x + z * rx / rz, 0.0]
+                reac_lines.append(reac_line)
+
+    for u, v in form.edges():
+        qi = form.edge_attribute((u, v), 'q')
+        width = max_width if fix_width else (qi / qmax) * max_width
+        if not hide_negative or (form.vertex_coordinates(u)[2] > -10e-4 and form.vertex_coordinates(v)[2] > -10e-4):
+            lines.append({
+                'start': [form.vertex_coordinates(u)[0], form.vertex_coordinates(u)[2]],
+                'end':   [form.vertex_coordinates(v)[0], form.vertex_coordinates(v)[2]],
+                'color': 'FF0000',
+                'width': width,
+            })
+        elif form.vertex_coordinates(u)[2] > -10e-4 or form.vertex_coordinates(v)[2]> -10e-4:
+            m = (form.vertex_coordinates(u)[2] - form.vertex_coordinates(v)[2])/(form.vertex_coordinates(u)[0] - form.vertex_coordinates(v)[0])
+            xzero = -1 * form.vertex_coordinates(u)[2]/m + form.vertex_coordinates(u)[0]
+            b = max(form.vertex_coordinates(u)[2], form.vertex_coordinates(v)[2])
+            a = form.vertex_coordinates(u)[0] if b == form.vertex_coordinates(u)[2] else form.vertex_coordinates(v)[0]
+            lines.append({
+                'start': [xzero, 0.0],
+                'end':   [a, b],
+                'color': 'FF0000',
+                'width': width,
+            })
+
+    if plot_reactions:
+        for reac_line in reac_lines:
+            lines.append({
+                'start': [reac_line[0], reac_line[1]],
+                'end':   [reac_line[2], reac_line[3]],
+                'color': ''.join(['00', '00', '00']),
+                'width': max_width,
+            })
+
+    if cracks:
+        cracks_lb, cracks_ub = form.attributes['cracks']
+        for i in cracks_ub:
+            key = i_k[i]
+            x, _, _ = form.vertex_coordinates(key)
+            z = form.vertex_attribute(key, 'ub')
+            vertices.append({
+                'pos': [x, z],
+                'radius': radius,
+                'color': '000000',
+            })
+        for i in cracks_lb:
+            key = i_k[i]
+            x, _, _ = form.vertex_coordinates(key)
+            z = form.vertex_attribute(key, 'lb')
+            vertices.append({
+                'pos': [x, z],
+                'radius': radius,
+                'color': '000000',
+            })
+    if radius:
+        for key in form.vertices():
+            x, _, z = form.vertex_coordinates(key)
+            if (form.vertex_attribute(key, 'is_fixed') is True and not hide_negative) or (hide_negative and form.vertex_attribute(key, 'is_fixed') is True and z > -10e-4):
+                vertices.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '000000',
+                    'facecolor': 'aaaaaa',
+                })
+            if abs(form.vertex_attribute(key, 'ub') - z) < 1e-3:
+                vertices.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '008000',
+                    'facecolor': '008000',
+                })
+            if abs(form.vertex_attribute(key, 'lb') - z) < 1e-3:
+                vertices.append({
+                    'pos': [x, z],
+                    'radius': radius,
+                    'edgecolor': '0000FF',
+                    'facecolor': '0000FF',
+                })
+
+    return lines, vertices
+
+
+def plot_gif_forms_xz(forms, shape, radius=0.05, fix_width=False, max_width=10, plot_reactions=True, cracks=False, hide_negative=True, save=False, delay=0.5):
+    """ Plot multiple FormDiagrams in axis xz in a gif.
+
+    Parameters
+    ----------
+    form : list
+        List of FormDiagrams to plot.
+    shape: obj
+        Shape to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    max_width : bool
+        Maximum width of the plot.
+    plot_reactions : bool
+        Plot reactions.
+    cracks : bool
+        Show cracks - points where the thrust line touches the masonry limits.
+    hide_negative : bool
+        Hide negative points.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+    plotter = Plotter(figsize=(10, 10))
+    vertices = []
+    lines_arch = []
+    images = []
+    tempfolder = compas_tno.get('/temp')
+    img_count = 0
+    pattern = 'image_{}.png'
+
+    if shape.data['type'] == 'arch':
+        discr = 100
+        H = shape.data['H']
+        L = shape.data['L']
+        thk = shape.data['thk']
+        R = H / 2 + (L**2 / (8 * H))
+        zc = R - H
+        re = R + thk/2
+        ri = R - thk/2
+        spr_e = math.acos(zc/re)
+        tot_angle_e = 2*spr_e
+        angle_init_e = (math.pi - tot_angle_e)/2
+        an_e = tot_angle_e / discr
+        xc = L/2
+
+        for i in range(discr):
+            angle_i = angle_init_e + i * an_e
+            angle_f = angle_init_e + (i + 1) * an_e
+            for r_ in [ri, re]:
+                xi = xc - r_ * math.cos(angle_i)
+                xf = xc - r_ * math.cos(angle_f)
+                zi = r_ * math.sin(angle_i) - zc
+                zf = r_ * math.sin(angle_f) - zc
+                lines_arch.append({
+                    'start': [xi, zi],
+                    'end':   [xf, zf],
+                    'color': '000000',
+                    'width': 0.5,
+                })
+
+    lines, vertices = lines_and_points_from_form(forms[0], plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
+    total_lines = lines_arch + lines
+    linecollection = plotter.draw_lines(total_lines)
+    pointcollection = plotter.draw_points(vertices)
+    segments = []
+    centers = []
+    for line in total_lines:
+        segments.append([line['start'],line['end']])
+    for pt in vertices:
+        centers.append(pt['pos'])
+    plotter.update_linecollection(linecollection, segments)
+    plotter.update_pointcollection(pointcollection, centers, radius=radius)
+    plotter.update(pause=delay)
+    image = os.path.join(tempfolder, pattern.format(str(img_count)))
+    images.append(image)
+    plotter.save(image)
+    img_count += 1
+
+    for form in forms[1:]:
+        lines, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
+        total_lines = lines_arch + lines
+        plotter.clear_collection(linecollection)
+        plotter.clear_collection(pointcollection)
+        linecollection = plotter.draw_lines(total_lines)
+        pointcollection = plotter.draw_points(vertices)
+        segments = []
+        centers = []
+        for line in total_lines:
+            segments.append([line['start'], line['end']])
+        for pt in vertices:
+            centers.append(pt['pos'])
+        plotter.update_linecollection(linecollection, segments)
+        plotter.update_pointcollection(pointcollection, centers, radius=radius)
+        plotter.update(pause=delay)
+        image = os.path.join(tempfolder, pattern.format(str(img_count)))
+        images.append(image)
+        plotter.save(image)
+        img_count += 1
+
+    # plotter.draw_lines(lines)
+    # plotter.draw_points(vertices)
+    # plotter.draw_points(nodes)
+
+    if save:
+        plotter.save_gif(save, images, delay=delay*100)
+        # plotter.save(save)
+    return plotter
 
 
 def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False, joints=False, cracks=False, yrange = None, linestyle='solid'):

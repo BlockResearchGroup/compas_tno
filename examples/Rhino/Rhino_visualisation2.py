@@ -12,11 +12,12 @@ import math
 import compas_tno
 
 # Give a name to your project
-master = 'PAVILLION2'
+master = 'pavillion_pointedmin'
 
 # Put here the .json file for the optimisation
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/test_min.json'
 # fnm = compas_tno.get('test.json')
+
 
 # Parameters for the visualisation
 radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault

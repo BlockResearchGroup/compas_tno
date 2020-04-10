@@ -4,8 +4,7 @@ from compas.datastructures import Mesh
 from numpy import array
 
 
-def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100, 100]):
-
+def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100]):
     """ Set Cross-Vault heights.
 
     Parameters
@@ -57,7 +56,7 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
 
     rx = (x1 - x0)/2
     ry = (y1 - y0)/2
-    hc = max(rx,ry)
+    hc = max(rx, ry)
     index = 0
     uv_i = {}
     faces = []
@@ -74,13 +73,13 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
             yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
             hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
             hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
-            if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q1
+            if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
                 z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
-            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
                 z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
-            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q2
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
                 z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
-            elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+            elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
                 z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
             else:
                 print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
@@ -102,21 +101,21 @@ def cross_vault_highfields(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 
     for face in faces:
         face_i = []
         for uv in face:
-            u,v = uv
-            i = uv_i[(u,v)]
+            u, v = uv
+            i = uv_i[(u, v)]
             face_i.append(i)
         faces_i.append(face_i)
 
     xyz = array([x1d, y1d, z1d]).transpose()
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
 
-    extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol = tol, discretisation = discretisation)
-    intrados = cross_vault_highfields_lb(xy_span = xy_span, thk = thk, tol = tol, t = t, discretisation = discretisation)
+    extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol=tol, discretisation=discretisation)
+    intrados = cross_vault_highfields_lb(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation)
 
     return intrados, extrados, middle
 
-def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, discretisation = [100, 100]):
 
+def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, discretisation=[100, 100]):
     """ Helper function to set the extrados of a parametric Cross-Vault.
 
     Parameters
@@ -172,15 +171,15 @@ def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol =
             xi, yi = x[i], y[j]
             xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
             yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
-            hxd = (math.sqrt((rx)**2 - ((xd - x0)- rx)**2))
-            hyd = (math.sqrt((ry)**2 - ((yd - y0)- ry)**2))
-            if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q1
+            hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
+            hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
+            if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
                 z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
-            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
                 z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
-            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q2
+            elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
                 z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
-            elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+            elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
                 z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
             else:
                 print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
@@ -203,8 +202,8 @@ def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol =
     for face in faces:
         face_i = []
         for uv in face:
-            u,v = uv
-            i = uv_i[(u,v)]
+            u, v = uv
+            i = uv_i[(u, v)]
             face_i.append(i)
         faces_i.append(face_i)
 
@@ -213,7 +212,8 @@ def cross_vault_highfields_ub(xy_span=[[0.0,10.0],[0.0,10.0]], thk = None, tol =
 
     return extrados
 
-def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol = 10e-6, t = 10.0, discretisation = [100, 100]):
+
+def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100]):
     """ Helper function to set the intrados of Cross-Vaults.
 
     Parameters
@@ -290,16 +290,16 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
                 yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
                 hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
                 hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
-                if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q1
+                if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
                     z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
-                elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol: #Q3
+                elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
                     z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
-                elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q2
+                elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
                     z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
-                elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol: #Q4
+                elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
                     z = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
                 else:
-                    print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi,yi))
+                    print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
                     z = 0.0
 
             z1d.append(z)
@@ -317,8 +317,8 @@ def cross_vault_highfields_lb(xy_span = [[0.0,10.0],[0.0,10.0]], thk = None, tol
     for face in faces:
         face_i = []
         for uv in face:
-            u,v = uv
-            i = uv_i[(u,v)]
+            u, v = uv
+            i = uv_i[(u, v)]
             face_i.append(i)
         faces_i.append(face_i)
 

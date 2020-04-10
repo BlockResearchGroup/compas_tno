@@ -77,6 +77,17 @@ class Analysis(object):
 
         return analysis
 
+    @classmethod
+    def from_form_and_optimier(cls, form, optimiser):
+        """Create a analysis from the elements of the problem """
+
+        analysis = cls()
+        analysis.shape = None
+        analysis.form = form
+        analysis.optimiser = optimiser
+
+        return analysis
+
 
     def apply_selfweight(self):
         """Apply selfweight to the nodes of the form diagram based on the shape"""
@@ -117,17 +128,35 @@ class Analysis(object):
         return
 
 
-    def apply_pointed_load(self, key, direction, magnitude):
+    def apply_pointed_load(self, keys, magnitudes, proportional=True, component='pz', component_get='pz'):
         """Apply pointed load a node of the form diagram based on the shape"""
 
+        if isinstance(keys, list) == False:
+            keys = [keys]
+        if isinstance(magnitudes, list) == False:
+            magnitudes = [magnitudes]
+        if len(keys) == len(magnitudes):
+            pass
+        elif len(magnitudes) is 1:
+            magnitudes = magnitudes * len(keys)
+        else:
+            print('Error, check the number of nodes to apply loads and magnitude of forces!')
+        print('magnitudes',magnitudes)
         form = self.form
-
-        # Go over nodes and find node = key and apply the pointed load pz += magnitude
+        i = 0
+        for key in keys:
+            p0 = form.vertex_attribute(key, component_get)
+            if proportional:
+                pnew = (p0 + magnitudes[i] * p0)
+            else:
+                pnew = magnitudes[i]
+            form.vertex_attribute(key, component, pnew)
+            print('Load:', pnew, 'applied to key:', key, 'in direction:', component)
+            i += 1
 
         self.form = form # With correct forces
 
         return
-
 
     def apply_hor_multiplier(self, multiplier, component):
         """Apply a multiplier on the selfweight to the nodes of the form diagram based"""
@@ -159,8 +188,12 @@ class Analysis(object):
 
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            form.vertex_attribute(key, 'ub', value = shape.get_ub(x, y))
-            form.vertex_attribute(key, 'lb', value = shape.get_lb(x, y))
+            ub_ = shape.get_ub(x, y)
+            lb_ = shape.get_lb(x, y)
+            if math.isnan(lb_):
+                lb_ = -1 * shape.data['t']
+            form.vertex_attribute(key, 'ub', value = ub_)
+            form.vertex_attribute(key, 'lb', value = lb_)
 
         self.form = form # With correct forces
 
@@ -222,6 +255,22 @@ class Analysis(object):
             x = math.sqrt(re**2 - zc**2)
             for key in form.vertices_where({'is_fixed': True}):
                 form.vertex_attribute(key, 'b', [x - L/2, 0.0])
+
+        if shape.data['type'] == 'dome_spr':
+            print(shape.data['center'])
+            [x0, y0, _] = shape.data['center']
+            radius = shape.data['radius']
+            [_, theta_f] = shape.data['theta']
+            r_proj_e = (radius + thk/2) * math.sin(theta_f)
+            r_proj_m = (radius) * math.sin(theta_f)
+            delt = r_proj_e - r_proj_m
+            for key in form.vertices_where({'is_fixed': True}):
+                x, y, _ = form.vertex_coordinates(key)
+                theta = math.atan2((y - y0), (x - x0))
+                x_ = delt*math.cos(theta)
+                y_ = delt*math.sin(theta)
+                form.vertex_attribute(key, 'b', [x_, y_])
+                print(x,y,x_,y_)
 
         self.form = form # With correct forces
 

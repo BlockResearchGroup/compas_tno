@@ -131,6 +131,10 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
 
     if isinstance(discretisation, int):
         discretisation = [discretisation, discretisation]
+    if discretisation[0] % 2 != 0 or discretisation[1] % 2 != 0:
+        msg = "Warning!: discretisation of this form diagram has to be even."
+        raise ValueError(msg)
+
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -249,6 +253,9 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
 
     if isinstance(discretisation, int):
         discretisation = [discretisation, discretisation]
+    if discretisation[0] % 2 != 0 or discretisation[1] % 2 != 0:
+        msg = "Warning!: discretisation of this form diagram has to be even."
+        raise ValueError(msg)
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -267,39 +274,19 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
 
     for i in range(division_x+1):
         for j in range(division_y+1):
+            xi = x0 + dx*i
+            yi = y0 + dy*j
             if i < division_x and j < division_y:
-                # Vertical Members:
-                xa = x0 + dx*i
-                ya = y0 + dy*j
-                xb = x0 + dx*(i + 1)
-                yb = y0 + dy*j
-                # Horizontal Members:
-                xc = x0 + dx*i
-                yc = y0 + dy*j
-                xd = x0 + dx*i
-                yd = y0 + dy*(j + 1)
-                lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
-                lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
-            elif i == division_x and j == division_y - 1:
-                # Horizontal Members:
-                xc = x0 + dx*i
-                yc = y0 + dy*j
-                xd = x0 + dx*i
-                yd = y0 + dy*(j + 1)
-                lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
-            elif j == division_y and i == division_x - 1:
-                # Vertical Members:
-                xa = x0 + dx*(i - 1)
-                ya = y0 + dy*j
-                xb = x0 + dx*i
-                yb = y0 + dy*j
-                lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+                lines.append([[xi, yi, 0.0], [xi, yi + dy, 0.0]])
+                lines.append([[xi, yi, 0.0], [xi + dx, yi, 0.0]])
+            elif i == division_x and j < division_y:
+                lines.append([[xi, yi, 0.0], [xi, yi + dy, 0.0]])
+            elif j == division_y and i < division_x:
+                lines.append([[xi, yi, 0.0], [xi + dx, yi, 0.0]])
 
-    # mesh = Mesh.from_lines(lines)
-    # # mesh.plot()
-    # form = cls.from_mesh(mesh)
-    # form.plot()
-    form = cls.from_lines(lines, delete_boundary_face=True)
+
+    mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+    form = cls.from_mesh(mesh)
     gkey_key = form.gkey_key()
 
     if fix == 'corners':

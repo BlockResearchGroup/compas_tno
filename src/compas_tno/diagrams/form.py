@@ -27,7 +27,7 @@ from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
 from compas_tna.equilibrium import vertical_from_zmax
 
-
+from compas_plotters import MeshPlotter
 
 __all__ = [
     'FormDiagram'
@@ -440,12 +440,17 @@ class FormDiagram(FormDiagram):
 
         return lp
 
-    def delete_boundary_edges(self):
+    def delete_boundary_edges(self, delete_corner_vertex=True):
         """ Delete boundary edges on a diagram.
         """
 
         for u, v in self.edges_on_boundary():
             self.edge_attribute((u, v), '_is_edge', False)
+
+        if delete_corner_vertex:
+            corners = [key for key in self.corners()]
+            for key in corners:
+                self.delete_vertex(key)
 
         return self
 
@@ -491,7 +496,7 @@ class FormDiagram(FormDiagram):
         uvw = C.dot(xyz)
         U = uvw[:, 0]
         V = uvw[:, 1]
-        q = array([attr['q'] for u, v, attr in self.edges(True)])[:, newaxis]
+        q = array([self.edge_attribute((u,v), 'q') for u, v in self.edges_where({'_is_edge': True})])[:, newaxis]
 
         # Horizontal checks
 
@@ -774,8 +779,15 @@ class FormDiagram(FormDiagram):
                 break
         if leaves is False:
             self.update_boundaries(feet=2)
+
         force = ForceDiagram.from_formdiagram(self)
         if plot:
+            print('Plot of Primal')
+            plotter = MeshPlotter(self, figsize=(10,10))
+            plotter.draw_edges(keys=[key for key in self.edges_where({'_is_edge': True})])
+            plotter.draw_vertices(radius=0.05)
+            plotter.draw_vertices(keys=[key for key in self.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
+            plotter.show()
             print('Plot of Dual')
             force.plot()
             # plot_form(self, show_q=False, fix_width=True).show()
@@ -783,7 +795,7 @@ class FormDiagram(FormDiagram):
         if method == 'nodal':
             horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
         else:
-            horizontal(self, self, alpha=alpha, kmax=kmax, display=False)
+            horizontal(self, force, alpha=alpha, kmax=kmax, display=False)
 
         # Vertical Equilibrium with no updated loads
 
