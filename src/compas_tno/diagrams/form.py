@@ -113,6 +113,8 @@ class FormDiagram(FormDiagram):
         if form_type == 'spiral_fd':
             form = cls().create_circular_spiral_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=data['r_oculus'])
 
+        form.parameters = data
+
         return form
 
     @classmethod

@@ -3,7 +3,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
-from compas_tno.analysis.analysis import Analysis
+from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_thrust
 from compas_tno.viewers import view_thrusts
 from compas_tno.viewers import view_shapes

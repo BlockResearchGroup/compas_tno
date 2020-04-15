@@ -85,7 +85,6 @@ form = FormDiagram.from_library(data)
 print(form)
 form.overview_forces()
 plot_form(form, show_q=False).show()
-
 # ------------------------------------------------
 # --------- CREATING RADIAL SPACED DIAGRAM ---------
 # ------------------------------------------------
@@ -106,6 +105,7 @@ print(form)
 form.overview_forces()
 plot_form(form, show_q=False).show()
 
+
 # ------------------------------------------------
 # --------- CREATING SPIRAL FORM DIAGRAM ---------
 # ------------------------------------------------
@@ -119,8 +119,9 @@ data = {
     'r_oculus': 0.0,
 }
 
+
+
 form = FormDiagram.from_library(data)
 print(form)
 form.overview_forces()
 plot_form(form, show_q=False).show()
-

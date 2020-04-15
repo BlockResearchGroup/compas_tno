@@ -4,6 +4,7 @@ from compas_tno.plotters import plot_independents
 from compas_tno.analysis import Analysis
 from compas_tno.optimisers import Optimiser
 from compas_tno.algorithms import z_from_form
+from compas_tno.algorithms import initialise_form
 from compas_tno.shapes import Shape
 from compas_tno.viewers import view_thrust
 from compas.datastructures import Mesh
@@ -14,7 +15,7 @@ from compas_plotters import MeshPlotter
 # --------------------- 1. Parameters ---------------------
 
 L = 10.0
-discr = [4, 4]
+discr = [10, 10]
 target_x = L/2
 target_y = L/2
 load_mult_x = 1.0
@@ -23,19 +24,22 @@ load_mult_y = 1.0
 # --------------------- 1. Create Form ---------------------
 
 data = {
-    'type': 'ortho',
+    'type': 'fan_fd',
     'xy_span': [[0.0, L], [0.0, L]],
     'discretisation': discr,
     'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data)
-form = z_from_form(form)
+# form = z_from_form(form)
 
 # form = form.delete_boundary_edges()
 # plot_form(form, show_q=False).show()
-form = form.initialise_tna(plot=True, method='normal', kmax=10, display=True)
-plot_form(form).show()
+# form = form.initialise_tna(plot=True, method='normal', kmax=10, display=True)
+form = initialise_form(form)
+# plot_independents(form, width=8, number_ind=False).show()
+# plot_form(form).show()
+
 
 # ---------- 1. Create Pavillion Shape - to Assign loads ----------
 
@@ -96,11 +100,21 @@ analysis.apply_pointed_load(target_key2, load_mult_x, component='px')
 analysis.apply_pointed_load(target_key2, load_mult_y, component='py')
 
 plotter = MeshPlotter(form, figsize=(10,10))
-plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
-plotter.draw_vertices(radius=0.05)
+plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})], width=3, color='000000')
+# plotter.draw_edges(keys=[key for key in form.edges_where({'is_ind': True})], width=8, color='F95793')
+plotter.draw_vertices(radius=0.04)
 # plotter.draw_vertices(keys=[target_key], text='px= {0:.1} py={1:.1}'.format(form.vertex_attribute(target_key, 'px'), form.vertex_attribute(target_key, 'py')), radius=0.10, facecolor='FF0000')
 # plotter.draw_vertices(keys=[target_key2], text='px= {0:.1} py={1:.1}'.format(form.vertex_attribute(target_key2, 'px'), form.vertex_attribute(target_key2, 'py')), radius=0.10, facecolor='FF0000')
-plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
+plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.20, facecolor='FF0000')
+plotter.show()  # Simple plot of the diagram
+
+plotter = MeshPlotter(form, figsize=(10,10))
+plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})], width=3, color='666666')
+plotter.draw_edges(keys=[key for key in form.edges_where({'is_ind': True})], width=8, color='F95793')
+plotter.draw_vertices(radius=0.04)
+# plotter.draw_vertices(keys=[target_key], text='px= {0:.1} py={1:.1}'.format(form.vertex_attribute(target_key, 'px'), form.vertex_attribute(target_key, 'py')), radius=0.10, facecolor='FF0000')
+# plotter.draw_vertices(keys=[target_key2], text='px= {0:.1} py={1:.1}'.format(form.vertex_attribute(target_key2, 'px'), form.vertex_attribute(target_key2, 'py')), radius=0.10, facecolor='FF0000')
+plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.20, facecolor='FF0000')
 plotter.show()  # Simple plot of the diagram
 
 

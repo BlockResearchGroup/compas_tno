@@ -1009,6 +1009,8 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     if radius:
         plotter.draw_vertices(facecolor=rad_colors, radius=radius)
 
+    plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
+
     plotter.draw_lines(lines)
     if save:
         plotter.save(save)

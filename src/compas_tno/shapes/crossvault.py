@@ -288,8 +288,8 @@ def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
                     xi = x0
                 xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
                 yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
-                hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
-                hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
+                hxd = math.sqrt(abs((rx)**2 - ((xd - x0) - rx)**2))
+                hyd = math.sqrt(abs((ry)**2 - ((yd - y0) - ry)**2))
                 if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
                     z = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
                 elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3

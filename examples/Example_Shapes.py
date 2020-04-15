@@ -1,21 +1,14 @@
 
 from compas_tno.shapes import Shape
 from compas_tno.viewers.shapes import view_shapes
+import math
 
 # --------------------------------------------------------------
 # -----------PARAMERIC SHAPES (uncomment data) -----------------
 # --------------------------------------------------------------
 
-data = {
-    'type': 'crossvault',
-    'thk': 0.5,
-    'discretisation': [50, 50],
-    'xy_span': [[0.0,10.0],[0.0,10.0]],
-    't' : 0.0
-}
-
 # data = {
-#     'type': 'pavillionvault',
+#     'type': 'crossvault',
 #     'thk': 0.5,
 #     'discretisation': [50, 50],
 #     'xy_span': [[0.0,10.0],[0.0,10.0]],
@@ -23,12 +16,44 @@ data = {
 # }
 
 # data = {
-#     'type': 'dome',
+#     'type': 'pointed_crossvault',
 #     'thk': 0.5,
 #     'discretisation': [50, 50],
+#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     't': 0.0,
+#     'hc': 5.0*math.sqrt(2),
+#     'hm': None,
+#     'he': None,
+# }
+
+# data = {
+#     'type': 'pavillionvault',
+#     'thk': 0.20,
+#     'discretisation': [50, 50],
+#     'xy_span': [[0.0,10.0],[0.0,10.0]],
+#     't' : 0.0
+# }
+
+data = {
+    'type': 'dome',
+    'thk': 0.15,
+    'discretisation': [50, 50],
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+    't' : 0.0
+}
+
+# k1 = 0.0
+# k2 = 0.5  # Percentage of the dome to consider
+
+# data = {
+#     'type': 'dome_spr',
+#     'thk': 0.25,
+#     'discretisation': [25, 50],
 #     'center': [5.0, 5.0],
 #     'radius': 5.0,
-#     't' : 0.0
+#     'theta': [k1 * math.pi/2, k2 * math.pi/2],
+#     't': 0.0,
 # }
 
 # data = {

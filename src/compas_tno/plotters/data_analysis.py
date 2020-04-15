@@ -4,6 +4,7 @@ from compas_tna.diagrams import ForceDiagram
 
 from numpy import arange
 from numpy import array
+from numpy import append
 
 from compas.geometry import intersection_line_line_xy
 
@@ -46,6 +47,11 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
     fmin = 100.0 * array(min_sol)
     fmax = -100.0 * array(max_sol)
     n = len(xmin)
+    x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+    print(x_, y_)
+    xmax_ = append(xmax, x_)
+    fmin_ = append(fmin, y_)
+    fmax_ = append(fmax, y_)
 
     size_axis_label = 14
     size_axis_data = 12
@@ -53,16 +59,13 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
 
     interval_x = abs(dimension[0] - dimension[1])
     interval_y = 10
-    max_x = max(xmax)
-    min_x = min(xmax) - interval_x
-    max_y = interval_y - max(fmax) % 10 + max(fmax)
-    min_y = min(fmin) - min(fmin) % 10
+    max_x = max(xmax_)
+    min_x = min(xmax_) - interval_x
+    max_y = interval_y - max(fmax_) % 10 + max(fmax_)
+    min_y = min(fmin_) - min(fmin_) % 10
     last_scale = round(max_x/min_x, 2)
     middle_scale = round((last_scale - 1.0)/2 + 1, 1)
     middle_x = max_x/middle_scale
-
-    x_ = xmin[len(xmin)-1]
-    y_ = fmin[len(xmin)-1]
 
     fig = plt.figure(figsize=[12, 4])
 
@@ -71,7 +74,6 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
     ax.plot(xmax, fmax, 'o', ls='-', markersize=5, color='red', label='maximum thrust')
 
     if limit_state:
-        x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
         extrapolation_max = [fmax[n-1], y_]
         extrapolation_min = [fmin[n-1], y_]
         extrapolation_x = [xmax[n-1], x_]
@@ -252,7 +254,7 @@ def diagram_of_thrust_load_mult(dimension, min_sol, max_sol, limit_state=True, s
     ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
     ax1.set_xlim(min_x, max_x)
-    ax.set_ylim(min_y, max_y)
+    ax1.set_ylim(min_y, max_y)
     ax1.set_xticks(arange(min_x, max_x + interval_x, interval_x))
     ax1.set_yticks(arange(min_y, max_y + interval_y, interval_y))
     ax1.tick_params(axis='both', which='major', labelsize=size_axis_data)

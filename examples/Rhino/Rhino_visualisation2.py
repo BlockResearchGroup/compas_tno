@@ -12,10 +12,11 @@ import math
 import compas_tno
 
 # Give a name to your project
-master = 'pavillion_pointedmin'
+master = 'dome_ok'
 
 # Put here the .json file for the optimisation
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/test_min.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
 # fnm = compas_tno.get('test.json')
 
 
@@ -117,6 +118,16 @@ for u, v in form.edges():
     ep[2] = form.vertex_attribute(v, 'target')
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
+
+loads_layer = master + '::Loads'
+rs.AddLayer(loads_layer)
+rs.CurrentLayer(loads_layer)
+artist = NetworkArtist(form, layer=loads_layer)
+artist.clear_layer()
+for key in form.vertices():
+    node = form.vertex_coordinates(key)
+    pz = form.vertex_attribute(key, 'pz')
+    rs.AddTextDot('({0:.1f})'.format(pz), node, )
 
 ub_layer = master + '::UB'
 rs.AddLayer(ub_layer)

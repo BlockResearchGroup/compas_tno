@@ -1,10 +1,10 @@
-# import ipopt
-# from torch import tensor
+import ipopt
+from torch import tensor
 
-# from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
-# from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
-# from compas_tno.algorithms.equilibrium_pytorch import compute_grad
-# from compas_tno.algorithms.equilibrium_pytorch import compute_jacobian
+from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
+from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+from compas_tno.algorithms.equilibrium_pytorch import compute_grad
+from compas_tno.algorithms.equilibrium_pytorch import compute_jacobian
 
 from compas_tno.algorithms.equilibrium import reactions
 
@@ -270,7 +270,9 @@ def run_optimisation_ipopt(analysis):
             )
 
     nlp.addOption(b'hessian_approximation', b'limited-memory')
-    nlp.addOption('tol', 1e-6)
+    nlp.addOption('tol', 1e-4)
+    nlp.addOption('acceptable_tol', 0.1)
+    # nlp.addOption('acceptable_dual_inf_tol', 1.00)
 
     xopt, info = nlp.solve(x0)
     fopt = info['obj_val']

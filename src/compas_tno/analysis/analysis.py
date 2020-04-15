@@ -1,6 +1,8 @@
 import copy
 import math
 
+from compas_tno.shapes import Shape
+
 from compas_tno.algorithms.problems import initialise_form
 from compas_tno.algorithms.problems import initialise_problem
 from compas_tno.algorithms import set_up_nonlinear_optimisation
@@ -192,6 +194,7 @@ class Analysis(object):
             lb_ = shape.get_lb(x, y)
             if math.isnan(lb_):
                 lb_ = -1 * shape.data['t']
+                print('Shape interpolation got NaN, check results')
             form.vertex_attribute(key, 'ub', value = ub_)
             form.vertex_attribute(key, 'lb', value = lb_)
 
@@ -200,7 +203,7 @@ class Analysis(object):
         return
 
     def apply_target(self):
-        """Apply ub and lb to the nodes based on the shape's intrados and extrados"""
+        """Apply target to the nodes based on the shape's target surface"""
 
 
         form = self.form
@@ -257,8 +260,9 @@ class Analysis(object):
                 form.vertex_attribute(key, 'b', [x - L/2, 0.0])
 
         if shape.data['type'] == 'dome_spr':
-            print(shape.data['center'])
-            [x0, y0, _] = shape.data['center']
+            # print(shape.data['center'])
+            x0 = shape.data['center'][0]
+            y0 = shape.data['center'][1]
             radius = shape.data['radius']
             [_, theta_f] = shape.data['theta']
             r_proj_e = (radius + thk/2) * math.sin(theta_f)
@@ -270,7 +274,7 @@ class Analysis(object):
                 x_ = delt*math.cos(theta)
                 y_ = delt*math.sin(theta)
                 form.vertex_attribute(key, 'b', [x_, y_])
-                print(x,y,x_,y_)
+                # print(x,y,x_,y_)
 
         self.form = form # With correct forces
 
@@ -312,3 +316,73 @@ class Analysis(object):
             self = run_optimisation_scipy(self)
 
         return
+
+    def limit_analysis_GSF(self, thk, thk_reduction, R):
+
+        solutions_min = []  # empty lists to keep track of the solutions for min thrust
+        solutions_max = []  # empty lists to keep track of the solutions for max thrust
+        size_parameters = []  # empty lists to keep track of  the parameters
+        thicknesses = []
+        t0 = thk
+
+        data_diagram = self.form.parameters
+        data_shape = self.shape.data
+
+        print(data_diagram)
+        print(data_shape)
+
+        print('Limit Analysis - GSF: For ', data_shape['type'], 'with diagram ', data_diagram['type'])
+
+        for self.optimiser.data['objective'] in ['min', 'max']:
+
+            exitflag = 0
+            thk = t0
+            while exitflag == 0:
+
+                exitflag = 0
+                t_over_R = thk/R
+                print('\n----- Starting the' , data_diagram['type'], 'problem for thk/R:', t_over_R, '\n')
+                data_shape['thk'] = thk
+                self.shape = Shape.from_library(data_shape)
+                swt = self.shape.compute_selfweight()
+
+                self.apply_selfweight()
+                self.apply_envelope()
+                self.set_up_optimiser()
+                self.run()
+
+                exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
+                fopt = self.optimiser.fopt  # objective function optimum value
+                fopt_over_weight = fopt/swt  # divide by selfweight
+
+                if exitflag == 0:
+                    if self.optimiser.data['objective'] == 'min':
+                        solutions_min.append(fopt_over_weight)
+                        size_parameters.append(t_over_R)
+                        thicknesses.append(thk)
+                    else:
+                        solutions_max.append(fopt_over_weight)
+                    thk = round(thk - thk_reduction, 4)
+                    print('Reduce thickness to', thk, '\n')
+
+        print('\n SUMMARY')
+        print('Thicknesses calculated:')
+        print(thicknesses)
+        print('Thk/R calculated:')
+        print(size_parameters)
+        print('Solutions Found:')
+        print(solutions_min)
+        print('Solutions Found:')
+        print(solutions_max)
+
+        return thicknesses, size_parameters, solutions_min, solutions_max
+
+
+
+
+
+
+
+
+
+

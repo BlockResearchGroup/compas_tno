@@ -135,7 +135,6 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
         msg = "Warning!: discretisation of this form diagram has to be even."
         raise ValueError(msg)
 
-
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
     x1 = xy_span[0][1]
@@ -269,8 +268,6 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
     dy = float(y_span/division_y)
 
     lines = []
-    points = []
-    pt_i = 0
 
     for i in range(division_x+1):
         for j in range(division_y+1):
@@ -283,7 +280,6 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
                 lines.append([[xi, yi, 0.0], [xi, yi + dy, 0.0]])
             elif j == division_y and i < division_x:
                 lines.append([[xi, yi, 0.0], [xi + dx, yi, 0.0]])
-
 
     mesh = Mesh.from_lines(lines, delete_boundary_face=True)
     form = cls.from_mesh(mesh)

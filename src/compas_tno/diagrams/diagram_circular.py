@@ -1,5 +1,6 @@
 
 import math
+from compas.datastructures import Mesh
 
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
     """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.
@@ -199,6 +200,8 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
     for key in bnds:
         form.vertex_attribute(key, 'is_fixed', True)
 
+    form.delete_boundary_edges()
+
     return form
 
 
@@ -281,9 +284,11 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                 yb = yc + (r_oculus) * math.sin(theta * (nc + 1))
                 lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
 
-    form = cls.from_lines(lines, delete_boundary_edges=True)
+    mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+    form = cls.from_mesh(mesh)
+    # form = cls.from_lines(lines, delete_boundary_edges=True)
 
-    if r_oculus:
+    if r_oculus != 0.0:
         for key in form.faces():
             centroid = form.face_centroid(key)
             if centroid[0] == xc and centroid[1] == yc:
@@ -293,7 +298,6 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
     for key in bnds:
         form.vertex_attribute(key, 'is_fixed', True)
 
-    form.delete_boundary_edges() # Check what happens if there is oculus
-
+    form.delete_boundary_edges()  # Check what happens if there is oculus
 
     return form

@@ -79,7 +79,7 @@ for key in form.vertices():  # Loop on all vertices
     if abs(x - target_x) < 10e-4 and abs(y - target_y) < 10e-4:  # Just to avoid any numerical error.
         target_key = key  # Assign store this key in a variable
 try:
-    print('Key(s) Loaded: ',target_key)
+    print('Key(s) Loaded: ', target_key)
 except:
     print('Did not get any key!')
 
