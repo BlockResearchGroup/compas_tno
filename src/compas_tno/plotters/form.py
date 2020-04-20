@@ -128,11 +128,10 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     if radius:
+        plotter.draw_vertices(facecolor=rad_colors, radius=radius)
         if heights:
-            plotter.draw_vertices(facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-                                  radius=radius, text={i: round(form.vertex_attribute(i, 'pz'),2) for i in form.vertices()})  # form.vertex_attribute(i, 'z')
-        else:
-            plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+            plotter.draw_vertices(keys= [i for i in form.vertices_where({'is_fixed': True})], facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
+                                  radius=radius, text={i: [round(form.vertex_attribute(i, 'lb'),3),round(form.vertex_attribute(i, 'ub'),3),round(form.vertex_attribute(i, 'z'),3)] for i in form.vertices()})  # form.vertex_attribute(i, 'z')
 
     plotter.draw_lines(lines)
     if save:
@@ -1009,7 +1008,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     if radius:
         plotter.draw_vertices(facecolor=rad_colors, radius=radius)
 
-    plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
+    # plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
 
     plotter.draw_lines(lines)
     if save:

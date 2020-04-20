@@ -23,6 +23,8 @@ from compas_tno.plotters import plot_force
 from compas_tno.diagrams import ForceDiagram
 from compas_tna.diagrams import FormDiagram
 
+from compas.datastructures import mesh_bounding_box_xy
+
 from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
 from compas_tna.equilibrium import vertical_from_zmax
@@ -456,6 +458,42 @@ class FormDiagram(FormDiagram):
 
         return self
 
+    def set_boundary_rollers(self, max_rx=[0.0, 0.0], max_ry=[0.0, 0.0], total_rx=None, total_ry=None):
+        corners = mesh_bounding_box_xy(self)
+        xs = [point[0] for point in corners]
+        ys = [point[1] for point in corners]
+        xlimits = [min(xs), max(xs)]
+        ylimits = [min(ys), max(ys)]
+        if total_rx is not None:
+            nx0 = 0
+            nx1 = 0
+            for key in self.vertices_where({'x': xlimits[0]}): nx0 += 1
+            for key in self.vertices_where({'x': xlimits[1]}): nx1 += 1
+            max_rx = [total_rx[0]/nx0, total_rx[1]/nx1]
+        if total_ry is not None:
+            ny0 = 0
+            ny1 = 0
+            for key in self.vertices_where({'y': ylimits[0]}): ny0 += 1
+            for key in self.vertices_where({'y': ylimits[1]}): ny1 += 1
+            max_ry = [total_ry[0]/ny0, total_ry[1]/ny1]
+        for key in self.vertices_on_boundary():
+            if self.vertex_attribute(key, 'is_fixed') is False:
+                x, y, z = self.vertex_coordinates(key)
+                if x == xlimits[0]:
+                    self.vertex_attribute(key, 'rol_x', True)
+                    self.vertex_attribute(key, 'max_rx', max_rx[0])
+                elif x == xlimits[1]:
+                    self.vertex_attribute(key, 'rol_x', True)
+                    self.vertex_attribute(key, 'max_rx', max_rx[1])
+                elif y == ylimits[0]:
+                    self.vertex_attribute(key, 'rol_y', True)
+                    self.vertex_attribute(key, 'max_ry', max_ry[0])
+                elif y == ylimits[1]:
+                    self.vertex_attribute(key, 'rol_y', True)
+                    self.vertex_attribute(key, 'max_ry', max_ry[1])
+
+        return
+
     def residual(self, plot=False):
         """ Compute residual forces.
         """
@@ -822,6 +860,55 @@ class FormDiagram(FormDiagram):
         #     force.plot()
 
         return self
+
+    def vertex_projected_area(self, key):
+        """Compute the projected tributary area of a vertex.
+
+        Parameters
+        ----------
+        key : int
+            The identifier of the vertex.
+
+        Returns
+        -------
+        float
+            The projected tributary area.
+
+        Example
+        -------
+        >>>
+
+        """
+
+        from compas.geometry import subtract_vectors
+        from compas.geometry import length_vector
+        from compas.geometry import cross_vectors
+
+        area = 0.
+
+        p0 = self.vertex_coordinates(key)
+        p0[2] = 0
+
+        for nbr in self.halfedge[key]:
+            p1 = self.vertex_coordinates(nbr)
+            p1[2] = 0
+            v1 = subtract_vectors(p1, p0)
+
+            fkey = self.halfedge[key][nbr]
+            if fkey is not None:
+                p2 = self.face_centroid(fkey)
+                p2[2] = 0
+                v2 = subtract_vectors(p2, p0)
+                area += length_vector(cross_vectors(v1, v2))
+
+            fkey = self.halfedge[nbr][key]
+            if fkey is not None:
+                p3 = self.face_centroid(fkey)
+                p3[2] = 0
+                v3 = subtract_vectors(p3, p0)
+                area += length_vector(cross_vectors(v1, v3))
+
+        return 0.25 * area
 
     # def adapt_objective(form, zrange=[3.0, 8.0], objective='loadpath', method='nodal', discr=100, plot=False,
     #                     delete_face=False, alpha=100.0, kmax=100, display=False, amax=2.0, rmax=0.01):

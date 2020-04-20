@@ -28,12 +28,12 @@ solutions_max = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
 type_structure = 'crossvault'
 type_formdiagram = 'cross_fd'
-discretisation = 10
+discretisation = 12
 L = 10.0  # Span
 R = L/2  # radius
 
-load_mult = 2.0
-load_increase = 2.0
+load_mult = 0.25
+load_increase = 0.25
 direction_loads = 'pz'
 plot_graph = True
 plot_figures = True
@@ -73,7 +73,8 @@ print(form)
 
 # ----------------------- 1.1 Find specific node to apply load. Ex: @ Midspan or @ Quadspan ---------------------------
 
-target_x = target_y = L/2  # Want to get the vertex having x = L/2 (midspan)
+target_x = L/2  # Want to get the vertex having x = L/2 (midspan)
+target_y = L/4
 for key in form.vertices():  # Loop on all vertices
     x, y, z = form.vertex_coordinates(key)  # Get vertex coordinate
     if abs(x - target_x) < 10e-4 and abs(y - target_y) < 10e-4:  # Just to avoid any numerical error.
@@ -83,7 +84,7 @@ try:
 except:
     print('Did not get any key!')
 
-plotter = MeshPlotter(form)
+plotter = MeshPlotter(form, figsize=(10,10))
 plotter.draw_edges()
 plotter.draw_vertices(radius=0.10)
 plotter.draw_vertices(keys=[target_key], radius=0.10, facecolor='FF0000')
@@ -184,7 +185,7 @@ if plot_graph:
     img_graph = os.path.join(compas_tno.get('/imgs/'),'diagram.pdf')
     diagram_of_thrust_load_mult(size_parameters, solutions_min, solutions_max, save=img_graph).show()
 
-plot_form(form, show_q=False).show()
+plot_form(form, show_q=False, cracks=True).show()
 
 file_address = compas_tno.get('test_max.json')
 forms_max[len(forms_max)-1].to_json(file_address)

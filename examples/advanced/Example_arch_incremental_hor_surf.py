@@ -6,6 +6,7 @@ from compas_tno.plotters import plot_form_xz
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.plotters import diagram_of_thrust
 from compas_tno.plotters import diagram_of_multiple_thrust
+from compas_tno.plotters import surface_GSF_load_mult
 
 # ----------------------------------------------------------------------
 # ---- EXAMPLE OF MIN and MAX THRUST FOR ARCH WITH INCREMENTAL THK -----
@@ -15,7 +16,7 @@ from compas_tno.plotters import diagram_of_multiple_thrust
 
 exitflag = 0  # means that optimisation found a solution
 thk = 0.200  # thickness on the start in meters
-thk_reduction = 0.010  # in meters
+thk_reduction = 0.001  # in meters
 solutions_min = []  # empty lists to keep track of  the solutions
 solutions_max = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
@@ -58,13 +59,14 @@ optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 5000.0  # Check if this is limiting the solution
+optimiser.data['qmax'] = 10000.0  # Check if this is limiting the solution
 
-hor_study = [0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.293]
+hor_study = [0.0, 0.025, 0.05, 0.075, 0.10, 0.125, 0.15, 0.175, 0.20, 0.225, 0.25, 0.275, 0.293]
 sizes = []
 maxs = []
 mins = []
 legends = []
+legends_num = []
 for hor_mult in hor_study:
 
     exitflag = 0  # means that optimisation found a solution
@@ -158,15 +160,22 @@ for hor_mult in hor_study:
         mins.append(solutions_min)
         sizes.append(size_parameters)
         legends.append(str('px='+str(hor_mult)))
+        legends_num.append(hor_mult)
 
 
 # --------------- 6 . After exit print the list of solutions obtained ------------
 
-print('\n SUMMARY')
-print('\nSizes calculated')
-print(size_parameters)
-print('Solutions Found')
-print(solutions_min)
-print(solutions_max)
+print('\nSUMMARY')
+
+print('sizes')
+print(sizes)
+print('mins')
+print(mins)
+print('maxs')
+print(maxs)
+print('legend')
+print(legends)
 # diagram_of_thrust(size_parameters, solutions_min, solutions_max).show()
-diagram_of_multiple_thrust(sizes, mins, maxs, legends).show()
+# diagram_of_multiple_thrust(sizes, mins, maxs, legends, limit_state=False).show()
+surface_GSF_load_mult(sizes, mins, maxs, legends_num).show()
+

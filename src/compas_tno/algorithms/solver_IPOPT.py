@@ -192,7 +192,7 @@ def run_optimisation_ipopt(analysis):
     optimiser = analysis.optimiser
     fconstr = optimiser.fconstr
     args = optimiser.args
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints = args[:45]
     constraints = optimiser.data['constraints']
     objective = optimiser.data['objective']
     i_uv = form.index_uv()
@@ -270,13 +270,22 @@ def run_optimisation_ipopt(analysis):
             )
 
     nlp.addOption(b'hessian_approximation', b'limited-memory')
-    nlp.addOption('tol', 1e-4)
-    nlp.addOption('acceptable_tol', 0.1)
-    # nlp.addOption('acceptable_dual_inf_tol', 1.00)
+    nlp.addOption('tol', 1e-2)
+    nlp.addOption('acceptable_tol', 1.0)
+    nlp.addOption('max_iter', 1500)
+
+    nlp.addOption('dual_inf_tol', 100.0)
+    nlp.addOption('acceptable_dual_inf_tol', 10e+12)
+
+    nlp.addOption('compl_inf_tol', 0.1)
+    # nlp.addOption('acceptable_iter', 5)
+
 
     xopt, info = nlp.solve(x0)
     fopt = info['obj_val']
     exitflag = info['status']
+    if exitflag == 1:
+        exitflag = 0
     print(info['status_msg'])
 
     g_final = fconstr(xopt, *args)

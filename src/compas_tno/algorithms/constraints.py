@@ -24,7 +24,7 @@ __all__ = [
 
 def constr_wrapper(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry = args
 
     if len(xopt) > k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
@@ -50,8 +50,18 @@ def constr_wrapper(xopt, *args):
     if 'cracks' in dict_constr:
         crack_tol = 10e-4
         constraints = vstack([constraints, (lb[cracks_lb] - z[cracks_lb]) + crack_tol, (z[cracks_ub] - ub[cracks_ub]) + crack_tol])
+    if 'rollers' in dict_constr:
+        rx_check = max_rol_rx - abs(Cftx.dot(U.dot(q)) - px[rol_x])
+        ry_check = max_rol_ry - abs(Cfty.dot(V.dot(q)) - py[rol_y])
+        constraints = vstack([constraints, rx_check, ry_check])
+    if 'symmetry' in dict_constr:
+        z0 = z[fixed][0]
+        sum_zdiff = 0
+        for zi in z[fixed]:
+            sum_zdiff += abs(zi - z0)
+        constraints = vstack([constraints, -1 * sum_zdiff])
 
-    return transpose(constraints)[0] #.reshape(-1, 1)
+    return transpose(constraints)[0]  #.reshape(-1, 1)
 
 def f_ub_lb(xopt, *args):
 

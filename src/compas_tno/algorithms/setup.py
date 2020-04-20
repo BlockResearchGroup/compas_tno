@@ -66,13 +66,18 @@ def set_up_nonlinear_optimisation(analysis):
     else:
         cracks_lb, cracks_ub = None, None
 
+    if 'rollers' in constraints:
+        max_rol_rx, max_rol_ry = set_rollers_constraint(form, True)
+    else:
+        max_rol_rx, max_rol_ry = None, None
+
     if 'joints' in constraints:
         joints = set_joints_constraint(form, True)
     else:
         joints = None
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
-            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints)
+            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry)
 
     fconstr = constr_wrapper
     # fconstr = f_ub_lb
@@ -166,6 +171,18 @@ def set_cracks_constraint(form, cracks, printout):
         cracks_ub = []
     print('Constraints on cracks activated in {0} lb and {1} ub.'.format(len(cracks_lb), len(cracks_ub)))
     return cracks_lb, cracks_ub
+
+
+def set_rollers_constraint(form, printout):
+    max_rol_rx = []
+    max_rol_ry = []
+    for key in form.vertices_where({'rol_x': True}):
+        max_rol_rx.append(form.vertex_attribute(key, 'max_rx'))
+    for key in form.vertices_where({'rol_y': True}):
+        max_rol_ry.append(form.vertex_attribute(key, 'max_ry'))
+    if printout:
+        print('Constraints on rollers activated in {0} in x and {1} in y.'.format(len(max_rol_rx), len(max_rol_ry)))
+    return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
 
 
 def set_up_convex_optimisation(analysis):

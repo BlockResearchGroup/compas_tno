@@ -12,11 +12,11 @@ import math
 import compas_tno
 
 # Give a name to your project
-master = 'dome_ok'
+master = 'Test'
 
 # Put here the .json file for the optimisation
 fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
-fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
+# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
 # fnm = compas_tno.get('test.json')
 
 
@@ -254,5 +254,6 @@ rs.LayerVisible(thrust_layer, False)
 rs.LayerVisible(reac_layer, False)
 rs.LayerVisible(thrust_limits, True)
 rs.LayerVisible(pipes_layer, True)
+rs.LayerVisible(loads_layer, False)
 rs.LayerVisible(pipes_color, False)
 print(max(fs))

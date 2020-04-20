@@ -72,6 +72,8 @@ class Shape(object):
         self.total_selfweight = 0.0
         self.area = 0.0
         self.ro = 20.0
+        self.fill = False
+        self.fill_ro = 20.0
 
     @classmethod
     def from_library(cls, data):
@@ -171,6 +173,14 @@ class Shape(object):
 
         return z
 
+    def get_ub_bricks(self, x, y):
+        """Get the height of the extrados in the point."""
+
+        vertices = array(self.extrados_bricks.vertices_attributes('xyz'))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
+
+        return z
+
     def get_lb(self, x, y):
         """Get the height of the intrados in the point."""
 
@@ -215,3 +225,56 @@ class Shape(object):
 
         return volume
 
+    def add_fill_with_height(self, height, fill_ro=20.0):
+
+        from copy import deepcopy
+        from compas.geometry import subtract_vectors
+        from compas.geometry import length_vector
+        from compas.geometry import cross_vectors
+
+        extrados = self.extrados
+        self.extrados_bricks = deepcopy(extrados)
+        volume = 0.
+
+        for key in extrados.vertices():
+            zi = extrados.vertex_attribute(key, 'z')
+            if zi < height:
+                extrados.vertex_attribute(key, 'z', height)
+                ##### this should become a method
+                area = 0.
+                p0 = extrados.vertex_coordinates(key)
+                p0[2] = 0
+                for nbr in extrados.halfedge[key]:
+                    p1 = extrados.vertex_coordinates(nbr)
+                    p1[2] = 0
+                    v1 = subtract_vectors(p1, p0)
+                    fkey = extrados.halfedge[key][nbr]
+                    if fkey is not None:
+                        p2 = extrados.face_centroid(fkey)
+                        p2[2] = 0
+                        v2 = subtract_vectors(p2, p0)
+                        area += length_vector(cross_vectors(v1, v2))
+                    fkey = extrados.halfedge[nbr][key]
+                    if fkey is not None:
+                        p3 = extrados.face_centroid(fkey)
+                        p3[2] = 0
+                        v3 = subtract_vectors(p3, p0)
+                        area += length_vector(cross_vectors(v1, v3))
+                proj_area = area
+                ##### this should become a method
+                vol_i = proj_area*(height - zi)
+                volume += vol_i
+
+        self.fill = True
+        self.fill_volume = volume
+        self.fill_ro = fill_ro
+
+        return
+
+
+    def compute_fill_weight(self):
+
+        return self.fill_volume * self.fill_ro
+
+    def add_fill_with_angle(self, angle):
+        pass

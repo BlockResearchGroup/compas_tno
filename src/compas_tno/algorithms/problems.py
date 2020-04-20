@@ -67,10 +67,9 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     n = form.number_of_vertices()
     m = len(list(form.edges_where({'_is_edge': True})))
     fixed = [k_i[key] for key in form.fixed()]
-    rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     sym = [uv_i[uv] for uv in form.edges_where({'is_symmetry': True})]
-    free = list(set(range(n)) - set(fixed) - set(rol))
+    free = list(set(range(n)) - set(fixed))
 
     # Constraints
 

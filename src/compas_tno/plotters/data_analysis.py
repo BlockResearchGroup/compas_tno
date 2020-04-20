@@ -11,6 +11,8 @@ from compas.geometry import intersection_line_line_xy
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 from matplotlib.ticker import FormatStrFormatter
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -22,6 +24,7 @@ __all__ = [
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',
     'diagram_of_thrust_load_mult',
+    'surface_GSF_load_mult',
 ]
 
 
@@ -48,7 +51,7 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
     fmax = -100.0 * array(max_sol)
     n = len(xmin)
     x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
-    print(x_, y_)
+    # print(x_, y_)
     xmax_ = append(xmax, x_)
     fmin_ = append(fmin, y_)
     fmax_ = append(fmax, y_)
@@ -108,7 +111,7 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
     return plt
 
 
-def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends):
+def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, limit_state=True, save=None):
     """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
 
     Parameters
@@ -152,22 +155,29 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends):
     middle_scale = round((last_scale - 1.0)/2 + 1, 1)
     middle_x = max_x/middle_scale
 
-    print(max_x, min_x, max_y, min_y, min(min(dimensions)))
+    # print(max_x, min_x, max_y, min_y, min(min(dimensions)))
 
     for i in range(kmax):
 
         xmin = xmax = array(dimensions[i])
         fmin = 100.0*array(min_sols[i])
         fmax = -100.0*array(max_sols[i])
-        print(xmin, fmin)
-        print(xmax, fmax)
+        # print(xmin, fmin)
+        # print(xmax, fmax)
+        n = len(xmin)
 
-        # x_ = xmin[len(xmin)-1]
-        # y_ = fmin[len(xmin)-1]
+        if limit_state:
+            x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+            extrapolation_max = [fmax[n-1], y_]
+            extrapolation_min = [fmin[n-1], y_]
+            extrapolation_x = [xmax[n-1], x_]
+            ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black', label='limit state '+legends[i])
+            ax.plot(extrapolation_x, extrapolation_max, '', ls='--', color='red')
+            ax.plot(extrapolation_x, extrapolation_min, '', ls='--', color='blue')
+            ax.annotate(str(round(x_, 2)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
 
         ax.plot(xmin, fmin, markers[i], ls='-', markersize=6, color='blue', label='minimum thrust '+legends[i])
         ax.plot(xmax, fmax, markers[i], ls='-', markersize=6, color='red', label='maximum thrust '+legends[i])
-        # ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black', label='limit state')
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
@@ -190,6 +200,9 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends):
     ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
     ax.grid(color='silver', linestyle='-', linewidth=0.5)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+
+    if save:
+        plt.savefig(save)
 
     return plt
 
@@ -266,8 +279,54 @@ def diagram_of_thrust_load_mult(dimension, min_sol, max_sol, limit_state=True, s
     if save:
         plt.savefig(save)
 
-    return pl
+    return plt
 
+
+def surface_GSF_load_mult(sizes, mins, maxs, legends, save=None):
+    """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
+
+    Parameters
+    ----------
+    sizes : list of lists (m-n)
+        Points with discretised solutions.
+    mins : list of lists (m-n)
+        Adimensional thrust over weight for minimum thrust.
+    maxs : list of lists (m-n)
+        Adimensional thrust over weight for minimum thrust.
+    legends : list (m)
+        Legend of the (m) problems.
+    save : str
+        Path to save the diagram.
+
+    Returns
+    -------
+    obj
+        Plotter object.
+
+    """
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+
+    def flatten_list(l): return [item for sublist in l for item in sublist]
+    def flatten_list_inv(l): return [-1*item for sublist in l for item in sublist]
+
+    m = [len(sublist) for sublist in sizes]
+    xs = array(flatten_list(sizes)+flatten_list(sizes))
+    ys = array(flatten_list(mins)+flatten_list_inv(maxs))
+    z_list = flatten_list([[legends[i]]*m[i] for i in range(len(legends))])
+    zs = array(z_list + z_list)
+
+    ax.plot_trisurf(xs, ys, zs, cmap=cm.coolwarm)
+    # ax.scatter(xs, ys, zs)
+    ax.set_xlabel('t/R')
+    ax.set_ylabel('T/W')
+    ax.set_zlabel('px')
+
+    if save:
+        plt.savefig(save)
+
+    return plt
 
 # ==============================================================================
 # Main

@@ -119,8 +119,6 @@ data = {
     'r_oculus': 0.0,
 }
 
-
-
 form = FormDiagram.from_library(data)
 print(form)
 form.overview_forces()

@@ -3,6 +3,8 @@ import math
 
 from compas_tno.shapes import Shape
 
+from compas_plotters import MeshPlotter
+
 from compas_tno.algorithms.problems import initialise_form
 from compas_tno.algorithms.problems import initialise_problem
 from compas_tno.algorithms import set_up_nonlinear_optimisation
@@ -129,6 +131,42 @@ class Analysis(object):
 
         return
 
+
+    def apply_fill_load(self, plot=False):
+
+        shape = self.shape
+        form = self.form
+        vol_calc = 0.
+        vertices_under_fill = []
+        if shape.fill:
+            for key in form.vertices():
+                x, y, z = form.vertex_coordinates(key)
+                z_fill = shape.get_ub(x, y)
+                z_brick = shape.get_ub_bricks(x, y)
+                if z_fill > z_brick:
+                    dz = z_fill - z_brick
+                    proj_area = form.vertex_projected_area(key)
+                    form.vertex_attribute(key, 'fill_volume', proj_area*dz)
+                    vol_calc += proj_area*dz
+                    vertices_under_fill.append(key)
+            fill_load = shape.compute_fill_weight()
+            fill_vol = shape.fill_volume
+            print('Volume of Fill in this Form-Diagram:', vol_calc, 'against a shape fill vol and load:', fill_vol, fill_load)
+            for key in vertices_under_fill:
+                load_fraction = form.vertex_attribute(key, 'fill_volume')/vol_calc * fill_load
+                pz0 = form.vertex_attribute(key, 'pz')
+                form.vertex_attribute(key, 'pz', pz0 + load_fraction)
+                form.vertex_attribute(key, 'fill_load', load_fraction)
+            if plot:
+                plotter = MeshPlotter(form, figsize=(10, 10))
+                plotter.draw_edges()
+                plotter.draw_vertices(keys=vertices_under_fill, text={key: str(round(form.vertex_attribute(key, 'fill_load'), 2)) for key in vertices_under_fill})
+                plotter.show()
+        else:
+            print('Warning, no Fill was assigned to Shape')
+
+
+        return
 
     def apply_pointed_load(self, keys, magnitudes, proportional=True, component='pz', component_get='pz'):
         """Apply pointed load a node of the form diagram based on the shape"""
@@ -317,7 +355,7 @@ class Analysis(object):
 
         return
 
-    def limit_analysis_GSF(self, thk, thk_reduction, R):
+    def limit_analysis_GSF(self, thk, thk_reduction, R, fill=None, rollers_ratio=None):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -327,9 +365,6 @@ class Analysis(object):
 
         data_diagram = self.form.parameters
         data_shape = self.shape.data
-
-        print(data_diagram)
-        print(data_shape)
 
         print('Limit Analysis - GSF: For ', data_shape['type'], 'with diagram ', data_diagram['type'])
 
@@ -344,10 +379,16 @@ class Analysis(object):
                 print('\n----- Starting the' , data_diagram['type'], 'problem for thk/R:', t_over_R, '\n')
                 data_shape['thk'] = thk
                 self.shape = Shape.from_library(data_shape)
+                if fill:
+                    self.shape.add_fill_with_height(fill)
                 swt = self.shape.compute_selfweight()
+                if rollers_ratio:
+                    self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt]*2, total_ry=[rollers_ratio[1]*swt]*2)
 
                 self.apply_selfweight()
                 self.apply_envelope()
+                if fill:
+                    self.apply_fill_load()
                 self.set_up_optimiser()
                 self.run()
 
@@ -378,7 +419,10 @@ class Analysis(object):
         return thicknesses, size_parameters, solutions_min, solutions_max
 
 
+    def limit_analysis_load_mult(self, load0, load_increase, load_direction, percentual=True):
+        """"" W.I.P. """""
 
+        return
 
 
 
