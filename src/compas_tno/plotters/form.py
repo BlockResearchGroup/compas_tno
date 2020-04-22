@@ -649,7 +649,7 @@ def plot_gif_forms_xz(forms, shape, radius=0.05, fix_width=False, max_width=10, 
                 xf = xc - r_ * math.cos(angle_f)
                 zi = r_ * math.sin(angle_i) - zc
                 zf = r_ * math.sin(angle_f) - zc
-                lines_arch.append({
+                lines_arch.append({         # Dictionary with the shape of the structure
                     'start': [xi, zi],
                     'end':   [xf, zf],
                     'color': '000000',
@@ -663,7 +663,7 @@ def plot_gif_forms_xz(forms, shape, radius=0.05, fix_width=False, max_width=10, 
     segments = []
     centers = []
     for line in total_lines:
-        segments.append([line['start'],line['end']])
+        segments.append([line['start'], line['end']])
     for pt in vertices:
         centers.append(pt['pos'])
     plotter.update_linecollection(linecollection, segments)
