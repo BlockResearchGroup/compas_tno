@@ -62,16 +62,17 @@
 <div class="figure align-default">
 <img alt="../_images/cross-fan.png" class="figure-img img-fluid" src="../_images/cross-fan.png" />
 </div>
-<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="kn">from</span> <span class="nn">compas_tno.diagrams</span> <span class="kn">import</span> <span class="n">FormDiagram</span>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="kn">import</span> <span class="nn">compas_tno</span>
+<span class="kn">from</span> <span class="nn">compas_tno.diagrams</span> <span class="kn">import</span> <span class="n">FormDiagram</span>
 <span class="kn">from</span> <span class="nn">compas_tno.shapes.shape</span> <span class="kn">import</span> <span class="n">Shape</span>
 <span class="kn">from</span> <span class="nn">compas_tno.optimisers.optimiser</span> <span class="kn">import</span> <span class="n">Optimiser</span>
 <span class="kn">from</span> <span class="nn">compas_tno.plotters</span> <span class="kn">import</span> <span class="n">plot_form</span>
 <span class="kn">from</span> <span class="nn">compas_tno.analysis.analysis</span> <span class="kn">import</span> <span class="n">Analysis</span>
 <span class="kn">from</span> <span class="nn">compas_tno.viewers.thrust</span> <span class="kn">import</span> <span class="n">view_thrust</span>
-<span class="kn">from</span> <span class="nn">compas_tno.viewers.thrust</span> <span class="kn">import</span> <span class="n">view_solution</span>
+
 
 <span class="c1"># ----------------------------------------------------------------------------</span>
-<span class="c1"># -----------EXAMPLE OF MIN and MAX THRUST FOR CROSSVAULT --------------------</span>
+<span class="c1"># ----------- EXAMPLE OF MIN THRUST FOR CROSSVAULT WITH FAN FD ---------------</span>
 <span class="c1"># ----------------------------------------------------------------------------</span>
 
 <span class="c1"># Basic parameters</span>
@@ -137,12 +138,12 @@
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_selfweight</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_envelope</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_reaction_bounds</span><span class="p">()</span>
-<span class="n">analysis</span><span class="o">.</span><span class="n">set_up_optimiser</span><span class="p">()</span>  <span class="c1"># Find independent edges</span>
+<span class="n">analysis</span><span class="o">.</span><span class="n">set_up_optimiser</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
 <span class="n">plot_form</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">show_q</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="n">file_address</span> <span class="o">=</span> <span class="s1">&#39;/Users/mricardo/compas_dev/me/reformulation/test.json&#39;</span>
+<span class="n">file_address</span> <span class="o">=</span> <span class="n">compas_tno</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;test.json&#39;</span><span class="p">)</span>
 <span class="n">form</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">file_address</span><span class="p">)</span>
 
 <span class="n">view_thrust</span><span class="p">(</span><span class="n">form</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -226,7 +227,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 24, 2020.
+                Last updated on Apr 24, 2020.
             
 
             

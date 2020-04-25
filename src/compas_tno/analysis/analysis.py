@@ -15,6 +15,8 @@ from compas_tno.algorithms import run_optimisation_MATLAB
 from compas_tno.algorithms import run_optimisation_MMA
 from compas_tno.algorithms import run_optimisation_ipopt
 
+from compas_tno.plotters import plot_form
+
 __all__ = ['Analysis']
 
 class Analysis(object):
@@ -82,13 +84,24 @@ class Analysis(object):
         return analysis
 
     @classmethod
-    def from_form_and_optimier(cls, form, optimiser):
+    def from_form_and_optimiser(cls, form, optimiser):
         """Create a analysis from the elements of the problem """
 
         analysis = cls()
         analysis.shape = None
         analysis.form = form
         analysis.optimiser = optimiser
+
+        return analysis
+
+    @classmethod
+    def from_form_and_shape(cls, form, shape):
+        """Create a analysis from the elements of the problem """
+
+        analysis = cls()
+        analysis.shape = shape
+        analysis.form = form
+        analysis.optimiser = None
 
         return analysis
 
@@ -138,20 +151,25 @@ class Analysis(object):
         form = self.form
         vol_calc = 0.
         vertices_under_fill = []
+        swt = shape.compute_selfweight()
+        proj_area_under = 0.
         if shape.fill:
             for key in form.vertices():
                 x, y, z = form.vertex_coordinates(key)
-                z_fill = shape.get_ub(x, y)
-                z_brick = shape.get_ub_bricks(x, y)
+                z_fill = shape.get_ub_fill(x, y)
+                z_brick = shape.get_ub(x, y)
                 if z_fill > z_brick:
                     dz = z_fill - z_brick
                     proj_area = form.vertex_projected_area(key)
                     form.vertex_attribute(key, 'fill_volume', proj_area*dz)
                     vol_calc += proj_area*dz
+                    proj_area_under += proj_area
                     vertices_under_fill.append(key)
             fill_load = shape.compute_fill_weight()
             fill_vol = shape.fill_volume
-            print('Volume of Fill in this Form-Diagram:', vol_calc, 'against a shape fill vol and load:', fill_vol, fill_load)
+            print('Volume of Fill in this Form-Diagram:', vol_calc, 'against a shape fill vol of:', fill_vol, ' difference (%):', 100*(vol_calc-fill_vol)/fill_vol)
+            print('Load that will be added to the Structure:', fill_load, 'against a initial SWT:', swt, ' Addition of (%):', 100*(fill_load)/swt)
+            print('Proj area under:', proj_area_under)
             for key in vertices_under_fill:
                 load_fraction = form.vertex_attribute(key, 'fill_volume')/vol_calc * fill_load
                 pz0 = form.vertex_attribute(key, 'pz')
@@ -355,7 +373,7 @@ class Analysis(object):
 
         return
 
-    def limit_analysis_GSF(self, thk, thk_reduction, R, fill=None, rollers_ratio=None):
+    def limit_analysis_GSF(self, thk, thk_reduction, R, fill_percentage=None, rollers_ratio=None, printout=True, plot=False, save_forms=None):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -372,26 +390,27 @@ class Analysis(object):
 
             exitflag = 0
             thk = t0
-            while exitflag == 0:
+            while exitflag == 0 and thk > 0:
 
                 exitflag = 0
                 t_over_R = thk/R
-                print('\n----- Starting the' , data_diagram['type'], 'problem for thk/R:', t_over_R, '\n')
+                print('\n----- Starting the', data_diagram['type'], 'problem for thk/R:', t_over_R, '\n')
                 data_shape['thk'] = thk
                 self.shape = Shape.from_library(data_shape)
-                if fill:
-                    self.shape.add_fill_with_height(fill)
                 swt = self.shape.compute_selfweight()
+                if fill_percentage:
+                    self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
+                    swt += self.shape.compute_fill_weight()
                 if rollers_ratio:
                     self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt]*2, total_ry=[rollers_ratio[1]*swt]*2)
-
                 self.apply_selfweight()
                 self.apply_envelope()
-                if fill:
+                if fill_percentage:
                     self.apply_fill_load()
                 self.set_up_optimiser()
                 self.run()
-
+                if plot:
+                    plot_form(self.form, show_q=False, cracks=True).show()
                 exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
                 fopt = self.optimiser.fopt  # objective function optimum value
                 fopt_over_weight = fopt/swt  # divide by selfweight
@@ -403,18 +422,21 @@ class Analysis(object):
                         thicknesses.append(thk)
                     else:
                         solutions_max.append(fopt_over_weight)
+                    if save_forms:
+                        address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+                        self.form.to_json(address)
                     thk = round(thk - thk_reduction, 4)
                     print('Reduce thickness to', thk, '\n')
-
-        print('\n SUMMARY')
-        print('Thicknesses calculated:')
-        print(thicknesses)
-        print('Thk/R calculated:')
-        print(size_parameters)
-        print('Solutions Found:')
-        print(solutions_min)
-        print('Solutions Found:')
-        print(solutions_max)
+        if printout:
+            print('\n------------------ SUMMARY ------------------ ')
+            print('Thicknesses calculated ({0}):'.format(len(thicknesses)))
+            print(thicknesses)
+            print('Thk/R calculated ({0}):'.format(len(size_parameters)))
+            print(size_parameters)
+            print('Solutions Found ({0}):'.format(len(solutions_min)))
+            print(solutions_min)
+            print('Solutions Found ({0}):'.format(len(solutions_max)))
+            print(solutions_max)
 
         return thicknesses, size_parameters, solutions_min, solutions_max
 

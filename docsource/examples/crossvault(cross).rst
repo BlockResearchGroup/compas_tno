@@ -1,6 +1,6 @@
-***************
+*******************
 Cross Vault (cross)
-***************
+*******************
 
 The current example finds minimum thrust for a cross vault based a cross Form Diagram.
 

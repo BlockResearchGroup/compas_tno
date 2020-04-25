@@ -58,7 +58,7 @@ The root environment is active by default. Therefore, you should not forget to a
     conda activate tno
 
 Installing parent package compas_tna
-===================================
+====================================
 
 One of the requisites of ``compas_tno`` is the installation alongside its parent package ``compas_tna``.
 
@@ -112,33 +112,75 @@ Next, let Rhinoceros know that you installed :mod:`compas_tno`  by typinng in th
 Solver's dependency
 ===================
 
-Note that with the installation of ``compas`` and ``compas_tna`` the packages scipy and numpy are already installed. Thie package scipy contains the nonlinear solver SLSQP that will be the main tool of this package. However, to fully use the functionalities of :mod:`compas_tno` you should add to your installation a series of optimisation packages, that are listed here in order of importance.
+Note that with the installation of ``compas`` and ``compas_tna`` the packages scipy and numpy are already installed.
 
-1) CVX via MATLAB:
+The package scipy contains the nonlinear solver SLSQP that will be the main tool of this package. Therefore, if you got this far you can already test most of the examples using SLSQP as the solver.
 
-Install MATLAB, version R2019b is recommended:
+However, to fully use the functionalities of :mod:`compas_tno` you should add to your installation a series of optimisation packages and helpers, that are listed here in order of importance.
+
+
+PyTorch (Helper)
+================
+
+The derivatives of many of the constraints on the optimisation are computed by autodifferentiation based on the package PyTorch. So to be able to use MMA and IPOPT you will need PyTorch installed. To install it please run from your terminal:
+
+
+.. code-block:: bash
+
+    conda install -c pytorch pytorch
+
+MMA (Solver)
+============
+
+The first additional solver MMA already ships with ``compas_tno``, so if all went good on the installation of PyTorch, congratulations, you can already use MMA as an option for the solving.
+
+Learn more about MMA (Method of Moving Asymptotes) by Krister Svanberg:
+
+* https://people.kth.se/~krille/mmagcmma.pdf
+
+IPOPT (Solver)
+==============
+
+IPOPT is a well-developed package for nonlinear optimisation. To install just run from your terminal:
+
+.. code-block:: bash
+
+    conda install -c conda-forge cyipopt
+
+More information about the solver and solver options are available here:
+
+* https://pypi.org/project/ipopt/
+
+
+SDPT3 (Solver)
+==============
+
+To perform load-path optimisation the suggestion is to use SDPT3. This solver, however, is only available on the MATLAB package CVX. That means that to perform the optimisaiton you will need to have both: MATLAB and CVX on your computer. The installation of this package is composed of three steps:
+
+1) Download and install MATLAB. Version at least R2019b is recommended.
 
 * https://www.mathworks.com/products/matlab.html
 
-Install CVX as a MATLAB package:
+2) Download and install the MATLAB package CVX to perform convex optimisation:
 
 * http://cvxr.com/cvx/download/
 
-Install Python API for MATLAB to control MATLAB direclty from Python scripts:
+3) Install Python API for MATLAB to control MATLAB direclty from Python scripts:
 
 * https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html
 
-You will need CVX installed to run convex optimisation in :mod:`compas_tno`.
+If you don't need to perform load path optimisation you can skipt this installation.
 
-2) pyOpt:
+PyOpt (Library of solvers)
+==========================
 
-Library with extensive list of solvers, some adequate for nonlinear optimisation:
+Library with extensive list of solvers, some adequate for nonlinear optimisation. It has its own version of SLSQP and also other solvers including GA and DEVO. To install run:
+
+.. code-block:: bash
+
+    conda install -c mutirri pyopt
+
+More information abobut the library can be found here:
 
 * http://www.pyopt.org/download.html
-
-3) IPOPT:
-
-Library with extensive list of solvers for nonlinear optimisation:
-
-* https://pypi.org/project/ipopt/
 

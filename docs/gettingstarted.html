@@ -128,36 +128,64 @@ pip install -e .
 </div>
 <div class="section" id="solver-s-dependency">
 <h2>Solver’s dependency</h2>
-<p>Note that with the installation of <code class="docutils literal notranslate"><span class="pre">compas</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_tna</span></code> the packages scipy and numpy are already installed. Thie package scipy contains the nonlinear solver SLSQP that will be the main tool of this package. However, to fully use the functionalities of <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> you should add to your installation a series of optimisation packages, that are listed here in order of importance.</p>
+<p>Note that with the installation of <code class="docutils literal notranslate"><span class="pre">compas</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_tna</span></code> the packages scipy and numpy are already installed.</p>
+<p>The package scipy contains the nonlinear solver SLSQP that will be the main tool of this package. Therefore, if you got this far you can already test most of the examples using SLSQP as the solver.</p>
+<p>However, to fully use the functionalities of <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> you should add to your installation a series of optimisation packages and helpers, that are listed here in order of importance.</p>
+</div>
+<div class="section" id="pytorch-helper">
+<h2>PyTorch (Helper)</h2>
+<p>The derivatives of many of the constraints on the optimisation are computed by autodifferentiation based on the package PyTorch. So to be able to use MMA and IPOPT you will need PyTorch installed. To install it please run from your terminal:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda install -c pytorch pytorch
+</code></pre></div>
+</div>
+</div>
+<div class="section" id="mma-solver">
+<h2>MMA (Solver)</h2>
+<p>The first additional solver MMA already ships with <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code>, so if all went good on the installation of PyTorch, congratulations, you can already use MMA as an option for the solving.</p>
+</div>
+<div class="section" id="ipopt-solver">
+<h2>IPOPT (Solver)</h2>
+<p>IPOPT is a developped package for nonlinear optimisation. To install just run from your terminal:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda install -c conda-forge cyipopt
+</code></pre></div>
+</div>
+<p>More information about the solver and solver options are available here:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://pypi.org/project/ipopt/">https://pypi.org/project/ipopt/</a></p></li>
+</ul>
+</div>
+<div class="section" id="sdpt3-solver">
+<h2>SDPT3 (Solver)</h2>
+<p>To perform load-path optimisation the suggestion is to used SDPT3. This solver, however is only available on the MATLAB package CVX, what means that to perform the optimisaiton you will need to have both: MATLAB and CVX on your computer. The installation of this package needs three steps:</p>
 <ol class="arabic simple">
-<li><p>CVX via MATLAB:</p></li>
+<li><p>Download and install MATLAB. Version at least R2019b is recommended.</p></li>
 </ol>
-<p>Install MATLAB, version R2019b is recommended:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.mathworks.com/products/matlab.html">https://www.mathworks.com/products/matlab.html</a></p></li>
 </ul>
-<p>Install CVX as a MATLAB package:</p>
+<ol class="arabic simple" start="2">
+<li><p>Download and install the MATLAB package CVX to perform convex optimisation:</p></li>
+</ol>
 <ul class="simple">
 <li><p><a class="reference external" href="http://cvxr.com/cvx/download/">http://cvxr.com/cvx/download/</a></p></li>
 </ul>
-<p>Install Python API for MATLAB to control MATLAB direclty from Python scripts:</p>
+<ol class="arabic simple" start="3">
+<li><p>Install Python API for MATLAB to control MATLAB direclty from Python scripts:</p></li>
+</ol>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html">https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html</a></p></li>
 </ul>
-<p>You will need CVX installed to run convex optimisation in <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a>.</p>
-<ol class="arabic simple" start="2">
-<li><p>pyOpt:</p></li>
-</ol>
-<p>Library with extensive list of solvers, some adequate for nonlinear optimisation:</p>
+<p>If you don’t need to perform load path optimisation you can skipt this installation.</p>
+</div>
+<div class="section" id="pyopt-library-of-solvers">
+<h2>PyOpt (Library of solvers)</h2>
+<p>Library with extensive list of solvers, some adequate for nonlinear optimisation. It has its own version of SLSQP and also other solvers including GA and DEVO. To install run:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda install -c mutirri pyopt
+</code></pre></div>
+</div>
+<p>More information abobut the library can be found here:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="http://www.pyopt.org/download.html">http://www.pyopt.org/download.html</a></p></li>
-</ul>
-<ol class="arabic simple" start="3">
-<li><p>IPOPT:</p></li>
-</ol>
-<p>Library with extensive list of solvers for nonlinear optimisation:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://pypi.org/project/ipopt/">https://pypi.org/project/ipopt/</a></p></li>
 </ul>
 </div>
 </div>
@@ -221,6 +249,11 @@ pip install -e .
 <li class="nav-item"><a class="nav-link reference internal" href="#installing-compas-tno">Installing compas_tno</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#rhino-configuration">Rhino Configuration</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#solver-s-dependency">Solver’s dependency</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#pytorch-helper">PyTorch (Helper)</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#mma-solver">MMA (Solver)</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#ipopt-solver">IPOPT (Solver)</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#sdpt3-solver">SDPT3 (Solver)</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#pyopt-library-of-solvers">PyOpt (Library of solvers)</a></li>
 </ul>
 </li>
 </ul>
@@ -234,7 +267,7 @@ pip install -e .
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 24, 2020.
+                Last updated on Apr 24, 2020.
             
 
             

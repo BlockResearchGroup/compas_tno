@@ -62,7 +62,8 @@
 <div class="figure align-default">
 <img alt="../_images/arch.png" class="figure-img img-fluid" src="../_images/arch.png" />
 </div>
-<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="kn">from</span> <span class="nn">compas_tno.diagrams</span> <span class="kn">import</span> <span class="n">FormDiagram</span>
+<div class="language-python notranslate"><div class="highlight"><pre><code><span></span><span class="kn">import</span> <span class="nn">compas_tno</span>
+<span class="kn">from</span> <span class="nn">compas_tno.diagrams</span> <span class="kn">import</span> <span class="n">FormDiagram</span>
 <span class="kn">from</span> <span class="nn">compas_tno.shapes.shape</span> <span class="kn">import</span> <span class="n">Shape</span>
 <span class="kn">from</span> <span class="nn">compas_tno.optimisers.optimiser</span> <span class="kn">import</span> <span class="n">Optimiser</span>
 <span class="kn">from</span> <span class="nn">compas_tno.plotters</span> <span class="kn">import</span> <span class="n">plot_form_xz</span>
@@ -77,7 +78,6 @@
 <span class="n">H</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="n">L</span> <span class="o">=</span> <span class="mf">2.0</span>
 <span class="n">thk</span> <span class="o">=</span> <span class="mf">0.2</span>
-<span class="n">radius</span> <span class="o">=</span> <span class="mf">5.0</span>
 <span class="n">discretisation</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">b</span> <span class="o">=</span> <span class="mf">0.5</span>
 <span class="n">t</span> <span class="o">=</span> <span class="mf">10.0</span>
@@ -142,14 +142,14 @@
 <span class="n">analysis</span><span class="o">.</span><span class="n">set_up_optimiser</span><span class="p">()</span>  <span class="c1"># Find independent edges</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 <span class="n">form</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">form</span>
-<span class="n">file_adress</span> <span class="o">=</span> <span class="s1">&#39;/Users/mricardo/compas_dev/me/reformulation/test_min.json&#39;</span>
-<span class="n">form</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">file_adress</span><span class="p">)</span>
+<span class="n">file_address</span> <span class="o">=</span> <span class="n">compas_tno</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;test.json&#39;</span><span class="p">)</span>
+<span class="n">form</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">file_address</span><span class="p">)</span>
 <span class="n">optimiser</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">optimiser</span>
 <span class="n">fopt</span> <span class="o">=</span> <span class="n">optimiser</span><span class="o">.</span><span class="n">fopt</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">fopt</span><span class="p">)</span>
 <span class="n">plot_form_xz</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">arch</span><span class="p">,</span> <span class="n">show_q</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_reactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_width</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 
-<span class="c1"># --------------------- 3.3 Create Minimisation for maximum thrust ---------------------</span>
+<span class="c1"># --------------------- 4.1 Create Minimisation for maximum thrust ---------------------</span>
 
 <span class="n">optimiser</span> <span class="o">=</span> <span class="n">Optimiser</span><span class="p">()</span>
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Scipy&#39;</span>
@@ -163,7 +163,7 @@
 <span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;qmax&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1000.0</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">optimiser</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-<span class="c1"># --------------------------- Run optimisation with scipy ---------------------------</span>
+<span class="c1"># ------------------------- 4.2 Run optimisation with scipy ---------------------------</span>
 
 <span class="n">analysis</span> <span class="o">=</span> <span class="n">Analysis</span><span class="o">.</span><span class="n">from_elements</span><span class="p">(</span><span class="n">arch</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">optimiser</span><span class="p">)</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_selfweight</span><span class="p">()</span>
@@ -172,8 +172,8 @@
 <span class="n">analysis</span><span class="o">.</span><span class="n">set_up_optimiser</span><span class="p">()</span>  <span class="c1"># Find independent edges</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 <span class="n">form</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">form</span>
-<span class="n">file_adress</span> <span class="o">=</span> <span class="s1">&#39;/Users/mricardo/compas_dev/me/reformulation/test_max.json&#39;</span>
-<span class="n">form</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">file_adress</span><span class="p">)</span>
+<span class="n">file_address</span> <span class="o">=</span> <span class="n">compas_tno</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;test.json&#39;</span><span class="p">)</span>
+<span class="n">form</span><span class="o">.</span><span class="n">to_json</span><span class="p">(</span><span class="n">file_address</span><span class="p">)</span>
 
 <span class="n">plot_form_xz</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">arch</span><span class="p">,</span> <span class="n">show_q</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_reactions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_width</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">radius</span><span class="o">=</span><span class="mf">0.02</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </code></pre></div>
@@ -253,7 +253,7 @@
     <footer class="bg-dark pb-5">
         <div class="container text-center pt-5 pb-5 text-muted">
             
-                Last updated on Mar 24, 2020.
+                Last updated on Apr 24, 2020.
             
 
             

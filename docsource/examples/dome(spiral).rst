@@ -1,6 +1,6 @@
-***************
+*************
 Dome (spiral)
-***************
+*************
 
 The current example finds minimum thrust for a dome based a spiral Form Diagram.
 

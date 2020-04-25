@@ -1,6 +1,6 @@
-***************
+*************
 Dome (radial)
-***************
+*************
 
 The current example finds minimum thrust for a dome based a radial Form Diagram.
 

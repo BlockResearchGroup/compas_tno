@@ -7,7 +7,8 @@ __all__ = [
     'view_intrados',
     'view_extrados',
     'view_middle',
-    'view_shapes'
+    'view_shapes',
+    'view_fill',
 ]
 
 
@@ -98,5 +99,37 @@ def view_shapes(shape, cut_negatives=True):
 
     viewer = MultiMeshViewer()
     viewer.meshes = [middle, intrados, extrados]
+
+    return viewer
+
+
+def view_fill(shape, cut_negatives=True):
+    """ Viewer showing the fill
+
+    Parameters
+    ----------
+    shape : obj
+        Shape to plot
+    cut_negatives : boll
+        If true, it will hid the negative allowance on the close-to-support points (WIP).
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    middle = shape.middle
+    intrados = shape.intrados
+    extrados = shape.extrados
+    try:
+        extrados_fill = shape.extrados_fill
+    except:
+        print('No fill is assigned')
+        extrados_fill = shape.extrados
+
+    viewer = MultiMeshViewer()
+    viewer.meshes = [middle, intrados, extrados, extrados_fill]
 
     return viewer

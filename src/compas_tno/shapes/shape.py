@@ -6,6 +6,7 @@ from compas_tno.shapes.crossvault import cross_vault_highfields
 from compas_tno.shapes.pavillionvault import pavillion_vault_highfields
 from compas_tno.shapes.dome import set_dome_heighfield
 from compas_tno.shapes.dome import set_dome_with_spr
+from compas_tno.shapes.dome import set_dome_polar_coord
 from compas_tno.shapes.circular_arch import arch_shape
 from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
 
@@ -122,6 +123,10 @@ class Shape(object):
             center = data['center']
             radius = data['radius']
             intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
+        elif typevault == 'dome_polar':
+            center = data['center']
+            radius = data['radius']
+            intrados, extrados, middle = set_dome_polar_coord(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
         elif typevault == 'dome_spr':
             center = data['center']
             radius = data['radius']
@@ -173,10 +178,10 @@ class Shape(object):
 
         return z
 
-    def get_ub_bricks(self, x, y):
-        """Get the height of the extrados in the point."""
+    def get_ub_fill(self, x, y):
+        """Get the height of the fill in the point."""
 
-        vertices = array(self.extrados_bricks.vertices_attributes('xyz'))
+        vertices = array(self.extrados_fill.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
 
         return z
@@ -232,41 +237,43 @@ class Shape(object):
         from compas.geometry import length_vector
         from compas.geometry import cross_vectors
 
-        extrados = self.extrados
-        self.extrados_bricks = deepcopy(extrados)
+        self.extrados_fill = deepcopy(self.extrados)
         volume = 0.
+        proj_area_total = 0.
 
-        for key in extrados.vertices():
-            zi = extrados.vertex_attribute(key, 'z')
+        for key in self.extrados_fill.vertices():
+            zi = self.extrados_fill.vertex_attribute(key, 'z')
             if zi < height:
-                extrados.vertex_attribute(key, 'z', height)
+                self.extrados_fill.vertex_attribute(key, 'z', height)
                 ##### this should become a method
                 area = 0.
-                p0 = extrados.vertex_coordinates(key)
+                p0 = self.extrados_fill.vertex_coordinates(key)
                 p0[2] = 0
-                for nbr in extrados.halfedge[key]:
-                    p1 = extrados.vertex_coordinates(nbr)
+                for nbr in self.extrados_fill.halfedge[key]:
+                    p1 = self.extrados_fill.vertex_coordinates(nbr)
                     p1[2] = 0
                     v1 = subtract_vectors(p1, p0)
-                    fkey = extrados.halfedge[key][nbr]
+                    fkey = self.extrados_fill.halfedge[key][nbr]
                     if fkey is not None:
-                        p2 = extrados.face_centroid(fkey)
+                        p2 = self.extrados_fill.face_centroid(fkey)
                         p2[2] = 0
                         v2 = subtract_vectors(p2, p0)
                         area += length_vector(cross_vectors(v1, v2))
-                    fkey = extrados.halfedge[nbr][key]
+                    fkey = self.extrados_fill.halfedge[nbr][key]
                     if fkey is not None:
-                        p3 = extrados.face_centroid(fkey)
+                        p3 = self.extrados_fill.face_centroid(fkey)
                         p3[2] = 0
                         v3 = subtract_vectors(p3, p0)
                         area += length_vector(cross_vectors(v1, v3))
-                proj_area = area
+                proj_area = area * 0.25
+                proj_area_total += proj_area
                 ##### this should become a method
                 vol_i = proj_area*(height - zi)
                 volume += vol_i
 
         self.fill = True
         self.fill_volume = volume
+        print('Proj area total of shape', proj_area_total)
         self.fill_ro = fill_ro
 
         return

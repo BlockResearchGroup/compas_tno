@@ -1,6 +1,6 @@
-***************
+*************
 Circular Arch
-***************
+*************
 
 The current example finds minimum and maximum thrust for a circular arch based on it's span, height and thickness.
 

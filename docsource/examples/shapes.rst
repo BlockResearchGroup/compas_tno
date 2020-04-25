@@ -1,6 +1,6 @@
-***************
+*****************
 Parametric Shapes
-***************
+*****************
 
 The current example creates one sample for each parametric shape implemented. (Note: Only one plot can appear on the screen, please comment the lines with the data related to the shape that you want to visualise)
 

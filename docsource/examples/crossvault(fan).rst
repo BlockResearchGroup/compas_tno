@@ -1,6 +1,6 @@
-***************
+*****************
 Cross Vault (fan)
-***************
+*****************
 
 The current example finds minimum thrust for a cross vailt arch based a fan Form Diagram.
 
