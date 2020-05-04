@@ -27,6 +27,7 @@ hor_increase = 0.03
 direction_loads = 'px'
 plot_figures = True
 plot_graph = True
+plot_last = True
 
 # Basic parameters
 
@@ -152,6 +153,9 @@ while exitflag == 0:
 
 # --------------- 6 . After exit print the list of solutions obtained ------------
 
+if plot_last:
+    plot_form_xz(forms_max[-1], arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, hide_negative=True, radius=0.02).show()
+    plot_form_xz(forms_min[-1], arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, hide_negative=True, radius=0.02).show()
 if plot_figures:
     img_file_min = os.path.join(compas_tno.get('/imgs/'),'test_min.gif')
     img_file_max = os.path.join(compas_tno.get('/imgs/'),'test_max.gif')

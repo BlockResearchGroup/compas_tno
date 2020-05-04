@@ -1,7 +1,7 @@
 import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
-from compas_tno.optimisers.optimiser import Optimiser
+from compas_tno.optimisers import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
@@ -21,8 +21,8 @@ size_parameters = []  # empty lists to keep track of  the parameters
 # Basic parameters
 
 type_structure = 'dome'
-type_formdiagram = 'radial_fd'  # Try 'radial_spaced_fd' and 'spiral_fd'
-discretisation = [8, 16]  # Try increasing a bit
+type_formdiagram = 'spiral_fd'  # Try 'radial_spaced_fd' and 'spiral_fd'
+discretisation = [8, 28]  # Try increasing a bit
 R = 5.0
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
@@ -46,7 +46,7 @@ plot_form(form, show_q=False, fix_width=True).show()
 # --------------------- 2. Create Initial point with TNA ---------------------
 
 form = form.initialise_tna(plot=False)
-plot_form(form).show()
+# plot_form(form).show()
 
 # ----------------------- 3. Initiate loop on the optimisation ---------------------------
 
@@ -60,10 +60,10 @@ while exitflag == 0:
     data_shape = {
         'type': type_structure,
         'thk': thk,
-        'discretisation': discretisation,
+        'discretisation': [2*discretisation[0], 2*discretisation[1]],
         'center': [5.0, 5.0],
         'radius': R,
-        't' : 10.0
+        't' : 1.0
     }
 
     vault = Shape.from_library(data_shape)
@@ -76,7 +76,7 @@ while exitflag == 0:
     optimiser = Optimiser()
     optimiser.data['library'] = 'Scipy'
     optimiser.data['solver'] = 'slsqp'
-    optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+    optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
     optimiser.data['variables'] = ['ind', 'zb']
     optimiser.data['objective'] = 'min'
     optimiser.data['printout'] = True
@@ -105,7 +105,7 @@ while exitflag == 0:
     print('thk/R:', t_over_R)
     print('Thrust over weight: ', fopt_over_weight)
     print('Exitflag: ', exitflag)
-    plot_form(form, show_q=False, simple=True, cracks=True).show() # When cracks = True the intrados cracks will be blue and extrados green
+    # plot_form(form, show_q=False, simple=True, cracks=True).show() # When cracks = True the intrados cracks will be blue and extrados green
 
     # ------------------------ 8 . Reduce the thickness ---------------------------
 

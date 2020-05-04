@@ -160,7 +160,7 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     extreme_min = 100*min(flatten_list(min_sols))
 
     interval_x = abs(flatten_list(dimensions)[0] - flatten_list(dimensions)[1])
-    interval_y = 10
+    interval_y = 20
     if xy_limits == None:
         max_x = max(flatten_list(dimensions))
         min_x = min(flatten_list(dimensions)) - interval_x

@@ -1,6 +1,6 @@
 import compas_tno
 from compas_tno.diagrams import FormDiagram
-from compas_tno.shapes.shape import Shape
+from compas_tno.shapes import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
@@ -12,21 +12,21 @@ from compas_tno.viewers.thrust import view_thrust
 
 # Basic parameters
 
-thk = 0.6
+thk = 0.5
 radius = 5.0
 type_structure = 'dome'
 type_formdiagram = 'spiral_fd'
-discretisation = [8, 16]
+discretisation = [8, 20]
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
 data_shape = {
     'type': type_structure,
     'thk': thk,
-    'discretisation': [16, 32],
+    'discretisation': [2*discretisation[0], 2*discretisation[1]],
     'center': [5.0, 5.0],
     'radius': radius,
-    't' : 10.0
+    't' : 1.0
 }
 
 dome = Shape.from_library(data_shape)
@@ -38,7 +38,7 @@ data_diagram = {
     'type': type_formdiagram,
     'center': [5.0, 5.0],
     'radius': radius,
-    'discretisation': [8, 16],
+    'discretisation': discretisation,
     'r_oculus': 0.0,
     'diagonal': False,
     'partial_diagonal': False,
@@ -51,7 +51,7 @@ plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=True)
+form = form.initialise_tna(plot=False)
 plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
@@ -59,7 +59,7 @@ plot_form(form).show()
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
 optimiser.data['printout'] = True

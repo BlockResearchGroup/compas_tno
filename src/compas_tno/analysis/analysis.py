@@ -295,7 +295,7 @@ class Analysis(object):
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
-        if shape.data['type'] == 'dome':
+        if shape.data['type'] == 'dome' or shape.data['type'] == 'dome_polar':
             [x0, y0] = shape.data['center']
             for key in form.vertices_where({'is_fixed': True}):
                 x, y, _ = form.vertex_coordinates(key)
@@ -386,8 +386,9 @@ class Analysis(object):
 
         print('Limit Analysis - GSF: For ', data_shape['type'], 'with diagram ', data_diagram['type'])
 
-        for self.optimiser.data['objective'] in ['min', 'max']:
+        for self.optimiser.data['objective'] in ['max', 'min']:
 
+            # self.form.initialise_tna(plot=False)
             exitflag = 0
             thk = t0
             while exitflag == 0 and thk > 0:
@@ -405,6 +406,7 @@ class Analysis(object):
                     self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt]*2, total_ry=[rollers_ratio[1]*swt]*2)
                 self.apply_selfweight()
                 self.apply_envelope()
+                self.apply_reaction_bounds()
                 if fill_percentage:
                     self.apply_fill_load()
                 self.set_up_optimiser()

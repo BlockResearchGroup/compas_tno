@@ -11,6 +11,7 @@ import math
 
 from compas_tno.diagrams.diagram_arch import create_arch
 from compas_tno.diagrams.diagram_rectangular import create_cross_form
+from compas_tno.diagrams.diagram_rectangular import create_cross_diagonal
 from compas_tno.diagrams.diagram_rectangular import create_fan_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_form
@@ -102,6 +103,8 @@ class FormDiagram(FormDiagram):
             form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'cross_fd':
             form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+        if form_type == 'cross_diagonal':
+            form = cls().create_cross_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'fan_fd':
             form = cls().create_fan_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'ortho':
@@ -168,6 +171,32 @@ class FormDiagram(FormDiagram):
         """
 
         form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+
+        return form
+
+    @classmethod
+    def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
+        """ Construct a FormDiagram based on cross discretiastion with diagonals.
+
+        Parameters
+        ----------
+        xy_span : list
+            List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+        discretisation: list
+            Set the density of the grid in x and y directions.
+
+        fix : string
+            Option to select the constrained nodes: 'corners', 'all' are accepted.
+
+        Returns
+        -------
+        obj
+            FormDiagram.
+
+        """
+
+        form = create_cross_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
 
         return form
 
@@ -803,15 +832,12 @@ class FormDiagram(FormDiagram):
         return self
 
 
-    # ------------------------------------------------------------------- #
-    # -----------------------CHECK IMPORTANCE---------------------------- #
-    # ------------------------------------------------------------------- #
-
     def initialise_tna(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, display=False):
 
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attribute('is_anchor', True, keys=corners)
         self.edges_attribute('fmin', 0.0)
+        self.edges_attribute('fmax', 10.0)
         leaves = False
         for u, v in self.edges_on_boundary():
             if self.edge_attribute((u,v), '_is_edge') == False:
@@ -830,7 +856,6 @@ class FormDiagram(FormDiagram):
             plotter.show()
             print('Plot of Dual')
             force.plot()
-            # plot_form(self, show_q=False, fix_width=True).show()
 
         if method == 'nodal':
             horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
@@ -843,21 +868,15 @@ class FormDiagram(FormDiagram):
         if leaves is False:
             self = self.remove_feet()
 
-        # form0 = copy(self)
-        # form_ = scale_form(form0, 1.0)
-        # z = [form_.vertex_attribute(key, 'z') for key in form_.vertices()]
-        # z_ = max(z)
-        # scale = (z_ / zmax)
-        # form = scale_form(form0, scale)
-
         if plot:
             print('Plot of Reciprocal')
             force.plot()
 
-        # if plot:
-        #     plot_form(self).show()
-        #     plot_force(force, self).show()
-        #     force.plot()
+        return self
+
+    def initialise_loadpath(self):
+
+        # W.I.P.
 
         return self
 

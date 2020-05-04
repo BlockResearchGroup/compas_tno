@@ -12,10 +12,11 @@ import math
 import compas_tno
 
 # Give a name to your project
-master = 'Test'
+master = 'Test-min'
 
 # Put here the .json file for the optimisation
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+# fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+fnm = '/Users/mricardo/compas_dev/me/SI_data/Amiens/pointed_crossvault/fan_fd/forms/pointed_crossvault_fan_fd_discr_14_fill_0.8_min_thk_46.0.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
 # fnm = compas_tno.get('test.json')
 

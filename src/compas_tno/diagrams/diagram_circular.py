@@ -162,7 +162,6 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
                 lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
 
     if diagonal:
-
         for nr in range(n_radial):
             for nc in range(n_spikes):
                 if (r_oculus + nr * r_div) > 0.0:
