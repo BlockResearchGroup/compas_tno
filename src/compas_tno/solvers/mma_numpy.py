@@ -508,6 +508,8 @@ def subsolv(m, n, epsimin, low, upp, alfa, beta, p0, q0, P, Q, a0, a, b, c, d):
                 AAr2 = np.concatenate((axz.T, azz), axis=1)
                 AA = np.concatenate((AAr1, AAr2), axis=0)
                 bb = np.concatenate((-bx, -bz), axis=0)
+                # print(AA.shape)
+                # print(bb.shape)
                 # print(AA)
                 # print(bb)
                 solut = solve(AA, bb)

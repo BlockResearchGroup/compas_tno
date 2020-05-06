@@ -7,7 +7,13 @@ from numpy import min
 from numpy import zeros
 from numpy import newaxis
 from numpy import array
+
+from numpy import vstack
+from numpy import hstack
+
 import math
+
+import matplotlib.pyplot as plt
 
 from compas_tno.diagrams.diagram_arch import create_arch
 from compas_tno.diagrams.diagram_rectangular import create_cross_form
@@ -25,6 +31,7 @@ from compas_tno.diagrams import ForceDiagram
 from compas_tna.diagrams import FormDiagram
 
 from compas.datastructures import mesh_bounding_box_xy
+from compas.geometry import distance_point_point_xy
 
 from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
@@ -600,6 +607,155 @@ class FormDiagram(FormDiagram):
 
         return a_max
 
+
+    def apply_symmetry(self, center=[5.0, 5.0, 0.0]):
+
+        self.edges_attribute('sym_key', None)
+        dist_checked = []
+        dist_dict = {}
+
+        for u, v in self.edges_where({'is_ind': True}):
+            midpoint = self.edge_midpoint(u, v)
+            dist = round(distance_point_point_xy(center, midpoint), 10)
+            dist_dict[(u, v)] = dist
+            if dist not in dist_checked:
+                dist_checked.append(dist)
+
+        i = 0
+        for dist in dist_checked:
+            for u, v in dist_dict:
+                if dist_dict[(u, v)] == dist:
+                    self.edge_attribute((u, v), 'sym_key', i)
+            i += 1
+
+        return
+
+
+    def number_of_independents(self, printout=False):
+
+        total = 0
+        for key in self.edges_where({'is_ind': True}):
+            total += 1
+        if total == 0:
+            print('Warning, no independent edges found!')
+
+        if printout:
+            print('Form has {0} independents'.format(total))
+
+        return total
+
+    def number_of_supports(self, printout=False):
+
+        total = 0
+        for key in self.vertices_where({'is_fixed': True}):
+            total += 1
+        if total == 0:
+            print('Warning, no fixed points were found!')
+
+        if printout:
+            print('Form has {0} supports'.format(total))
+
+        return total
+
+
+    def number_of_sym_independents(self, printout=False):
+
+        i_sym_max = 0
+        for u, v in self.edges_where({'is_ind': True}):
+            try:
+                i_sym = self.edge_attribute((u, v), 'sym_key')
+            except:
+                print('Warning, no symmetry relation found!')
+            if i_sym > i_sym_max:
+                i_sym_max = i_sym
+        i_sym_max += 1
+
+        if printout:
+            print('Form has {0} unique independents'.format(i_sym_max))
+
+        return i_sym_max
+
+
+    def build_symmetry_matrix(self, printout=False):
+
+        n = self.number_of_independents(printout=printout)
+        k_unique = self.number_of_sym_independents(printout=printout)
+        Asym = zeros((n - k_unique, n))
+        uv_i_ind = {}
+
+        i = 0
+        for u, v in self.edges_where({'is_ind': True}):
+            uv_i_ind[(u, v)] = i
+            i += 1
+
+        line = 0
+        for id_sym in range(k_unique):
+            i = 0
+            for u, v in self.edges_where({'is_ind': True}):
+                if self.edge_attribute((u, v), 'sym_key') == id_sym:
+                    index = uv_i_ind[(u, v)]
+                    if i == 0:
+                        index0 = index
+                    else:
+                        Asym[line, index0] = 1
+                        Asym[line, index] = -1
+                        line += 1
+                    i += 1
+        if printout:
+            plt.matshow(Asym)
+            plt.show()
+
+        return Asym
+
+    def build_symmetry_matrix_supports(self, printout=False):
+
+        n = self.number_of_supports()
+        Asym = zeros((n - 1, n))
+
+        for i in range(n-1):
+            Asym[i, 0] = 1
+            Asym[i, i + 1] = -1
+
+        if printout:
+            plt.matshow(Asym)
+            plt.show()
+
+        return Asym
+
+    def assemble_symmetry_matrix(self, independents=True, supports=True, printout=False):
+        """ Assemble Symmetry Matrix.
+
+        Parameters
+        ----------
+        independents : bool (True)
+            If independents should be considered in the symmetry matrix.
+        supports : bool (True)
+            If supports should be considered in the symmetry matrix.
+        printout : bool (False)
+            If Matrix will be visualised
+        """
+
+        if independents:
+            Aind = self.build_symmetry_matrix(printout=printout)
+        if supports:
+            Ab = self.build_symmetry_matrix_supports(printout=printout)
+
+        Aind_i, Aind_j = Aind.shape
+        Ab_i, Ab_j = Ab.shape
+
+        Aind0 = zeros((Aind_i, Ab_j))
+        Ab0 = zeros((Ab_i, Aind_j))
+
+        A1 = hstack([Aind, Aind0])
+        A2 = hstack([Ab0, Ab])
+        A = vstack([A1, A2])
+        # A = vstack([hstack([Aind, Aind0]), hstack([Ab0, Ab])])
+
+        if printout:
+            plt.matshow(A)
+            plt.show()
+
+        return A
 
     # --------------------------------------------------------------- #
     # -----------------------TNA-CONECTION--------------------------- #

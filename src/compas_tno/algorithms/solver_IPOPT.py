@@ -27,115 +27,6 @@ __all__ = [
     'run_optimisation_ipopt'
 ]
 
-
-# def q_from_qid_matrix_pythorch(variables, p, A_Ik, B_Ik):
-#     k = B_Ik.shape[1]
-#     qid = variables[:k]
-#     q = mm(A_Ik, p) + mm(B_Ik, qid)
-#     return q
-
-
-# def z_from_variables_matrix_pythorch(variables, p, A_Ik, B_Ik, Ci, Cit, Cf, pzfree, free, fixed):
-#     k = B_Ik.shape[1]
-#     k_zb = Cf.shape[1]
-#     qid = variables[:k]
-#     zfixed = variables[-k_zb:]
-#     q = mm(A_Ik, p) + mm(B_Ik, qid)
-#     Q = diagflat(q)
-#     Ai = mm(mm(Cit, Q), Ci)
-#     Af = mm(mm(Cit, Q), Cf)
-#     b = pzfree - mm(Af, zfixed)
-#     X, LU = solve(b, Ai)
-#     zi = X
-#     z = tensor(zeros((len(free)+len(fixed), 1)))
-#     z[free] = zi
-#     z[fixed] = zfixed
-#     return z
-
-
-# def reac_bound_matrix_pytorch(variables, p, A_Ik, B_Ik, C, Cf, pfixed, xyz):
-#     k = B_Ik.shape[1]
-#     k_zb = Cf.shape[1]
-#     qid = variables[:k]
-#     zfixed = variables[-k_zb:]
-#     q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
-#     Q = diagflat(q)
-#     CfQC = mm(mm(Cf.t(), Q), C)
-#     R = mm(CfQC, xyz) - pfixed
-#     length_x = abs(mul(zfixed, div(R[:, 0], R[:, 2]).reshape(-1, 1)))
-#     length_y = abs(mul(zfixed, div(R[:, 1], R[:, 2]).reshape(-1, 1)))
-#     length = cat([length_x, length_y])
-#     return length
-
-
-# def f_min_thrust_pytorch(variables, p, A_Ik, B_Ik, C, Cf, xy):
-#     k = B_Ik.shape[1]
-#     qid = variables[:k]
-#     q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
-#     Q = diagflat(q)
-#     CfQC = mm(mm(Cf.t(), Q), C)
-#     Rh = mm(CfQC, xy)
-#     R = norm(Rh, dim=1)
-#     f = sum(R)
-#     return f
-
-
-# def f_max_thrust_pytorch(variables, p, A_Ik, B_Ik, C, Cf, xy):
-#     k = B_Ik.shape[1]
-#     qid = variables[:k]
-#     q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
-#     Q = diagflat(q)
-#     CfQC = mm(mm(Cf.t(), Q), C)
-#     Rh = mm(CfQC, xy)
-#     R = norm(Rh, dim=1)
-#     f = -1 * sum(R)
-#     return f
-
-
-# def f_objective_pytorch(variables, *args):
-#     A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, objective = args
-#     if objective == 'min':
-#         f = f_min_thrust_pytorch(variables, p, A_Ik, B_Ik, C, Cf, xy)
-#     if objective == 'max':
-#         f = f_max_thrust_pytorch(variables, p, A_Ik, B_Ik, C, Cf, xy)
-#     return f
-
-
-# def f_constraints_pytorch(variables, *args):
-#     A_Ik, B_Ik, p, C, Ci, Cit, Cf, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr = args
-#     if 'funicular' in dict_constr:
-#         constraints = q_from_qid_matrix_pythorch(variables, p, A_Ik, B_Ik)
-#     if 'envelope' in dict_constr:
-#         z = z_from_variables_matrix_pythorch(variables, p, A_Ik, B_Ik, Ci, Cit, Cf, pzfree, free, fixed)
-#         upper = tensor(ub) - z[ub_ind]
-#         lower = z[lb_ind] - tensor(lb)
-#         constraints = cat([constraints, upper, lower])
-#     if 'reac_bounds' in dict_constr:
-#         length = reac_bound_matrix_pytorch(variables, p, A_Ik, B_Ik, C, Cf, pfixed, xyz)
-#         reac_bound = abs(cat([tensor(b[:, 0]), tensor(b[:, 1])]).reshape(-1,1)) - length
-#         constraints = cat([constraints, reac_bound])
-#     return constraints
-
-
-# def compute_grad(variables, f):
-#     f.backward(retain_graph=True)
-#     grad = variables.grad.data
-#     return grad
-
-
-# def compute_jacobian(inputs, outputs):
-#     d_otp = outputs.size()[0]
-#     d_inp = inputs.size()[0]
-#     jacobian = tensor(zeros((d_otp, d_inp)))
-#     grad_output = tensor(zeros((d_otp, 1)))
-#     for i in range(d_otp):
-#         zero_gradients(inputs)
-#         grad_output.zero_()
-#         grad_output[i] = 1
-#         outputs.backward(grad_output, retain_graph=True)
-#         jacobian[i] = inputs.grad.data.flatten()
-#     return jacobian.flatten()
-
 class wrapper_ipopt(object):
     def __init__(self):
         self.fobj = None
@@ -173,6 +64,7 @@ class wrapper_ipopt(object):
         constraints = self.fconstr(variables, *self.args_constr)
         return array(compute_jacobian(variables, constraints).flatten())
 
+
 def run_optimisation_ipopt(analysis):
     """ Run nonlinear optimisation problem with IPOPT
 
@@ -192,7 +84,7 @@ def run_optimisation_ipopt(analysis):
     optimiser = analysis.optimiser
     fconstr = optimiser.fconstr
     args = optimiser.args
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints = args[:45]
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[:48]
     constraints = optimiser.data['constraints']
     objective = optimiser.data['objective']
     i_uv = form.index_uv()
@@ -205,23 +97,16 @@ def run_optimisation_ipopt(analysis):
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
-    cu = [10e10]*len(g0)
-    cl = [-10e-10]*len(g0)
+    # cu = [10e10]*len(g0)                # Sets all constraints to be positive, sets error in 10e-10
+    # cl = [0.0]*len(g0)
 
     # Tensor modification
 
-    m = len(q)
-    B_Ik = zeros((m, len(ind)))
-    A_Ik = zeros((m, len(p)))
-    B_Ik[ind, :] = identity(len(ind))
-    B_Ik[dep, :] = Edinv*Ei
-    A_Ik[dep, :] = -1*Edinv.toarray()
+    EdinvEi = Edinv*Ei
+    Edinv_p = Edinv.dot(p)
 
-    # Tensor Transformation
-
-    A_Ik_th = tensor(A_Ik)
-    B_Ik_th = tensor(B_Ik)
-    p_th = tensor(p)
+    EdinvEi_th = tensor(EdinvEi)
+    Edinv_p_th = tensor(Edinv_p)
     C_th = tensor(C.toarray())
     Ci_th = tensor(Ci.toarray())
     Cit_th = Ci_th.t()
@@ -230,9 +115,12 @@ def run_optimisation_ipopt(analysis):
     xyz = tensor(hstack([x, y, z]))
     xy = tensor(hstack([x, y]))
     pfixed = tensor(hstack([px, py, pz])[fixed])
+    U_th = tensor(U.toarray())
+    V_th = tensor(V.toarray())
 
-    args_obj = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
-    args_constr = (A_Ik_th, B_Ik_th, p_th, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, constraints)
+    args_obj = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
+    args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
+                        ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
 
     problem_obj = wrapper_ipopt()
     problem_obj.fobj = f_objective_pytorch
@@ -253,6 +141,8 @@ def run_optimisation_ipopt(analysis):
     print('g0 shape', g0.shape)
     jac = compute_jacobian(variables, g0)
     print('jac.shape', jac.shape)
+    from compas_tno.algorithms.equilibrium_pytorch import bounds_constraints_pytorch
+    cu, cl = bounds_constraints_pytorch(variables, *args_constr)
     f = f_objective_pytorch(variables, *args_obj)
     print('f0: ', f)
     grad = compute_grad(variables, f)
@@ -272,7 +162,7 @@ def run_optimisation_ipopt(analysis):
     nlp.addOption(b'hessian_approximation', b'limited-memory')
     nlp.addOption('tol', 1e-2)
     nlp.addOption('acceptable_tol', 1.0)
-    nlp.addOption('max_iter', 1500)
+    nlp.addOption('max_iter', 500)
 
     nlp.addOption('dual_inf_tol', 100.0)
     nlp.addOption('acceptable_dual_inf_tol', 10e+12)

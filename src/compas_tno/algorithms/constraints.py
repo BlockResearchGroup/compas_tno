@@ -24,7 +24,7 @@ __all__ = [
 
 def constr_wrapper(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym = args
 
     if len(xopt) > k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
@@ -55,11 +55,8 @@ def constr_wrapper(xopt, *args):
         ry_check = max_rol_ry - abs(Cfty.dot(V.dot(q)) - py[rol_y])
         constraints = vstack([constraints, rx_check, ry_check])
     if 'symmetry' in dict_constr:
-        z0 = z[fixed][0]
-        sum_zdiff = 0
-        for zi in z[fixed]:
-            sum_zdiff += abs(zi - z0)
-        constraints = vstack([constraints, -1 * sum_zdiff])
+        A_q = Asym.dot(vstack([q[ind], z[fixed]]))
+        constraints = vstack([constraints, A_q, -1* A_q])
 
     return transpose(constraints)[0]  #.reshape(-1, 1)
 

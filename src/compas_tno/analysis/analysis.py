@@ -145,6 +145,14 @@ class Analysis(object):
         return
 
 
+    def apply_symmetry(self, center_point=[5.0, 5.0, 0.0]):
+        """Apply symmetry to the pattern based on the center point of the Form Diagram"""
+
+        self.form.apply_symmetry(center_point=center_point)
+
+        return
+
+
     def apply_fill_load(self, plot=False):
 
         shape = self.shape
@@ -386,7 +394,7 @@ class Analysis(object):
 
         print('Limit Analysis - GSF: For ', data_shape['type'], 'with diagram ', data_diagram['type'])
 
-        for self.optimiser.data['objective'] in ['max', 'min']:
+        for self.optimiser.data['objective'] in ['min', 'max']:
 
             # self.form.initialise_tna(plot=False)
             exitflag = 0

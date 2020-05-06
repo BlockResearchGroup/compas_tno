@@ -148,15 +148,12 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisatio
     yc0 = y0 + y_span/2
 
     nx = ny = int(discretisation/2)
-    print(nx, ny)
 
     line_hor = [[x0, yc0, 0.0], [xc0, yc0, 0.0]]
     line_ver = [[xc0, y0, 0.0], [xc0, yc0, 0.0]]
     origin = [xc0, yc0, 0.0]
 
     lines = []
-
-    print('this')
 
     for i in range(nx):
         for j in range(ny+1):

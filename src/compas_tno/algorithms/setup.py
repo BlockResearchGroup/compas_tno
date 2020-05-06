@@ -12,6 +12,8 @@ from compas_tno.algorithms.constraints import f_joints
 from compas_tno.algorithms.constraints import f_cracks
 from compas_tno.algorithms.constraints import constr_wrapper
 
+from compas.datastructures import mesh_bounding_box_xy
+
 from numpy import append
 from numpy import array
 from numpy import asscalar
@@ -76,8 +78,13 @@ def set_up_nonlinear_optimisation(analysis):
     else:
         joints = None
 
+    if 'symmetry' in constraints:
+        Asym = set_symmetry_constraint(form, True)
+    else:
+        Asym = None
+
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
-            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry)
+            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym)
 
     fconstr = constr_wrapper
     # fconstr = f_ub_lb
@@ -183,6 +190,23 @@ def set_rollers_constraint(form, printout):
     if printout:
         print('Constraints on rollers activated in {0} in x and {1} in y.'.format(len(max_rol_rx), len(max_rol_ry)))
     return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
+
+
+def set_symmetry_constraint(form, printout):
+
+    corners = mesh_bounding_box_xy(form)
+    xs = [point[0] for point in corners]
+    ys = [point[1] for point in corners]
+    xc = (max(xs) - min(xs))/2
+    yc = (max(ys) - min(ys))/2
+    form.apply_symmetry(center=[xc, yc, 0.0])
+    Asym = form.assemble_symmetry_matrix()
+    if printout:
+        print('Calculated and found symmetry from point:', xc, yc)
+        print('Resulted in Asym Matrix Shape:', Asym.shape)
+        print('Unique independents:', form.number_of_sym_independents())
+
+    return Asym
 
 
 def set_up_convex_optimisation(analysis):

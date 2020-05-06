@@ -1,40 +1,38 @@
 import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
-from compas_tno.optimisers import Optimiser
+from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
 from compas_tno.viewers.thrust import view_solution
 
-# ----------------------------------------------------------------------------
-# ---------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL FD --------------
-# ----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------
+# ------ EXAMPLE OF INCREMENTAL MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
+# ------------------------------------------------------------------------------------
 
 
 exitflag = 0  # means that optimisation found a solution
 thk = 0.50  # thickness on the start in meters
-thk_reduction = 0.01  # in meters
+thk_reduction = 0.005  # in meters
 solutions = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
+span = 10.0  # square span for analysis
+R = span/2  # Only valid for rounded cross vault
 
 # Basic parameters
 
-type_structure = 'dome'
-type_formdiagram = 'spiral_fd'  # Try 'radial_spaced_fd' and 'spiral_fd'
-discretisation = [8, 18]  # Try increasing a bit
-R = 5.0
+type_structure = 'crossvault'
+type_formdiagram = 'cross_diagonal'  # Try also 'fan_fd'
+discretisation = 10
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
 
 data_diagram = {
     'type': type_formdiagram,
-    'center': [5.0, 5.0],
-    'radius': R,
+    'xy_span': [[0, span], [0, span]],
     'discretisation': discretisation,
-    'r_oculus': 0.0,
-    'diagonal': False,
-    'partial_diagonal': False,
+    'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data_diagram)
@@ -46,43 +44,42 @@ plot_form(form, show_q=False, fix_width=True).show()
 # --------------------- 2. Create Initial point with TNA ---------------------
 
 form = form.initialise_tna(plot=False)
-# plot_form(form).show()
+plot_form(form).show()
 
 # ----------------------- 3. Initiate loop on the optimisation ---------------------------
 
 while exitflag == 0:
 
     t_over_R = thk/R
-    print('\n----- Starting the' , type_structure, 'problem for thk/R:', t_over_R, '\n')
+    print('\n----- Starting the' , type_formdiagram, 'problem for thk/R:', t_over_R, '\n')
 
     # ------------------ 4. Create the new shape (extrados and intrados) for given thk ----------
 
     data_shape = {
         'type': type_structure,
         'thk': thk,
-        'discretisation': [2*discretisation[0], 2*discretisation[1]],
-        'center': [5.0, 5.0],
-        'radius': R,
-        't' : 1.0
+        'discretisation': discretisation,
+        'xy_span': [[0, span], [0, span]],
+        't': 0.0
     }
 
     vault = Shape.from_library(data_shape)
     swt = vault.compute_selfweight()
     print('Selfweight computed:', swt)
-    print('Dome created!')
+    print('Crossvault created!')
 
     # --------------------- 5. Create Minimisation Optimiser ---------------------
 
     optimiser = Optimiser()
     optimiser.data['library'] = 'Scipy'
     optimiser.data['solver'] = 'slsqp'
-    optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
+    optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
     optimiser.data['variables'] = ['ind', 'zb']
     optimiser.data['objective'] = 'min'
     optimiser.data['printout'] = True
     optimiser.data['plot'] = False
     optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 3000.0
+    optimiser.data['qmax'] = 2000.0
     print(optimiser.data)
 
     # --------------------- 6. Set up and run analysis ---------------------

@@ -143,6 +143,59 @@ def reac_bound_matrix_variables(variables, p, A_Ik, B_Ik, C, Cf, pfixed, xyz):
     length = th.cat([length_x, length_y])
     return length
 
+# -------------
+# -------------
+# -------------
+# -------------
+# ------------- PYTORCH SIMPLIFIED v2
+# -------------
+# -------------
+# -------------
+# -------------
+# -------------
+
+def q_from_qid_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep):
+    k = len(ind)
+    print(k)
+    m = k + len(dep)
+    print(m)
+    q = th.zeros(m, 1, dtype=th.float64)
+    # q = th.tensor(zeros((m, 1)))
+    q[ind] = variables[:k]
+    q[dep] = - Edinv_p_th + th.mm(EdinvEi_th, q[ind])
+    return q
+
+
+def z_from_qid_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, Ci, Cit, Cf, pzfree):
+    k = len(ind)
+    m = k + len(dep)
+    q = th.zeros(m, 1, dtype=th.float64)
+    q[ind] = variables[:k]
+    q[dep] = - Edinv_p_th + th.mm(EdinvEi_th, q[ind])
+    zfixed = variables[-Cf.shape[1]:]
+    Q = th.diagflat(q)
+    Ai = th.mm(th.mm(Cit, Q), Ci)
+    Af = th.mm(th.mm(Cit, Q), Cf)
+    b = pzfree - th.mm(Af, zfixed)
+    X, LU = th.solve(b, Ai)
+    zi = X
+    return zi
+
+def reac_bound_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, pfixed, xyz):
+    k = len(ind)
+    m = k + len(dep)
+    q = th.zeros(m, 1, dtype=th.float64)
+    q[ind] = variables[:k]
+    q[dep] = - Edinv_p_th + th.mm(EdinvEi_th, q[ind])
+    zfixed = variables[-Cf.shape[1]:]
+    Q = th.diagflat(q)
+    CfQC = th.mm(th.mm(Cf.t(), Q), C)
+    R = th.mm(CfQC, xyz) - pfixed
+    length_x = abs(th.mul(zfixed, th.div(R[:, 0], R[:, 2]).reshape(-1, 1)))
+    length_y = abs(th.mul(zfixed, th.div(R[:, 1], R[:, 2]).reshape(-1, 1)))
+    length = th.cat([length_x, length_y])
+    return length
+
 # -------------- JACOBIAN
 
 def compute_jacobian(inputs, outputs):
@@ -180,10 +233,8 @@ def f_max_thrust_pytorch(qid, p, A_Ik, B_Ik, C, Cf, xy):
     f = -1 * th.sum(R)
     return f
 
-def f_min_thrust_variables(variables, p, A_Ik, B_Ik, C, Cf, xy):
-    k = B_Ik.shape[1]
-    qid = variables[:k]
-    q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
+def f_min_thrust_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy):
+    q = q_from_qid_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     Q = th.diagflat(q)
     CfQC = th.mm(th.mm(Cf.t(), Q), C)
     Rh = th.mm(CfQC, xy)
@@ -192,10 +243,8 @@ def f_min_thrust_variables(variables, p, A_Ik, B_Ik, C, Cf, xy):
     return f
 
 
-def f_max_thrust_variables(variables, p, A_Ik, B_Ik, C, Cf, xy):
-    k = B_Ik.shape[1]
-    qid = variables[:k]
-    q = q_from_qid_matrix_pythorch(qid, p, A_Ik, B_Ik)
+def f_max_thrust_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy):
+    q = q_from_qid_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     Q = th.diagflat(q)
     CfQC = th.mm(th.mm(Cf.t(), Q), C)
     Rh = th.mm(CfQC, xy)
@@ -231,6 +280,9 @@ if __name__ == "__main__":
     # Prepare the matrix to obtain a simple function from R(k) -> R(m)
     # That get the independents (size k) and return the complete vector of q (size m)
 
+    EdinvEi = Edinv*Ei
+    Edinv_p = Edinv.dot(p)
+
     m = len(q)
     B_Ik = zeros((m, len(ind)))
     A_Ik = zeros((m, len(p)))
@@ -243,6 +295,10 @@ if __name__ == "__main__":
     A_Ik_th = th.tensor(A_Ik)
     B_Ik_th = th.tensor(B_Ik)
     p_th = th.tensor(p)
+    Edinv_th = th.tensor(Edinv.toarray())
+    EdinvEi_th = th.tensor(EdinvEi)
+    Edinv_p_th = th.tensor(Edinv_p)
+
 
     # Define my variables - the ones I care to derivate with regards to...
 
@@ -255,7 +311,8 @@ if __name__ == "__main__":
     # Compute the q's as tensor
 
     # q_var = q_from_qid_matrix_pythorch(qid_th, p_th, A_Ik_th, B_Ik_th)
-    q_ = q_from_qid_matrix_variables(variables, p_th, A_Ik_th, B_Ik_th)
+    # q_ = q_from_qid_matrix_variables(variables, p_th, A_Ik_th, B_Ik_th)
+    q_ = q_from_qid_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep)
 
     # Compute the zi's as a tensor
 
@@ -266,7 +323,10 @@ if __name__ == "__main__":
     pzfree = th.tensor(pz[free])
 
     # zi_th_var = z_from_qid_matrix_pytorch(qid_th, p_th, A_Ik_th, B_Ik_th, Ci_th, Cit_th, Cf_th, zb_th, pzfree)
-    zi_th = z_from_qid_matrix_variables(variables, p_th, A_Ik_th, B_Ik_th, Ci_th, Cit_th, Cf_th, pzfree)
+    # zi_th = z_from_qid_matrix_variables(variables, p_th, A_Ik_th, B_Ik_th, Ci_th, Cit_th, Cf_th, pzfree)
+    zi_th = z_from_qid_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, Ci_th, Cit_th, Cf_th, pzfree)
+
+    print('all ok2')
 
     # Compute Reaction Bounds
 
@@ -275,7 +335,8 @@ if __name__ == "__main__":
     pfixed = th.tensor(hstack([px, py, pz])[fixed])
 
     # length = reac_bound_matrix_pytorch(qid_th, p_th, A_Ik_th, B_Ik_th, C_th, Cf_th, zb_th, pfixed, xyz)
-    length = reac_bound_matrix_variables(variables, p_th, A_Ik_th, B_Ik_th, C_th, Cf_th, pfixed, xyz)
+    # length = reac_bound_matrix_variables(variables, p_th, A_Ik_th, B_Ik_th, C_th, Cf_th, pfixed, xyz)
+    length = reac_bound_simple_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, pfixed, xyz)
 
     # Compute Jacobian from q's based on qid by mark
 
@@ -297,7 +358,7 @@ if __name__ == "__main__":
 
     # Compute Objective Function and Grad (MIN)
 
-    fmin = f_min_thrust_variables(variables, p_th, A_Ik_th, B_Ik_th, C_th, Cf_th, xy)
+    fmin = f_min_thrust_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, xy)
     print('fmin = ', fmin)
 
     grad_fmin = compute_grad(variables, fmin)
@@ -305,7 +366,7 @@ if __name__ == "__main__":
 
     # Compute Objective Function and Grad (MAX)
 
-    fmax = f_max_thrust_variables(variables, p_th, A_Ik_th, B_Ik_th, C_th, Cf_th, xy)
+    fmax = f_max_thrust_variables(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, xy)
     print('f = ', fmax)
 
     grad_fmax = compute_grad(variables, fmax)
@@ -327,9 +388,4 @@ if __name__ == "__main__":
     # grad_f = compute_grad(qid_th, f)
     # print(grad_f)
 
-
-
     # Set Optimisation
-
-
-

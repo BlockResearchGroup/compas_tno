@@ -13,7 +13,7 @@ from compas_tno.viewers.thrust import view_solution
 
 
 exitflag = 0  # means that optimisation found a solution
-thk = 0.50  # thickness on the start in meters
+thk = 0.30  # thickness on the start in meters
 thk_reduction = 0.01  # in meters
 solutions = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
@@ -21,8 +21,8 @@ size_parameters = []  # empty lists to keep track of  the parameters
 # Basic parameters
 
 type_structure = 'dome'
-type_formdiagram = 'spiral_fd'  # Try 'radial_spaced_fd' and 'spiral_fd'
-discretisation = [8, 18]  # Try increasing a bit
+type_formdiagram = 'radial_spaced_fd'  # Try 'radial_spaced_fd' and 'spiral_fd'
+discretisation = [8, 20]
 R = 5.0
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
@@ -82,7 +82,7 @@ while exitflag == 0:
     optimiser.data['printout'] = True
     optimiser.data['plot'] = False
     optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 3000.0
+    optimiser.data['qmax'] = 10e10
     print(optimiser.data)
 
     # --------------------- 6. Set up and run analysis ---------------------

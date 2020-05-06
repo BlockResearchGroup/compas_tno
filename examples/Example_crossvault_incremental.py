@@ -14,7 +14,7 @@ from compas_tno.viewers.thrust import view_solution
 
 exitflag = 0  # means that optimisation found a solution
 thk = 0.50  # thickness on the start in meters
-thk_reduction = 0.01  # in meters
+thk_reduction = 0.005  # in meters
 solutions = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
 span = 10.0  # square span for analysis
@@ -102,7 +102,7 @@ while exitflag == 0:
     print('thk/R:', t_over_R)
     print('Thrust over weight: ', fopt_over_weight)
     print('Exitflag: ', exitflag)
-    plot_form(form, show_q=False, simple=True, cracks=True).show() # When cracks = True the intrados cracks will be blue and extrados green
+    # plot_form(form, show_q=False, simple=True, cracks=True).show() # When cracks = True the intrados cracks will be blue and extrados green
 
     # ------------------------ 8 . Reduce the thickness ---------------------------
 

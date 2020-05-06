@@ -1,6 +1,11 @@
 import compas_tno
 from compas_plotters import MeshPlotter
 from numpy import array
+from numpy import linspace
+
+import matplotlib.pyplot as plt
+from matplotlib import cm
+
 from compas_tna.diagrams import FormDiagram
 from compas.utilities import geometric_key
 from compas_plotters import Plotter
@@ -8,12 +13,14 @@ from math import sqrt
 import math
 import os
 
+
 __all__ = [
     'plot_form',
     'plot_form_xz',
     'plot_forms_xz',
     'plot_independents',
     'plot_gif_forms_xz',
+    'plot_sym_inds',
 ]
 
 
@@ -949,7 +956,7 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
     return plotter
 
 
-def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=True, save=False):
+def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=True, show_symmetry=False, save=False):
     """ Extended plotting of a FormDiagram focusing on showing independent edges
 
     Parameters
@@ -966,6 +973,8 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
         Maximum edge width.
     number_ind : bool
         Show or not the numbering on the independent edges.
+    show_symmetry : bool
+        Show or not the numbering on the symmetrical independent edges.
     save : str
         Path to save the figure, if desired.
 
@@ -987,6 +996,8 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
             if number_ind:
                 text = str(i)
                 i = i + 1
+                if show_symmetry:
+                    text = str(form.edge_attribute((u, v), 'sym_key'))
 
         lines.append({
             'start': form.vertex_coordinates(u),
@@ -994,6 +1005,79 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
             'color': ''.join(colour),
             'width': width,
             'text': text,
+        })
+
+    rad_colors = {}
+    for key in form.vertices_where({'is_fixed': True}):
+        rad_colors[key] = '#aaaaaa'
+    for key in form.vertices_where({'rol_x': True}):
+        rad_colors[key] = '#ffb733'
+    for key in form.vertices_where({'rol_y': True}):
+        rad_colors[key] = '#ffb733'
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    if radius:
+        plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+
+    # plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
+
+    plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+
+def plot_sym_inds(form, radius=0.05, fix_width=True, width=10, save=False):
+    """ Extended plotting of a FormDiagram focusing on showing the symmetric relations among independent edges
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    width : bool
+        Width of the lines in the plot.
+    max_width : float
+        Maximum edge width.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    lines = []
+    i = 0
+
+    i_sym_max = 0
+    for u, v in form.edges_where({'is_ind': True}):
+        i_sym = form.edge_attribute((u, v), 'sym_key')
+        if i_sym > i_sym_max:
+            i_sym_max = i_sym
+
+    from compas.utilities import rgb_to_hex
+    colormap = plt.cm.hsv # gist_ncar nipy_spectral, Set1, Paired coolwarm
+    colors = [rgb_to_hex(colormap(i)[:3]) for i in linspace(0, 1.0, i_sym_max + 1)]
+
+    for u, v in form.edges_where({'_is_edge': True}):
+        colour = '666666'
+        if form.edge_attribute((u, v), 'is_ind'):
+            i_sym = form.edge_attribute((u, v), 'sym_key')
+            colour = colors[i_sym]
+
+        lines.append({
+            'start': form.vertex_coordinates(u),
+            'end':   form.vertex_coordinates(v),
+            'color': colour,
+            'width': width,
+            'text': '',
         })
 
     rad_colors = {}
