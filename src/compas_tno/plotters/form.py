@@ -1017,7 +1017,10 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     if radius:
-        plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+        if show_symmetry:
+            plotter.draw_vertices(facecolor=rad_colors, radius=radius, text={key:form.vertex_attribute(key,'sym_key') for key in form.vertices_where({'is_fixed':True})})
+        else:
+            plotter.draw_vertices(facecolor=rad_colors, radius=radius)
 
     # plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
 

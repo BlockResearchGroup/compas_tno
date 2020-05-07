@@ -32,6 +32,7 @@ from compas_tna.diagrams import FormDiagram
 
 from compas.datastructures import mesh_bounding_box_xy
 from compas.geometry import distance_point_point_xy
+from compas.geometry import distance_point_line_xy
 
 from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
@@ -608,24 +609,75 @@ class FormDiagram(FormDiagram):
         return a_max
 
 
-    def apply_symmetry(self, center=[5.0, 5.0, 0.0]):
+    def apply_symmetry(self, center=[5.0, 5.0, 0.0], horizontal_only=False, vertical_only=False):
 
         self.edges_attribute('sym_key', None)
+        self.vertices_attribute('sym_key', None)
         dist_checked = []
         dist_dict = {}
 
-        for u, v in self.edges_where({'is_ind': True}):
-            midpoint = self.edge_midpoint(u, v)
-            dist = round(distance_point_point_xy(center, midpoint), 10)
-            dist_dict[(u, v)] = dist
-            if dist not in dist_checked:
-                dist_checked.append(dist)
+        # Symmetry on the independent edges
 
+        if horizontal_only == False and vertical_only == False:
+            for u, v in self.edges_where({'is_ind': True}):
+                midpoint = self.edge_midpoint(u, v)
+                dist = round(distance_point_point_xy(center, midpoint), 10)
+                dist_dict[(u, v)] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        else:
+            corners = mesh_bounding_box_xy(self)
+            xs = [point[0] for point in corners]
+            ys = [point[1] for point in corners]
+            xc = (min(xs) + max(xs))/2
+            yc = (min(ys) + max(ys))/2
+            if horizontal_only is True:
+                line = [[0, yc, 0.0], [10.0, yc, 0.0]]
+                j = 0
+            else:
+                line = [[xc, 0, 0.0], [xc, 10.0, 0.0]]
+                j = 1
+            for u, v in self.edges_where({'is_ind': True}):
+                midpoint = self.edge_midpoint(u, v)
+                dist_line = round(distance_point_line_xy(midpoint, line), 10)
+                dist_point = round(midpoint[j], 10)
+                dist = [dist_point, dist_line]
+                dist_dict[(u, v)] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
         i = 0
         for dist in dist_checked:
             for u, v in dist_dict:
                 if dist_dict[(u, v)] == dist:
                     self.edge_attribute((u, v), 'sym_key', i)
+            i += 1
+
+        # Symmetry on the Support's position
+
+        dist_checked = []
+        dist_dict = {}
+
+        if horizontal_only == False and vertical_only == False:
+            for key in self.vertices_where({'is_fixed': True}):
+                point = self.vertex_coordinates(key)
+                dist = round(distance_point_point_xy(center, point), 10)
+                dist_dict[key] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        else:
+            for key in self.vertices_where({'is_fixed': True}):
+                point = self.vertex_coordinates(key)
+                dist_line = round(distance_point_line_xy(point, line), 10)
+                dist_point = round(point[j], 10)
+                dist = [dist_point, dist_line]
+                dist_dict[key] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        i = 0
+        for dist in dist_checked:
+            for key in dist_dict:
+                if dist_dict[key] == dist:
+                    self.vertex_attribute(key, 'sym_key', i)
             i += 1
 
         return
@@ -675,6 +727,22 @@ class FormDiagram(FormDiagram):
 
         return i_sym_max
 
+    def number_of_sym_supports(self, printout=False):
+
+        i_sym_max = 0
+        for key in self.vertices_where({'is_fixed': True}):
+            try:
+                i_sym = self.vertex_attribute(key, 'sym_key')
+            except:
+                print('Warning, no symmetry relation found!')
+            if i_sym > i_sym_max:
+                i_sym_max = i_sym
+        i_sym_max += 1
+
+        if printout:
+            print('Form has {0} unique supports'.format(i_sym_max))
+
+        return i_sym_max
 
     def build_symmetry_matrix(self, printout=False):
 
@@ -710,12 +778,28 @@ class FormDiagram(FormDiagram):
     def build_symmetry_matrix_supports(self, printout=False):
 
         n = self.number_of_supports()
-        Asym = zeros((n - 1, n))
+        k_unique = self.number_of_sym_supports(printout=printout)
+        Asym = zeros((n - k_unique, n))
+        key_i_sup = {}
 
-        for i in range(n-1):
-            Asym[i, 0] = 1
-            Asym[i, i + 1] = -1
+        i = 0
+        for key in self.vertices_where({'is_fixed': True}):
+            key_i_sup[key] = i
+            i += 1
 
+        line = 0
+        for id_sym in range(k_unique):
+            i = 0
+            for key in self.vertices_where({'is_fixed': True}):
+                if self.vertex_attribute(key, 'sym_key') == id_sym:
+                    index = key_i_sup[key]
+                    if i == 0:
+                        index0 = index
+                    else:
+                        Asym[line, index0] = 1
+                        Asym[line, index] = -1
+                        line += 1
+                    i += 1
         if printout:
             plt.matshow(Asym)
             plt.show()

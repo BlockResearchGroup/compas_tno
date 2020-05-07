@@ -77,9 +77,11 @@ plot_form(form, show_q=False).show()
 
 # --------------------- 3. Create Initial point with LOAD PATH OPTIMISATION or TNA ---------------------
 
+# If using TNA
 # form = form.initialise_tna(plot=False)
 # plot_form(form).show()
 
+# If using LOADPATH
 optimiser = Optimiser()
 optimiser.data['library'] = 'MATLAB'
 optimiser.data['solver'] = 'SDPT3'
@@ -96,19 +98,19 @@ analysis.set_up_optimiser()
 analysis.run()
 plot_form(form, show_q=False).show()
 
-
-form_loadpath = deepcopy(form)      # Keep this solution as starting point afterwards
-
+# If using load from saved form
 title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
 load_json = os.path.join(folder, title + '.json')
-form = FormDiagram.from_json(load_json)
+# form = FormDiagram.from_json(load_json)
+
+form_start = deepcopy(form)      # Keep this solution as starting point afterwards
 
 # --------------------- 4. Create Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'IPOPT'
 optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
@@ -158,9 +160,9 @@ while exitflag == 0:
         print('Last solved multiplier:', round(load_mult - load_increase, 4))
 
 
-#--------------------------- 5.0 Starting Point for Max Optimisation ---------------------------
+#--------------------------- 5.0 If want to start from the same starting point ---------------------------
 
-# form = form_loadpath
+# form = form_start
 
 # --------------------------- 5.2 Set The objective to max and run ---------------------------
 

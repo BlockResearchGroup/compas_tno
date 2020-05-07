@@ -134,7 +134,7 @@ def f_constraints_pytorch(variables, *args):
         rx_check = max_rol_rx - abs(mm(Cftx, mm(U_th, q)) - px[rol_x])
         ry_check = max_rol_ry - abs(mm(Cfty, mm(V_th, q)) - py[rol_y])
         constraints = cat([constraints, rx_check, ry_check])
-    if 'symmetry' in dict_constr:
+    if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         A_q = mm(tensor(Asym), variables)
         constraints = cat([constraints, A_q])
     return constraints
@@ -162,7 +162,7 @@ def f_constraints_pytorch_MMA(variables, *args):  # THe equality constraints are
         rx_check = max_rol_rx - abs(mm(Cftx, mm(U_th, q)) - px[rol_x])
         ry_check = max_rol_ry - abs(mm(Cfty, mm(V_th, q)) - py[rol_y])
         constraints = cat([constraints, rx_check, ry_check])
-    if 'symmetry' in dict_constr:
+    if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         A_q = mm(tensor(Asym), variables)
         constraints = cat([constraints, A_q, -1 * A_q])
     return constraints
@@ -193,7 +193,7 @@ def bounds_constraints_pytorch(variables, *args):
     cu = [10e10]*len(constraints)
     cl = [0.0]*len(constraints)
     # End of inequality constraints
-    if 'symmetry' in dict_constr:
+    if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         A_q = mm(tensor(Asym), variables)
         cu = hstack([cu, [0.0]*len(A_q)])
         cl = hstack([cl, [0.0]*len(A_q)])

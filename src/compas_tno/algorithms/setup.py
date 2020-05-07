@@ -78,8 +78,8 @@ def set_up_nonlinear_optimisation(analysis):
     else:
         joints = None
 
-    if 'symmetry' in constraints:
-        Asym = set_symmetry_constraint(form, True)
+    if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
+        Asym = set_symmetry_constraint(form, constraints, True)
     else:
         Asym = None
 
@@ -192,14 +192,20 @@ def set_rollers_constraint(form, printout):
     return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
 
 
-def set_symmetry_constraint(form, printout):
+def set_symmetry_constraint(form, constraints, printout):
 
+    horizontal_only = False
+    vertical_only = False
     corners = mesh_bounding_box_xy(form)
     xs = [point[0] for point in corners]
     ys = [point[1] for point in corners]
     xc = (max(xs) - min(xs))/2
     yc = (max(ys) - min(ys))/2
-    form.apply_symmetry(center=[xc, yc, 0.0])
+    if 'symmetry-horizontal' in constraints:
+        horizontal_only = True
+    if 'symmetry-vertical' in constraints:
+        vertical_only = True
+    form.apply_symmetry(center=[xc, yc, 0.0], horizontal_only=horizontal_only, vertical_only=vertical_only)
     Asym = form.assemble_symmetry_matrix()
     if printout:
         print('Calculated and found symmetry from point:', xc, yc)

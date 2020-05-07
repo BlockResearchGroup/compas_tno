@@ -54,7 +54,7 @@ def constr_wrapper(xopt, *args):
         rx_check = max_rol_rx - abs(Cftx.dot(U.dot(q)) - px[rol_x])
         ry_check = max_rol_ry - abs(Cfty.dot(V.dot(q)) - py[rol_y])
         constraints = vstack([constraints, rx_check, ry_check])
-    if 'symmetry' in dict_constr:
+    if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         A_q = Asym.dot(vstack([q[ind], z[fixed]]))
         constraints = vstack([constraints, A_q, -1* A_q])
 

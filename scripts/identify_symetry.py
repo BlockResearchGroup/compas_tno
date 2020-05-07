@@ -25,8 +25,9 @@ thk = 0.50
 
 type_structure = 'crossvault'
 type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
-discretisation = 10
-# discretisation = [8, 16]
+diagonals = True
+# discretisation = 10
+discretisation = [10, 16]
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
 
@@ -38,8 +39,8 @@ data_diagram = {
     'center': [span/2, span/2, 0.0],
     'radius': span/2,
     'r_oculus': 0.0,
-    'diagonal': None,
-    'partial_diagonal': None,
+    'diagonal': diagonals,
+    'partial_diagonal': diagonals,
 }
 
 form = FormDiagram.from_library(data_diagram)
@@ -51,9 +52,9 @@ form = form.initialise_tna(plot=False)
 # --------------------- 3. Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'MMA'
-optimiser.data['solver'] = 'MMA'
-optimiser.data['constraints'] = ['funicular', 'envelope']
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
+optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = False
 optimiser.data['plot'] = False
@@ -86,7 +87,7 @@ analysis.run()
 
 plot_form(form, show_q=False, cracks=True).show()
 
-json_path = compas_tno.get('test.4.json')
+json_path = compas_tno.get('test.json')
 form.to_json(json_path)
 
 
@@ -95,17 +96,13 @@ form.to_json(json_path)
 # ------------------------------------------------------------------------------------
 
 
-# json_path = compas_tno.get('test.json')
-# form = FormDiagram.from_json(json_path)
+json_path = compas_tno.get('test.json')
+form = FormDiagram.from_json(json_path)
 
-# form.apply_symmetry(center=[5.0, 5.0, 0.0])
-# Asym = form.build_symmetry_matrix(printout=True)
-# plot_sym_inds(form).show()
-# import sys
-# import numpy
-# numpy.set_printoptions(threshold=sys.maxsize)
-# print(Asym)
-
+form.apply_symmetry(center=[5.0, 5.0, 0.0])
+# Asym_total = form.assemble_symmetry_matrix(printout=True)
+plot_independents(form, show_symmetry=True).show()
+plot_sym_inds(form).show()
 
 # import matplotlib.pyplot as plt
 
@@ -118,4 +115,3 @@ form.to_json(json_path)
 # form.build_symmetry_matrix(printout=True)
 # form.build_symmetry_matrix_supports(printout=True)
 # form.assemble_symmetry_matrix(printout=True)
-
