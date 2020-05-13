@@ -71,54 +71,44 @@ data_diagram = {
     'discretisation': discretisation,
     'r_oculus': 0.0,
     'diagonal': True,
-    'partial_diagonal': False,
+    'partial_diagonal': 'left',
 }
 
 form = FormDiagram.from_library(data_diagram)
 plot_form(form, show_q=False).show()
 
-data_diagram = {
-    'type': type_formdiagram,
-    'center': center,
-    'radius': radius,
-    'discretisation': discretisation,
-    'r_oculus': 0.0,
-    'diagonal': False,
-    'partial_diagonal': False,
-}
-form_load = FormDiagram.from_library(data_diagram)
-plot_form(form_load, show_q=False).show()
-
 # --------------------- 3. Create Initial point with LOAD PATH OPTIMISATION or TNA ---------------------
 
-# If using TNA
+#--- If using TNA
+
 form = form.initialise_tna(plot=False)
-# plot_form(form).show()
+plot_form(form).show()
 
-# If using LOADPATH
-optimiser = Optimiser()
-optimiser.data['library'] = 'MATLAB'
-optimiser.data['solver'] = 'SDPT3'
-optimiser.data['constraints'] = ['funicular']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'loadpath'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
-analysis = Analysis.from_elements(dome, form, optimiser)
+#--- If using LOADPATH
+
+# optimiser = Optimiser()
+# optimiser.data['library'] = 'MATLAB'
+# optimiser.data['solver'] = 'SDPT3'
+# optimiser.data['constraints'] = ['funicular']
+# optimiser.data['variables'] = ['ind']
+# optimiser.data['objective'] = 'loadpath'
+# optimiser.data['printout'] = True
+# optimiser.data['plot'] = False
+# optimiser.data['find_inds'] = True
+# optimiser.data['qmax'] = 10e+10
+# analysis = Analysis.from_elements(dome, form, optimiser)
 # analysis.apply_selfweight()
-analysis.apply_selfweight_from_pattern(form_load)
-analysis.set_up_optimiser()
-analysis.run()
-plot_form(form, show_q=False).show()
+# analysis.set_up_optimiser()
+# analysis.run()
+# plot_form(form, show_q=False).show()
 
-# If using load from saved form
-title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
-load_json = os.path.join(folder, title + '.json')
+#--- If using load from saved form
+
+# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
+# load_json = os.path.join(folder, title + '.json')
 # form = FormDiagram.from_json(load_json)
 
-form_start = deepcopy(form)      # Keep this solution as starting point afterwards
+form_start = deepcopy(form)      # Keep this solution stored to perhaps use it as starting point afterwards
 
 # --------------------- 4. Create Optimiser ---------------------
 

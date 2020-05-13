@@ -236,4 +236,3 @@ print(size_parameters_max)
 print('Solutions Found')
 print(solutions_min)
 print(solutions_max)
-

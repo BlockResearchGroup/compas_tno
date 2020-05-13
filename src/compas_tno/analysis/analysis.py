@@ -145,7 +145,7 @@ class Analysis(object):
         return
 
 
-    def apply_selfweight_from_pattern(self, pattern):
+    def apply_selfweight_from_pattern(self, pattern, plot=False):
         """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
 
         form = self.form
@@ -168,28 +168,27 @@ class Analysis(object):
             form_.vertex_attribute(key, 'z', value=z)
             form.vertex_attribute(key_real, 'target', value=z)
 
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text=key_real_to_key)
-        plotter.show()
-
-        plotter = MeshPlotter(form_, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: key for key in form_.vertices()})
-        plotter.show()
-
-        print(key_real_to_key)
-
         pzt = 0
         for key in key_real_to_key:
             pz = form_.vertex_area(key_real_to_key[key])
             form.vertex_attribute(key, 'pz', value = pz)
             pzt += pz
 
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 1) for key in form.vertices()})
-        plotter.show()
+        if plot:
+            plotter = MeshPlotter(form, figsize=(10, 10))
+            plotter.draw_edges()
+            plotter.draw_vertices(text=key_real_to_key)
+            plotter.show()
+
+            plotter = MeshPlotter(form_, figsize=(10, 10))
+            plotter.draw_edges()
+            plotter.draw_vertices(text={key: key for key in form_.vertices()})
+            plotter.show()
+
+            plotter = MeshPlotter(form, figsize=(10, 10))
+            plotter.draw_edges()
+            plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 1) for key in form.vertices()})
+            plotter.show()
 
         if shape.data['type'] == 'arch':
             pzt = 0
