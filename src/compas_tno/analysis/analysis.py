@@ -115,7 +115,7 @@ class Analysis(object):
         total_selfweight = shape.compute_selfweight()
 
         for key in form_.vertices():
-            x, y, _ = form.vertex_coordinates(key)
+            x, y, _ = form_.vertex_coordinates(key)
             z = shape.get_middle(x, y)
             form_.vertex_attribute(key, 'z', value=z)
             form.vertex_attribute(key, 'target', value=z)
@@ -125,6 +125,71 @@ class Analysis(object):
             pz = form_.vertex_area(key)
             form.vertex_attribute(key, 'pz', value = pz)
             pzt += pz
+
+        if shape.data['type'] == 'arch':
+            pzt = 0
+            for key in form.vertices():
+                form.vertex_attribute(key, 'pz', value = 1.0)
+                if form.vertex_attribute(key, 'is_fixed') == True:
+                    form.vertex_attribute(key, 'pz', value = 0.5)
+                pzt += form.vertex_attribute(key, 'pz')
+
+        factor = total_selfweight/pzt
+
+        for key in form.vertices():
+            pzi = factor * form.vertex_attribute(key, 'pz')
+            form.vertex_attribute(key, 'pz', value = pzi)
+
+        self.form = form
+
+        return
+
+
+    def apply_selfweight_from_pattern(self, pattern):
+        """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
+
+        form = self.form
+        form_ = pattern
+        shape = self.shape
+        total_selfweight = shape.compute_selfweight()
+        tol = 10e-10
+
+        form.vertices_attribute('pz', 0.0)
+        key_real_to_key = {}
+
+        for key in form_.vertices():
+            x, y, _ = form_.vertex_coordinates(key)
+            for key_real in form.vertices():
+                x_real, y_real, _ = form.vertex_coordinates(key_real)
+                if x - tol < x_real < x + tol and y - tol < y_real < y + tol:
+                    key_real_to_key[key_real] = key
+                    break
+            z = shape.get_middle(x, y)
+            form_.vertex_attribute(key, 'z', value=z)
+            form.vertex_attribute(key_real, 'target', value=z)
+
+        plotter = MeshPlotter(form, figsize=(10, 10))
+        plotter.draw_edges()
+        plotter.draw_vertices(text=key_real_to_key)
+        plotter.show()
+
+        plotter = MeshPlotter(form_, figsize=(10, 10))
+        plotter.draw_edges()
+        plotter.draw_vertices(text={key: key for key in form_.vertices()})
+        plotter.show()
+
+        print(key_real_to_key)
+
+        pzt = 0
+        for key in key_real_to_key:
+            pz = form_.vertex_area(key_real_to_key[key])
+            form.vertex_attribute(key, 'pz', value = pz)
+            pzt += pz
+
+        plotter = MeshPlotter(form, figsize=(10, 10))
+        plotter.draw_edges()
+        plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 1) for key in form.vertices()})
+        plotter.show()
 
         if shape.data['type'] == 'arch':
             pzt = 0

@@ -106,6 +106,7 @@ class FormDiagram(FormDiagram):
     def from_library(cls, data):
 
         form_type = data['type']
+        print(form_type)
 
         if form_type == 'arch':
             form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
@@ -118,6 +119,7 @@ class FormDiagram(FormDiagram):
         if form_type == 'ortho':
             form = cls().create_ortho_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'radial_fd':
+            print(data['center'], data['radius'], data['discretisation'], data['r_oculus'], data['diagonal'], data['partial_diagonal'])
             form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'],
                                                      r_oculus=data['r_oculus'], diagonal=data['diagonal'], partial_diagonal=data['partial_diagonal'])
         if form_type == 'radial_spaced_fd':

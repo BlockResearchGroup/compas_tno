@@ -62,7 +62,7 @@ data_shape = {
 dome = Shape.from_library(data_shape)
 swt = dome.compute_selfweight()
 
-# ----------------------- 2. Create Form Diagram and "Load Form Diagram" ---------------------------
+# ----------------------- 2.1. Create Form Diagram to the analysis---------------------------
 
 data_diagram = {
     'type': type_formdiagram,
@@ -77,6 +77,10 @@ data_diagram = {
 form = FormDiagram.from_library(data_diagram)
 plot_form(form, show_q=False).show()
 
+# --------- 2.2. Create "Load Form Diagram" to calculate the selfweight based on the tributary area for this pattern ---------------
+
+and "Load Form Diagram"
+
 data_diagram = {
     'type': type_formdiagram,
     'center': center,
@@ -86,16 +90,18 @@ data_diagram = {
     'diagonal': False,
     'partial_diagonal': False,
 }
-form_load = FormDiagram.from_library(data_diagram)
+form_load = FormDiagram.from_library(data_diagram) # This pattern is created only for the load assignment
 plot_form(form_load, show_q=False).show()
 
 # --------------------- 3. Create Initial point with LOAD PATH OPTIMISATION or TNA ---------------------
 
-# If using TNA
-form = form.initialise_tna(plot=False)
+#--- If using TNA
+
+# form = form.initialise_tna(plot=False)
 # plot_form(form).show()
 
-# If using LOADPATH
+#--- If using LOADPATH
+
 optimiser = Optimiser()
 optimiser.data['library'] = 'MATLAB'
 optimiser.data['solver'] = 'SDPT3'
@@ -107,15 +113,15 @@ optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 10e+10
 analysis = Analysis.from_elements(dome, form, optimiser)
-# analysis.apply_selfweight()
-analysis.apply_selfweight_from_pattern(form_load)
+analysis.apply_selfweight_from_pattern(form_load) # This adds selfweight from the "base pattern"
 analysis.set_up_optimiser()
 analysis.run()
 plot_form(form, show_q=False).show()
 
-# If using load from saved form
-title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
-load_json = os.path.join(folder, title + '.json')
+#--- If using load from saved form
+
+# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
+# load_json = os.path.join(folder, title + '.json')
 # form = FormDiagram.from_json(load_json)
 
 form_start = deepcopy(form)      # Keep this solution as starting point afterwards
@@ -147,7 +153,7 @@ while exitflag == 0:
     # --------------------------- 4.2. Prepare Analysis and run ---------------------------
 
     analysis = Analysis.from_elements(dome, form, optimiser)
-    analysis.apply_selfweight()
+    analysis.apply_selfweight_from_pattern(form_load) # This adds selfweight from the "base pattern"
     analysis.apply_envelope()
     analysis.apply_reaction_bounds()
     analysis.apply_hor_multiplier(load_mult, direction_loads)  # This line applies the horizontal multiplier
@@ -195,7 +201,7 @@ while exitflag == 0:
     # --------------------------- 4.2. Prepare Analysis ---------------------------
 
     analysis = Analysis.from_elements(dome, form, optimiser)
-    analysis.apply_selfweight()
+    analysis.apply_selfweight_from_pattern(form_load) # This adds selfweight from the "base pattern"
     analysis.apply_envelope()
     analysis.apply_reaction_bounds()
     analysis.apply_hor_multiplier(load_mult, direction_loads)

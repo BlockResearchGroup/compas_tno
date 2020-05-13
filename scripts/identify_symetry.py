@@ -23,11 +23,11 @@ thk = 0.50
 
 # Basic parameters
 
-type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
+type_structure = 'dome'
+type_formdiagram = 'radial_fd'  # Try also 'fan_fd'
 diagonals = True
-# discretisation = 10
-discretisation = [10, 16]
+discretisation = 10
+discretisation = [4, 12]
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
 
@@ -39,15 +39,15 @@ data_diagram = {
     'center': [span/2, span/2, 0.0],
     'radius': span/2,
     'r_oculus': 0.0,
-    'diagonal': diagonals,
-    'partial_diagonal': diagonals,
+    'diagonal': True,
+    'partial_diagonal': False,
 }
 
 form = FormDiagram.from_library(data_diagram)
 
 # --------------------- 2. Create Initial point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
+form = form.initialise_tna(plot=True)
 
 # --------------------- 3. Create Optimiser ---------------------
 
@@ -99,8 +99,8 @@ form.to_json(json_path)
 json_path = compas_tno.get('test.json')
 form = FormDiagram.from_json(json_path)
 
-form.apply_symmetry(center=[5.0, 5.0, 0.0])
-# Asym_total = form.assemble_symmetry_matrix(printout=True)
+form.apply_symmetry(center=[5.0, 5.0, 0.0], horizontal_only=True)
+Asym_total = form.assemble_symmetry_matrix(printout=True)
 plot_independents(form, show_symmetry=True).show()
 plot_sym_inds(form).show()
 

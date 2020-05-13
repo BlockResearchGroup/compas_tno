@@ -76,15 +76,23 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                     ya_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * nc)
                     yb_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * (nc + 1))
 
-
-                    if partial_diagonal == True:
+                    if partial_diagonal == 'right':
                         if nc + 1 > n_spikes/2:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
                         else:
                             lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
+                    elif partial_diagonal == 'left':
+                        if nc + 1 > n_spikes/2:
+                            lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
+                        else:
+                            lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
                     else:
-                        lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
-                        lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
+                        midx = (xa + xa_ + xb + xb_)/4
+                        midy = (ya + ya_ + yb + yb_)/4
+                        lines.append([[xa, ya, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb_, yb_, 0.0]])
+                        lines.append([[xa_, ya_, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb, yb, 0.0]])
 
     form = cls.from_lines(lines, delete_boundary_edges=True)
 
@@ -165,27 +173,33 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
         for nr in range(n_radial):
             for nc in range(n_spikes):
                 if (r_oculus + nr * r_div) > 0.0:
-
                     # Meridian Element i
                     xa = xc + (r_oculus + nr * r_div) * math.cos(theta * nc)
                     xb = xc + (r_oculus + nr * r_div) * math.cos(theta * (nc + 1))
                     ya = yc + (r_oculus + nr * r_div) * math.sin(theta * nc)
                     yb = yc + (r_oculus + nr * r_div) * math.sin(theta * (nc + 1))
-
                     # Meridian Element i + 1
                     xa_ = xc + (r_oculus + (nr + 1) * r_div) * math.cos(theta * nc)
                     xb_ = xc + (r_oculus + (nr + 1) * r_div) * math.cos(theta * (nc + 1))
                     ya_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * nc)
                     yb_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * (nc + 1))
-
-                    if partial_diagonal == True:
+                    if partial_diagonal == 'right':
                         if nc + 1 > n_spikes/2:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
                         else:
                             lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
+                    elif partial_diagonal == 'left':
+                        if nc + 1 > n_spikes/2:
+                            lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
+                        else:
+                            lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
                     else:
-                        lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
-                        lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
+                        midx = (xa + xa_ + xb + xb_)/4
+                        midy = (ya + ya_ + yb + yb_)/4
+                        lines.append([[xa, ya, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb_, yb_, 0.0]])
+                        lines.append([[xa_, ya_, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb, yb, 0.0]])
 
     form = cls.from_lines(lines, delete_boundary_edges=True)
 
