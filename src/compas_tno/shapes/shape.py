@@ -10,6 +10,11 @@ from compas_tno.shapes.dome import set_dome_polar_coord
 from compas_tno.shapes.circular_arch import arch_shape
 from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
 
+from copy import deepcopy
+from compas.geometry import subtract_vectors
+from compas.geometry import length_vector
+from compas.geometry import cross_vectors
+
 from numpy import array
 
 from scipy import interpolate
@@ -99,11 +104,14 @@ class Shape(object):
         --------
         .. code-block:: python
 
-            import compas
-            from compas.files import OBJ
-            from compas_tna.diagrams import FormDiagram
-
-            # W.I.P.
+            from compas_tno.diagrams import FormDiagram
+            data_diagram = {
+                'type': 'cross_fd',
+                'xy_span': [[0, 10], [0, 10]],
+                'discretisation': 10,
+                'fix': 'corners',
+            }
+            form = FormDiagram.from_library(data_diagram)
 
         """
         shape = cls()
@@ -171,15 +179,57 @@ class Shape(object):
         NotImplementedError
 
     def get_ub(self, x, y):
-        """Get the height of the extrados in the point."""
+        """Get the height of the extrados in the point.
+
+        Parameters
+        ----------
+        x : float
+            x-coordinate of the point to evaluate.
+        y : float
+            y-coordinate of the point to evaluate.
+        Returns
+        -------
+        z : float
+            The extrados evaluated in the point.
+        """
 
         vertices = array(self.extrados.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
 
         return z
 
+    def get_ub_pattern(self, XY):
+        """Get the height of the extrados in a list of points.
+
+        Parameters
+        ----------
+        XY : list or array
+            list of the x-coordinate and y-coordinate of the points to evaluate.
+        Returns
+        -------
+        z : float
+            The extrados evaluated in the point.
+        """
+
+        vertices = array(self.extrados.vertices_attributes('xyz'))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], XY))
+
+        return z
+
     def get_ub_fill(self, x, y):
-        """Get the height of the fill in the point."""
+        """Get the height of the fill in the point.
+
+        Parameters
+        ----------
+        x : float
+            x-coordinate of the point to evaluate.
+        y : float
+            y-coordinate of the point to evaluate.
+        Returns
+        -------
+        z : float
+            The extrados evaluated in the point.
+        """
 
         vertices = array(self.extrados_fill.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
@@ -187,18 +237,78 @@ class Shape(object):
         return z
 
     def get_lb(self, x, y):
-        """Get the height of the intrados in the point."""
+        """Get the height of the intrados in the point.
+
+        Parameters
+        ----------
+        x : float
+            x-coordinate of the point to evaluate.
+        y : float
+            y-coordinate of the point to evaluate.
+        Returns
+        -------
+        z : float
+            The intrados evaluated in the point.
+        """
 
         vertices = array(self.intrados.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
 
         return z
 
+    def get_lb_pattern(self, XY):
+        """Get the height of the intrados in a list of points.
+
+        Parameters
+        ----------
+        XY : list or array
+            list of the x-coordinate and y-coordinate of the points to evaluate.
+        Returns
+        -------
+        z : float
+            The extrados evaluated in the point.
+        """
+
+        vertices = array(self.intrados.vertices_attributes('xyz'))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], XY))
+
+        return z
+
     def get_middle(self, x, y):
-        """Get the height of the target/middle surface in the point."""
+        """Get the height of the target/middle surface in the point.
+
+        Parameters
+        ----------
+        x : float
+            x-coordinate of the point to evaluate.
+        y : float
+            y-coordinate of the point to evaluate.
+        Returns
+        -------
+        z : float
+            The middle surface evaluated in the point.
+        """
 
         vertices = array(self.middle.vertices_attributes('xyz'))
         z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
+
+        return z
+
+    def get_middle_pattern(self, XY):
+        """Get the height of the target/middle surface in a list of points.
+
+        Parameters
+        ----------
+        XY : list or array
+            list of the x-coordinate and y-coordinate of the points to evaluate.
+        Returns
+        -------
+        z : float
+            The extrados evaluated in the point.
+        """
+
+        vertices = array(self.middle.vertices_attributes('xyz'))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], XY))
 
         return z
 
@@ -210,7 +320,13 @@ class Shape(object):
         return z
 
     def compute_selfweight(self):
-        """Compute and returns the selfweight of the structure based on the area and thickness in the data."""
+        """Compute and returns the total selfweight of the structure based on the area and thickness in the data.
+
+        Returns
+        -------
+        swt : float
+            The selfweight.
+        """
 
         middle = self.middle
         thk = self.data['thk']
@@ -221,7 +337,13 @@ class Shape(object):
         return total_selfweight
 
     def compute_volume(self):
-        """Compute and returns the vollume of the structure based on the area and thickness in the data."""
+        """Compute and returns the vollume of the structure based on the area and thickness in the data.
+
+        Returns
+        -------
+        vol : float
+            The volume.
+        """
 
         middle = self.middle
         thk = self.data['thk']
@@ -231,11 +353,15 @@ class Shape(object):
         return volume
 
     def add_fill_with_height(self, height, fill_ro=20.0):
+        """Compute the weight of the fill applied based on the height.
 
-        from copy import deepcopy
-        from compas.geometry import subtract_vectors
-        from compas.geometry import length_vector
-        from compas.geometry import cross_vectors
+        Returns
+        -------
+        height : float
+            The height until which infill should be observed.
+        fill_ro : float (20)
+            The density of the infill.
+        """
 
         self.extrados_fill = deepcopy(self.extrados)
         volume = 0.

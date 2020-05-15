@@ -30,6 +30,7 @@ from compas_tno.plotters import plot_force
 from compas_tno.diagrams import ForceDiagram
 from compas_tna.diagrams import FormDiagram
 
+from compas.datastructures import Mesh
 from compas.datastructures import mesh_bounding_box_xy
 from compas.geometry import distance_point_point_xy
 from compas.geometry import distance_point_line_xy
@@ -107,24 +108,27 @@ class FormDiagram(FormDiagram):
 
         form_type = data['type']
 
+        r_oculus = data.get('r_oculus', 0.0)
+        diagonal = data.get('diagonal')
+        partial_diagonal = data.get('partial_diagonal')
+        partial_bracing_modules = data.get('partial_bracing_modules')
+
         if form_type == 'arch':
             form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'cross_fd':
             form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'cross_diagonal':
-            form = cls().create_cross_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+            form = cls().create_cross_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], partial_bracing_modules=partial_bracing_modules, fix=data['fix'])
         if form_type == 'fan_fd':
             form = cls().create_fan_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'ortho':
             form = cls().create_ortho_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'radial_fd':
-            form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'],
-                                                     r_oculus=data['r_oculus'], diagonal=data['diagonal'], partial_diagonal=data['partial_diagonal'])
+            form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'radial_spaced_fd':
-            form = cls().create_circular_radial_spaced_form(
-                center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=data['r_oculus'], diagonal=data['diagonal'], partial_diagonal=data['partial_diagonal'])
+            form = cls().create_circular_radial_spaced_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'spiral_fd':
-            form = cls().create_circular_spiral_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=data['r_oculus'])
+            form = cls().create_circular_spiral_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus)
 
         form.parameters = data
 
@@ -183,7 +187,7 @@ class FormDiagram(FormDiagram):
         return form
 
     @classmethod
-    def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
+    def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, partial_bracing_modules=None, fix='corners'):
         """ Construct a FormDiagram based on cross discretiastion with diagonals.
 
         Parameters
@@ -204,7 +208,7 @@ class FormDiagram(FormDiagram):
 
         """
 
-        form = create_cross_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+        form = create_cross_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, partial_bracing_modules=partial_bracing_modules, fix=fix)
 
         return form
 
@@ -304,19 +308,14 @@ class FormDiagram(FormDiagram):
         ----------
         center : list
             Planar coordinates of the form-diagram [xc, yc].
-
         radius: float
             Radius of the form-diagram
-
         discretisation : list
             Number of meridians, and of spikes from the center on the dome form-diagram.
-
         r_oculus: float
             Value of the radius of the oculus, if no oculus is present should be set to zero.
-
         diagonal: float
             Activate diagonal in the quads.
-
         partial_diagonal: float
             Activate partial diagonal in the quads.
 
@@ -371,6 +370,57 @@ class FormDiagram(FormDiagram):
     def from_assembly():
         NotImplementedError
 
+    @classmethod
+    def from_singular(cls, json_path):
+        """ W.I.P create form diagram from singular dense mesh.
+        """
+
+        from compas.datastructures import mesh_delete_duplicate_vertices
+        mesh = Mesh.from_json(json_path)
+        mesh_delete_duplicate_vertices(mesh)
+        form = cls().from_mesh(mesh)
+        form.set_boundary_supports()
+        form.delete_boundary_edges()
+
+        return form
+
+    @classmethod
+    def from_skeleton(cls, data):
+        """ W.I.P create form diagram from skeleton.
+        """
+
+        from compas_skeleton.datastructure import Skeleton
+        from compas.geometry import matrix_from_scale_factors
+        from compas.datastructures import mesh_transform
+
+        skeleton_type = data['type']
+
+        if skeleton_type == 'circular':
+
+            point = data.get('center', [0, 0, 0])
+            subdivisions = data.get('subdivision', 3)
+            radius = data.get('radius', 5.0)
+
+            skeleton = Skeleton.from_center_point(point)
+            skeleton.node_width = 7.5
+            skeleton.update_mesh_vertices_pos()
+            skeleton.vertex_attribute(0, 'z', 10.0)
+            skeleton.subdivide(subdivisions)
+            skeleton_mesh = skeleton.to_mesh()
+
+            max_x = 0
+            for key in skeleton_mesh.vertices():
+                x, y, z = skeleton_mesh.vertex_coordinates(key)
+                if x > max_x:
+                    max_x = x
+            scale = radius / max_x
+            T = matrix_from_scale_factors([scale, scale, 0.0])
+            mesh_transform(skeleton_mesh, T)
+            form = cls().from_mesh(skeleton_mesh)
+            form.set_boundary_supports()
+            form.delete_boundary_edges()
+
+        return form
 
     # --------------------------------------------------------------- #
     # -----------------------ULTILITIES------------------------------ #
@@ -492,6 +542,16 @@ class FormDiagram(FormDiagram):
             corners = [key for key in self.corners()]
             for key in corners:
                 self.delete_vertex(key)
+
+        return self
+
+
+    def set_boundary_supports(self):
+        """ Set all node on the boundary of a pattern as supports.
+        """
+
+        for key in self.vertices_on_boundary():
+            self.vertex_attribute(key, 'is_fixed', True)
 
         return self
 

@@ -71,7 +71,7 @@ data_diagram = {
     'discretisation': discretisation,
     'r_oculus': 0.0,
     'diagonal': True,
-    'partial_diagonal': 'left',
+    'partial_diagonal': False,
 }
 
 form = FormDiagram.from_library(data_diagram)
@@ -81,26 +81,26 @@ plot_form(form, show_q=False).show()
 
 #--- If using TNA
 
-form = form.initialise_tna(plot=False)
-plot_form(form).show()
+# form = form.initialise_tna(plot=False)
+# plot_form(form).show()
 
 #--- If using LOADPATH
 
-# optimiser = Optimiser()
-# optimiser.data['library'] = 'MATLAB'
-# optimiser.data['solver'] = 'SDPT3'
-# optimiser.data['constraints'] = ['funicular']
-# optimiser.data['variables'] = ['ind']
-# optimiser.data['objective'] = 'loadpath'
-# optimiser.data['printout'] = True
-# optimiser.data['plot'] = False
-# optimiser.data['find_inds'] = True
-# optimiser.data['qmax'] = 10e+10
-# analysis = Analysis.from_elements(dome, form, optimiser)
-# analysis.apply_selfweight()
-# analysis.set_up_optimiser()
-# analysis.run()
-# plot_form(form, show_q=False).show()
+optimiser = Optimiser()
+optimiser.data['library'] = 'MATLAB'
+optimiser.data['solver'] = 'SDPT3'
+optimiser.data['constraints'] = ['funicular']
+optimiser.data['variables'] = ['ind']
+optimiser.data['objective'] = 'loadpath'
+optimiser.data['printout'] = True
+optimiser.data['plot'] = False
+optimiser.data['find_inds'] = True
+optimiser.data['qmax'] = 10e+10
+analysis = Analysis.from_elements(dome, form, optimiser)
+analysis.apply_selfweight()
+analysis.set_up_optimiser()
+analysis.run()
+plot_form(form, show_q=False).show()
 
 #--- If using load from saved form
 

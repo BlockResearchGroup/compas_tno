@@ -111,7 +111,7 @@ def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
     return form
 
 
-def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
+def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_bracing_modules=None, discretisation=10, fix='corners'):
     """ Helper to construct a FormDiagram based on cross discretiastion diagonals.
 
     Parameters
@@ -148,6 +148,12 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisatio
     yc0 = y0 + y_span/2
 
     nx = ny = int(discretisation/2)
+    if partial_bracing_modules is None:
+        nstop = 0
+    else:
+        nstop = nx - partial_bracing_modules  # Test to stop
+
+    print(nstop)
 
     line_hor = [[x0, yc0, 0.0], [xc0, yc0, 0.0]]
     line_ver = [[xc0, y0, 0.0], [xc0, yc0, 0.0]]
@@ -158,13 +164,14 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisatio
     for i in range(nx):
         for j in range(ny+1):
             if j <= i:
-                # Diagonal Members:
-                xa = x0 + dx * i
-                ya = y0 + dy * 1 * (i - j) / (nx - j) + dy * j
-                xb = x0 + dx * (i + 1)
-                yb = y0 + dy * 1 * (i - j + 1) / (nx - j) + dy * j
-                lin = [[xa, ya, 0.0], [xb, yb, 0.0]]
-                lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
+                if i >= nstop and j >= nstop:
+                    # Diagonal Members:
+                    xa = x0 + dx * i
+                    ya = y0 + dy * 1 * (i - j) / (nx - j) + dy * j
+                    xb = x0 + dx * (i + 1)
+                    yb = y0 + dy * 1 * (i - j + 1) / (nx - j) + dy * j
+                    lin = [[xa, ya, 0.0], [xb, yb, 0.0]]
+                    lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
 
                 if i == j and i < nx - 1:
                     # Main diagonal:
@@ -187,15 +194,20 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisatio
                 # Vertical Members:
                 xa = x0 + dx*i
                 ya = y0 + dy*j
-                x_ = xa
-                y_ = y0 + dy * 1 * (i - j) / (nx - j) + dy * j
                 xb = x0 + dx*i
                 yb = y0 + dy*(j + 1)
 
-                lin = [[xa, ya, 0.0], [x_, y_, 0.0]]
-                lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
-                lin = [[x_, y_, 0.0], [xb, yb, 0.0]]
-                lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
+                if i >= nstop and j >= nstop:
+                    x_ = xa
+                    y_ = y0 + dy * 1 * (i - j) / (nx - j) + dy * j
+                    lin = [[xa, ya, 0.0], [x_, y_, 0.0]]
+                    lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
+                    lin = [[x_, y_, 0.0], [xb, yb, 0.0]]
+                    lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
+                else:
+                    print('some?')
+                    lin = [[xa, ya, 0.0], [xb, yb, 0.0]]
+                    lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
 
                 i -= 1
 
