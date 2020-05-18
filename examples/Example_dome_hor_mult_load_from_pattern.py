@@ -25,6 +25,8 @@ thk = 0.50
 radius = 5.0
 type_structure = 'dome'
 type_formdiagram = 'radial_fd'
+style_diagonals =  'straight'
+t = 1.0
 discretisation = [4, 12]
 center = [5.0, 5.0]
 R = radius
@@ -38,9 +40,11 @@ forms_max = []
 size_parameters_min = []  # empty lists to keep track of the parameters
 size_parameters_max = []  # empty lists to keep track of the parameters
 size_parameters = []
+plot = True             # If selected will plot all solutions, need to be closed "by hand"
 
 load_mult = 0.00
 load_increase = 0.01
+load_mult0 = load_mult
 direction_loads = 'px'
 plot_graph = True
 plot_figures = True
@@ -56,7 +60,7 @@ data_shape = {
     'discretisation': [discretisation[0]*2, discretisation[1]*2],
     'center': center,
     'radius': radius,
-    't' : 1.0           # Ammount allowed for the reactions/supports to travel down
+    't' : t           # Ammount allowed for the reactions/supports to travel down
 }
 
 dome = Shape.from_library(data_shape)
@@ -71,15 +75,13 @@ data_diagram = {
     'discretisation': discretisation,
     'r_oculus': 0.0,
     'diagonal': True,
-    'partial_diagonal': False,
+    'partial_diagonal': style_diagonals,
 }
 
 form = FormDiagram.from_library(data_diagram)
 plot_form(form, show_q=False).show()
 
 # --------- 2.2. Create "Load Form Diagram" to calculate the selfweight based on the tributary area for this pattern ---------------
-
-and "Load Form Diagram"
 
 data_diagram = {
     'type': type_formdiagram,
@@ -113,16 +115,19 @@ optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 10e+10
 analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight_from_pattern(form_load) # This adds selfweight from the "base pattern"
+analysis.apply_selfweight_from_pattern(form_load, plot=True) # This adds selfweight from the "base pattern"
 analysis.set_up_optimiser()
 analysis.run()
 plot_form(form, show_q=False).show()
 
 #--- If using load from saved form
 
-# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
+# objective_to_load = 'min'
+# load_mult_to_load = 0.00
+# title = 'Dome_Px=' + str(load_mult_to_load) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + objective_to_load
 # load_json = os.path.join(folder, title + '.json')
 # form = FormDiagram.from_json(load_json)
+# plot_form(form, show_q=False, cracks=True, simple=True, save=os.path.join(folder, title + '.pdf')).show()
 
 form_start = deepcopy(form)      # Keep this solution as starting point afterwards
 
@@ -141,98 +146,61 @@ print(optimiser.data)
 
 # --------------------------- 4.1 Set The objective to min and start loop ---------------------------
 
-optimiser.data['objective'] = 'min'
+for optimiser.data['objective'] in ['min', 'max']:
 
-while exitflag == 0:
+    form = form_start
+    load_mult = load_mult0
+    exitflag = 0
 
-    t_over_R = thk/R
-    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.data['objective']
+    while exitflag == 0:
 
-    print('\n----------- Problem Title:', title, '\n')
+        t_over_R = thk/R
+        title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.data['objective']
 
-    # --------------------------- 4.2. Prepare Analysis and run ---------------------------
+        print('\n----------- Problem Title:', title, '\n')
 
-    analysis = Analysis.from_elements(dome, form, optimiser)
-    analysis.apply_selfweight_from_pattern(form_load) # This adds selfweight from the "base pattern"
-    analysis.apply_envelope()
-    analysis.apply_reaction_bounds()
-    analysis.apply_hor_multiplier(load_mult, direction_loads)  # This line applies the horizontal multiplier
-    analysis.set_up_optimiser()
-    analysis.run()
+        # --------------------------- 4.2. Prepare Analysis and run ---------------------------
 
-    # --------------------------- 4.3. Extract Data from Optimisation ---------------------------
+        analysis = Analysis.from_elements(dome, form, optimiser)
+        analysis.apply_selfweight_from_pattern(form_load)  # This adds selfweight from the "base pattern" does not load the intersection points
+        analysis.apply_envelope()
+        for key in form.vertices_where({'pz': 0.0}):  # This make sure the bounds on intrados 'lb' and extrados 'ub' do not get activated in the intersection points, i.e. these with load pz = 0.
+            form.vertex_attribute(key, 'ub', radius)
+            form.vertex_attribute(key, 'lb', - t)
+        analysis.apply_reaction_bounds()
+        analysis.apply_hor_multiplier(load_mult, direction_loads)  # This line applies the horizontal multiplier
+        analysis.set_up_optimiser()
+        analysis.run()
 
-    exitflag = optimiser.exitflag   # get info if optimisation was succeded ot not
-    fopt = optimiser.fopt           # objective function optimum value
-    fopt_over_weight_min = fopt/swt
-    print('Thickness', thk)
-    print('lambda:', load_mult)
-    print('Thrust over weight - min: ', fopt_over_weight_min)
-    print('Exitflag: ', exitflag)
-    if exitflag == 0:
-        form.to_json(os.path.join(folder, title + '.json'))
-        forms_min.append(deepcopy(form))
-        solutions_min.append(fopt_over_weight_min)
-        size_parameters_min.append(load_mult)
-        load_mult = round(load_mult + load_increase, 4)
-        print('Increase Hor Multiplier to', load_mult, '\n')
-    else:
-        print('\nOptimisation did not find a solution for multiplier:', load_mult)
-        print('Last solved multiplier:', round(load_mult - load_increase, 4))
+        # --------------------------- 4.3. Extract Data from Optimisation ---------------------------
 
+        exitflag = optimiser.exitflag   # get info if optimisation was succeded ot not
+        fopt = optimiser.fopt           # objective function optimum value
+        fopt_over_weight = fopt/swt
+        print('Thickness', thk)
+        print('lambda:', load_mult)
+        print('Thrust over weight: ', fopt_over_weight)
+        print('Exitflag: ', exitflag)
+        if exitflag == 0:
+            form.to_json(os.path.join(folder, title + '.json'))
+            if optimiser.data['objective'] == 'min':
+                forms_min.append(deepcopy(form))
+                solutions_min.append(fopt_over_weight)
+                size_parameters_min.append(load_mult)
+            else:
+                forms_max.append(deepcopy(form))
+                solutions_max.append(fopt_over_weight)
+                size_parameters_max.append(load_mult)
+            load_mult = round(load_mult + load_increase, 4)
+            print('Increase Hor Multiplier to', load_mult, '\n')
+            if plot:
+                plot_form(form, show_q=False, cracks=True, simple=True, save=os.path.join(folder, title + '.pdf'))
+        else:
+            print('\nOptimisation did not find a solution for multiplier:', load_mult)
+            print('Last solved multiplier:', round(load_mult - load_increase, 4))
 
-#--------------------------- 5.0 If want to start from the same starting point ---------------------------
-
-# form = form_start
-
-# --------------------------- 5.2 Set The objective to max and run ---------------------------
-
-optimiser.data['objective'] = 'max'
-exitflag = 0
-load_mult = 0.0           # Start from zero Horizontal Load applied, or maybe from a certain amount...
-
-while exitflag == 0:
-
-    t_over_R = thk/R
-    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.data['objective']
-
-    print('\n----------- Problem Title:', title, '\n')
-
-    # --------------------------- 4.2. Prepare Analysis ---------------------------
-
-    analysis = Analysis.from_elements(dome, form, optimiser)
-    analysis.apply_selfweight_from_pattern(form_load) # This adds selfweight from the "base pattern"
-    analysis.apply_envelope()
-    analysis.apply_reaction_bounds()
-    analysis.apply_hor_multiplier(load_mult, direction_loads)
-    analysis.set_up_optimiser()
-    analysis.run()
-
-    # --------------------------- 4.2 Extract Data from Optimisation ---------------------------
-
-    exitflag = optimiser.exitflag  # get info if optimisation was succeded ot not
-    fopt = optimiser.fopt  # objective function optimum value
-    fopt_over_weight_max = fopt/swt
-    print('Thickness', thk)
-    print('lambda:', load_mult)
-    print('Thrust over weight - max: ', fopt_over_weight_max)
-    print('Exitflag: ', exitflag)
-    if exitflag == 0:
-        form.to_json(os.path.join(folder, title + '.json'))
-        forms_max.append(deepcopy(form))
-        solutions_max.append(fopt_over_weight_max)
-        size_parameters_max.append(load_mult)
-        load_mult = round(load_mult + load_increase, 4)
-        print('Increase Hor Multiplier to', load_mult, '\n')
-    else:
-        print('\nOptimisation did not find a solution for multiplier:', load_mult)
-        print('Last solved multiplier:', round(load_mult - load_increase, 4))
-
-
-print('\n SUMMARY')
-print('\nSizes calculated')
-print(size_parameters_min)
-print(size_parameters_max)
-print('Solutions Found')
-print(solutions_min)
-print(solutions_max)
+    print('\n\nSolutions min and max so far, after running:', optimiser.data['objective'])
+    print(size_parameters_min)
+    print(solutions_min)
+    print(size_parameters_max)
+    print(solutions_max)

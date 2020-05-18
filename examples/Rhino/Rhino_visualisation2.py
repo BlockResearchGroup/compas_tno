@@ -12,15 +12,15 @@ import math
 import compas_tno
 
 # Give a name to your project
-master = 'Dome_Hor_reac_bounds'
+master = 'Projected_Straight_PX_0,30'
 
 # Put here the .json file for the optimisation
 # fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.4.json'
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.09_discr_[4, 16]_min.json'
+# fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.09_discr_[4, 16]_min.json'
 # fnm = '/Users/mricardo/compas_dev/me/SI_data/Amiens/pointed_crossvault/fan_fd/forms/pointed_crossvault_fan_fd_discr_14_fill_0.8_min_thk_46.0.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
 # fnm = compas_tno.get('test.json')
-
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[4, 12]_radial_spaced_fd_straight_min.json'
 
 # Parameters for the visualisation
 radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault

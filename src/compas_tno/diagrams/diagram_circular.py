@@ -1,6 +1,7 @@
 
 import math
 from compas.datastructures import Mesh
+from compas.geometry import intersection_line_line_xy
 
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
     """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.
@@ -59,7 +60,6 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                 lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
 
     if diagonal:
-
         for nr in range(n_radial):
             for nc in range(n_spikes):
                 if (r_oculus + nr * r_div) > 0.0:
@@ -86,6 +86,12 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                             lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
                         else:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
+                    elif partial_diagonal == 'straight':
+                        midx, midy, _ = intersection_line_line_xy([[xa, ya], [xb_, yb_]], [[xa_, ya_], [xb, yb]])
+                        lines.append([[xa, ya, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb_, yb_, 0.0]])
+                        lines.append([[xa_, ya_, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb, yb, 0.0]])
                     else:
                         midx = (xa + xa_ + xb + xb_)/4
                         midy = (ya + ya_ + yb + yb_)/4
@@ -174,15 +180,17 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
             for nc in range(n_spikes):
                 if (r_oculus + nr * r_div) > 0.0:
                     # Meridian Element i
-                    xa = xc + (r_oculus + nr * r_div) * math.cos(theta * nc)
-                    xb = xc + (r_oculus + nr * r_div) * math.cos(theta * (nc + 1))
-                    ya = yc + (r_oculus + nr * r_div) * math.sin(theta * nc)
-                    yb = yc + (r_oculus + nr * r_div) * math.sin(theta * (nc + 1))
+                    xa = xc + (r_oculus + radius * math.cos((n_radial - nr)/n_radial * math.pi/2)) * math.cos(theta * nc)
+                    xb = xc + (r_oculus + radius * math.cos((n_radial - nr)/n_radial * math.pi/2)) * math.cos(theta * (nc + 1))
+                    ya = yc + (r_oculus + radius * math.cos((n_radial - nr)/n_radial * math.pi/2)) * math.sin(theta * nc)
+                    yb = yc + (r_oculus + radius * math.cos((n_radial - nr)/n_radial * math.pi/2)) * math.sin(theta * (nc + 1))
+
+                    radius * math.cos((n_radial - (nr + 1))/n_radial * math.pi/2)
                     # Meridian Element i + 1
-                    xa_ = xc + (r_oculus + (nr + 1) * r_div) * math.cos(theta * nc)
-                    xb_ = xc + (r_oculus + (nr + 1) * r_div) * math.cos(theta * (nc + 1))
-                    ya_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * nc)
-                    yb_ = yc + (r_oculus + (nr + 1) * r_div) * math.sin(theta * (nc + 1))
+                    xa_ = xc + (r_oculus + radius * math.cos((n_radial - (nr + 1))/n_radial * math.pi/2)) * math.cos(theta * nc)
+                    xb_ = xc + (r_oculus + radius * math.cos((n_radial - (nr + 1))/n_radial * math.pi/2)) * math.cos(theta * (nc + 1))
+                    ya_ = yc + (r_oculus + radius * math.cos((n_radial - (nr + 1))/n_radial * math.pi/2)) * math.sin(theta * nc)
+                    yb_ = yc + (r_oculus + radius * math.cos((n_radial - (nr + 1))/n_radial * math.pi/2)) * math.sin(theta * (nc + 1))
                     if partial_diagonal == 'right':
                         if nc + 1 > n_spikes/2:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
@@ -193,6 +201,12 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
                             lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
                         else:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
+                    elif partial_diagonal == 'straight':
+                        midx, midy, _ = intersection_line_line_xy([[xa, ya], [xb_, yb_]], [[xa_, ya_], [xb, yb]])
+                        lines.append([[xa, ya, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb_, yb_, 0.0]])
+                        lines.append([[xa_, ya_, 0.0], [midx, midy, 0.0]])
+                        lines.append([[midx, midy, 0.0], [xb, yb, 0.0]])
                     else:
                         midx = (xa + xa_ + xb + xb_)/4
                         midy = (ya + ya_ + yb + yb_)/4
