@@ -46,7 +46,6 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
     an = tot_angle / (total_nodes - 1)
     zc = radius - H
     xc = L/2
-    lines = []
     gkey_fix = []
     i = 0
 

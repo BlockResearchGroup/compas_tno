@@ -42,7 +42,7 @@ size_parameters_max = []  # empty lists to keep track of the parameters
 size_parameters = []
 plot = True             # If selected will plot all solutions, need to be closed "by hand"
 
-load_mult = 0.00
+load_mult = 0.08
 load_increase = 0.01
 load_mult0 = load_mult
 direction_loads = 'px'
@@ -79,7 +79,7 @@ data_diagram = {
 }
 
 form = FormDiagram.from_library(data_diagram)
-plot_form(form, show_q=False).show()
+plot_form(form, show_q=False, max_width=5, simple=True).show()
 
 # --------- 2.2. Create "Load Form Diagram" to calculate the selfweight based on the tributary area for this pattern ---------------
 
@@ -104,26 +104,26 @@ plot_form(form_load, show_q=False).show()
 
 #--- If using LOADPATH
 
-optimiser = Optimiser()
-optimiser.data['library'] = 'MATLAB'
-optimiser.data['solver'] = 'SDPT3'
-optimiser.data['constraints'] = ['funicular']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'loadpath'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
-analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight_from_pattern(form_load, plot=True) # This adds selfweight from the "base pattern"
-analysis.set_up_optimiser()
-analysis.run()
-plot_form(form, show_q=False).show()
+# optimiser = Optimiser()
+# optimiser.data['library'] = 'MATLAB'
+# optimiser.data['solver'] = 'SDPT3'
+# optimiser.data['constraints'] = ['funicular']
+# optimiser.data['variables'] = ['ind']
+# optimiser.data['objective'] = 'loadpath'
+# optimiser.data['printout'] = True
+# optimiser.data['plot'] = False
+# optimiser.data['find_inds'] = True
+# optimiser.data['qmax'] = 10e+10
+# analysis = Analysis.from_elements(dome, form, optimiser)
+# analysis.apply_selfweight_from_pattern(form_load, plot=True) # This adds selfweight from the "base pattern"
+# analysis.set_up_optimiser()
+# analysis.run()
+# plot_form(form, show_q=False).show()
 
 #--- If using load from saved form
 
 # objective_to_load = 'min'
-# load_mult_to_load = 0.00
+# load_mult_to_load = 0.04
 # title = 'Dome_Px=' + str(load_mult_to_load) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + objective_to_load
 # load_json = os.path.join(folder, title + '.json')
 # form = FormDiagram.from_json(load_json)
@@ -146,7 +146,7 @@ print(optimiser.data)
 
 # --------------------------- 4.1 Set The objective to min and start loop ---------------------------
 
-for optimiser.data['objective'] in ['min', 'max']:
+for optimiser.data['objective'] in ['max']:
 
     form = form_start
     load_mult = load_mult0
@@ -157,7 +157,12 @@ for optimiser.data['objective'] in ['min', 'max']:
         t_over_R = thk/R
         title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.data['objective']
 
+        load_json = os.path.join(folder, title + '.json')
+        form = FormDiagram.from_json(load_json)
+        f0 = form.thrust()
+
         print('\n----------- Problem Title:', title, '\n')
+        print('----------- F0:', f0)
 
         # --------------------------- 4.2. Prepare Analysis and run ---------------------------
 
@@ -168,6 +173,10 @@ for optimiser.data['objective'] in ['min', 'max']:
             form.vertex_attribute(key, 'ub', radius)
             form.vertex_attribute(key, 'lb', - t)
         analysis.apply_reaction_bounds()
+        if load_mult == 0.0:
+            optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
+        else:
+            optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
         analysis.apply_hor_multiplier(load_mult, direction_loads)  # This line applies the horizontal multiplier
         analysis.set_up_optimiser()
         analysis.run()
@@ -182,6 +191,7 @@ for optimiser.data['objective'] in ['min', 'max']:
         print('Thrust over weight: ', fopt_over_weight)
         print('Exitflag: ', exitflag)
         if exitflag == 0:
+            # if -1 * fopt > f0:
             form.to_json(os.path.join(folder, title + '.json'))
             if optimiser.data['objective'] == 'min':
                 forms_min.append(deepcopy(form))

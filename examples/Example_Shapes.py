@@ -34,6 +34,29 @@ import math
 #     't' : 0.0
 # }
 
+# data = {
+#     'type': 'pointed_crossvault',
+#     'thk': 0.5,
+#     'discretisation': [50, 50],
+#     'xy_span': [[0.0, 6.0], [0.0, 10.0]],
+#     't': 0.0,
+#     'hc': 6.0,
+#     'hm': None,
+#     'he': None,
+# }
+
+# k1 = 0.0
+# k2 = 0.5  # Percentage of the dome to consider
+# data = {
+#     'type': 'dome_spr',
+#     'thk': 0.25,
+#     'discretisation': [25, 50],
+#     'center': [5.0, 5.0],
+#     'radius': 5.0,
+#     'theta': [k1 * pi/2, k2 * pi/2],
+#     't': 0.0,
+# }
+
 data = {
     'type': 'dome',
     'thk': 0.15,

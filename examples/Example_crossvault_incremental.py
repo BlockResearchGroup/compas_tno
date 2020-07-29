@@ -13,8 +13,8 @@ from compas_tno.viewers.thrust import view_solution
 
 
 exitflag = 0  # means that optimisation found a solution
-thk = 0.50  # thickness on the start in meters
-thk_reduction = 0.005  # in meters
+thk = 0.75  # thickness on the start in meters
+thk_reduction = 0.05  # in meters
 solutions = []  # empty lists to keep track of  the solutions
 size_parameters = []  # empty lists to keep track of  the parameters
 span = 10.0  # square span for analysis
@@ -23,7 +23,7 @@ R = span/2  # Only valid for rounded cross vault
 # Basic parameters
 
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
+type_formdiagram = 'fan_fd'  # Try also 'fan_fd'
 discretisation = 10
 
 # ----------------------- 1. Create Form Diagram for analysis ---------------------------
@@ -79,7 +79,7 @@ while exitflag == 0:
     optimiser.data['printout'] = True
     optimiser.data['plot'] = False
     optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 2000.0
+    optimiser.data['qmax'] = 5000.0
     print(optimiser.data)
 
     # --------------------- 6. Set up and run analysis ---------------------
@@ -124,7 +124,18 @@ print(size_parameters)
 print('Solutions Found')
 print(solutions)
 
-view_thrust(form).show()
+# view_thrust(form).show()
+
+solutions_min = [0.727831314573872, 0.7460121236174099, 0.7693802830177964, 0.7956987129571912, 0.8238212433660921, 0.8539414706011096]
+solutions_max = [-1.1869013671522297, -1.136785135787007, -1.0873058677750396, -1.0250351155802055, -0.9681497848258609, -0.9158440477742253]
+
+import os
+from compas_tno.plotters import save_csv
+
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+csv_file = os.path.join(folder, title + '_data.csv')
+save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
 
 # If you wish to visualise the upper and lower bound together
 # view_solution(form, vault).show()

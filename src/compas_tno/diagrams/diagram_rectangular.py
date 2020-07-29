@@ -153,8 +153,6 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_braci
     else:
         nstop = nx - partial_bracing_modules  # Test to stop
 
-    print(nstop)
-
     line_hor = [[x0, yc0, 0.0], [xc0, yc0, 0.0]]
     line_ver = [[xc0, y0, 0.0], [xc0, yc0, 0.0]]
     origin = [xc0, yc0, 0.0]
@@ -205,7 +203,6 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_braci
                     lin = [[x_, y_, 0.0], [xb, yb, 0.0]]
                     lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
                 else:
-                    print('some?')
                     lin = [[xa, ya, 0.0], [xb, yb, 0.0]]
                     lines = mirror_8x(lin, origin, line_hor, line_ver, lines)
 

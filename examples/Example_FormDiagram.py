@@ -66,6 +66,22 @@ print(form)
 form.overview_forces()
 plot_form(form, show_q=False).show()
 
+# -----------------------------------------------------------
+# --------- CREATING CROSS DIAGONAL FORM DIAGRAM ------------
+# -----------------------------------------------------------
+
+data = {
+    'type': 'cross_diagonal',
+    'xy_span': [[0, 10], [0, 10]],
+    'discretisation': 4,
+    'fix': 'corners',
+}
+
+form = FormDiagram.from_library(data)
+print(form)
+plot_form(form, show_q=False).show()
+
+
 # ------------------------------------------------
 # --------- CREATING RADIAL FORM DIAGRAM ---------
 # ------------------------------------------------

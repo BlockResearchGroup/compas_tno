@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from scipy.sparse import diags
 from scipy.linalg import solve
+from scipy.sparse.linalg import spsolve
 import numpy as np
 import logging
 import os
@@ -491,7 +492,8 @@ def subsolv(m, n, epsimin, low, upp, alfa, beta, p0, q0, P, Q, a0, a, b, c, d):
                 AAr1 = np.concatenate((Alam, a), axis=1)
                 AAr2 = np.concatenate((a, -zet/z), axis=0).T
                 AA = np.concatenate((AAr1, AAr2), axis=0)
-                solut = solve(AA, bb)
+                solut = spsolve(AA, bb)
+                # solut = solve(AA, bb)
                 dlam = solut[0:m]
                 dz = solut[m:m+1]
                 dx = -delx/diagx-np.dot(GG.T, dlam)/diagx
@@ -513,6 +515,7 @@ def subsolv(m, n, epsimin, low, upp, alfa, beta, p0, q0, P, Q, a0, a, b, c, d):
                 # print(AA)
                 # print(bb)
                 solut = solve(AA, bb)
+                # solut = spsolve(AA, bb)
                 dx = solut[0:n]
                 dz = solut[n:n+1]
                 dlam = np.dot(GG, dx)/diaglamyi-dz*(a/diaglamyi)+dellamyi/diaglamyi

@@ -1,6 +1,5 @@
 from compas_plotters import MeshPlotter
 from compas_tna.diagrams import FormDiagram
-from compas_tna.diagrams import ForceDiagram
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -12,6 +11,7 @@ __all__ = [
     'plot_force',
     'plot_dual',
 ]
+
 
 def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_width=10, simple=False, color_inds=True):
     """ Extended plotting of a ForceDiagram
@@ -71,6 +71,7 @@ def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_
         plotter.draw_edges(color=color, width=width)
 
     return plotter
+
 
 def plot_dual(form):
     """ Plot the dual of a FormDiagram

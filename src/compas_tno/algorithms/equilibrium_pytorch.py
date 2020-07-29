@@ -33,7 +33,6 @@ __all__ = [
     'compute_jacobian'
 ]
 
-
 def q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep):
     k = len(ind)
     m = k + len(dep)
@@ -63,29 +62,24 @@ def reac_bound_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C,
     Q = diagflat(q)
     CfQC = mm(mm(Cf.t(), Q), C)
     R = mm(CfQC, xyz) - pfixed
-    length_x = abs(mul(zfixed, div(R[:, 0], R[:, 2]).reshape(-1, 1)))
-    length_y = abs(mul(zfixed, div(R[:, 1], R[:, 2]).reshape(-1, 1)))
+    length_x = mul(zfixed, abs(div(R[:, 0], R[:, 2])).reshape(-1, 1))
+    length_y = mul(zfixed, abs(div(R[:, 1], R[:, 2])).reshape(-1, 1))
     length = cat([length_x, length_y])
     return length
 
 
-def f_min_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy):
+def f_min_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy, pfixed):
     q = q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     Q = diagflat(q)
     CfQC = mm(mm(Cf.t(), Q), C)
-    Rh = mm(CfQC, xy)
+    Rh = mm(CfQC, xy) - pfixed[:, :2]
     R = norm(Rh, dim=1)
     f = sum(R)
     return f
 
 
-def f_max_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy):
-    q = q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep)
-    Q = diagflat(q)
-    CfQC = mm(mm(Cf.t(), Q), C)
-    Rh = mm(CfQC, xy)
-    R = norm(Rh, dim=1)
-    f = -1 * sum(R)
+def f_max_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy, pfixed):
+    f = -1 * f_min_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C, Cf, xy, pfixed)
     return f
 
 
@@ -102,13 +96,13 @@ def f_target_pytorch(variables):
 def f_objective_pytorch(variables, *args):
     Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective = args
     if objective == 'min':
-        f = f_min_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, xy)
+        f = f_min_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, xy, pfixed)
     if objective == 'max':
-        f = f_max_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, xy)
+        f = f_max_thrust_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, xy, pfixed)
     if objective == 'loadpath':
-        pass
+        raise NotImplementedError
     if objective == 'target':
-        pass
+        raise NotImplementedError
     return f
 
 
@@ -116,7 +110,7 @@ def f_constraints_pytorch(variables, *args):
     Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th = args
     q = q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     if 'funicular' in dict_constr:
-        constraints = q
+        constraints = q[dep]
     if 'envelope' in dict_constr:
         z = z_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, Ci_th, Cit_th, Cf_th, pzfree, free, fixed)
         upper = tensor(ub) - z[ub_ind]
@@ -126,13 +120,19 @@ def f_constraints_pytorch(variables, *args):
         length = reac_bound_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, pfixed, xyz)
         reac_bound = abs(cat([tensor(b[:, 0]), tensor(b[:, 1])]).reshape(-1, 1)) - length
         constraints = cat([constraints, reac_bound])
+    # ONLY FOR DEBUG:
+    if 'R' in dict_constr:
+        Q = diagflat(q)
+        CfQC = mm(mm(Cf_th.t(), Q), C_th)
+        R = mm(CfQC, xyz) - pfixed
+        constraints = cat([constraints, R[:, 0].reshape(-1, 1), R[:, 1].reshape(-1, 1), R[:, 2].reshape(-1, 1)])
     if 'cracks' in dict_constr:
         pass
     if 'rollers' in dict_constr:
-        Cftx = Cf_th[:, rol_x].transpose()
-        Cfty = Cf_th[:, rol_y].transpose()
-        rx_check = max_rol_rx - abs(mm(Cftx, mm(U_th, q)) - px[rol_x])
-        ry_check = max_rol_ry - abs(mm(Cfty, mm(V_th, q)) - py[rol_y])
+        Cftx = C_th[:, rol_x].t()
+        Cfty = C_th[:, rol_y].t()
+        rx_check = tensor(max_rol_rx) - abs(mm(Cftx, mm(U_th, q)) - tensor(px[rol_x]))
+        ry_check = tensor(max_rol_ry) - abs(mm(Cfty, mm(V_th, q)) - tensor(py[rol_y]))
         constraints = cat([constraints, rx_check, ry_check])
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         A_q = mm(tensor(Asym), variables)
@@ -185,10 +185,10 @@ def bounds_constraints_pytorch(variables, *args):
     if 'cracks' in dict_constr:
         pass
     if 'rollers' in dict_constr:
-        Cftx = Cf_th[:, rol_x].transpose()
-        Cfty = Cf_th[:, rol_y].transpose()
-        rx_check = max_rol_rx - abs(mm(Cftx, mm(U_th, q)) - px[rol_x])
-        ry_check = max_rol_ry - abs(mm(Cfty, mm(V_th, q)) - py[rol_y])
+        Cftx = C_th[:, rol_x].t()
+        Cfty = C_th[:, rol_y].t()
+        rx_check = tensor(max_rol_rx) - abs(mm(Cftx, mm(U_th, q)) - tensor(px[rol_x]))
+        ry_check = tensor(max_rol_ry) - abs(mm(Cfty, mm(V_th, q)) - tensor(py[rol_y]))
         constraints = cat([constraints, rx_check, ry_check])
     cu = [10e10]*len(constraints)
     cl = [0.0]*len(constraints)

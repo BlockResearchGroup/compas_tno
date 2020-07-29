@@ -2,22 +2,31 @@ import copy
 import math
 
 from compas_tno.shapes import Shape
+import compas_tno
+import os
 
 from compas_plotters import MeshPlotter
 
-from compas_tno.algorithms.problems import initialise_form
-from compas_tno.algorithms.problems import initialise_problem
-from compas_tno.algorithms import set_up_nonlinear_optimisation
-from compas_tno.algorithms import set_up_convex_optimisation
+from copy import deepcopy
 
-from compas_tno.algorithms import run_optimisation_scipy
-from compas_tno.algorithms import run_optimisation_MATLAB
-from compas_tno.algorithms import run_optimisation_MMA
-from compas_tno.algorithms import run_optimisation_ipopt
+from compas_tno.problems import set_up_nonlinear_optimisation
+from compas_tno.problems import set_up_convex_optimisation
+
+from compas_tno.solvers import run_optimisation_scipy
+from compas_tno.solvers import run_optimisation_MATLAB
+from compas_tno.solvers import run_optimisation_MMA
+from compas_tno.solvers import run_optimisation_ipopt
+
+from compas_tno.diagrams import FormDiagram
 
 from compas_tno.plotters import plot_form
+from compas_tno.plotters import plot_independents
+
+from numpy import array
+from scipy import interpolate
 
 __all__ = ['Analysis']
+
 
 class Analysis(object):
 
@@ -64,13 +73,11 @@ class Analysis(object):
 
     __module__ = 'compas_tna.shapes'
 
-
     def __init__(self):
-        self.data = { }
+        self.data = {}
         self.shape = None
         self.form = None
         self.optimiser = None
-
 
     @classmethod
     def from_elements(cls, shape, form, optimiser):
@@ -105,45 +112,12 @@ class Analysis(object):
 
         return analysis
 
-
     def apply_selfweight(self):
-        """Apply selfweight to the nodes of the form diagram based on the shape"""
+        """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
 
-        form = self.form
-        form_ = form.copy()
-        shape = self.shape
-        total_selfweight = shape.compute_selfweight()
-
-        for key in form_.vertices():
-            x, y, _ = form_.vertex_coordinates(key)
-            z = shape.get_middle(x, y)
-            form_.vertex_attribute(key, 'z', value=z)
-            form.vertex_attribute(key, 'target', value=z)
-
-        pzt = 0
-        for key in form.vertices():
-            pz = form_.vertex_area(key)
-            form.vertex_attribute(key, 'pz', value = pz)
-            pzt += pz
-
-        if shape.data['type'] == 'arch':
-            pzt = 0
-            for key in form.vertices():
-                form.vertex_attribute(key, 'pz', value = 1.0)
-                if form.vertex_attribute(key, 'is_fixed') == True:
-                    form.vertex_attribute(key, 'pz', value = 0.5)
-                pzt += form.vertex_attribute(key, 'pz')
-
-        factor = total_selfweight/pzt
-
-        for key in form.vertices():
-            pzi = factor * form.vertex_attribute(key, 'pz')
-            form.vertex_attribute(key, 'pz', value = pzi)
-
-        self.form = form
+        self.form.selfweight_from_shape(self.shape)
 
         return
-
 
     def apply_selfweight_from_pattern(self, pattern, plot=False):
         """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
@@ -171,7 +145,7 @@ class Analysis(object):
         pzt = 0
         for key in key_real_to_key:
             pz = form_.vertex_area(key_real_to_key[key])
-            form.vertex_attribute(key, 'pz', value = pz)
+            form.vertex_attribute(key, 'pz', value=pz)
             pzt += pz
 
         if plot:
@@ -193,21 +167,20 @@ class Analysis(object):
         if shape.data['type'] == 'arch':
             pzt = 0
             for key in form.vertices():
-                form.vertex_attribute(key, 'pz', value = 1.0)
+                form.vertex_attribute(key, 'pz', value=1.0)
                 if form.vertex_attribute(key, 'is_fixed') == True:
-                    form.vertex_attribute(key, 'pz', value = 0.5)
+                    form.vertex_attribute(key, 'pz', value=0.5)
                 pzt += form.vertex_attribute(key, 'pz')
 
         factor = total_selfweight/pzt
 
         for key in form.vertices():
             pzi = factor * form.vertex_attribute(key, 'pz')
-            form.vertex_attribute(key, 'pz', value = pzi)
+            form.vertex_attribute(key, 'pz', value=pzi)
 
         self.form = form
 
         return
-
 
     def apply_symmetry(self, center_point=[5.0, 5.0, 0.0]):
         """Apply symmetry to the pattern based on the center point of the Form Diagram"""
@@ -215,7 +188,6 @@ class Analysis(object):
         self.form.apply_symmetry(center_point=center_point)
 
         return
-
 
     def apply_fill_load(self, plot=False):
 
@@ -255,7 +227,6 @@ class Analysis(object):
         else:
             print('Warning, no Fill was assigned to Shape')
 
-
         return
 
     def apply_pointed_load(self, keys, magnitudes, proportional=True, component='pz', component_get='pz'):
@@ -271,7 +242,7 @@ class Analysis(object):
             magnitudes = magnitudes * len(keys)
         else:
             print('Error, check the number of nodes to apply loads and magnitude of forces!')
-        print('magnitudes',magnitudes)
+        print('magnitudes', magnitudes)
         form = self.form
         i = 0
         for key in keys:
@@ -284,7 +255,7 @@ class Analysis(object):
             print('Load:', pnew, 'applied to key:', key, 'in direction:', component)
             i += 1
 
-        self.form = form # With correct forces
+        self.form = form  # With correct forces
 
         return
 
@@ -292,7 +263,6 @@ class Analysis(object):
         """Apply a multiplier on the selfweight to the nodes of the form diagram based"""
 
         form = self.form
-        shape = self.shape
 
         pzt = 0
         for key in form.vertices():
@@ -308,42 +278,53 @@ class Analysis(object):
 
         return
 
-
     def apply_envelope(self):
-        """Apply ub and lb to the nodes based on the shape's intrados and extrados"""
+        """Invoke method to apply ub and lb to the nodes based on the shape's intrados and extrados"""
 
+        self.form.envelope_from_shape(self.shape)
+
+        return
+
+    def apply_envelope_with_damage(self):
+        """Apply ub and lb to the nodes based on the shape's intrados and extrados and in the intra/extra damaged"""
 
         form = self.form
         shape = self.shape
+        extrados_damage = array(shape.extrados_damage.vertices_attributes('xyz'))
+        intrados_damage = array(shape.intrados_damage.vertices_attributes('xyz'))
 
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
             ub_ = shape.get_ub(x, y)
             lb_ = shape.get_lb(x, y)
-            if math.isnan(lb_):
+            lb_damage = float(interpolate.griddata(intrados_damage[:, :2], intrados_damage[:, 2], [x, y]))
+            ub_damage = float(interpolate.griddata(extrados_damage[:, :2], extrados_damage[:, 2], [x, y]))
+            if math.isnan(lb_damage) or math.isnan(lb_):
                 lb_ = -1 * shape.data['t']
-                print('Shape interpolation got NaN, check results')
-            form.vertex_attribute(key, 'ub', value = ub_)
-            form.vertex_attribute(key, 'lb', value = lb_)
+                # print('Shape interpolation got NaN, check results (x,y): ({0:.3f}, {1:.3f})'.format(x, y))
+            else:
+                lb_ = max(lb_, lb_damage)
+            ub_ = min(ub_, ub_damage)
+            form.vertex_attribute(key, 'ub', value=ub_)
+            form.vertex_attribute(key, 'lb', value=lb_)
 
-        self.form = form # With correct forces
+        self.form = form  # With correct forces
 
         return
 
     def apply_target(self):
         """Apply target to the nodes based on the shape's target surface"""
 
-
         form = self.form
         shape = self.shape
 
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            form.vertex_attribute(key, 'target', value = shape.get_middle(x, y))
+            form.vertex_attribute(key, 'target', value=shape.get_middle(x, y))
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
-        self.form = form # With correct forces
+        self.form = form  # With correct forces
 
         return
 
@@ -368,7 +349,7 @@ class Analysis(object):
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
         if shape.data['type'] == 'dome' or shape.data['type'] == 'dome_polar':
-            [x0, y0] = shape.data['center']
+            [x0, y0] = shape.data['center'][:2]
             for key in form.vertices_where({'is_fixed': True}):
                 x, y, _ = form.vertex_coordinates(key)
                 theta = math.atan2((y - y0), (x - x0))
@@ -376,6 +357,7 @@ class Analysis(object):
                 y_ = thk/2*math.sin(theta)
                 form.vertex_attribute(key, 'b', [x_, y_])
 
+        b_manual = shape.data.get('b_manual', None)
         if shape.data['type'] == 'arch':
             H = shape.data['H']
             L = shape.data['L']
@@ -386,6 +368,9 @@ class Analysis(object):
             x = math.sqrt(re**2 - zc**2)
             for key in form.vertices_where({'is_fixed': True}):
                 form.vertex_attribute(key, 'b', [x - L/2, 0.0])
+                if b_manual:
+                    form.vertex_attribute(key, 'b', [b_manual, 0.0])
+                    print('Applied b manual')
 
         if shape.data['type'] == 'dome_spr':
             # print(shape.data['center'])
@@ -404,10 +389,9 @@ class Analysis(object):
                 form.vertex_attribute(key, 'b', [x_, y_])
                 # print(x,y,x_,y_)
 
-        self.form = form # With correct forces
+        self.form = form  # With correct forces
 
         return
-
 
     def apply_partial_reactions(self, key, direction, magnitude):
         """Apply ub and lb to the nodes based on the shape's intrados and extrados"""
@@ -416,10 +400,9 @@ class Analysis(object):
 
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
-        self.form = form # With correct forces
+        self.form = form  # With correct forces
 
         return
-
 
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
@@ -445,13 +428,19 @@ class Analysis(object):
 
         return
 
-    def limit_analysis_GSF(self, thk, thk_reduction, R, fill_percentage=None, rollers_ratio=None, printout=True, plot=False, save_forms=None):
+    def limit_analysis_GSF(self, thk, thk_reduction, span, thk_refined=None, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
-        size_parameters = []  # empty lists to keep track of  the parameters
-        thicknesses = []
+        thicknesses_min = []
+        thicknesses_max = []
+        size_parameters_min = []
+        size_parameters_max = []
         t0 = thk
+        form0 = self.form.copy()
+        swt0 = self.shape.compute_selfweight()
+        thk_reduction0 = thk_reduction
+        refined = False
 
         data_diagram = self.form.parameters
         data_shape = self.shape.data
@@ -460,14 +449,15 @@ class Analysis(object):
 
         for self.optimiser.data['objective'] in ['min', 'max']:
 
-            # self.form.initialise_tna(plot=False)
+            self.form = form0
             exitflag = 0
             thk = t0
+            thk_reduction = thk_reduction0
+            refined = False
             while exitflag == 0 and thk > 0:
-
                 exitflag = 0
-                t_over_R = thk/R
-                print('\n----- Starting the', data_diagram['type'], 'problem for thk/R:', t_over_R, '\n')
+                t_over_span = thk/span
+                print('\n----- Starting the', data_diagram['type'], 'problem for thk/L:', t_over_span, '\n')
                 data_shape['thk'] = thk
                 self.shape = Shape.from_library(data_shape)
                 swt = self.shape.compute_selfweight()
@@ -475,7 +465,9 @@ class Analysis(object):
                     self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
                     swt += self.shape.compute_fill_weight()
                 if rollers_ratio:
-                    self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt]*2, total_ry=[rollers_ratio[1]*swt]*2)
+                    self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
+                elif rollers_absolute:
+                    self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
                 self.apply_selfweight()
                 self.apply_envelope()
                 self.apply_reaction_bounds()
@@ -485,6 +477,7 @@ class Analysis(object):
                 self.run()
                 if plot:
                     plot_form(self.form, show_q=False, cracks=True).show()
+                    plot_independents(self.form).show()
                 exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
                 fopt = self.optimiser.fopt  # objective function optimum value
                 fopt_over_weight = fopt/swt  # divide by selfweight
@@ -492,37 +485,46 @@ class Analysis(object):
                 if exitflag == 0:
                     if self.optimiser.data['objective'] == 'min':
                         solutions_min.append(fopt_over_weight)
-                        size_parameters.append(t_over_R)
-                        thicknesses.append(thk)
+                        size_parameters_min.append(t_over_span)
+                        thicknesses_min.append(thk)
                     else:
                         solutions_max.append(fopt_over_weight)
+                        size_parameters_max.append(t_over_span)
+                        thicknesses_max.append(thk)
                     if save_forms:
                         address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
-                        self.form.to_json(address)
+                    else:
+                        address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
+                    self.form.to_json(address)
                     thk = round(thk - thk_reduction, 4)
                     print('Reduce thickness to', thk, '\n')
+                else:
+                    print('Failed in THK: {0} | objective: '.format(thk), self.optimiser.data['objective'], '\n')
+                    if thk_refined and refined is False:
+                        self.form = FormDiagram.from_json(address)
+                        thk = round(thk + thk_reduction, 4)
+                        thk_reduction = thk_refined
+                        thk = round(thk - thk_reduction, 4)
+                        exitflag = 0
+                        print('---------- Refined analysis started -----------', '\n', 'Reduce thickness to', thk, '\n')
+                        refined = True
+                    else:
+                        print('---------- End of process -----------', '\n')
+
         if printout:
-            print('\n------------------ SUMMARY ------------------ ')
-            print('Thicknesses calculated ({0}):'.format(len(thicknesses)))
-            print(thicknesses)
-            print('Thk/R calculated ({0}):'.format(len(size_parameters)))
-            print(size_parameters)
-            print('Solutions Found ({0}):'.format(len(solutions_min)))
+            print('------------------ SUMMARY ------------------ ')
+            print('thicknesses min ({0}):'.format(len(thicknesses_min)))
+            print(thicknesses_min)
+            print('thicknesses max ({0}):'.format(len(thicknesses_max)))
+            print(thicknesses_max)
+            print('min solutions ({0}):'.format(len(solutions_min)))
             print(solutions_min)
-            print('Solutions Found ({0}):'.format(len(solutions_max)))
+            print('max solutions ({0}):'.format(len(solutions_max)))
             print(solutions_max)
 
-        return thicknesses, size_parameters, solutions_min, solutions_max
-
+        return [thicknesses_min, thicknesses_max], [solutions_min, solutions_max]
 
     def limit_analysis_load_mult(self, load0, load_increase, load_direction, percentual=True):
         """"" W.I.P. """""
 
         return
-
-
-
-
-
-
-

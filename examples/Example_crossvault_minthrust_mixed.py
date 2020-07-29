@@ -62,7 +62,7 @@ optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'slsqp'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
 optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
+optimiser.data['objective'] = 'max'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
@@ -83,7 +83,11 @@ analysis.run()
 
 plot_form(form, show_q=False, simple=True, cracks=True).show()
 
-file_address = compas_tno.get('test.json')
+# file_address = compas_tno.get('test.json')
+# form.to_json(file_address)
+
+import os
+file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ optimiser.data['objective'] + '.json')
 form.to_json(file_address)
 
 view_thrust(form).show()

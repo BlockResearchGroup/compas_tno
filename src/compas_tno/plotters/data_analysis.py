@@ -1,18 +1,14 @@
-from compas_plotters import MeshPlotter
-from compas_tna.diagrams import FormDiagram
-from compas_tna.diagrams import ForceDiagram
 
 from numpy import arange
 from numpy import array
 from numpy import append
 from numpy import linspace
+from numpy import concatenate
 
 from compas.geometry import intersection_line_line_xy
 
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
 from matplotlib.ticker import FormatStrFormatter
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 
 import compas_tno
@@ -27,24 +23,138 @@ __email__ = 'mricardo@ethz.ch'
 
 __all__ = [
     'diagram_of_thrust',
+    'diagram_of_thrust_partial',
     'diagram_of_multiple_thrust',
     'diagram_of_thrust_load_mult',
     'surface_GSF_load_mult',
     'save_csv',
+    'save_csv_row',
     'open_csv',
+    'interpolate_min_thk',
 ]
 
 
-def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False):
+def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_limits=None, save=False):
     """ Plot a diagram of Thrusts based on the collected data from (n) points.
 
     Parameters
     ----------
-    dimensions : list (n)
-        Points with discretised solutions.
+    dimensions : list of lists [[n],[m]]
+        Points with discretised solutions for minimum/maximum thrust.
+    solutions : list of lists [[n],[m]]
+        Adimensional thrust over weight for minimum/maximum thrust.
+    limit_state : bool
+        If yes, it interpolates the limit_state based on the two last solutions.
+    fill : bool
+        If yes, it fills bewteen the curves of min and max.
+    xy_limits : list of lists
+        Freezes the axis of the graphs.
+    save : str
+        Path to save the graph.
+
+    Returns
+    -------
+    obj
+        Plotter object.
+
+    """
+    thicknesses_min, thicknesses_max = thicknesses
+    min_sol, max_sol = solutions
+    xmin = thicknesses_min
+    xmax = thicknesses_max
+    fmin = 100.0 * array(min_sol)
+    fmax = -100.0 * array(max_sol)
+    n = len(xmin)
+    m = len(xmax)
+    if m > n:
+        dimension = xmax
+    else:
+        dimension = xmin
+    if n >= 2 and m >= 2:
+        x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+    dim = append(dimension, x_)
+    xmax_ = append(xmax, x_)
+    xmin_ = append(xmin, x_)
+    fmin_ = append(fmin, y_)
+    fmax_ = append(fmax, y_)
+
+    size_axis_label = 14
+    size_axis_data = 12
+    size_legend = 14
+
+    interval_x = abs(dimension[0] - dimension[1])
+    interval_y = 10
+    if xy_limits:
+        [[max_x, min_x], [max_y, min_y]] = xy_limits
+    else:
+        max_x = max(dim)
+        min_x = min(dim) - interval_x
+        max_y = interval_y - max(fmax_) % 10 + max(fmax_)
+        min_y = min(fmin_) - min(fmin_) % 10
+
+    last_scale = round(max_x/min_x, 2)
+    middle_scale = round((last_scale - 1.0)/2 + 1, 2)
+    quad_scale = round((last_scale - 1.0)*3/4 + 1, 2)
+    middle_x = max_x/middle_scale
+    quad_x = max_x/quad_scale
+
+    fig = plt.figure(figsize=[12, 4])
+
+    ax = fig.add_subplot(1, 1, 1)
+    ax.plot(xmin, fmin, 'o', ls='-', markersize=5, color='blue', label='minimum thrust')
+    ax.plot(xmax, fmax, 'o', ls='-', markersize=5, color='red', label='maximum thrust')
+
+    if limit_state:
+        extrapolation_max = [fmax[m-1], y_]
+        extrapolation_min = [fmin[n-1], y_]
+        extrapolation_x_max = [xmax[m-1], x_]
+        extrapolation_x_min = [xmin[n-1], x_]
+        ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black', label='limit state')
+        ax.plot(extrapolation_x_max, extrapolation_max, '', ls='--', color='red')
+        ax.plot(extrapolation_x_min, extrapolation_min, '', ls='--', color='blue')
+        ax.annotate(str(round(max_x/x_, 2)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
+
+    if fill:
+        ax.fill(append(xmin_, xmax_[::-1]), append(fmin_, fmax_[::-1]), color="grey", alpha=0.2)
+
+    ax1 = plt.axes()
+    ax2 = ax1.twiny()
+    ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100*(max_x - quad_x)/(max_x-min_x), 100])
+    ax2.set_xticklabels(['1.0', str(round(middle_scale, 2)), str(round(quad_scale, 2)), str(last_scale)], size=size_axis_data)
+    ax1.set_xlabel('thickness', size=size_axis_label, weight='bold', labelpad=8)
+    ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
+    # ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))  # Check if this is necessary
+    ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax1.set_xlim(max_x, min_x)
+    ax.set_ylim(min_y, max_y)
+    # ax1.set_xticks(arange(max_x, min_x - interval_x, -interval_x))
+    ax1.set_yticks(arange(min_y, max_y + interval_y, interval_y))
+    ax1.tick_params(axis='both', which='major', labelsize=size_axis_data)
+
+    box = ax.get_position()
+    ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
+    ax.grid(color='silver', linestyle='-', linewidth=0.5)
+    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+
+    if save:
+        plt.savefig(save)
+
+    return plt
+
+
+def diagram_of_thrust_partial(xmin, xmax, min_sol, max_sol, limit_state=True, fill=False, xy_limits=None, save=False):
+    """ Plot a diagram of Thrusts based on the collected data from (n) points.
+
+    Parameters
+    ----------
+    xmin : list (n)
+        Points with discretised solutions of minimum thrust.
+    xmax : list (m)
+        Points with discretised solutions of maximum thrust.
     min_sol : list (n)
         Adimensional thrust over weight for minimum thrust.
-    max_sol : list (n)
+    max_sol : list (m)
         Adimensional thrust over weight for minimum thrust.
     limit_state : bool
         If yes, it interpolates the limit_state based on the two last solutions.
@@ -57,28 +167,52 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
         Plotter object.
 
     """
-    xmin = xmax = array(dimension)
+    xmin = array(xmin)
+    xmax = array(xmax)
     fmin = 100.0 * array(min_sol)
     fmax = -100.0 * array(max_sol)
     n = len(xmin)
-    x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
-    xmax_ = append(xmax, x_)
-    fmin_ = append(fmin, y_)
-    fmax_ = append(fmax, y_)
+    m = len(xmax)
+    if m > 1 and n > 1:
+        x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+        xmax_ = append(xmax, x_)
+        xmin_ = append(xmin, x_)
+        fmin_ = append(fmin, y_)
+        fmax_ = append(fmax, y_)
+    else:
+        xmax_ = xmax
+        xmin_ = xmin
+        fmin_ = fmin
+        fmax_ = fmax
 
     size_axis_label = 14
     size_axis_data = 12
     size_legend = 14
 
-    interval_x = abs(dimension[0] - dimension[1])
+    if m > n:
+        dimension = xmax_
+    else:
+        dimension = xmin_
+    fs = concatenate((fmin_, fmax_))
+
+    if len(dimension) > 1:
+        interval_x = abs(dimension[0] - dimension[1])
+    else:
+        interval_x = 0.01
     interval_y = 10
-    max_x = max(xmax_)
-    min_x = min(xmax_) - interval_x
-    max_y = interval_y - max(fmax_) % 10 + max(fmax_)
-    min_y = min(fmin_) - min(fmin_) % 10
+    if xy_limits:
+        [[max_x, min_x], [max_y, min_y]] = xy_limits
+    else:
+        max_x = max(dimension)
+        min_x = min(dimension) - interval_x
+        max_y = interval_y - max(fs) % 10 + max(fs)
+        min_y = min(fs) - min(fs) % 10
+
     last_scale = round(max_x/min_x, 2)
     middle_scale = round((last_scale - 1.0)/2 + 1, 2)
+    quad_scale = round((last_scale - 1.0)*3/4 + 1, 2)
     middle_x = max_x/middle_scale
+    quad_x = max_x/quad_scale
 
     fig = plt.figure(figsize=[12, 4])
 
@@ -86,22 +220,26 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
     ax.plot(xmin, fmin, 'o', ls='-', markersize=5, color='blue', label='minimum thrust')
     ax.plot(xmax, fmax, 'o', ls='-', markersize=5, color='red', label='maximum thrust')
 
-    if limit_state:
+    if limit_state and m > 1 and n > 1:
         extrapolation_max = [fmax[n-1], y_]
         extrapolation_min = [fmin[n-1], y_]
         extrapolation_x = [xmax[n-1], x_]
         ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black', label='limit state')
         ax.plot(extrapolation_x, extrapolation_max, '', ls='--', color='red')
         ax.plot(extrapolation_x, extrapolation_min, '', ls='--', color='blue')
-        ax.annotate(str(round(x_, 3)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
+        ax.annotate(str(round(max_x/x_, 2)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
+
+    if fill and m > 1 and n > 1:
+        ax.fill_between(xmin, fmin, fmax, color='grey', alpha=0.2)
+        ax.fill_between(extrapolation_x, extrapolation_min, extrapolation_max, color='grey', alpha=0.2)
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
-    ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100*(max_x - min(xmax_))/(max_x - min_x), 100])
-    ax2.set_xticklabels(['1.0', str(middle_scale), str(round(max_x/min(xmax_), 2)), str(last_scale)], size=size_axis_data)
-    ax1.set_xlabel('t/R', size=size_axis_label, weight='bold', labelpad=8)
+    ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100*(max_x - quad_x)/(max_x-min_x), 100])
+    ax2.set_xticklabels(['1.0', str(round(middle_scale, 2)), str(round(quad_scale, 2)), str(last_scale)], size=size_axis_data)
+    ax1.set_xlabel('thickness/radius', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
-    ax1.set_ylabel('T/W [%]', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
     ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
     ax1.set_xlim(max_x, min_x)
@@ -121,7 +259,7 @@ def diagram_of_thrust(dimension, min_sol, max_sol, limit_state=True, save=False)
     return plt
 
 
-def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, save=None):
+def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, fill=False, show_legend=True, save=None, markers=None):
     """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
 
     Parameters
@@ -143,9 +281,10 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     """
 
     kmax = len(dimensions)
-    markers = ['o', '^', 's', 'D', 'x', '1', '2', '3']
+    if markers is None:
+        markers = ['o', '^', 's', 'D', 'x', '1', '2', '3', 'v', 'p', '4', '8']
 
-    if colors == None:
+    if colors is None:
         colormap = plt.cm.coolwarm  # gist_ncar nipy_spectral, Set1, Paired coolwarm
         colors = [colormap(i) for i in linspace(0, 1.0, kmax)]
 
@@ -153,7 +292,7 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     size_axis_data = 12
     size_legend = 14
 
-    fig = plt.figure(figsize=[12, 4])
+    fig = plt.figure(figsize=[12, 5])
     ax = fig.add_subplot(1, 1, 1)
     def flatten_list(l): return [item for sublist in l for item in sublist]
     extreme_max = -100*min(flatten_list(max_sols))
@@ -161,13 +300,13 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
 
     interval_x = abs(flatten_list(dimensions)[0] - flatten_list(dimensions)[1])
     interval_y = 20
-    if xy_limits == None:
+    if xy_limits is None:
         max_x = max(flatten_list(dimensions))
         min_x = min(flatten_list(dimensions)) - interval_x
         max_y = interval_y - extreme_max % 10 + extreme_max
         min_y = extreme_min - extreme_min % 10
     else:
-        [[max_x, min_x],[max_y, min_y]] = xy_limits
+        [[max_x, min_x], [max_y, min_y]] = xy_limits
 
     last_scale = round(max_x/min_x, 2)
     middle_scale = round((last_scale - 1.0)/2 + 1, 1)
@@ -182,7 +321,7 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
         fmax = -100.0*array(max_sols[i])
         n = len(xmin)
 
-        if simplified == True:
+        if simplified is True:
             ax.plot(xmin, fmin, markers[i], ls='-', markersize=6, color=colors[i], label=legends[i])
             ax.plot(xmax, fmax, markers[i], ls='-', markersize=6, color=colors[i])
 
@@ -198,16 +337,20 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
             ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black')
             ax.plot(extrapolation_x, extrapolation_max, '', ls='--', color=colors[i])
             ax.plot(extrapolation_x, extrapolation_min, '', ls='--', color=colors[i])
-            ax.annotate(str(round(max_x/x_, 2)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
+            ax.annotate(str(round(max_x/x_, 1)), (x_, y_), textcoords="offset points", xytext=(20, -5), ha='center', size=12)
+
+        if fill:
+            ax.fill_between(xmin, fmin, fmax, color=colors[i], alpha=0.2)
+            ax.fill_between(extrapolation_x, extrapolation_min, extrapolation_max, color=colors[i], alpha=0.2)
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
     ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100])
     ax2.set_xticklabels(['1.0', str(middle_scale), str(last_scale)], size=size_axis_data)
-    ax1.set_xlabel('t/R', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.set_xlabel('thickness/span', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
-    ax1.set_ylabel('T/W [%]', size=size_axis_label, weight='bold', labelpad=8)
-    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
     ax1.set_xlim(max_x, min_x)
     ax.set_ylim(min_y, max_y)
@@ -217,10 +360,11 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
 
     # plt.axvline(x=(x_ - max_x)/(min_x - max_x)*100, ls='--', color='black') # add    ymin=(max_y-y_)/(max_y-min_y)
 
-    box = ax.get_position()
-    ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
     ax.grid(color='silver', linestyle='-', linewidth=0.5)
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+    if show_legend == True:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+        box = ax.get_position()
+        ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
 
     if save:
         plt.savefig(save)
@@ -228,7 +372,7 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     return plt
 
 
-def diagram_of_thrust_load_mult(dimension, min_sol, max_sol, limit_state=True, save=None):
+def diagram_of_thrust_load_mult(dimension, min_sol, max_sol, limit_state=True, fill=False, xy_limits=None, save=None):
     """ Plot a diagram of Thrusts to the problem of increasing a load multiplier based on the collected data from (n) points.
 
     Parameters
@@ -261,10 +405,13 @@ def diagram_of_thrust_load_mult(dimension, min_sol, max_sol, limit_state=True, s
 
     interval_x = abs(dimension[0] - dimension[1])
     interval_y = 10
-    max_x = max(xmax) + interval_x
-    min_x = min(xmax)
-    max_y = interval_y - max(fmax) % 10 + max(fmax)
-    min_y = min(fmin) - min(fmin) % 10
+    if xy_limits:
+        [[max_x, min_x], [max_y, min_y]] = xy_limits
+    else:
+        max_x = max(xmax) + interval_x
+        min_x = min(xmax)
+        max_y = interval_y - max(fmax) % 10 + max(fmax)
+        min_y = min(fmin) - min(fmin) % 10
 
     fig = plt.figure(figsize=[12, 4])
 
@@ -281,6 +428,10 @@ def diagram_of_thrust_load_mult(dimension, min_sol, max_sol, limit_state=True, s
         ax.plot(extrapolation_x, extrapolation_max, '', ls='--', color='red')
         ax.plot(extrapolation_x, extrapolation_min, '', ls='--', color='blue')
         ax.annotate(str(round(x_, 1)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
+
+    if fill:
+        ax.fill_between(xmin, fmin, fmax, color='grey', alpha=0.2)
+        ax.fill_between(extrapolation_x, extrapolation_min, extrapolation_max, color='grey', alpha=0.2)
 
     ax1 = plt.axes()
     ax1.set_xlabel('lambda', size=size_axis_label, weight='bold', labelpad=8)
@@ -364,7 +515,7 @@ def save_csv(dimension, min_sol, max_sol, limit_state=True, path=None, title=Non
         fmax = append(fmax, y_)
 
     if path is None:
-        path = os.path.join(compas_tno.get('/csv/'),'test.csv')
+        path = os.path.join(compas_tno.get('/csv/'), 'test.csv')
 
     with open(path, mode='w') as csv_file:
         csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -376,6 +527,35 @@ def save_csv(dimension, min_sol, max_sol, limit_state=True, path=None, title=Non
 
     return
 
+
+def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None):
+
+    xmin = array(thicknesses[0])
+    xmax = array(thicknesses[1])
+    fmin = 100.0 * array(solutions[0])
+    fmax = -100.0 * array(solutions[1])
+    n = len(xmin)
+    m = len(xmax)
+    if limit_state:
+        x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+        xmin = append(xmin, x_)
+        xmax = append(xmax, x_)
+        fmin = append(fmin, y_)
+        fmax = append(fmax, y_)
+
+    if path is None:
+        path = os.path.join(compas_tno.get('/csv/'), 'test.csv')
+
+    with open(path, mode='w') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        if title:
+            csv_writer.writerow([title])
+        csv_writer.writerow(['X-Min'] + list(xmin))
+        csv_writer.writerow(['X-Max'] + list(xmax))
+        csv_writer.writerow(['min T/W'] + list(fmin))
+        csv_writer.writerow(['max T/W'] + list(fmax))
+
+    return
 
 def open_csv(path, cut_last=True):
 
@@ -400,6 +580,7 @@ def open_csv(path, cut_last=True):
                 line_count += 1
                 pass
             elif line_count < line_total - 1:
+                print(row[0])
                 x.append(float(row[0]))
                 min_thrust.append(float(row[1])/100)
                 max_thrust.append(-1 * float(row[2])/100)
@@ -408,23 +589,78 @@ def open_csv(path, cut_last=True):
 
     return x, min_thrust, max_thrust
 
+
+def interpolate_min_thk(dimension, min_sol, max_sol):
+
+    xmin = xmax = array(dimension)
+    fmin = 100.0 * array(min_sol)
+    fmax = -100.0 * array(max_sol)
+    print(xmin)
+    n = len(xmin)
+    x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+
+    return x_
+
 # ==============================================================================
 # Main
 # ==============================================================================
 
+
 if __name__ == "__main__":
 
-    x = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14], [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13]
-    sol_min = [[0.32122703394577, 0.32864107398087034, 0.3363224906540916, 0.3442906794077901, 0.3525662450288712, 0.3611714918329792, 0.3701304796237221], [
-        0.31802320817892216, 0.32546638697810754, 0.33317663927442764, 0.34117328843022754, 0.34947705652765554, 0.3581102296807935, 0.3670968859603074, 0.3764630724502445]]
-    sol_max = [[-0.48442375197943505, -0.473126953779758, -0.4588129434920398, -0.44482604942259, -0.4312248478984081, -0.4154048423235026, -0.39113151140302316],
-               [-0.49764114502249457, -0.4862719137722568, -0.47511606729242484, -0.4624620930999378, -0.448746719690402, -0.43539462435512494, -0.4223895081061913, -0.40971622703057375]]
-    legends = ['a', 'b']
-    # diagram_of_multiple_thrust(x, sol_min, sol_max, legends).show()
-    # save_csv(x[0], sol_min[0], sol_max[0], title='This is the example')
+    # x = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14], [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13]
+    # sol_min = [[0.32122703394577, 0.32864107398087034, 0.3363224906540916, 0.3442906794077901, 0.3525662450288712, 0.3611714918329792, 0.3701304796237221], [
+    #     0.31802320817892216, 0.32546638697810754, 0.33317663927442764, 0.34117328843022754, 0.34947705652765554, 0.3581102296807935, 0.3670968859603074, 0.3764630724502445]]
+    # sol_max = [[-0.48442375197943505, -0.473126953779758, -0.4588129434920398, -0.44482604942259, -0.4312248478984081, -0.4154048423235026, -0.39113151140302316],
+    #            [-0.49764114502249457, -0.4862719137722568, -0.47511606729242484, -0.4624620930999378, -0.448746719690402, -0.43539462435512494, -0.4223895081061913, -0.40971622703057375]]
+    # legends = ['a', 'b']
+    # # diagram_of_multiple_thrust(x, sol_min, sol_max, legends).show()
+    # # save_csv(x[0], sol_min[0], sol_max[0], title='This is the example')
 
+    # x = [0.1, 0.096, 0.092, 0.088, 0.08399999999999999, 0.08, 0.076, 0.072, 0.068, 0.064, 0.06, 0.05600000000000001]
+    # ymin = [0.6733805282946738, 0.6768695278700919, 0.6801194890776822, 0.6830884474587336, 0.6857270723059036, 0.6879770995330894, 0.6897693561544739, 0.6910260162448293, 0.6916650604812549, 0.691535501586044, 0.6904910816351549, 0.6887132739276414]
+    # ymax = [-0.9339822060582105, -0.9153600350687701, -0.8967801607082414, -0.8749268981352708, -0.8527838337729975, -0.8308005117230084, -0.8090235909790843, -0.7873861336721817, -0.7658154927226042, -0.7442314431375009, -0.7225437965300713, -0.7004737016559901]
+    # diagram_of_thrust(x, ymin, ymax).show()
 
-    x = [0.1, 0.096, 0.092, 0.088, 0.08399999999999999, 0.08, 0.076, 0.072, 0.068, 0.064, 0.06, 0.05600000000000001]
-    ymin = [0.6733805282946738, 0.6768695278700919, 0.6801194890776822, 0.6830884474587336, 0.6857270723059036, 0.6879770995330894, 0.6897693561544739, 0.6910260162448293, 0.6916650604812549, 0.691535501586044, 0.6904910816351549, 0.6887132739276414]
-    ymax = [-0.9339822060582105, -0.9153600350687701, -0.8967801607082414, -0.8749268981352708, -0.8527838337729975, -0.8308005117230084, -0.8090235909790843, -0.7873861336721817, -0.7658154927226042, -0.7442314431375009, -0.7225437965300713, -0.7004737016559901]
-    diagram_of_thrust(x, ymin, ymax).show()
+    import os
+    import compas_tno
+
+    xmin = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11]
+    xmax = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11]
+    fmin = [0.3156661298394508, 0.32311911534847704, 0.3308390621181395, 0.3388453032161659, 0.3471585269156108,
+            0.35580111627201505, 0.36479709543689537, 0.3741725632219149, 0.3839558880917538, 0.39417800061787767]
+    fmax = [-0.5123282218463301, -0.5017195584958144, -0.4905221616645659, -0.47952876134490424, -0.46873301700175324, -
+            0.4553465263042089, -0.4422725500626189, -0.42952494206519887, -0.41704137084847154, -0.40008805784514884]
+    limit_state = False
+    fill = False
+    xy_limits = [[0.20, 0.10], [60, 30]]
+    n = len(xmin)
+    m = len(xmax)
+
+    img_graph = os.path.join(compas_tno.get('/temp/'), 'diagram{0}.png')
+    images = []
+    j = 0
+    k = 0
+    for i in range(1, n + 1):
+        save_diagram = img_graph.format(k)
+        images.append(save_diagram)
+        diagram_of_thrust_partial(xmin[:i], xmax[:j], fmin[:i], fmax[:j], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+        # diagram_of_thrust_partial(xmin[:i], xmax[:i], fmin[:i], fmax[:i], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+        k += 1
+    for j in range(1, m + 1):
+        save_diagram = img_graph.format(k)
+        images.append(save_diagram)
+        diagram_of_thrust_partial(xmin[:i], xmax[:j], fmin[:i], fmax[:j], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+        k += 1
+
+    limit_state = True
+    fill = True
+    save_diagram = img_graph.format(k)
+    images.append(save_diagram)
+    diagram_of_thrust_partial(xmin, xmax, fmin, fmax, xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+
+    save_gif = os.path.join(compas_tno.get('/temp/'), 'GIF_v1.gif')
+    delay = 0.5
+    from compas_plotters import Plotter
+    plotter = Plotter(figsize=(12, 4))
+    plotter.save_gif(save_gif, images, delay=delay*100)

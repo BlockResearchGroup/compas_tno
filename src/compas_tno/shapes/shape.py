@@ -163,6 +163,19 @@ class Shape(object):
 
         return shape
 
+    @classmethod
+    def from_meshes(cls, intrados, extrados, middle, data=None):
+
+        shape = cls()
+
+        shape.intrados = intrados
+        shape.extrados = extrados
+        shape.middle = middle
+
+        if data:
+            shape.data = data
+
+        return shape
 
     @classmethod
     def from_rhinosurface(cls):
@@ -177,6 +190,14 @@ class Shape(object):
     @classmethod
     def from_assembly():
         NotImplementedError
+
+    def add_damage_from_meshes(self, intrados, extrados):
+
+        self.intrados_damage = intrados
+        self.extrados_damage = extrados
+
+        return
+
 
     def get_ub(self, x, y):
         """Get the height of the extrados in the point.
@@ -194,7 +215,7 @@ class Shape(object):
         """
 
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y], method='linear'))
 
         return z
 
@@ -212,7 +233,7 @@ class Shape(object):
         """
 
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], XY))
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY)
 
         return z
 
@@ -252,7 +273,7 @@ class Shape(object):
         """
 
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y], method='linear'))
 
         return z
 
@@ -270,7 +291,7 @@ class Shape(object):
         """
 
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], XY))
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY)
 
         return z
 
@@ -290,7 +311,7 @@ class Shape(object):
         """
 
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
+        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y], method='linear'))
 
         return z
 
@@ -308,7 +329,7 @@ class Shape(object):
         """
 
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], XY))
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY)
 
         return z
 
@@ -316,6 +337,13 @@ class Shape(object):
         """Get the height of the target/middle surface in the point."""
 
         z = self.get_middle(x,y)
+
+        return z
+
+    def get_target_pattern(self, XY):
+        """Get the height of the target/middle surface in the point."""
+
+        z = self.get_middle_pattern(XY)
 
         return z
 

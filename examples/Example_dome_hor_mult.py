@@ -25,7 +25,7 @@ thk = 0.50
 radius = 5.0
 type_structure = 'dome'
 type_formdiagram = 'radial_fd'
-discretisation = [4, 12]
+discretisation = [8, 20]
 center = [5.0, 5.0]
 R = radius
 
@@ -39,7 +39,7 @@ size_parameters_min = []  # empty lists to keep track of the parameters
 size_parameters_max = []  # empty lists to keep track of the parameters
 size_parameters = []
 
-load_mult = 0.00
+load_mult = 0.20
 load_increase = 0.01
 direction_loads = 'px'
 plot_graph = True
@@ -71,7 +71,7 @@ data_diagram = {
     'discretisation': discretisation,
     'r_oculus': 0.0,
     'diagonal': True,
-    'partial_diagonal': False,
+    'partial_diagonal': 'left',
 }
 
 form = FormDiagram.from_library(data_diagram)
@@ -81,46 +81,58 @@ plot_form(form, show_q=False).show()
 
 #--- If using TNA
 
-# form = form.initialise_tna(plot=False)
-# plot_form(form).show()
+form = form.initialise_tna(plot=False)
+plot_form(form).show()
 
 #--- If using LOADPATH
 
-optimiser = Optimiser()
-optimiser.data['library'] = 'MATLAB'
-optimiser.data['solver'] = 'SDPT3'
-optimiser.data['constraints'] = ['funicular']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'loadpath'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
-analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight()
-analysis.set_up_optimiser()
-analysis.run()
+# optimiser = Optimiser()
+# optimiser.data['library'] = 'MATLAB'
+# optimiser.data['solver'] = 'SDPT3'
+# optimiser.data['constraints'] = ['funicular']
+# optimiser.data['variables'] = ['ind']
+# optimiser.data['objective'] = 'loadpath'
+# optimiser.data['printout'] = True
+# optimiser.data['plot'] = False
+# optimiser.data['find_inds'] = True
+# optimiser.data['qmax'] = 10e+10
+# analysis = Analysis.from_elements(dome, form, optimiser)
+# analysis.apply_selfweight()
+# analysis.set_up_optimiser()
+# analysis.run()
+
+SWT = dome.compute_selfweight()
+PZSUM = 0
+for key in form.vertices():
+    PZSUM += form.vertex_attribute(key, 'pz')
+print(SWT, PZSUM)
+
 plot_form(form, show_q=False).show()
+
 
 #--- If using load from saved form
 
-# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'max'
+# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + 'min'
 # load_json = os.path.join(folder, title + '.json')
 # form = FormDiagram.from_json(load_json)
 
-form_start = deepcopy(form)      # Keep this solution stored to perhaps use it as starting point afterwards
+# plot_form(form, show_q=False).show()
+
+# form_start = deepcopy(form)      # Keep this solution stored to perhaps use it as starting point afterwards
 
 # --------------------- 4. Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
+optimiser.data['library'] = 'Scipy'
+optimiser.data['solver'] = 'slsqp'
+optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds' 'symmetry-horizontal']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
+optimiser.data['qmax'] = 10e+4
+optimiser.data['gradient'] = True
+optimiser.data['jacobian'] = True
 print(optimiser.data)
 
 # --------------------------- 4.1 Set The objective to min and start loop ---------------------------
@@ -220,4 +232,3 @@ print(size_parameters_max)
 print('Solutions Found')
 print(solutions_min)
 print(solutions_max)
-

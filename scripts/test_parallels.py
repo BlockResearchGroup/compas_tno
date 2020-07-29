@@ -4,7 +4,8 @@ from compas_tno.plotters import plot_independents
 from compas_tno.analysis import Analysis
 from compas_tno.optimisers import Optimiser
 from compas_tno.algorithms import z_from_form
-from compas_tno.algorithms import initialise_form
+from compas_tno.algorithms import apply_sag
+from compas_tno.problems import initialise_form
 from compas_tno.shapes import Shape
 from compas_tno.viewers import view_thrust
 from compas.datastructures import Mesh
@@ -24,22 +25,36 @@ load_mult_y = 1.0
 # --------------------- 1. Create Form ---------------------
 
 data = {
-    'type': 'fan_fd',
+    'type': 'cross_fd',
     'xy_span': [[0.0, L], [0.0, L]],
     'discretisation': discr,
     'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data)
-# form = z_from_form(form)
+initialise_form(form)
+plot_independents(form, number_ind=False).show()
+
+apply_sag(form)
+form = initialise_form(form)
+plot_independents(form, number_ind=False).show()
+
+for u, v in form.edges():
+    form.edge_attribute((u, v), 'q', 1.0)
+
+for u, v in form.edges_on_boundary():
+    form.edge_attribute((u, v), 'q', 10.0)
+
+form = z_from_form(form)
 
 # form = form.delete_boundary_edges()
 # plot_form(form, show_q=False).show()
 # form = form.initialise_tna(plot=True, method='normal', kmax=10, display=True)
 form = initialise_form(form)
-# plot_independents(form, width=8, number_ind=False).show()
-# plot_form(form).show()
+# plot_independents(form, number_ind=False).show()
+plot_form(form, show_q=True).show()
 
+view_thrust(form).show()
 
 # ---------- 1. Create Pavillion Shape - to Assign loads ----------
 

@@ -13,9 +13,9 @@ from compas_tno.viewers.thrust import view_solution
 
 # Basic parameters
 
-thk = 0.5
+thk = 0.50
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 discretisation = 10
 
 # ----------------------- 1. Create CrossVault shape ---------------------------
@@ -78,10 +78,6 @@ analysis.set_up_optimiser()
 analysis.run()
 
 plot_form(form, show_q=False, simple=True, cracks=True).show()
-
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
-
 view_thrust(form).show()
 
 # If you wish to visualise the upper and lower bound together

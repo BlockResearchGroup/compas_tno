@@ -11,15 +11,15 @@ import json
 import math
 
 # Give a name to your project
-master = 'PX_straight_0,30'
+master = 'PX_0,30'
 
 # Put here the .json file for the optimisation
 # fnm = '/Users/mricardo/compas_dev/me/reformulation/test.json'
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[4, 12]_min.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[8, 20]_min.json'
 
 # Parameters for the visualisation
-radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
-radius_circlus = 0.15 # Radius of the speres that mark when it touches upper bound and lower bound.
+radius_max = 0.10  # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
+radius_circlus = 0.15  # Radius of the speres that mark when it touches upper bound and lower bound.
 radius_colored_pipes = 0.10
 max_length_reaction = 0.5
 
@@ -41,15 +41,15 @@ artist = NetworkArtist(form)
 artist.clear_layer()
 lp = 0.0
 for u, v in form.edges_where({'_is_edge': True}):
-    q = form.edge_attribute((u,v), 'q')
-    l = form.edge_length(u,v)
+    q = form.edge_attribute((u, v), 'q')
+    l = form.edge_length(u, v)
     fs.append(q*l)
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     id = rs.AddLine(sp, ep)
     rs.ObjectName(id, str(q))
     lp += q * l * l
-rs.AddTextDot('{0:.1f}'.format(lp),[- 1.0, - 1.0, 0.0 ])
+rs.AddTextDot('{0:.1f}'.format(lp), [- 1.0, - 1.0, 0.0])
 
 thrust_limits = master + '::Limits'
 rs.AddLayer(thrust_limits)
@@ -63,27 +63,27 @@ for key in form.vertices():
     try:
         lb = form.vertex_attribute(key, 'lb')
         if abs(z - lb) < tol_crack:
-            id = rs.AddPoint([x,y,z])
-            rs.ObjectColor(id, color = (0,0,255))
-            id = rs.AddSphere([x,y,z], radius_circlus)
-            rs.ObjectColor(id, color = (0,0,255))
+            id = rs.AddPoint([x, y, z])
+            rs.ObjectColor(id, color=(0, 0, 255))
+            id = rs.AddSphere([x, y, z], radius_circlus)
+            rs.ObjectColor(id, color=(0, 0, 255))
     except:
         pass
     try:
         ub = form.vertex_attribute(key, 'ub')
         if abs(z - ub) < tol_crack:
-            id = rs.AddPoint([x,y,z])
-            rs.ObjectColor(id, color = (0,128,0))
-            id = rs.AddSphere([x,y,z], radius_circlus)
-            rs.ObjectColor(id, color = (0,128,0))
+            id = rs.AddPoint([x, y, z])
+            rs.ObjectColor(id, color=(0, 128, 0))
+            id = rs.AddSphere([x, y, z], radius_circlus)
+            rs.ObjectColor(id, color=(0, 128, 0))
     except:
         pass
 if cracks_lb:
     for i in cracks_lb:
-        rs.AddTextDot('lb',form.vertex_coordinates(k_i[i]))
+        rs.AddTextDot('lb', form.vertex_coordinates(k_i[i]))
 if cracks_ub:
     for i in cracks_ub:
-        rs.AddTextDot('ub',form.vertex_coordinates(k_i[i]))
+        rs.AddTextDot('ub', form.vertex_coordinates(k_i[i]))
 
 target_layer = master + '::Target'
 rs.AddLayer(target_layer)
@@ -91,7 +91,7 @@ rs.CurrentLayer(target_layer)
 artist = NetworkArtist(form, layer=target_layer)
 artist.clear_layer()
 for u, v in form.edges():
-    q = form.edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     sp[2] = form.vertex_attribute(u, 'target')
@@ -105,7 +105,7 @@ rs.CurrentLayer(ub_layer)
 artist = NetworkArtist(form, layer=ub_layer)
 artist.clear_layer()
 for u, v in form.edges():
-    q = form.edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     sp[2] = form.vertex_attribute(u, 'ub')
@@ -119,7 +119,7 @@ rs.CurrentLayer(lb_layer)
 artist = NetworkArtist(form, layer=lb_layer)
 artist.clear_layer()
 for u, v in form.edges():
-    q = form.edge_attribute((u,v), 'q')
+    q = form.edge_attribute((u, v), 'q')
     sp = form.vertex_coordinates(u)
     ep = form.vertex_coordinates(v)
     sp[2] = form.vertex_attribute(u, 'lb')
@@ -146,8 +146,8 @@ for key in form.vertices_where({'is_fixed': True}):
         dz = rz/norm
         mult = node[2]/dz
         dz *= mult
-        dx = mult* rx/norm
-        dy = mult* ry/norm
+        dx = mult * rx/norm
+        dy = mult * ry/norm
         ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
         #id = rs.AddLine(sp, ep)
         #rs.ObjectName(id, str(norm))
@@ -194,7 +194,7 @@ for u, v in form.edges_where({'_is_edge': True}):
         f = math.fabs(q * l)
         coef = f/max(fs)*radius_max
         pipe = rs.AddPipe(id, 0, coef)
-        rs.ObjectColor(pipe, color=(255,0,0))
+        rs.ObjectColor(pipe, color=(255, 0, 0))
         rs.DeleteObject(id)
 pipes_color = master + '::Pipes-Color'
 rs.AddLayer(pipes_color)
@@ -212,9 +212,9 @@ for u, v in form.edges_where({'_is_edge': True}):
         f = math.fabs(q * l)
         coef = f/max(fs)
         r, g, b = i_to_rgb(coef)
-        rs.ObjectColor(id, color=(r,g,b))
+        rs.ObjectColor(id, color=(r, g, b))
         pipe = rs.AddPipe(id, 0, radius_colored_pipes)
-        rs.ObjectColor(pipe, color=(r,g,b))
+        rs.ObjectColor(pipe, color=(r, g, b))
         rs.DeleteObject(id)
 rs.CurrentLayer('Default')
 rs.LayerVisible(target_layer, False)

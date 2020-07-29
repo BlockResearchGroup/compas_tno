@@ -174,6 +174,7 @@ def set_dome_with_spr(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, ma
 
 def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, math.pi/2], t = 0.0, discretisation=[8, 20]):
 
+    center0 = center
     center.append(0.0)
     ri = radius - thk/2
     re = radius + thk/2
@@ -243,6 +244,8 @@ def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0,
     middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
     extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i)
     intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i)
+
+    center = center0
 
     return intrados, extrados, middle
 

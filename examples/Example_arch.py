@@ -1,3 +1,4 @@
+import os
 import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
@@ -58,8 +59,8 @@ print(form)
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'MMA'
-optimiser.data['solver'] = 'MMA'
+optimiser.data['library'] = 'Scipy'
+optimiser.data['solver'] = 'slsqp'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
@@ -75,40 +76,28 @@ analysis = Analysis.from_elements(arch, form, optimiser)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()  # Find independent edges
+analysis.set_up_optimiser()
 analysis.run()
 form = analysis.form
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
+# file_address = compas_tno.get('test.json')
+# form.to_json(file_address)
 optimiser = analysis.optimiser
 fopt = optimiser.fopt
-print(fopt)
-plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
+save_photo = False
+blocks_on_plot = False
+plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
 
-# --------------------- 4.1 Create Minimisation for maximum thrust ---------------------
+# --------------------- 4.1 Modify Minimisation for maximum thrust ---------------------
 
-optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'max'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
 
 # ------------------------- 4.2 Run optimisation with scipy ---------------------------
 
-analysis = Analysis.from_elements(arch, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()  # Find independent edges
+analysis.set_up_optimiser()
 analysis.run()
 form = analysis.form
 file_address = compas_tno.get('test.json')
 form.to_json(file_address)
+save_photo = False
+plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
 
-plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()

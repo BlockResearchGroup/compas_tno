@@ -6,6 +6,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrust
 from compas_tno.viewers.thrust import view_solution
+import math
 
 # ----------------------------------------------------------------------------
 # ---------- EXAMPLE OF MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
@@ -15,9 +16,9 @@ from compas_tno.viewers.thrust import view_solution
 
 thk = 0.5
 type_structure = 'pointed_crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 discretisation = 10
-hc = 7.0
+hc = 5 * math.sqrt(2)
 
 # ----------------------- 1. Create CrossVault shape ---------------------------
 
@@ -65,7 +66,7 @@ optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'slsqp'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
+optimiser.data['objective'] = 'max'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
@@ -83,7 +84,8 @@ analysis.run()
 
 plot_form(form, show_q=False, simple=True, cracks=True).show()
 
-file_address = compas_tno.get('test.json')
+import os
+file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ optimiser.data['objective'] + '.json')
 form.to_json(file_address)
 
 view_solution(form, vault).show()

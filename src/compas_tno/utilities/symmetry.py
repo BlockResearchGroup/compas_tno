@@ -1,31 +1,26 @@
 from compas_tna.diagrams import FormDiagram
-from compas_tna.diagrams import ForceDiagram
 from compas.utilities import geometric_key
 from compas.utilities import reverse_geometric_key
 
-from compas.geometry.transformations.transformations import mirror_point_line
-from compas.geometry.transformations.transformations import rotate_points
-from compas.geometry import closest_point_on_line
+# from compas.geometry import mirror_point_line
+# from compas.geometry import rotate_points
 from compas.geometry import midpoint_line_xy
-from compas.geometry import matrix_from_axis_and_angle
 
-from compas.geometry.distance import distance_point_point_xy
+from compas.geometry import distance_point_point_xy
 from numpy import argmin
 from numpy import sqrt
 from compas_tno.algorithms.equilibrium import z_from_form
-from compas_tno.diagrams.form1 import overview_forces
+# from compas_tno.diagrams import overview_forces
 
-from compas.datastructures import Mesh
-from compas_plotters import MeshPlotter
 
 import math
 
 from compas_tno.plotters import plot_form
 
-__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
+__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__   = 'MIT License'
-__email__     = 'mricardo@ethz.ch'
+__license__ = 'MIT License'
+__email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
@@ -33,16 +28,10 @@ __all__ = [
     'replicate2',
     'create_sym',
     'create_sym2',
-    'fix_boundaries_sym',
-    'fix_boundaries_complete',
-    'fix_mid_sym',
-    'fix_mid_complete',
-    'unfix_mid_complete',
-    'not_sym_load',
 ]
 
-def replicate(form,file, plot=False):
 
+def replicate(form, file, plot=False):
     """ Copy 1/8 form-diagram in a complete structure.
 
     Parameters
@@ -68,7 +57,7 @@ def replicate(form,file, plot=False):
     mid_ind = []
 
     for u, v in form.edges():
-        if form.edge_attribute((u,v),'is_symmetry') == False:
+        if form.edge_attribute((u, v), 'is_symmetry') == False:
             sp, ep = form.vertex_coordinates(u), form.vertex_coordinates(v)
             line_edge = [sp, ep]
             mp = midpoint_line_xy(line_edge)
@@ -79,16 +68,15 @@ def replicate(form,file, plot=False):
                 mp[1] = 0.0
 
             gkey_mid = geometric_key(mp)
-            q_i[gkey_mid] = form.edge_attribute((u,v),'q')
-            line_sym = ([0.0,10.0,0.0],[10.0,0.0,0.0])
+            q_i[gkey_mid] = form.edge_attribute((u, v), 'q')
+            line_sym = ([0.0, 10.0, 0.0], [10.0, 0.0, 0.0])
 
-            mirror_diag = mirror_point_line(mp,line_sym)
+            mirror_diag = mirror_point_line(mp, line_sym)
 
             if mirror_diag[0] < 0.001:
                 mirror_diag[0] = 0.0
             if mirror_diag[1] < 0.001:
                 mirror_diag[1] = 0.0
-
 
             gkey_mirror = geometric_key(mirror_diag)
 
@@ -101,7 +89,7 @@ def replicate(form,file, plot=False):
                 q_i[gkey_mirror] = q_i[gkey_mid]
 
             for j in range(2, 7, 2):
-                [rot,diag_rot] = rotate_points([mp,mirror_diag], j/2.0*math.pi/2, axis=[0.0,0.0,1.0],origin=[5.0,5.0,0])
+                [rot, diag_rot] = rotate_points([mp, mirror_diag], j/2.0*math.pi/2, axis=[0.0, 0.0, 1.0], origin=[5.0, 5.0, 0])
 
                 if rot[0] < 0.001:
                     rot[0] = 0.0
@@ -119,7 +107,7 @@ def replicate(form,file, plot=False):
                 q_i[gkey_rot] = q_i[gkey_mid]
                 q_i[gkey_diag_rot] = q_i[gkey_mirror]
 
-        if form.edge_attribute((u,v),'is_ind') == True:
+        if form.edge_attribute((u, v), 'is_ind') == True:
             sp, ep = form.vertex_coordinates(u), form.vertex_coordinates(v)
             line_edge = [sp, ep]
             mp = midpoint_line_xy(line_edge)
@@ -142,26 +130,25 @@ def replicate(form,file, plot=False):
         mp = midpoint_line_xy(line_edge)
 
         if mp[0] < 0.001:
-                mp[0] = 0.0
+            mp[0] = 0.0
         if mp[1] < 0.001:
             mp[1] = 0.0
 
         gkey_mid = geometric_key(mp)
         try:
-            form_.edge_attribute((u, v), name='q', value = q_i[gkey_mid])
+            form_.edge_attribute((u, v), name='q', value=q_i[gkey_mid])
         except:
             dist = []
             for point in real_points:
-                dist.append(distance_point_point_xy(point,mp))
+                dist.append(distance_point_point_xy(point, mp))
             point_i = argmin(dist)
             gkey_appx = geometric_key(real_points[point_i])
-            form_.edge_attribute((u, v), name='q', value = q_i[gkey_appx])
+            form_.edge_attribute((u, v), name='q', value=q_i[gkey_appx])
 
         if gkey_mid in mid_ind:
-            form_.edge_attribute((u, v), name='is_ind', value = True)
+            form_.edge_attribute((u, v), name='is_ind', value=True)
         else:
-            form_.edge_attribute((u, v), name='is_ind', value = False)
-
+            form_.edge_attribute((u, v), name='is_ind', value=False)
 
     try:
         t = form.attributes['offset']
@@ -174,7 +161,7 @@ def replicate(form,file, plot=False):
 
     ql2 = 0.0
     for u, v in form_.edges():
-        ql2 += form_.edge_attribute((u,v),'q') * form_.edge_length(u,v) ** 2
+        ql2 += form_.edge_attribute((u, v), 'q') * form_.edge_length(u, v) ** 2
 
     form_.attributes['loadpath'] = ql2
     if plot:
@@ -185,8 +172,8 @@ def replicate(form,file, plot=False):
 
     return form_
 
-def replicate2(form, file, plot=None):
 
+def replicate2(form, file, plot=None):
     """ Copy 1/2 form-diagram in a complete structure.
 
     Parameters
@@ -217,16 +204,16 @@ def replicate2(form, file, plot=None):
     tol = 0.001
 
     for u, v in form.edges():
-        if form.edge_attribute((u,v),'is_symmetry') == False:
+        if form.edge_attribute((u, v), 'is_symmetry') == False:
             sp, ep = form.vertex_coordinates(u), form.vertex_coordinates(v)
             line_edge = [sp, ep]
             mp = midpoint_line_xy(line_edge)
             gkey_mid = geometric_key(mp)
-            q_i[gkey_mid] = form.edge_attribute((u,v),'q')
+            q_i[gkey_mid] = form.edge_attribute((u, v), 'q')
 
-            line_sym = ([0.0,0.0,0.0],[0.0,10.0,0.0])
+            line_sym = ([0.0, 0.0, 0.0], [0.0, 10.0, 0.0])
 
-            mirror_diag = mirror_point_line(mp,line_sym)
+            mirror_diag = mirror_point_line(mp, line_sym)
             gkey_mirror = geometric_key(mirror_diag)
 
             q_i[gkey_mirror] = q_i[gkey_mid]
@@ -234,7 +221,7 @@ def replicate2(form, file, plot=None):
             if -tol <= sp[0] <= tol and -tol <= ep[0] <= tol:
                 q_i[gkey_mirror] *= 2
 
-        if form.edge_attribute((u,v),'is_ind') == True:
+        if form.edge_attribute((u, v), 'is_ind') == True:
             sp, ep = form.vertex_coordinates(u), form.vertex_coordinates(v)
             line_edge = [sp, ep]
             mp = midpoint_line_xy(line_edge)
@@ -251,19 +238,19 @@ def replicate2(form, file, plot=None):
         mp = midpoint_line_xy(line_edge)
         gkey_mid = geometric_key(mp)
         try:
-            form_.edge_attribute((u, v), name='q', value = q_i[gkey_mid])
+            form_.edge_attribute((u, v), name='q', value=q_i[gkey_mid])
         except:
             dist = []
             for point in real_points:
-                dist.append(distance_point_point_xy(point,mp))
+                dist.append(distance_point_point_xy(point, mp))
             point_i = argmin(dist)
             gkey_appx = geometric_key(real_points[point_i])
-            form_.edge_attribute((u, v), name='q', value = q_i[gkey_appx])
+            form_.edge_attribute((u, v), name='q', value=q_i[gkey_appx])
 
         if gkey_mid in mid_ind:
-            form_.edge_attribute((u, v), name='is_ind', value = True)
+            form_.edge_attribute((u, v), name='is_ind', value=True)
         else:
-            form_.edge_attribute((u, v), name='is_ind', value = False)
+            form_.edge_attribute((u, v), name='is_ind', value=False)
 
     try:
         t = form.attributes['offset']
@@ -276,7 +263,7 @@ def replicate2(form, file, plot=None):
 
     ql2 = 0.0
     for u, v in form_.edges():
-        ql2 += form_.edge_attribute((u,v),'q') * form_.edge_length(u,v) ** 2
+        ql2 += form_.edge_attribute((u, v), 'q') * form_.edge_length(u, v) ** 2
 
     form_.attributes['loadpath'] = ql2
     overview_forces(form_)
@@ -286,7 +273,8 @@ def replicate2(form, file, plot=None):
 
     return form_
 
-def create_sym(form, keep_q = True):
+
+def create_sym(form, keep_q=True):
 
     lines = []
     symmetry = []
@@ -303,16 +291,16 @@ def create_sym(form, keep_q = True):
         pz += form.vertex[key]['pz']
     print('Load Before Sym: {0}'.format(pz))
 
-    for u,v in form.edges():
+    for u, v in form.edges():
         u_coord = form.vertex_coordinates(u)[:2] + [0]
         v_coord = form.vertex_coordinates(v)[:2] + [0]
-        mid_gkey = geometric_key(form.edge_midpoint(u,v)[:2] + [0])
-        qs[mid_gkey] = form.edge_attribute((u,v), 'q')
-        if u_coord[1] >= 10 - u_coord[0] - tol and u_coord[0] <= 5.0 + tol and v_coord[1] >= 10 - v_coord[0] - tol and v_coord[0] <= 5.0 + tol :
-            lines.append([u_coord,v_coord])
-        if 5.0 - tol <= u_coord[0] <= 5.0 + tol and 5.0 - tol <= v_coord[0] <= 5.0 + tol: # Line Vertical at x = 5.0 and y > 5.0
+        mid_gkey = geometric_key(form.edge_midpoint(u, v)[:2] + [0])
+        qs[mid_gkey] = form.edge_attribute((u, v), 'q')
+        if u_coord[1] >= 10 - u_coord[0] - tol and u_coord[0] <= 5.0 + tol and v_coord[1] >= 10 - v_coord[0] - tol and v_coord[0] <= 5.0 + tol:
+            lines.append([u_coord, v_coord])
+        if 5.0 - tol <= u_coord[0] <= 5.0 + tol and 5.0 - tol <= v_coord[0] <= 5.0 + tol:  # Line Vertical at x = 5.0 and y > 5.0
             qs[mid_gkey] *= 0.5
-        if 10 - u_coord[0] - tol <= u_coord[1] <= 10 - u_coord[0] + tol and 10 - v_coord[0] - tol <= v_coord[1] <= 10 - v_coord[0] + tol: # Line Diagonal at y = x
+        if 10 - u_coord[0] - tol <= u_coord[1] <= 10 - u_coord[0] + tol and 10 - v_coord[0] - tol <= v_coord[1] <= 10 - v_coord[0] + tol:  # Line Diagonal at y = x
             qs[mid_gkey] *= 0.5
 
     for key in form.vertices():
@@ -323,32 +311,32 @@ def create_sym(form, keep_q = True):
         lb[gkey] = form.vertex_attribute(key, 'lb')
         ub[gkey] = form.vertex_attribute(key, 'ub')
 
-        if 5.0 - tol <= coord[0] <= 5.0 + tol and coord[1] > 5.0 - tol: # Line Vertical at x = 5.0 and y > 5.0
+        if 5.0 - tol <= coord[0] <= 5.0 + tol and coord[1] > 5.0 - tol:  # Line Vertical at x = 5.0 and y > 5.0
             loads[gkey] = 0.5 * loads[gkey]
             if form.vertex_attribute(key, 'is_fixed') == False:
                 ext_pt = [coord[0]+1.0, coord[1], 0.0]
-                symmetry.append([coord,ext_pt])
+                symmetry.append([coord, ext_pt])
                 pins.append(geometric_key(ext_pt))
                 loads[geometric_key(ext_pt)] = 0.0
 
-        if 10 - coord[0] - tol <= coord[1] <= 10 - coord[0] + tol and 10.0 - tol > coord[1] > 5.0 + tol: # Line Diagonal at y = x - 10 without central and corner
+        if 10 - coord[0] - tol <= coord[1] <= 10 - coord[0] + tol and 10.0 - tol > coord[1] > 5.0 + tol:  # Line Diagonal at y = x - 10 without central and corner
             loads[gkey] = 0.5 * loads[gkey]
-            ext_pt = [coord[0]-sqrt(2)/2,coord[1]-sqrt(2)/2,0.0]
-            symmetry.append([coord,ext_pt])
+            ext_pt = [coord[0]-sqrt(2)/2, coord[1]-sqrt(2)/2, 0.0]
+            symmetry.append([coord, ext_pt])
             pins.append(geometric_key(ext_pt))
             loads[geometric_key(ext_pt)] = 0.0
 
-        if 5.0 - tol <= coord[0] <= 5.0 + tol and 5.0 - tol <= coord[1] <= 5.0 + tol: # Central Point
+        if 5.0 - tol <= coord[0] <= 5.0 + tol and 5.0 - tol <= coord[1] <= 5.0 + tol:  # Central Point
             loads[gkey] = 0.25 * loads[gkey]
-            ext_pt = [coord[0],coord[1]-1.0,0.0]
-            symmetry.append([coord,ext_pt])
+            ext_pt = [coord[0], coord[1]-1.0, 0.0]
+            symmetry.append([coord, ext_pt])
             pins.append(geometric_key(ext_pt))
             loads[geometric_key(ext_pt)] = 0.0
 
-        if form.vertex_attribute(key, 'is_fixed') == True and coord[1] > 10.0 - tol and tol <= coord[0] <= 5.0 + tol: # Superior line without corner point
+        if form.vertex_attribute(key, 'is_fixed') == True and coord[1] > 10.0 - tol and tol <= coord[0] <= 5.0 + tol:  # Superior line without corner point
             pins.append(geometric_key(coord))
 
-        if form.vertex_attribute(key, 'is_fixed') == True and coord[1] > 10.0 - tol and -tol <= coord[0] <= tol: # Corner Point
+        if form.vertex_attribute(key, 'is_fixed') == True and coord[1] > 10.0 - tol and -tol <= coord[0] <= tol:  # Corner Point
             pins.append(geometric_key(coord))
             loads[gkey] = 0.5 * loads[gkey]
 
@@ -376,20 +364,21 @@ def create_sym(form, keep_q = True):
         form_.vertex[key]['pz'] = loads[gkey]
         pz += form_.vertex[key]['pz']
         try:
-            form_.vertex_attribute(key, name = 'target', value = target[gkey])
-            form_.vertex_attribute(key, name = 'lb', value = lb[gkey])
-            form_.vertex_attribute(key, name = 'ub', value = ub[gkey])
+            form_.vertex_attribute(key, name='target', value=target[gkey])
+            form_.vertex_attribute(key, name='lb', value=lb[gkey])
+            form_.vertex_attribute(key, name='ub', value=ub[gkey])
         except:
             pass
     print('Load After Sym: {0}'.format(pz))
 
     for u, v in form_.edges_where({'is_symmetry': False}):
-        qi = qs[geometric_key(form_.edge_midpoint(u,v))]
-        form_.edge_attribute((u, v), name = 'q', value = qi)
+        qi = qs[geometric_key(form_.edge_midpoint(u, v))]
+        form_.edge_attribute((u, v), name='q', value=qi)
 
     return form_
 
-def create_sym2(form, keep_q = True):
+
+def create_sym2(form, keep_q=True):
 
     lines = []
     symmetry = []
@@ -401,30 +390,29 @@ def create_sym2(form, keep_q = True):
     for key, attr in form.vertices(True):
         attr['z'] = 0.0
 
-    for u,v in form.edges():
+    for u, v in form.edges():
         u_coord = form.vertex_coordinates(u)
         v_coord = form.vertex_coordinates(v)
-        qs[geometric_key(form.edge_midpoint(u,v))] = form.edge_attribute((u,v), 'q')
-        if u_coord[0] <= 0.0 + tol and v_coord[0] <= 0.0 + tol: # Line Vertical at x = 0.0
-            qs[geometric_key(form.edge_midpoint(u,v))] *= 0.5 # isn't it changing all q's for half? VERIFY
-            lines.append([u_coord,v_coord])
+        qs[geometric_key(form.edge_midpoint(u, v))] = form.edge_attribute((u, v), 'q')
+        if u_coord[0] <= 0.0 + tol and v_coord[0] <= 0.0 + tol:  # Line Vertical at x = 0.0
+            qs[geometric_key(form.edge_midpoint(u, v))] *= 0.5  # isn't it changing all q's for half? VERIFY
+            lines.append([u_coord, v_coord])
 
     for key in form.vertices():
         coord = form.vertex_coordinates(key)
         gkey = geometric_key(coord)
         loads[gkey] = form.vertex_attribute(key, 'pz')
 
-        if 0.0 - tol <= coord[0] <= 0.0 + tol: # Line Vertical at x = 0.0
+        if 0.0 - tol <= coord[0] <= 0.0 + tol:  # Line Vertical at x = 0.0
             loads[gkey] = 0.5 * loads[gkey]
             if form.vertex_attribute(key, 'is_fixed') == False:
                 ext_pt = [coord[0]+1.0, coord[1], coord[2]]
-                symmetry.append([coord,ext_pt])
+                symmetry.append([coord, ext_pt])
                 pins.append(geometric_key(ext_pt))
                 loads[geometric_key(ext_pt)] = 0.0
 
-        if coord[0] <= 0.0 + tol and form.vertex_attribute(key, 'is_fixed') == True: # Pins To the Left
+        if coord[0] <= 0.0 + tol and form.vertex_attribute(key, 'is_fixed') == True:  # Pins To the Left
             pins.append(geometric_key(coord))
-
 
     form_ = FormDiagram.from_lines(lines + symmetry, delete_boundary_face=False)
     form_.update_default_vertex_attributes({'is_roller': False})
@@ -443,8 +431,8 @@ def create_sym2(form, keep_q = True):
         form_.edge_attribute((u, v), name='is_symmetry', value=True)
 
     for u, v in form_.edges_where({'is_symmetry': False}):
-        qi = qs[geometric_key(form_.edge_midpoint(u,v))]
-        form_.edge_attribute((u, v), name = 'q', value = qi)
+        qi = qs[geometric_key(form_.edge_midpoint(u, v))]
+        form_.edge_attribute((u, v), name='q', value=qi)
 
     plot_form(form_).show()
 
@@ -458,111 +446,3 @@ def create_sym2(form, keep_q = True):
     print('Total load: {0}'.format(pz))
 
     return form_
-
-def fix_boundaries_sym(form, plot = False):
-
-    tol = 0.001
-
-    for key in form.vertices():
-        _, y, _ = form.vertex_coordinates(key)
-        if y > 10.0 - tol and y < 10.0 + tol:
-            form.vertex_attribute(key, 'is_fixed', True)
-            form.vertex_attribute(key, 'z', 0.0)
-
-    if plot:
-        plot_form(form).show()
-
-    return form
-
-def fix_boundaries_complete(form, plot = False):
-
-    tol = 0.001
-
-    for key in form.vertices_on_boundary():
-        form.vertex_attribute(key, 'is_fixed', True)
-        form.vertex_attribute(key, 'z', 0.0)
-
-    if form.vertices_on_boundary() == []:
-        for key in form.vertices():
-            x, y, _ = form.vertex_coordinates(key)
-            if ( y > 10.0 - tol and y < 10.0 + tol ) or ( y > 0.0 - tol and y < 0.0 + tol ) or ( x > 10.0 - tol and x < 10.0 + tol ) or ( x > 0.0 - tol and x < 0.0 + tol ):
-                form.vertex_attribute(key, 'is_fixed', True)
-                form.vertex_attribute(key, 'z', 0.0)
-
-    if plot:
-        plot_form(form).show()
-
-    return form
-
-def fix_mid_sym(form, plot = False):
-
-    tol = 0.001
-
-    for key in form.vertices():
-        x, y, _ = form.vertex_coordinates(key)
-        if y > 10.0 - tol and y < 10.0 + tol and x > 5.0 - tol and x < 5.0 + tol:
-            form.vertex_attribute(key, 'is_fixed', True)
-            form.vertex_attribute(key, 'z', 0.0)
-
-    if plot:
-        plot_form(form, show_q=False, fix_width=True).show()
-
-    return form
-
-def fix_mid_complete(form, plot = False):
-
-    tol = 0.001
-
-    for key in form.vertices_on_boundary():
-        x, y, _ = form.vertex_coordinates(key)
-        if ( (y > 10.0 - tol and y < 10.0 + tol) or  (y > 0.0 - tol and y < 0.0 + tol) ) and (x > 5.0 - tol and x < 5.0 + tol):
-            form.vertex_attribute(key, 'is_fixed', True)
-            form.vertex_attribute(key, 'z', 0.0)
-        if ( (x > 10.0 - tol and x < 10.0 + tol) or  (x > 0.0 - tol and x < 0.0 + tol) ) and (y > 5.0 - tol and y < 5.0 + tol):
-            form.vertex_attribute(key, 'is_fixed', True)
-            form.vertex_attribute(key, 'z', 0.0)
-
-    if plot:
-        plot_form(form, show_q=False, fix_width=True).show()
-
-    return form
-
-def unfix_mid_complete(form, plot = False):
-
-    tol = 0.001
-
-    for key in form.vertices_on_boundary():
-        x, y, _ = form.vertex_coordinates(key)
-        if ( (y > 10.0 - tol and y < 10.0 + tol) or  (y > 0.0 - tol and y < 0.0 + tol) ) and (x > 5.0 - tol and x < 5.0 + tol):
-            form.vertex_attribute(key, 'is_fixed', False)
-            form.vertex_attribute(key, 'z', 0.0)
-        if ( (x > 10.0 - tol and x < 10.0 + tol) or  (x > 0.0 - tol and x < 0.0 + tol) ) and (y > 5.0 - tol and y < 5.0 + tol):
-            form.vertex_attribute(key, 'is_fixed', False)
-            form.vertex_attribute(key, 'z', 0.0)
-
-    if plot:
-        plot_form(form, show_q=False, fix_width=True).show()
-
-    return form
-
-def not_sym_load(form, x0 = 0, x1 = 5.0, magnitude = 2.0):
-
-    tol = 0.01
-
-    pzt = 0.0
-
-    for key in form.vertices():
-        x, _, _ = form.vertex_coordinates(key)
-        if x > x0 - tol and x < x1 + tol:
-            pz0 = form.vertex_attribute(key, 'pz')
-            if x > x1 - tol:
-                form.vertex_attribute(key, 'pz', value = ((magnitude-1)/2 +1) * pz0)
-            else:
-                form.vertex_attribute(key, 'pz', value = magnitude * pz0)
-        pzt += form.vertex_attribute(key, 'pz')
-
-    print('Final Load: {0}'.format(pzt))
-
-    return form
-
-

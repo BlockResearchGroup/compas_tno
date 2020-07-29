@@ -15,17 +15,18 @@ thk = 0.5
 radius = 5.0
 type_structure = 'dome'
 type_formdiagram = 'radial_fd'
-discretisation = [8, 16]
+discretisation = [4, 8]
+discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
 data_shape = {
     'type': type_structure,
     'thk': thk,
-    'discretisation': discretisation,
+    'discretisation': discretisation_shape,
     'center': [5.0, 5.0],
     'radius': radius,
-    't' : 10.0
+    't': 10.0
 }
 
 dome = Shape.from_library(data_shape)
@@ -37,7 +38,7 @@ data_diagram = {
     'type': type_formdiagram,
     'center': [5.0, 5.0],
     'radius': radius,
-    'discretisation': [8, 16],
+    'discretisation': discretisation,
     'r_oculus': 0.0,
     'diagonal': False,
     'partial_diagonal': False,
@@ -46,12 +47,11 @@ data_diagram = {
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 print(form)
-plot_form(form, show_q=False, fix_width=False).show()
+# plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
 form = form.initialise_tna(plot=False)
-
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
@@ -65,7 +65,7 @@ optimiser.data['printout'] = True
 optimiser.data['solver_options']['derivatives'] = 'PyTorch'  # 'DF_brute' 'DF_reduced' and 'analytical' in process.
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
+optimiser.data['qmax'] = 3000.0
 print(optimiser.data)
 
 # --------------------- 5. Set up and run analysis ---------------------

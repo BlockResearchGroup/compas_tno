@@ -10,17 +10,25 @@ import rhinoscriptsyntax as rs
 import json
 import math
 import compas_tno
+import os
 
 # Give a name to your project
-master = 'Projected_Straight_PX_0,30'
+master = 'cross_fd_t=50_partial_1,0_max'
+master = 'fan_fd_t=46_partial_10.0_max'
+master = 'Dome_[8,20]_hor=24-reac_bound'
+
 
 # Put here the .json file for the optimisation
-# fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.4.json'
+# fnm = '/Users/mricardo/compas_dev/me/bestfit/dome/dome_final_alpha=95.0.json' 
+fnm = '/Users/mricardo/compas_dev/me/bestfit/dome/'+master+'.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/fan_fd/h=5.0/pointed_crossvault_fan_fd_discr_10_partial_ratio_10.0_10.0_max_thk_46.0.json'
 # fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.09_discr_[4, 16]_min.json'
 # fnm = '/Users/mricardo/compas_dev/me/SI_data/Amiens/pointed_crossvault/fan_fd/forms/pointed_crossvault_fan_fd_discr_14_fill_0.8_min_thk_46.0.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
-# fnm = compas_tno.get('test.json')
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[4, 12]_radial_spaced_fd_straight_min.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/test-max.json'
+fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.24_discr_[8, 20]_min.json'
+# fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[4, 12]_radial_spaced_fd_straight_min.json'
 
 # Parameters for the visualisation
 radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
@@ -181,8 +189,8 @@ for key in form.vertices_where({'is_fixed': True}):
         dx = mult* rx/norm
         dy = mult* ry/norm
         ep = [sp[0]-dx, sp[1]-dy, sp[2]-dz]
-        #id = rs.AddLine(sp, ep)
-        #rs.ObjectName(id, str(norm))
+        # id = rs.AddLine(sp, ep)
+        rs.ObjectName(id, str(norm))
         rs.CurrentLayer(reac_val)
         rs.AddTextDot('({0:.1f};{1:.1f})'.format(rx, ry), node, )
         rs.CurrentLayer(reac_layer)

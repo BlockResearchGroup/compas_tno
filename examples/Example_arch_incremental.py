@@ -5,7 +5,10 @@ from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form_xz
 from compas_tno.analysis import Analysis
 from compas_tno.plotters import plot_gif_forms_xz
+from compas_tno.plotters import plot_gif_forms_and_shapes_xz
 from compas_tno.plotters import diagram_of_thrust
+from compas_tno.plotters import diagram_of_thrust_partial
+from compas_tno.plotters import save_csv
 from copy import deepcopy
 import os
 
@@ -19,9 +22,11 @@ thk = 0.200  # thickness on the start in meters
 thk_reduction = 0.010  # in meters
 solutions_min = []  # empty lists to keep track of  the solutions
 solutions_max = []  # empty lists to keep track of  the solutions
-size_parameters = []  # empty lists to keep track of  the parameters
+xmin = []  # empty lists to keep track of  the parameters on min opt
+xmax = []  # empty lists to keep track of  the parameters on max opt
 forms_min = []
 forms_max = []
+shapes = []
 
 while exitflag == 0:
 
@@ -108,7 +113,10 @@ while exitflag == 0:
     print('Thrust over weight - min: ', fopt_over_weight_min)
     print('Exitflag: ', exitflag)
     if exitflag == 0:
+        solutions_min.append(fopt_over_weight_min)
         forms_min.append(deepcopy(form))
+        xmin.append(t_over_R)
+        shapes.append(arch)
 
     # --------------------------- 5.1 Set The objective to max and run ---------------------------
 
@@ -127,13 +135,12 @@ while exitflag == 0:
     print('Exitflag: ', exitflag)
     if exitflag == 0:
         forms_max.append(deepcopy(form))
+        solutions_max.append(fopt_over_weight_max)
+        xmax.append(t_over_R)
 
     # ------------------------ 5 . Reduce the thickness ---------------------------
 
     if exitflag == 0:
-        solutions_min.append(fopt_over_weight_min)
-        solutions_max.append(fopt_over_weight_max)
-        size_parameters.append(t_over_R)
         thk = round(thk - thk_reduction, 4)
         print('Reduce thickness to', thk, '\n')
     else:
@@ -142,9 +149,11 @@ while exitflag == 0:
 
 # --------------- 6 . After exit print the list of solutions obtained ------------
 
-print('\n SUMMARY')
-print('\nSizes calculated')
-print(size_parameters)
+print('\nSUMMARY')
+print('Parameter min')
+print(xmin)
+print('Parameter max')
+print(xmax)
 print('Solutions min')
 print(solutions_min)
 print('Solutions max')
@@ -152,7 +161,14 @@ print(solutions_max)
 
 # --------------- 7. Create and save the plots of the solution in data/imgs ------------
 
+
+img_min = os.path.join(compas_tno.get('/imgs/'), 'min_no_voussoirs.gif')
+img_max = os.path.join(compas_tno.get('/imgs/'), 'max_no_voussoirs.gif')
+plot_gif_forms_and_shapes_xz(forms_min, shapes, save=img_min, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, stereotomy=discretisation).show()
+plot_gif_forms_and_shapes_xz(forms_max, shapes, save=img_max, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, stereotomy=discretisation).show()
+
 img_graph = os.path.join(compas_tno.get('/imgs/'), 'diagram.pdf')
-diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()
+diagram_of_thrust_partial(xmin, xmax, solutions_min, solutions_max, xy_limits=[[0.20, 0.10], [60, 30]], fill=True, save=img_graph).show()
 
-
+csv_path = os.path.join(compas_tno.get('/csv/'), 'diagram.csv')
+save_csv(xmin, solutions_min, solutions_max, limit_state=True, path=csv_path)

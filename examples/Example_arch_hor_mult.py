@@ -8,6 +8,7 @@ from compas_tno.plotters import diagram_of_thrust_load_mult
 from compas_tno.plotters import plot_forms_xz
 from compas_tno.plotters import plot_gif_forms_xz
 from compas_tno.plotters import plot_form_xz
+from compas_tno.plotters import plot_gif_forms_and_shapes_xz
 from copy import deepcopy
 import os
 
@@ -28,6 +29,7 @@ direction_loads = 'px'
 plot_figures = True
 plot_graph = True
 plot_last = True
+arches = []
 
 # Basic parameters
 
@@ -118,6 +120,7 @@ while exitflag == 0:
     print('Exitflag: ', exitflag)
     if exitflag == 0:
         forms_min.append(deepcopy(form))
+        arches.append(arch)
     # plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
 
     # --------------------------- 5.1 Set The objective to max and run ---------------------------
@@ -153,14 +156,18 @@ while exitflag == 0:
 
 # --------------- 6 . After exit print the list of solutions obtained ------------
 
-if plot_last:
-    plot_form_xz(forms_max[-1], arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, hide_negative=True, radius=0.02).show()
-    plot_form_xz(forms_min[-1], arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, hide_negative=True, radius=0.02).show()
+# if plot_last:
+#     plot_forms_xz(forms_max[-1], arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, hide_negative=True, radius=0.02).show()
+#     plot_forms_xz(forms_min[-1], arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, hide_negative=True, radius=0.02).show()
 if plot_figures:
-    img_file_min = os.path.join(compas_tno.get('/imgs/'),'test_min.gif')
-    img_file_max = os.path.join(compas_tno.get('/imgs/'),'test_max.gif')
-    plot_gif_forms_xz(forms_min, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_min).show()
-    plot_gif_forms_xz(forms_max, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_max).show()
+    img_file_min = os.path.join(compas_tno.get('/imgs/'), 'test_min_stereotomy.gif')
+    img_file_max = os.path.join(compas_tno.get('/imgs/'), 'test_max_stereotomy.gif')
+    # plot_gif_forms_xz(forms_min, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_min).show()
+    # plot_gif_forms_xz(forms_max, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_max).show()
+    plot_gif_forms_and_shapes_xz(forms_min, arches, save=img_file_min, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, stereotomy=discretisation).show()
+    plot_gif_forms_and_shapes_xz(forms_max, arches, save=img_file_max, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, stereotomy=discretisation).show()
+
 if plot_graph:
     img_graph = os.path.join(compas_tno.get('/imgs/'),'diagram.pdf')
-    diagram_of_thrust_load_mult(size_parameters, solutions_min, solutions_max, save=img_graph).show()
+    diagram_of_thrust_load_mult(size_parameters, solutions_min, solutions_max, fill=True, save=img_graph).show()
+

@@ -1,11 +1,8 @@
 
 from numpy import array
 from numpy import float64
-from numpy import max
 from numpy import newaxis
-from numpy import sqrt
 from numpy import zeros
-from numpy import identity
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import diags
@@ -45,7 +42,8 @@ __all__ = [
     'update_tna',
     'update_form',
     'paralelise_form',
-    'reactions'
+    'reactions',
+    'apply_sag'
 ]
 
 
@@ -529,7 +527,6 @@ def reactions(form, plot=False):
 
     """
 
-
     # Mapping
 
     k_i = form.key_index()
@@ -606,3 +603,19 @@ def reactions(form, plot=False):
         plotter.show()
 
     return
+
+
+def apply_sag(form, boundary_force=10.0):
+
+    for u, v in form.edges():
+        form.edge_attribute((u, v), 'q', 1.0)
+
+    for u, v in form.edges_on_boundary():
+        form.edge_attribute((u, v), 'q', boundary_force)
+
+    z_from_form(form)
+
+    for key in form.vertices():
+        form.vertex_attribute(key, 'z', 0.0)
+
+    return form

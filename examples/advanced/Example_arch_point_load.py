@@ -178,11 +178,16 @@ print('Solutions Found')
 print(solutions_min)
 print(solutions_max)
 
-if plot_figures:
-    img_file_min = os.path.join(compas_tno.get('/imgs/'),'test_min.gif')
-    img_file_max = os.path.join(compas_tno.get('/imgs/'),'test_max.gif')
-    plot_gif_forms_xz(forms_min, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_min).show()
-    plot_gif_forms_xz(forms_max, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_max).show()
-if plot_graph:
-    img_graph = os.path.join(compas_tno.get('/imgs/'),'diagram.pdf')
-    diagram_of_thrust_load_mult(size_parameters, solutions_min, solutions_max, save=img_graph).show()
+formplot = forms_min[len(forms_min)-1]
+import os
+save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_pointload_' + optimiser.data['objective'] + '.pdf')
+plot_form_xz(formplot, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, hide_negative=True, save = save_photo).show()
+
+# if plot_figures:
+#     img_file_min = os.path.join(compas_tno.get('/imgs/'),'test_min.gif')
+#     img_file_max = os.path.join(compas_tno.get('/imgs/'),'test_max.gif')
+#     plot_gif_forms_xz(forms_min, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_min).show()
+#     plot_gif_forms_xz(forms_max, arch, plot_reactions=True, fix_width=True, max_width=5, radius=0.02, hide_negative=True, save=img_file_max).show()
+# if plot_graph:
+#     img_graph = os.path.join(compas_tno.get('/imgs/'),'diagram.pdf')
+#     diagram_of_thrust_load_mult(size_parameters, solutions_min, solutions_max, save=img_graph).show()

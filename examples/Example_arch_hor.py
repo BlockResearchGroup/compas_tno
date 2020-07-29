@@ -19,7 +19,7 @@ b = 0.5
 t = 10.0
 type_structure = 'arch'
 type_formdiagram = 'arch'
-hor_mult = 0.20
+hor_mult = 0.29
 direction_loads = 'px'
 
 # ----------------------- 1. Create Arch shape ---------------------------
@@ -86,33 +86,35 @@ form.to_json(file_address)
 optimiser = analysis.optimiser
 fopt = optimiser.fopt
 print(fopt)
-plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
+# plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
 
 # --------------------- 4.1 Create Minimisation for maximum thrust ---------------------
 
-optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'max'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
+# optimiser = Optimiser()
+# optimiser.data['library'] = 'Scipy'
+# optimiser.data['solver'] = 'slsqp'
+# optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+# optimiser.data['variables'] = ['ind', 'zb']
+# optimiser.data['objective'] = 'max'
+# optimiser.data['printout'] = True
+# optimiser.data['plot'] = False
+# optimiser.data['find_inds'] = True
+# optimiser.data['qmax'] = 1000.0
+# print(optimiser.data)
 
-# ------------------------- 4.2 Run optimisation with scipy ---------------------------
+# # ------------------------- 4.2 Run optimisation with scipy ---------------------------
 
-analysis = Analysis.from_elements(arch, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.apply_hor_multiplier(hor_mult, direction_loads)
-analysis.set_up_optimiser()
-analysis.run()
-form = analysis.form
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
+# analysis = Analysis.from_elements(arch, form, optimiser)
+# analysis.apply_selfweight()
+# analysis.apply_envelope()
+# analysis.apply_reaction_bounds()
+# analysis.apply_hor_multiplier(hor_mult, direction_loads)
+# analysis.set_up_optimiser()
+# analysis.run()
+# form = analysis.form
+# file_address = compas_tno.get('test.json')
+# form.to_json(file_address)
 
-plot_form_xz(form, arch, show_q=False, plot_reactions=True, fix_width=True, max_width=5, radius=0.02).show()
+import os
+save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_horizontal_' + optimiser.data['objective'] + '.pdf')
+plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, hide_negative=True, save = save_photo).show()

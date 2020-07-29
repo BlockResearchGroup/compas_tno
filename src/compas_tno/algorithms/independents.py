@@ -1,5 +1,4 @@
 
-from numpy import vstack
 from numpy import hstack
 from numpy import array
 from numpy import any

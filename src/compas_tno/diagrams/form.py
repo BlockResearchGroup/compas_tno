@@ -1,6 +1,7 @@
 
 from compas.utilities import geometric_key
 from compas.numerical import connectivity_matrix
+
 from random import shuffle
 from numpy import max
 from numpy import min
@@ -38,6 +39,8 @@ from compas.geometry import distance_point_line_xy
 from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
 from compas_tna.equilibrium import vertical_from_zmax
+
+from compas.geometry import distance_point_point_xy
 
 from compas_plotters import MeshPlotter
 
@@ -98,7 +101,6 @@ class FormDiagram(FormDiagram):
             # 'r_oculus:' None,
         }
 
-
     # --------------------------------------------------------------- #
     # -----------------------CONSTRUCTORS---------------------------- #
     # --------------------------------------------------------------- #
@@ -124,9 +126,11 @@ class FormDiagram(FormDiagram):
         if form_type == 'ortho':
             form = cls().create_ortho_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'radial_fd':
-            form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
+            form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'],
+                                                     discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'radial_spaced_fd':
-            form = cls().create_circular_radial_spaced_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
+            form = cls().create_circular_radial_spaced_form(center=data['center'], radius=data['radius'],
+                                                            discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'spiral_fd':
             form = cls().create_circular_spiral_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus)
 
@@ -384,6 +388,16 @@ class FormDiagram(FormDiagram):
 
         return form
 
+    def from_triangle(cls, boundary_points, area=0.5, angle=30):
+        """ W.I.P create form diagram from triangl dense mesh.
+        """
+        from copmas_triangle.delaunay import conforming_delaunay_triangulation
+        vertices, faces = conforming_delaunay_triangulation(boundary_points + boundary_points[:1], angle=angle, area=area)
+        mesh = Mesh.from_vertices_and_faces(vertices, faces)
+        form = cls().from_mesh(mesh)
+        return form
+
+
     @classmethod
     def from_skeleton(cls, data):
         """ W.I.P create form diagram from skeleton.
@@ -460,6 +474,26 @@ class FormDiagram(FormDiagram):
 
         return
 
+    def thrust(self):
+
+        thrust = 0
+        for key in self.vertices_where({'is_fixed': True}):
+            rx = self.vertex_attribute(key, '_rx')
+            ry = self.vertex_attribute(key, '_ry')
+            r = math.sqrt(rx**2 + ry**2)
+            thrust += r
+
+        return thrust
+
+    def lumped_swt(self):
+
+        swt = 0
+        for key in self.vertices():
+            pz = form.vertex_attribute(key, 'pz')
+            swt += pz
+
+        return swt
+
     def shuffle_diagram(self, keep_q=False):
         """ Modify the FormDiagram by shuffling the edges.
 
@@ -482,7 +516,7 @@ class FormDiagram(FormDiagram):
         qs = {geometric_key(self.edge_midpoint(u, v)[:2] + [0]): self.edge_attribute((u, v), 'q') for u, v in self.edges()}
         shuffle(edges)
 
-        form_ = FormDiagram.from_lines(edges, delete_boundary_face=False)
+        form_ = FormDiagram.from_lines(edges, delete_boundary_face=True)
         form_.update_default_edge_attributes({'is_symmetry': False})
         sym = [geometric_key(self.edge_midpoint(u, v)[:2] + [0])for u, v in self.edges_where({'is_symmetry': True})]
         for u, v in form_.edges():
@@ -545,7 +579,6 @@ class FormDiagram(FormDiagram):
 
         return self
 
-
     def set_boundary_supports(self):
         """ Set all node on the boundary of a pattern as supports.
         """
@@ -564,14 +597,18 @@ class FormDiagram(FormDiagram):
         if total_rx is not None:
             nx0 = 0
             nx1 = 0
-            for key in self.vertices_where({'x': xlimits[0]}): nx0 += 1
-            for key in self.vertices_where({'x': xlimits[1]}): nx1 += 1
+            for key in self.vertices_where({'x': xlimits[0]}):
+                nx0 += 1
+            for key in self.vertices_where({'x': xlimits[1]}):
+                nx1 += 1
             max_rx = [total_rx[0]/nx0, total_rx[1]/nx1]
         if total_ry is not None:
             ny0 = 0
             ny1 = 0
-            for key in self.vertices_where({'y': ylimits[0]}): ny0 += 1
-            for key in self.vertices_where({'y': ylimits[1]}): ny1 += 1
+            for key in self.vertices_where({'y': ylimits[0]}):
+                ny0 += 1
+            for key in self.vertices_where({'y': ylimits[1]}):
+                ny1 += 1
             max_ry = [total_ry[0]/ny0, total_ry[1]/ny1]
         for key in self.vertices_on_boundary():
             if self.vertex_attribute(key, 'is_fixed') is False:
@@ -633,7 +670,7 @@ class FormDiagram(FormDiagram):
         uvw = C.dot(xyz)
         U = uvw[:, 0]
         V = uvw[:, 1]
-        q = array([self.edge_attribute((u,v), 'q') for u, v in self.edges_where({'_is_edge': True})])[:, newaxis]
+        q = array([self.edge_attribute((u, v), 'q') for u, v in self.edges_where({'_is_edge': True})])[:, newaxis]
 
         # Horizontal checks
 
@@ -655,8 +692,8 @@ class FormDiagram(FormDiagram):
 
         a_total = 0
         a_max = 0
-        for u, v, attr in self.edges_where({'_is_edge': True}, True):
-            a = attr['a']
+        for u, v in self.edges_where({'_is_edge': True}):
+            a = self.edge_attribute((u, v), 'a')
             a_total += a
             l = self.edge_length(u, v)
             a = a*l
@@ -668,6 +705,89 @@ class FormDiagram(FormDiagram):
 
         return a_max
 
+    def optimise_loadpath(self, find_inds=True, qmax=3000, printout=False):
+
+        from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
+
+        self = run_loadpath_from_form_MATLAB(self, find_inds=find_inds, qmax=qmax, printout=printout)
+
+        return self
+
+    def initialise_loadpath(self, find_inds=True, qmax=10000, printout=False):
+
+        self = self.optimise_loadpath(find_inds=find_inds, qmax=qmax, printout=printout)
+
+        return self
+
+    def envelope_from_shape(self, shape):
+
+        XY = self.vertices_attributes('xy')
+        zub = shape.get_ub_pattern(XY)
+        zlb = shape.get_lb_pattern(XY)
+
+        keysnan = []
+        i = 0
+
+        for key in self.vertices():
+            x, y, _ = self.vertex_coordinates(key)
+            ub_ = zub[i]
+            lb_ = zlb[i]
+            # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' ub:', ub_)
+            # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' lb:', lb_)
+            if math.isnan(lb_):
+                lb_ = -1 * shape.data['t']
+                keysnan.append(key)
+                print('Shape interpolation got NaN, check results (x,y): ({0:.3f}, {1:.3f})'.format(x, y))
+            self.vertex_attribute(key, 'ub', value=ub_)
+            self.vertex_attribute(key, 'lb', value=lb_)
+            i += 1
+
+        if keysnan:
+            print(keysnan)
+            plt = MeshPlotter(self)
+            plt.draw_edges()
+            plt.draw_vertices(keys=keysnan, radius=0.1, text='error', facecolor='FF0000')
+            plt.show()
+
+        return
+
+    def selfweight_from_shape(self, shape):
+        """Apply selfweight to the nodes of the form diagram based on the shape"""
+
+        form_ = self.copy()
+        total_selfweight = shape.compute_selfweight()
+
+        XY = self.vertices_attributes('xy')
+        zt = shape.get_middle_pattern(XY)
+
+        i = 0
+        for key in form_.vertices():
+            z = zt[i]
+            form_.vertex_attribute(key, 'z', value=z)
+            self.vertex_attribute(key, 'target', value=z)
+            i += 1
+
+        pzt = 0
+        for key in self.vertices():
+            pz = form_.vertex_area(key)
+            self.vertex_attribute(key, 'pz', value=pz)
+            pzt += pz
+
+        if shape.data['type'] == 'arch':
+            pzt = 0
+            for key in self.vertices():
+                self.vertex_attribute(key, 'pz', value=1.0)
+                if self.vertex_attribute(key, 'is_fixed') == True:
+                    self.vertex_attribute(key, 'pz', value=0.5)
+                pzt += self.vertex_attribute(key, 'pz')
+
+        factor = total_selfweight/pzt
+
+        for key in self.vertices():
+            pzi = factor * self.vertex_attribute(key, 'pz')
+            self.vertex_attribute(key, 'pz', value=pzi)
+
+        return
 
     def apply_symmetry(self, center=[5.0, 5.0, 0.0], horizontal_only=False, vertical_only=False):
 
@@ -742,7 +862,6 @@ class FormDiagram(FormDiagram):
 
         return
 
-
     def number_of_independents(self, printout=False):
 
         total = 0
@@ -768,7 +887,6 @@ class FormDiagram(FormDiagram):
             print('Form has {0} supports'.format(total))
 
         return total
-
 
     def number_of_sym_independents(self, printout=False):
 
@@ -905,7 +1023,6 @@ class FormDiagram(FormDiagram):
     # -----------------------TNA-CONECTION--------------------------- #
     # --------------------------------------------------------------- #
 
-
     def add_feet_(self, delete_face=False):
         """ Add feet to the support as in compas_tna.
         """
@@ -971,8 +1088,7 @@ class FormDiagram(FormDiagram):
 
         return form_
 
-    def evaluate_scale(self, function, bounds, n = 100, plot = True):
-
+    def evaluate_scale(self, function, bounds, n=100, plot=True):
         """ Evaluate a given objective function by scaling the form-diagram in the bounds specified.
 
         Parameters
@@ -999,11 +1115,11 @@ class FormDiagram(FormDiagram):
         stp = (bounds[1]-bounds[0])/n
         x = []
         y = []
-        q0 = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'_is_edge': True})])[:, newaxis]
+        q0 = array([self.edge_attribute((u, v), 'q') for u, v in self.edges_where({'_is_edge': True})])[:, newaxis]
 
         form_ = deepcopy(self)
 
-        k_i  = form_.key_index()
+        k_i = form_.key_index()
         uv_i = form_.uv_index()
 
         for k in range(n):
@@ -1012,9 +1128,9 @@ class FormDiagram(FormDiagram):
             x.append(r)
 
             for u, v in form_.edges_where({'_is_edge': True}):
-                i = uv_i[(u,v)]
+                i = uv_i[(u, v)]
                 [qi] = q[i]
-                form_.edge_attribute((u,v),'q',value=qi)
+                form_.edge_attribute((u, v), 'q', value=qi)
 
             form_ = z_from_form(form_)
             y.append(function(form_))
@@ -1026,20 +1142,20 @@ class FormDiagram(FormDiagram):
         ax.plot(x, y)
 
         ax.set(xlabel='Scale (r)', ylabel='Energy (f)',
-            title='Evaluate Energy by Scaling')
+               title='Evaluate Energy by Scaling')
         ax.grid()
 
         pos = argmin(y)
         xmin = x[pos]
         ymin = y[pos]
-        text= "x={:.3f}, y={:.3f}".format(xmin, ymin)
+        text = "x={:.3f}, y={:.3f}".format(xmin, ymin)
         if not ax:
-            ax=plt.gca()
+            ax = plt.gca()
         bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
-        arrowprops=dict(arrowstyle="->",connectionstyle="angle,angleA=0,angleB=60")
-        kw = dict(xycoords='data',textcoords="axes fraction",
-                arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
-        ax.annotate(text, xy=(xmin, ymin), xytext=(0.94,0.96), **kw)
+        arrowprops = dict(arrowstyle="->", connectionstyle="angle,angleA=0,angleB=60")
+        kw = dict(xycoords='data', textcoords="axes fraction",
+                  arrowprops=arrowprops, bbox=bbox_props, ha="right", va="top")
+        ax.annotate(text, xy=(xmin, ymin), xytext=(0.94, 0.96), **kw)
 
         if plot:
             plt.show()
@@ -1047,7 +1163,6 @@ class FormDiagram(FormDiagram):
         return xmin
 
     def scale_fdm(self, r):
-
         """ scale the FormDiagram of a factor r using FDM (all coordinates can change).
 
         Parameters
@@ -1065,20 +1180,20 @@ class FormDiagram(FormDiagram):
         """
 
         uv_i = self.uv_index()
-        q = array([self.edge_attribute((u,v),'q') for u, v in self.edges_where({'_is_edge': True, '_is_external' : False})])[:, newaxis]
+        q = array([self.edge_attribute((u, v), 'q') for u, v in self.edges_where({'_is_edge': True, '_is_external': False})])[:, newaxis]
         q = q * r
 
         for u, v in self.edges_where({'_is_external': False}):
-            if self.edge_attribute((u,v),'_is_edge') is True:
-                i = uv_i[(u,v)]
+            if self.edge_attribute((u, v), '_is_edge') is True:
+                i = uv_i[(u, v)]
                 [qi] = q[i]
-                self.edge_attribute((u,v),'q',value=qi)
+                self.edge_attribute((u, v), 'q', value=qi)
 
         self = z_from_form(self)
 
         return self
 
-    def scale_form(self,r):
+    def scale_form(self, r):
         """ Scale the FormDiagram of a factor r using built-in FDM (only z-coordinates can change).
 
         Parameters
@@ -1095,35 +1210,35 @@ class FormDiagram(FormDiagram):
 
         """
 
-        k_i     = self.key_index()
-        uv_i    = self.uv_index()
-        vcount  = len(self.vertex)
+        k_i = self.key_index()
+        uv_i = self.uv_index()
+        vcount = len(self.vertex)
         anchors = list(self.anchors())
-        fixed   = list(self.fixed())
-        fixed   = set(anchors + fixed)
-        fixed   = [k_i[key] for key in fixed]
-        free    = list(set(range(vcount)) - set(fixed))
-        edges   = [(k_i[u], k_i[v]) for u, v in self.edges_where({'_is_edge': True})]
-        xyz     = array(self.get_vertices_attributes('xyz'), dtype=float64)
-        p       = array(self.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-        q       = [attr.get('q', 1.0) for u, v, attr in self.edges_where({'_is_edge': True}, True)]
-        q       = array(q, dtype=float64).reshape((-1, 1))
-        C       = connectivity_matrix(edges, 'csr')
-        Ci      = C[:, free]
-        Cf      = C[:, fixed]
-        Cit     = Ci.transpose()
+        fixed = list(self.fixed())
+        fixed = set(anchors + fixed)
+        fixed = [k_i[key] for key in fixed]
+        free = list(set(range(vcount)) - set(fixed))
+        edges = [(k_i[u], k_i[v]) for u, v in self.edges_where({'_is_edge': True})]
+        xyz = array(self.get_vertices_attributes('xyz'), dtype=float64)
+        p = array(self.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
+        q = [attr.get('q', 1.0) for u, v, attr in self.edges_where({'_is_edge': True}, True)]
+        q = array(q, dtype=float64).reshape((-1, 1))
+        C = connectivity_matrix(edges, 'csr')
+        Ci = C[:, free]
+        Cf = C[:, fixed]
+        Cit = Ci.transpose()
 
         q = q * r
         Q = diags([q.ravel()], [0])
 
-        A       = Cit.dot(Q).dot(Ci)
-        B       = Cit.dot(Q).dot(Cf)
+        A = Cit.dot(Q).dot(Ci)
+        B = Cit.dot(Q).dot(Cf)
 
-        xyz[free, 2] = spsolve(A,p[free, 2] - B.dot(xyz[fixed, 2]))
+        xyz[free, 2] = spsolve(A, p[free, 2] - B.dot(xyz[fixed, 2]))
 
         for key, attr in self.vertices(True):
             index = k_i[key]
-            attr['z']  = xyz[index, 2]
+            attr['z'] = xyz[index, 2]
 
         for u, v, attr in self.edges_where({'_is_edge': True}, True):
             index = uv_i[(u, v)]
@@ -1131,8 +1246,7 @@ class FormDiagram(FormDiagram):
 
         return self
 
-
-    def initialise_tna(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, display=False):
+    def initialise_tna(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, remove_feet=True, display=False):
 
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attribute('is_anchor', True, keys=corners)
@@ -1140,7 +1254,7 @@ class FormDiagram(FormDiagram):
         self.edges_attribute('fmax', 10.0)
         leaves = False
         for u, v in self.edges_on_boundary():
-            if self.edge_attribute((u,v), '_is_edge') == False:
+            if self.edge_attribute((u, v), '_is_edge') == False:
                 leaves = True
                 break
         if leaves is False:
@@ -1149,7 +1263,7 @@ class FormDiagram(FormDiagram):
         force = ForceDiagram.from_formdiagram(self)
         if plot:
             print('Plot of Primal')
-            plotter = MeshPlotter(self, figsize=(10,10))
+            plotter = MeshPlotter(self, figsize=(10, 10))
             plotter.draw_edges(keys=[key for key in self.edges_where({'_is_edge': True})])
             plotter.draw_vertices(radius=0.05)
             plotter.draw_vertices(keys=[key for key in self.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
@@ -1165,7 +1279,7 @@ class FormDiagram(FormDiagram):
         # Vertical Equilibrium with no updated loads
 
         vertical_from_zmax(self, zmax)
-        if leaves is False:
+        if leaves is False and remove_feet is True:
             self = self.remove_feet()
 
         if plot:
@@ -1174,17 +1288,68 @@ class FormDiagram(FormDiagram):
 
         return self
 
-    def initialise_loadpath(self):
+    def reciprocal_from_form(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, remove_feet=True, display=False):
 
-        # W.I.P.
+        corners = list(self.vertices_where({'is_fixed': True}))
+        self.vertices_attribute('is_anchor', True, keys=corners)
 
-        return self
+        for key in self.vertices_where({'is_fixed': True}):
+            react = abs(self.vertex_attribute(key, '_rx'))
+            break
+        leaves = False
+        for u, v in self.edges_on_boundary():
+            if self.edge_attribute((u, v), '_is_edge') == False:
+                leaves = True
+                break
+        if leaves is False:
+            self.update_boundaries(feet=2)
 
-    def apply_selfweight_from_shape(self, shape):
+        for u, v in self.edges():
+            if self.edge_attribute((u, v), '_is_external') is False:
+                qi = self.edge_attribute((u, v), 'q')
+                a = self.vertex_coordinates(u)
+                b = self.vertex_coordinates(v)
+                lh = distance_point_point_xy(a, b)
+                self.edge_attribute((u, v), 'fmin', value=qi*lh)
+                self.edge_attribute((u, v), 'fmax', value=qi*lh)
+                self.edge_attribute((u, v), 'lmin', value=lh)
+                self.edge_attribute((u, v), 'lmax', value=lh)
+            # else:
+            #     self.edge_attribute((u, v), 'fmin', value=react)
+            #     self.edge_attribute((u, v), 'fmax', value=react)
+            #     self.edge_attribute((u, v), 'lmin', value=1.0)
+            #     self.edge_attribute((u, v), 'lmax', value=1.0)
+            #     self.edge_attribute((u, v), 'q', value=react)
 
-        # W.I.P.
+        if plot:
+            plot_form(self).show()
 
-        return
+        force = ForceDiagram.from_formdiagram(self)
+        if plot:
+            print('Plot of Primal')
+            plotter = MeshPlotter(self, figsize=(10, 10))
+            plotter.draw_edges(keys=[key for key in self.edges_where({'_is_edge': True})])
+            plotter.draw_vertices(radius=0.05)
+            plotter.draw_vertices(keys=[key for key in self.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
+            plotter.show()
+            print('Plot of Dual')
+            force.plot()
+
+        if method == 'nodal':
+            horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
+        else:
+            horizontal(self, force, alpha=alpha, kmax=kmax, display=False)
+
+        # Vertical Equilibrium with no updated loads
+
+        if leaves is False and remove_feet is True:
+            self = self.remove_feet()
+
+        if plot:
+            print('Plot of Reciprocal')
+            force.plot()
+
+        return self, force
 
     def vertex_projected_area(self, key):
         """Compute the projected tributary area of a vertex.
