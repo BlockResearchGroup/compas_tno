@@ -440,76 +440,94 @@ class Analysis(object):
         form0 = self.form.copy()
         swt0 = self.shape.compute_selfweight()
         thk_reduction0 = thk_reduction
-        refined = False
-
         data_diagram = self.form.parameters
         data_shape = self.shape.data
+        last_min = 0
+        last_max = 100
+        last_thk_min = t0
+        last_thk_max = t0
+        objectives = ['min', 'max']
+        limit_equal = 0.01
+        exitflag = 0
 
         print('Limit Analysis - GSF: For ', data_shape['type'], 'with diagram ', data_diagram['type'])
 
-        for self.optimiser.data['objective'] in ['min', 'max']:
+        while (last_max - last_min) > limit_equal:
 
-            self.form = form0
-            exitflag = 0
-            thk = t0
-            thk_reduction = thk_reduction0
-            refined = False
-            while exitflag == 0 and thk > 0:
+            if exitflag == 0:
+                pass
+            else:
+                objectives = objectives[::-1]
+                print('STILL NEED WORK TO DO...')
+                break
+
+            for self.optimiser.data['objective'] in objectives:
+
+                self.form = form0
                 exitflag = 0
-                t_over_span = thk/span
-                print('\n----- Starting the', data_diagram['type'], 'problem for thk/L:', t_over_span, '\n')
-                data_shape['thk'] = thk
-                self.shape = Shape.from_library(data_shape)
-                swt = self.shape.compute_selfweight()
-                if fill_percentage:
-                    self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
-                    swt += self.shape.compute_fill_weight()
-                if rollers_ratio:
-                    self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
-                elif rollers_absolute:
-                    self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
-                self.apply_selfweight()
-                self.apply_envelope()
-                self.apply_reaction_bounds()
-                if fill_percentage:
-                    self.apply_fill_load()
-                self.set_up_optimiser()
-                self.run()
-                if plot:
-                    plot_form(self.form, show_q=False, cracks=True).show()
-                    plot_independents(self.form).show()
-                exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
-                fopt = self.optimiser.fopt  # objective function optimum value
-                fopt_over_weight = fopt/swt  # divide by selfweight
+                thk = t0
+                thk_reduction = thk_reduction0
 
-                if exitflag == 0:
-                    if self.optimiser.data['objective'] == 'min':
-                        solutions_min.append(fopt_over_weight)
-                        size_parameters_min.append(t_over_span)
-                        thicknesses_min.append(thk)
-                    else:
-                        solutions_max.append(fopt_over_weight)
-                        size_parameters_max.append(t_over_span)
-                        thicknesses_max.append(thk)
-                    if save_forms:
-                        address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
-                    else:
-                        address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
-                    self.form.to_json(address)
-                    thk = round(thk - thk_reduction, 4)
-                    print('Reduce thickness to', thk, '\n')
-                else:
-                    print('Failed in THK: {0} | objective: '.format(thk), self.optimiser.data['objective'], '\n')
-                    if thk_refined and refined is False:
-                        self.form = FormDiagram.from_json(address)
-                        thk = round(thk + thk_reduction, 4)
-                        thk_reduction = thk_refined
+                while exitflag == 0 and thk > 0:
+                    exitflag = 0
+                    t_over_span = thk/span
+                    print('\n----- Starting the', data_diagram['type'], 'problem for thk/L:', t_over_span, '\n')
+                    data_shape['thk'] = thk
+                    self.shape = Shape.from_library(data_shape)
+                    swt = self.shape.compute_selfweight()
+                    if fill_percentage:
+                        self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
+                        swt += self.shape.compute_fill_weight()
+                    if rollers_ratio:
+                        self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
+                    elif rollers_absolute:
+                        self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
+                    self.apply_selfweight()
+                    self.apply_envelope()
+                    self.apply_reaction_bounds()
+                    if fill_percentage:
+                        self.apply_fill_load()
+                    self.set_up_optimiser()
+                    self.run()
+                    if plot:
+                        plot_form(self.form, show_q=False, cracks=True).show()
+                    exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
+                    fopt = self.optimiser.fopt  # objective function optimum value
+                    fopt_over_weight = fopt/swt  # divide by selfweight
+
+                    if exitflag == 0:
+                        if self.optimiser.data['objective'] == 'min':
+                            solutions_min.append(fopt_over_weight)
+                            size_parameters_min.append(t_over_span)
+                            thicknesses_min.append(thk)
+                            last_min = fopt_over_weight
+                            last_thk_min = thk
+                        else:
+                            solutions_max.append(fopt_over_weight)
+                            size_parameters_max.append(t_over_span)
+                            thicknesses_max.append(thk)
+                            last_max = abs(fopt_over_weight)
+                            last_thk_max = thk
+                        if save_forms:
+                            address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+                        else:
+                            address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
+                        self.form.to_json(address)
                         thk = round(thk - thk_reduction, 4)
-                        exitflag = 0
-                        print('---------- Refined analysis started -----------', '\n', 'Reduce thickness to', thk, '\n')
-                        refined = True
+                        print('Reduce thickness to', thk, '\n')
                     else:
-                        print('---------- End of process -----------', '\n')
+                        print('Failed in THK: {0} | objective: '.format(thk), self.optimiser.data['objective'], '\n')
+                        if thk_reduction > thk_refined or (self.optimiser.data['objective'] == 'max' and last_thk_min < last_thk_max):
+                            # if (last_max - last_min) > limit_equal and thk_reduction > thk_refined and last_thk_min <= last_thk_max:
+                            self.form = FormDiagram.from_json(address)
+                            thk = round(thk + thk_reduction, 4)
+                            thk_reduction = thk_reduction / 2
+                            thk = round(thk - thk_reduction, 4)
+                            exitflag = 0
+                            print('---------- Refined analysis activated -----------', '\n', 'Reduce thickness to', thk, '\n')
+                        else:
+                            print('---------- End of process -----------', '\n')
+                ['a', 'b', 'c'][::-1]
 
         if printout:
             print('------------------ SUMMARY ------------------ ')

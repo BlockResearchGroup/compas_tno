@@ -30,6 +30,7 @@ __all__ = [
     'save_csv',
     'save_csv_row',
     'open_csv',
+    'open_csv_row',
     'interpolate_min_thk',
 ]
 
@@ -259,6 +260,124 @@ def diagram_of_thrust_partial(xmin, xmax, min_sol, max_sol, limit_state=True, fi
     return plt
 
 
+def diagram_multiple_thrust_partial(parameters, solutions, limit_state=True, fill=False, xy_limits=None, save=False):
+    """ Plot a diagram of Thrusts based on the collected data from (n) points.
+
+    Parameters
+    ----------
+    xmin : list (n)
+        Points with discretised solutions of minimum thrust.
+    xmax : list (m)
+        Points with discretised solutions of maximum thrust.
+    min_sol : list (n)
+        Adimensional thrust over weight for minimum thrust.
+    max_sol : list (m)
+        Adimensional thrust over weight for minimum thrust.
+    limit_state : bool
+        If yes, it interpolates the limit_state based on the two last solutions.
+    limit_state : bool
+        If yes, it saves the figure of the diagram.
+
+    Returns
+    -------
+    obj
+        Plotter object.
+
+    """
+
+    kmax = len(dimensions)
+    if markers is None:
+        markers = ['o', '^', 's', 'D', 'x', '1', '2', '3', 'v', 'p', '4', '8']
+
+    if colors is None:
+        colormap = plt.cm.coolwarm  # gist_ncar nipy_spectral, Set1, Paired coolwarm
+        colors = [colormap(i) for i in linspace(0, 1.0, kmax)]
+
+    size_axis_label = 14
+    size_axis_data = 12
+    size_legend = 14
+
+    fig = plt.figure(figsize=[12, 5])
+    ax = fig.add_subplot(1, 1, 1)
+    def flatten_list(l): return [item for sublist in l for item in sublist]
+    extreme_max = -100*min(flatten_list(max_sols))
+    extreme_min = 100*min(flatten_list(min_sols))
+
+    interval_x = abs(flatten_list(dimensions)[0] - flatten_list(dimensions)[1])
+    interval_y = 20
+    if xy_limits is None:
+        max_x = max(flatten_list(dimensions))
+        min_x = min(flatten_list(dimensions)) - interval_x
+        max_y = interval_y - extreme_max % 10 + extreme_max
+        min_y = extreme_min - extreme_min % 10
+    else:
+        [[max_x, min_x], [max_y, min_y]] = xy_limits
+
+    last_scale = round(max_x/min_x, 2)
+    middle_scale = round((last_scale - 1.0)/2 + 1, 1)
+    middle_x = max_x/middle_scale
+
+    # print(max_x, min_x, max_y, min_y, min(min(dimensions)))
+
+    for i in range(kmax):
+
+        xmin = xmax = array(dimensions[i])
+        fmin = 100.0*array(min_sols[i])
+        fmax = -100.0*array(max_sols[i])
+        n = len(xmin)
+
+        if simplified is True:
+            ax.plot(xmin, fmin, markers[i], ls='-', markersize=6, color=colors[i], label=legends[i])
+            ax.plot(xmax, fmax, markers[i], ls='-', markersize=6, color=colors[i])
+
+        else:
+            ax.plot(xmin, fmin, markers[i], ls='-', markersize=6, color='blue', label='minimum thrust '+legends[i])
+            ax.plot(xmax, fmax, markers[i], ls='-', markersize=6, color='red', label='maximum thrust '+legends[i])
+
+        if limit_state:
+            x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+            extrapolation_max = [fmax[n-1], y_]
+            extrapolation_min = [fmin[n-1], y_]
+            extrapolation_x = [xmax[n-1], x_]
+            ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black')
+            ax.plot(extrapolation_x, extrapolation_max, '', ls='--', color=colors[i])
+            ax.plot(extrapolation_x, extrapolation_min, '', ls='--', color=colors[i])
+            ax.annotate(str(round(max_x/x_, 1)), (x_, y_), textcoords="offset points", xytext=(20, -5), ha='center', size=12)
+
+        if fill:
+            ax.fill_between(xmin, fmin, fmax, color=colors[i], alpha=0.2)
+            ax.fill_between(extrapolation_x, extrapolation_min, extrapolation_max, color=colors[i], alpha=0.2)
+
+    ax1 = plt.axes()
+    ax2 = ax1.twiny()
+    ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100])
+    ax2.set_xticklabels(['1.0', str(middle_scale), str(last_scale)], size=size_axis_data)
+    ax1.set_xlabel('thickness/span', size=size_axis_label, weight='bold', labelpad=8)
+    ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+    ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax1.set_xlim(max_x, min_x)
+    ax.set_ylim(min_y, max_y)
+    # ax1.set_xticks(arange(max_x, min_x - interval_x, -interval_x))
+    ax1.set_yticks(arange(min_y, max_y + interval_y, interval_y))
+    ax1.tick_params(axis='both', which='major', labelsize=size_axis_data)
+
+    # plt.axvline(x=(x_ - max_x)/(min_x - max_x)*100, ls='--', color='black') # add    ymin=(max_y-y_)/(max_y-min_y)
+
+    ax.grid(color='silver', linestyle='-', linewidth=0.5)
+    if show_legend == True:
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+        box = ax.get_position()
+        ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
+
+
+    if save:
+        plt.savefig(save)
+
+    return plt
+
+
 def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, fill=False, show_legend=True, save=None, markers=None):
     """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
 
@@ -311,8 +430,6 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     last_scale = round(max_x/min_x, 2)
     middle_scale = round((last_scale - 1.0)/2 + 1, 1)
     middle_x = max_x/middle_scale
-
-    # print(max_x, min_x, max_y, min_y, min(min(dimensions)))
 
     for i in range(kmax):
 
@@ -589,13 +706,60 @@ def open_csv(path, cut_last=True):
 
     return x, min_thrust, max_thrust
 
+def open_csv_row(path, cut_last=True):
+
+    xmin = []
+    xmax = []
+    min_thrust = []
+    max_thrust = []
+
+    with open(path) as csv_file:
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        line_count = 0
+        if cut_last is False:
+            for row in csv_reader:
+                if line_count == 0:
+                    print(f'Title-notcut: {", ".join(row)}')
+                elif line_count == 1:
+                    xmin.append(row[1:])
+                elif line_count == 2:
+                    xmax.append(row[1:])
+                elif line_count == 3:
+                    min_thrust.append(row[1:])
+                elif line_count == 4:
+                    max_thrust.append(row[1:])
+                line_count += 1
+        else:
+            for row in csv_reader:
+                if line_count == 0:
+                    print(f'Title: {", ".join(row)}')
+                elif line_count == 1:
+                    cut_length = len(row[1:])
+                    xmin.append(row[1:cut_length])
+                elif line_count == 2:
+                    cut_length = len(row[1:])
+                    xmax.append(row[1:cut_length])
+                elif line_count == 3:
+                    cut_length = len(row[1:])
+                    min_thrust.append(row[1:cut_length])
+                elif line_count == 4:
+                    cut_length = len(row[1:])
+                    max_thrust.append(row[1:cut_length])
+                line_count += 1
+
+    xmin = [float(i) for i in xmin[0]]
+    xmax = [float(i) for i in xmax[0]]
+    min_thrust = [float(i)/100 for i in min_thrust[0]]
+    max_thrust = [-1 * float(i)/100 for i in max_thrust[0]]
+
+    return [xmin, xmax], [min_thrust, max_thrust]
+
 
 def interpolate_min_thk(dimension, min_sol, max_sol):
 
     xmin = xmax = array(dimension)
     fmin = 100.0 * array(min_sol)
     fmax = -100.0 * array(max_sol)
-    print(xmin)
     n = len(xmin)
     x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
 

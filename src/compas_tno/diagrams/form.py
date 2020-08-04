@@ -388,10 +388,11 @@ class FormDiagram(FormDiagram):
 
         return form
 
+    @classmethod
     def from_triangle(cls, boundary_points, area=0.5, angle=30):
         """ W.I.P create form diagram from triangl dense mesh.
         """
-        from copmas_triangle.delaunay import conforming_delaunay_triangulation
+        from compas_triangle.delaunay import conforming_delaunay_triangulation
         vertices, faces = conforming_delaunay_triangulation(boundary_points + boundary_points[:1], angle=angle, area=area)
         mesh = Mesh.from_vertices_and_faces(vertices, faces)
         form = cls().from_mesh(mesh)

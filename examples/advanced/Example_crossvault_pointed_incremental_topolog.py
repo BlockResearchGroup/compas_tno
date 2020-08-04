@@ -34,8 +34,9 @@ size_parameters = []  # empty lists to keep track of  the parameters
 thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
-hc_list = [5.00]
+hc_list = [7.42] #  [5.00]
 sag = False
+smooth = True
 # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 plot = False
 gradients = True
@@ -43,15 +44,16 @@ gradients = True
 # Basic parameters
 
 type_structure = 'pointed_crossvault'
-type_formdiagram = 'triangle'  # Try also 'fan_fd'
+type_formdiagram = 'topology'  # Try also 'fan_fd'
 discretisation = 100
-load_mesh = 'triangle'
+load_mesh = 'Mesh_B'
 
 # ----------------------- Create Form Diagram for analysis ---------------------------
 
 x0 = y0 = 0
 x1 = span
 y1 = k*span
+boundary_points = [[x0, y0, 0.0], [x1, y0, 0.0], [x1, y1, 0.0], [x0, y1, 0.0]]
 
 if type_formdiagram == 'topology':
     folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
@@ -59,22 +61,16 @@ if type_formdiagram == 'topology':
     mesh = Mesh.from_json(file_)
     form = FormDiagram.from_mesh(mesh)
 if load_mesh == 'triangle':
-    points = [[x0, y0, 0.0], [x1, y0, 0.0], [x1, y1, 0.0], [x0, y1, 0.0]]
-    print('here')
-    form = FormDiagram.from_triangle(points, area=0.5, angle=30)
+    form = FormDiagram.from_triangle(boundary_points)
 gkey_key = form.gkey_key()
-form.vertex_attribute(gkey_key[geometric_key([x0, y0, 0.0])], 'is_fixed', True)
-form.vertex_attribute(gkey_key[geometric_key([x0, y1, 0.0])], 'is_fixed', True)
-form.vertex_attribute(gkey_key[geometric_key([x1, y0, 0.0])], 'is_fixed', True)
-form.vertex_attribute(gkey_key[geometric_key([x1, y1, 0.0])], 'is_fixed', True)
-# cons = rectangular_smoothing_constraints(form, xy_span=[[x0, x1], [y0, y1]])
-# constrained_smoothing(form, damping=0.5, kmax=100, constraints=cons)
-# form.smooth_area(fixed=form.vertices_on_boundary())
-# form.smooth_centroid(fixed=form.vertices_on_boundary(), damping=0.1)
-plot_form(form, show_q=False).show()
+for pt in boundary_points:
+    form.vertex_attribute(gkey_key[geometric_key(pt)], 'is_fixed', True)
 if sag:
     apply_sag(form, boundary_force=sag)
-    plot_form(form, show_q=False).show()
+if smooth:
+    cons = rectangular_smoothing_constraints(form, xy_span=[[0, span], [0, k*span]])
+    constrained_smoothing(form, damping=0.5, kmax=100, constraints=cons, algorithm='centroid')
+plot_form(form, show_q=False).show()
 
 
 # --------------------- Create Optimiser ---------------------
@@ -82,8 +78,8 @@ if sag:
 optimiser = Optimiser()
 optimiser.data['library'] = 'IPOPT'
 optimiser.data['solver'] = 'IPOPT'
-# optimiser.data['library'] = 'Scipy'
-# optimiser.data['solver'] = 'SLSQP'
+optimiser.data['library'] = 'Scipy'
+optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = True
@@ -113,7 +109,7 @@ for hc in hc_list:
     # --------------------- Create Starting Point ---------------------
 
     form.selfweight_from_shape(vault)
-    form = form.initialise_tna(plot=False)
+    form = form.initialise_tna(plot=True)
     from compas_tno.algorithms import z_from_form
     z_from_form(form)
     # form = form.initialise_loadpath()
@@ -126,6 +122,8 @@ for hc in hc_list:
     title = type_structure + '_' + type_formdiagram + '_' + load_mesh + '_discr_' + str(discretisation)
     if sag:
         title = title + 'sag_' + str(sag)
+    if smooth:
+        title = title + 'smooth_'
     forms_address = os.path.join(folder, title)
 
     analysis = Analysis.from_elements(vault, form, optimiser)

@@ -22,22 +22,24 @@ from compas_tno.utilities import rectangular_smoothing_constraints
 exitflag = 0  # means that optimisation found a solution
 t0 = thk = 0.60  # thickness on the start in meters
 thk_reduction = 0.05  # in meters
-thk_refined = 0.01
+thk_refined = 0.001
 solutions_min = []  # empty lists to keep track of the solutions for min thrust
 solutions_max = []  # empty lists to keep track of the solutions for max thrust
 size_parameters = []  # empty lists to keep track of  the parameters
 thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
-hc_list = [5.00]
+n = 1
+R = [5.5, 6.5, 7.5, 8.5, 9.5]
+hc_list = [5.48, 6.32, 7.07, 7.75, 8.37]
 sag = None
-smooth = True
+smooth = False
 # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 
 # Basic parameters
 
 type_structure = 'pointed_crossvault'
-type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
+type_formdiagram = 'fan_fd'  # Try also 'fan_fd'
 discretisation = 10
 gradients = True
 
@@ -57,15 +59,15 @@ if smooth:
     cons = rectangular_smoothing_constraints(form, xy_span=[[0, span], [0, k*span]])
     constrained_smoothing(form, damping=0.5, kmax=100, constraints=cons, algorithm='area')
 
-plot_form(form, show_q=False, fix_width=10).show()
+# plot_form(form, show_q=False, fix_width=10).show()
 
 # --------------------- Create Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
+# optimiser.data['library'] = 'IPOPT'
+# optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = True
@@ -82,7 +84,7 @@ for hc in hc_list:
     data_shape = {
         'type': type_structure,
         'thk': thk,
-        'discretisation': discretisation*10,
+        'discretisation': discretisation*n,
         'xy_span': [[0, span], [0, k*span]],
         't': 0.0,
         'hc': hc,
@@ -97,7 +99,14 @@ for hc in hc_list:
     form.selfweight_from_shape(vault)
     # form = form.initialise_tna(plot=False)
     form = form.initialise_loadpath()
-    plot_form(form, show_q=False).show()
+    # plot_form(form, show_q=False).show()
+    # from compas_plotters import MeshPlotter
+    # plotter = MeshPlotter(form)
+    # plotter.draw_edges()
+    # plotter.draw_vertices(text={key: form.vertex_attribute(key, 'pz') for key in form.vertices()})
+    # plotter.show()
+    # view_thrust(form).show()
+    # view_solution(form, vault).show()
 
     # ----------------------- Create Analysis loop on limit analysis --------------------------
 
@@ -118,6 +127,6 @@ for hc in hc_list:
     csv_file = os.path.join(folder, title + '_data.csv')
     save_csv_row(thicknesses, solutions, path=csv_file, title=title)
 
-    xy_limits = [[0.60, 0.20], [120, 60]]
+    xy_limits = [[0.60, 0.20], [100, 30]]
     img_graph = os.path.join(folder, title + '_diagram.pdf')
     diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits).show()

@@ -1,4 +1,5 @@
 import os
+from compas_tno.plotters import open_csv_row
 from compas_tno.plotters import open_csv
 from compas_tno.plotters import interpolate_min_thk
 from compas_tno.plotters import diagram_of_multiple_thrust
@@ -37,8 +38,8 @@ thk = 0.5
 span = 10.0
 type_structures = ['pointed_crossvault']
 type_formdiagrams = ['cross_fd']  # , 'fan_fd'
-hcs = [5.00]  # , 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
-Rs = [5, 6, 7, 8, 9, 10, 11, 12]
+hcs = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
+Rs = [5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10]
 colors_list = ['#D2B4DE', '#b4c0de']
 colors_list_shade1 = ['#b27fc7', '#c7a2d6', '#ddc6e6', '#f2e9f5']
 colors_list_shade1 = ['#1d0f22', '#4a2758', '#8f4baa', '#b98bcc']
@@ -55,7 +56,7 @@ GSF_Legends = []
 
 for type_structure in type_structures:
     for type_formdiagram in type_formdiagrams:
-        R = 5
+        R = 5.0
         gsf_pattern = []
         rs_pattern = []
         for hc in hcs:
@@ -69,7 +70,12 @@ for type_structure in type_structures:
                     title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_partial_ratio_' + str(horizontal_force_x) + '_' + str(horizontal_force_y)
                     legends.append('Hor. React='+str([horizontal_force_x, horizontal_force_y])+'_'+type_formdiagram)
                 csv_file = os.path.join(folder, title + '_data.csv')
-                size_parameters, solutions_min, solutions_max = open_csv(csv_file)
+                print(csv_file)
+                parameters, solutions = open_csv_row(csv_file)
+                size_parameters = parameters[0]
+                solutions_min = solutions[0]
+                solutions_max = solutions[1]
+                # size_parameters, solutions_min, solutions_max = open_csv(csv_file)
                 xs.append(size_parameters)
                 mins.append(solutions_min)
                 maxs.append(solutions_max)
@@ -78,7 +84,7 @@ for type_structure in type_structures:
                 rs_pattern.append(R)
                 colors.append(colors_list_shade1[i])
                 i += 1
-            R += 1
+            R += 0.5
         GSF.append(gsf_pattern)
         RS.append(rs_pattern)
         GSF_Legends.append(type_formdiagram)
