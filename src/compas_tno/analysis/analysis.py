@@ -428,7 +428,7 @@ class Analysis(object):
 
         return
 
-    def limit_analysis_GSF(self, thk, thk_reduction, span, thk_refined=None, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
+    def limit_analysis_GSF(self, thk, thk_reduction, span, thk_refined=None, limit_equal=0.01, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -447,10 +447,10 @@ class Analysis(object):
         last_thk_min = t0
         last_thk_max = t0
         objectives = ['min', 'max']
-        limit_equal = 0.01
         exitflag = 0
+        address = None
 
-        print('Limit Analysis - GSF: For ', data_shape['type'], 'with diagram ', data_diagram['type'])
+        print('Limit Analysis - GSF: For ({0}) with diagram ({1})'.format(data_shape['type'], data_diagram['type']))
 
         while (last_max - last_min) > limit_equal:
 
@@ -513,21 +513,41 @@ class Analysis(object):
                         else:
                             address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
                         self.form.to_json(address)
-                        thk = round(thk - thk_reduction, 4)
-                        print('Reduce thickness to', thk, '\n')
+                        thk = round(thk - thk_reduction, 5)
+                        print('Applied reduction of:', thk_reduction, '| New thickness will be:', thk, '\n')
                     else:
                         print('Failed in THK: {0} | objective: '.format(thk), self.optimiser.data['objective'], '\n')
-                        if thk_reduction > thk_refined or (self.optimiser.data['objective'] == 'max' and last_thk_min < last_thk_max):
+                        if not address:
+                            if self.optimiser.data['objective'] == objectives[0]:
+                                print('Failed in Initial Thickness and objective ({0})'.format(self.optimiser.data['objective']))
+                                objectives = objectives[::-1]
+                        elif self.optimiser.data['objective'] == 'max' and last_thk_min < thk:
+                            print('\nTry loading next [min] optimisation\n')
+                            for i in range(len(thicknesses_min)):
+                                if thicknesses_min[i] < thk:
+                                    next_min = thicknesses_min[i]
+                                    break
+                            address = save_forms + '_' + 'min' + '_thk_' + str(100*next_min) + '.json'
+                            self.form = FormDiagram.from_json(address)
+                            thk = next_min
+                            exitflag = 0
+                        elif thk_reduction > thk_refined or (self.optimiser.data['objective'] == 'max' and last_thk_min < last_thk_max and thk_reduction > thk_refined/2):
                             # if (last_max - last_min) > limit_equal and thk_reduction > thk_refined and last_thk_min <= last_thk_max:
                             self.form = FormDiagram.from_json(address)
-                            thk = round(thk + thk_reduction, 4)
+                            thk = round(thk + thk_reduction, 5)
                             thk_reduction = thk_reduction / 2
-                            thk = round(thk - thk_reduction, 4)
+                            thk = round(thk - thk_reduction, 5)
                             exitflag = 0
                             print('---------- Refined analysis activated -----------', '\n', 'Reduce thickness to', thk, '\n')
                         else:
-                            print('---------- End of process -----------', '\n')
-                ['a', 'b', 'c'][::-1]
+                            if self.optimiser.data['objective'] == 'max' and last_thk_min != last_thk_max and thk != last_thk_min:
+                                print('\nTry loading last [min] optimisation\n')
+                                address = save_forms + '_' + 'min' + '_thk_' + str(100*last_thk_min) + '.json'
+                                self.form = FormDiagram.from_json(address)
+                                thk = last_thk_min
+                                exitflag = 0
+                            else:
+                                print('---------- End of process -----------', '\n')
 
         if printout:
             print('------------------ SUMMARY ------------------ ')

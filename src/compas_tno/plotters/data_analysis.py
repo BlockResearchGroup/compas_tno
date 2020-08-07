@@ -32,6 +32,7 @@ __all__ = [
     'open_csv',
     'open_csv_row',
     'interpolate_min_thk',
+    'prune_data',
 ]
 
 
@@ -371,7 +372,6 @@ def diagram_multiple_thrust_partial(parameters, solutions, limit_state=True, fil
         box = ax.get_position()
         ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
 
-
     if save:
         plt.savefig(save)
 
@@ -623,8 +623,6 @@ def save_csv(dimension, min_sol, max_sol, limit_state=True, path=None, title=Non
     fmin = 100.0 * array(min_sol)
     fmax = -100.0 * array(max_sol)
     n = len(xmin)
-    print(xmin)
-    print(xmin.shape)
     if limit_state:
         x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
         xmin = append(xmax, x_)
@@ -653,6 +651,7 @@ def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None
     fmax = -100.0 * array(solutions[1])
     n = len(xmin)
     m = len(xmax)
+
     if limit_state:
         x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
         xmin = append(xmin, x_)
@@ -673,6 +672,7 @@ def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None
         csv_writer.writerow(['max T/W'] + list(fmax))
 
     return
+
 
 def open_csv(path, cut_last=True):
 
@@ -706,7 +706,8 @@ def open_csv(path, cut_last=True):
 
     return x, min_thrust, max_thrust
 
-def open_csv_row(path, cut_last=True):
+
+def open_csv_row(path, cut_last=True, printout=True):
 
     xmin = []
     xmax = []
@@ -719,7 +720,8 @@ def open_csv_row(path, cut_last=True):
         if cut_last is False:
             for row in csv_reader:
                 if line_count == 0:
-                    print(f'Title-notcut: {", ".join(row)}')
+                    if printout:
+                        print(f'Title-notcut: {", ".join(row)}')
                 elif line_count == 1:
                     xmin.append(row[1:])
                 elif line_count == 2:
@@ -732,7 +734,8 @@ def open_csv_row(path, cut_last=True):
         else:
             for row in csv_reader:
                 if line_count == 0:
-                    print(f'Title: {", ".join(row)}')
+                    if printout:
+                        print(f'Title: {", ".join(row)}')
                 elif line_count == 1:
                     cut_length = len(row[1:])
                     xmin.append(row[1:cut_length])
@@ -755,13 +758,76 @@ def open_csv_row(path, cut_last=True):
     return [xmin, xmax], [min_thrust, max_thrust]
 
 
-def interpolate_min_thk(dimension, min_sol, max_sol):
+def prune_data(sizes, solutions):
 
-    xmin = xmax = array(dimension)
-    fmin = 100.0 * array(min_sol)
-    fmax = -100.0 * array(max_sol)
+    xmin = sizes[0]
+    xmax = sizes[1]
+    fmin = solutions[0]
+    fmax = solutions[1]
     n = len(xmin)
-    x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+    m = len(xmax)
+
+    xmax_ = []
+    xmin_ = []
+    fmax_ = []
+    fmin_ = []
+
+    if n == m:
+        return sizes, solutions
+    elif n > m and xmin[-1] == xmax[-1]:
+        xmax_ = xmax
+        fmax_ = fmax
+        j = 0
+        for i in range(m):
+            while xmax[i] != xmin[j]:
+                j = j+1
+            if xmax[i] == xmin[j]:
+                xmin_.append(xmin[j])
+                fmin_.append(fmin[j])
+                j = j+1
+        return [xmin_, xmax_], [fmin_, fmax_]
+    elif n < m and xmin[-1] == xmax[-1]:
+        xmin_ = xmin
+        fmin_ = fmin
+        j = 0
+        for i in range(n):
+            while xmin[i] != xmax[j]:
+                j = j+1
+            if xmin[i] == xmax[j]:
+                xmax_.append(xmax[j])
+                fmax_.append(fmax[j])
+        return [xmin_, xmax_], [fmin_, fmax_]
+    else:
+        print('Last optimisation not with same thickness. Can not prune')
+        print([xmin, xmax], [fmin, fmax])
+        if m > n:
+            diff = m - n
+            print(diff)
+            for i in range(diff):
+                xmax.pop(m-3)
+                fmax.pop(m-3)
+            print([xmin, xmax], [fmin, fmax])
+            return [xmin, xmax], [fmin, fmax]
+        else:
+            diff = n - m
+            print(diff)
+            for i in range(diff):
+                xmin.pop(m-3)
+                fmin.pop(m-3)
+            print([xmin, xmax], [fmin, fmax])
+            return [xmin, xmax], [fmin, fmax]
+    return sizes, solutions
+
+
+def interpolate_min_thk(sizes, solutions):
+
+    xmin = array(sizes[0])
+    xmax = array(sizes[1])
+    fmin = 100.0 * array(solutions[0])
+    fmax = -100.0 * array(solutions[1])
+    n = len(xmin)
+    m = len(xmax)
+    x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
 
     return x_
 
