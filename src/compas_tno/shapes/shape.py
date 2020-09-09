@@ -9,6 +9,7 @@ from compas_tno.shapes.dome import set_dome_with_spr
 from compas_tno.shapes.dome import set_dome_polar_coord
 from compas_tno.shapes.circular_arch import arch_shape
 from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
+from compas_tno.shapes.shells import domical_vault
 
 from copy import deepcopy
 from compas.geometry import subtract_vectors
@@ -119,7 +120,7 @@ class Shape(object):
         typevault = data['type']
         thk = data['thk']
         discretisation = data['discretisation']
-        t = data['t']
+        t = data.get('t', 0.0)
 
         if typevault == 'crossvault':
             xy_span = data['xy_span']
@@ -151,7 +152,13 @@ class Shape(object):
             hc = data['hc']
             hm = data['hm']
             he = data['he']
-            intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, hc=hc, he=he, hm=hm, thk=thk)
+            intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm, thk=thk)
+        elif typevault == 'domicalvault':
+            xy_span = data['xy_span']
+            center = data.get('center', None)
+            radius = data.get('radius', None)
+            intrados, extrados, middle = domical_vault(xy_span=xy_span, thk=thk, radius=radius, center=center, t=t, discretisation=discretisation)
+
         shape.data = data
         shape.intrados = intrados
         shape.extrados = extrados
@@ -233,7 +240,7 @@ class Shape(object):
         """
 
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY)
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='linear')
 
         return z
 
@@ -291,7 +298,7 @@ class Shape(object):
         """
 
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY)
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='linear')
 
         return z
 
@@ -329,7 +336,7 @@ class Shape(object):
         """
 
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY)
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='linear')
 
         return z
 

@@ -34,16 +34,16 @@ import math
 #     't' : 0.0
 # }
 
-# data = {
-#     'type': 'pointed_crossvault',
-#     'thk': 0.5,
-#     'discretisation': [50, 50],
-#     'xy_span': [[0.0, 6.0], [0.0, 10.0]],
-#     't': 0.0,
-#     'hc': 6.0,
-#     'hm': None,
-#     'he': None,
-# }
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [50, 50],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0,
+    'hc': 8.66,
+    'hm': None,
+    'he': [5.0, 5.0, 5.0, 5.0],
+}
 
 # k1 = 0.0
 # k2 = 0.5  # Percentage of the dome to consider
@@ -57,14 +57,24 @@ import math
 #     't': 0.0,
 # }
 
-data = {
-    'type': 'dome',
-    'thk': 0.15,
-    'discretisation': [50, 50],
-    'center': [5.0, 5.0],
-    'radius': 5.0,
-    't' : 0.0
-}
+# data = {
+#     'type': 'dome',
+#     'thk': 0.15,
+#     'discretisation': [50, 50],
+#     't' : 0.0,
+#     'center': [5.0, 5.0],
+#     'radius': 5.0,
+# }
+
+# data = {
+#     'type': 'domicalvault',
+#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     'thk': 0.50,
+#     'discretisation': [50, 50],
+#     # 'center': [5.0, 5.0],
+#     # 'radius': 8.0,
+#     't' : 0.0
+# }
 
 # k1 = 0.0
 # k2 = 0.5  # Percentage of the dome to consider

@@ -58,27 +58,27 @@ def set_up_nonlinear_optimisation(analysis):
     # Set constraints
 
     if 'reac_bounds' in constraints:
-        b = set_b_constraint(form, True, True)
+        b = set_b_constraint(form, True, printout)
     else:
         b = None
 
     if 'cracks' in constraints:
-        cracks_lb, cracks_ub = set_cracks_constraint(form, True, True)
+        cracks_lb, cracks_ub = set_cracks_constraint(form, True, printout)
     else:
         cracks_lb, cracks_ub = None, None
 
     if 'rollers' in constraints:
-        max_rol_rx, max_rol_ry = set_rollers_constraint(form, True)
+        max_rol_rx, max_rol_ry = set_rollers_constraint(form, printout)
     else:
         max_rol_rx, max_rol_ry = None, None
 
     if 'joints' in constraints:
-        joints = set_joints_constraint(form, True)
+        joints = set_joints_constraint(form, printout)
     else:
         joints = None
 
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
-        Asym = set_symmetry_constraint(form, constraints, True)
+        Asym = set_symmetry_constraint(form, constraints, printout)
     else:
         Asym = None
 
@@ -120,14 +120,17 @@ def set_up_nonlinear_optimisation(analysis):
 
     # TODO: Add support to "all-q"
 
-    print('Total of Independents:', len(ind))
-    print('Number of Variables:', len(x0))
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
-    print('Number of Constraints:', len(g0))
 
-    print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
-    print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
+    if printout:
+        print('-'*20)
+        print('NPL (Non Linear Problem) Data:')
+        print('Total of Independents:', len(ind))
+        print('Number of Variables:', len(x0))
+        print('Number of Constraints:', len(g0))
+        print('Init. Objective Value: {0}'.format(f0))
+        print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
 
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr
@@ -145,19 +148,16 @@ def set_up_nonlinear_optimisation(analysis):
     return analysis
 
 
-def set_b_constraint(form, bmax, printout):
-    if bmax:
-        b = []
-        for key in form.vertices_where({'is_fixed': True}):
-            try:
-                [b_] = form.vertex_attributes(key, 'b')
-                b.append(b_)
-            except:
-                pass
-        b = array(b)
-    else:
-        b = None
-    if printout and bmax:
+def set_b_constraint(form, printout):
+    b = []
+    for key in form.vertices_where({'is_fixed': True}):
+        try:
+            [b_] = form.vertex_attributes(key, 'b')
+            b.append(b_)
+        except:
+            pass
+    b = array(b)
+    if printout:
         print('Reaction bounds active in : {0} joints'.format(len(b)))
     return b
 
@@ -172,20 +172,17 @@ def set_joints_constraint(form, printout):
     return joints
 
 
-def set_cracks_constraint(form, cracks, printout):
-    if cracks:
-        try:
-            cracks_lb, cracks_ub = form.attributes['cracks']
-            if printout:
-                print('Cracks Definition')
-                print(cracks_lb, cracks_ub)
-        except:
-            cracks_lb = []
-            cracks_ub = []
-    else:
+def set_cracks_constraint(form, printout):
+    try:
+        cracks_lb, cracks_ub = form.attributes['cracks']
+        if printout:
+            print('Cracks Definition')
+            print(cracks_lb, cracks_ub)
+    except:
         cracks_lb = []
         cracks_ub = []
-    print('Constraints on cracks activated in {0} lb and {1} ub.'.format(len(cracks_lb), len(cracks_ub)))
+    if printout:
+        print('Constraints on cracks activated in {0} lb and {1} ub.'.format(len(cracks_lb), len(cracks_ub)))
     return cracks_lb, cracks_ub
 
 

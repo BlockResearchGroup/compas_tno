@@ -146,8 +146,6 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     U = diags(uvw[:, 0].flatten())
     V = diags(uvw[:, 1].flatten())
     E = svstack((Citx.dot(U), City.dot(V))).toarray()
-    print('Equilibrium Matrix Shape: ', E.shape)
-    print('Rank Equilibrium Matrix: ', matrix_rank(E))
 
     start_time = time.time()
 
@@ -170,6 +168,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
 
         if printout:
             print('Shape Equilibrium Matrix: ', E.shape)
+            print('Rank Equilibrium Matrix: ', matrix_rank(E))
             print('Found {0} independents'.format(k))
             print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
@@ -192,12 +191,13 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     p = vstack([px[free_x], py[free_y]])
     q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
 
-    if any(p) == True:
+    if any(p) is True:
         check_hor = check_horizontal(E, p)
-        if check_hor:
-            print('Horizontal Loads can be taken!')
-        else:
-            print('Horizontal Loads are not suitable for this FD!')
+        if printout:
+            if check_hor:
+                print('Horizontal Loads can be taken!')
+            else:
+                print('Horizontal Loads are not suitable for this FD!')
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k,
             lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
@@ -205,7 +205,8 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     if find_inds is True:
         checked = check_independents(args_inds, tol=tol)
         if checked:
-            print('Independents checked!')
+            if printout:
+                print('Independents checked!')
             pass
         else:
             print('Warning: independent edges not equilibrated')

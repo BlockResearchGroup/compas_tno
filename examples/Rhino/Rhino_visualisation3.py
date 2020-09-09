@@ -16,6 +16,7 @@ master = 'fan_fd_loadpath'
 
 # Put here the .json file for the optimisation
 fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
+fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/h=5.0/pointed_crossvault_cross_fd_discr_10_min_thk_50.0.json'
 # fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.09_discr_[4, 16]_min.json'
 # fnm = '/Users/mricardo/compas_dev/me/SI_data/Amiens/pointed_crossvault/fan_fd/forms/pointed_crossvault_fan_fd_discr_14_fill_0.8_min_thk_46.0.json'
 # fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'

@@ -39,9 +39,9 @@ colors = []
 thk = 0.6
 span = 10.0
 type_structures = ['pointed_crossvault']
-type_mesh = 'mix'
-type_formdiagrams = ['cross_fd', 'fan_fd', 'topology-mix']  # ['cross_fd', 'fan_fd', 'cross_fd', 'fan_fd', 'topology-mix']
-sags = [False, False, False] # [False, False, 50.0, 10.0, False]
+type_mesh = 'intersect'
+type_formdiagrams = ['cross_fd', 'fan_fd', 'topology-intersect']  # ['cross_fd', 'fan_fd', 'cross_fd', 'fan_fd', 'topology-mix']
+sags = [False, False, 10] # [False, False, 50.0, 10.0, False]
 # type_formdiagrams = ['topology-mix']
 hcs = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]  # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 Rs = [5, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
@@ -63,9 +63,11 @@ for type_structure in type_structures:
         gsf_pattern = []
         rs_pattern = []
         for hc in hcs:
-            if type_formdiagram == 'topology-mix':
+            if type_formdiagram == 'topology-intersect':
                 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'h='+str(hc))
-                title = type_structure + '_' + type_formdiagram + '_Mesh-' + type_mesh + '_discr_' + str(100) + 'smooth_'
+                title = type_structure + '_' + type_formdiagram + '_Mesh-' + type_mesh + '_discr_' + str(100)
+                if sags[i]:
+                    title = title + 'sag_' + str(sags[i])
                 csv_file = os.path.join(folder, title + '_data.csv')
             else:
                 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'h='+str(hc))
@@ -90,10 +92,10 @@ for type_structure in type_structures:
             R += 0.5
         GSF.append(gsf_pattern)
         RS.append(rs_pattern)
-        if sags[i]:
-            GSF_Legends.append(type_formdiagram + '_sag_' + str(sags[i]))
-        else:
-            GSF_Legends.append(type_formdiagram)
+        # if sags[i]:
+        #     GSF_Legends.append(type_formdiagram + '_sag_' + str(sags[i]))
+        # else:
+        GSF_Legends.append(type_formdiagram)
         i += 1
 
 print('Check on the parameters size')

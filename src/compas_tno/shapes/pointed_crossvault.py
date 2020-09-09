@@ -154,8 +154,29 @@ def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisatio
     xyz = array([x1d, y1d, z1d]).transpose()
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
 
-    extrados = pointed_vault_heightfields_ub(xy_span=xy_span, discretisation=discretisation, hc=hc, he=he, hm=hm, thk=thk, tol=tol)
-    intrados = pointed_vault_heightfields_lb(xy_span=xy_span, discretisation=discretisation, hc=hc, he=he, hm=hm, thk=thk, t=t, tol=tol)
+    # avoid changes in major values of following ub-lb functions
+    if he:
+        he_ = he.copy()
+    else:
+        he_ = None
+    if hm:
+        hm_ = hm.copy()
+    else:
+        hm_ = None
+
+    extrados = pointed_vault_heightfields_ub(xy_span=xy_span, discretisation=discretisation, hc=hc, he=he_, hm=hm_, thk=thk, tol=tol)
+
+    # avoid changes in major values of following ub-lb functions
+    if he:
+        he_ = he.copy()
+    else:
+        he_ = None
+    if hm:
+        hm_ = hm.copy()
+    else:
+        hm_ = None
+
+    intrados = pointed_vault_heightfields_lb(xy_span=xy_span, discretisation=discretisation, hc=hc, he=he_, hm=hm_, thk=thk, t=t, tol=tol)
 
     return intrados, extrados, middle
 
@@ -182,6 +203,7 @@ def pointed_vault_heightfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisa
     ly = y1 - y0
 
     hc += thk/2
+
     if he:
         for i in range(len(he)):
             he[i] += thk/2
@@ -296,10 +318,13 @@ def pointed_vault_heightfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisa
     y0_init = xy_span[1][0]
     x1_init = xy_span[0][1]
     x0_init = xy_span[0][0]
+
     dx = x1_init - x0_init
     dy = y1_init - y0_init
+
     density_x = discretisation[0]
     density_y = discretisation[1]
+
     x = arange(x0_init, x1_init + dx/density_x, dx/density_x)
     y = arange(y0_init, y1_init + dy/density_y, dy/density_y)
 
@@ -316,15 +341,15 @@ def pointed_vault_heightfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisa
         for i in range(len(he)):
             he[i] -= thk/2
     if hm:
-        for i in range(len(he)):
+        for i in range(len(hm)):
             hm[i] -= thk/2
 
-    if hm and he:
+    if he and hm:
         h1, k1, r1 = circle_3points_xy([(x1_init+x0_init)/2, hc], [3*(x1_init+x0_init)/4, hm[0]], [x1_init, he[0]])
         h2, k2, r2 = circle_3points_xy([(x1_init+x0_init)/2, hc], [1*(x1_init+x0_init)/4, hm[1]], [x0_init, he[1]])
         h3, k3, r3 = circle_3points_xy([(y1_init+y0_init)/2, hc], [3*(y1_init+y0_init)/4, hm[2]], [y1_init, he[2]])
         h4, k4, r4 = circle_3points_xy([(y1_init+y0_init)/2, hc], [1*(y1_init+y0_init)/4, hm[3]], [y0_init, he[3]])
-    elif he and hm is None:
+    elif he and (hm is None):
         h1, k1, r1 = circle_3points_xy([x0_init, he[1]], [(x1_init+x0_init)/2, hc], [x1_init, he[0]])
         h2, k2, r2 = h1, k1, r1
         h3, k3, r3 = circle_3points_xy([y0_init, he[3]], [(y1_init+y0_init)/2, hc], [y1_init, he[2]])
@@ -462,7 +487,7 @@ def circle_3points_xy(p1, p2, p3):
     r2 = h * h + k * k - c
     r = math.sqrt(r2)
 
-    print('h: ', h, 'k: ', k, 'r: ', r)
+    # print('h: ', h, 'k: ', k, 'r: ', r)
 
     return h, k, r
 

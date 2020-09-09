@@ -63,7 +63,6 @@ def run_optimisation_scipy(analysis):
     if jac_choice is False:
         fjac = None
 
-
     start_time = time.time()
 
     if solver == 'slsqp' or solver == 'SLSQP':
@@ -96,7 +95,7 @@ def run_optimisation_scipy(analysis):
         xopt = result['x']
         sucess = result['success']
         message = result['message']
-        if sucess == True:
+        if sucess is True:
             exitflag = 0
             q[ind] = xopt[:k].reshape(-1, 1)
             z[fixed] = xopt[k:].reshape(-1, 1)
@@ -140,13 +139,17 @@ def run_optimisation_scipy(analysis):
     analysis.form = form
     reactions(form, plot=plot)
 
-    print('\n' + '-' * 50)
-    print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-    print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-    print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-    print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
-    print('fopt      : {0:.3f}'.format(fopt))
-    print('-' * 50 + '\n')
+    summary = False
+
+    if printout or summary:
+        print('\n' + '-' * 50)
+        print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
+        print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
+        print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+        print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
+        print('fopt      : {0:.3f}'.format(fopt))
+        print('-' * 50 + '\n')
+
 
     return analysis
 

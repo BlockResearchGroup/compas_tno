@@ -490,7 +490,7 @@ class FormDiagram(FormDiagram):
 
         swt = 0
         for key in self.vertices():
-            pz = form.vertex_attribute(key, 'pz')
+            pz = self.vertex_attribute(key, 'pz')
             swt += pz
 
         return swt
@@ -543,11 +543,11 @@ class FormDiagram(FormDiagram):
 
         f = 0
         for key, vertex in self.vertex.items():
-            if vertex.get('_is_external') == False:
-                z = vertex.get('z')
-                s = vertex.get('target')
-                w = vertex.get('weight', 1.0)
-                f += w * (z - s)**2
+            # if vertex.get('_is_external') == False:
+            z = vertex.get('z')
+            s = vertex.get('target')
+            w = vertex.get('weight', 1.0)
+            f += w * (z - s)**2
 
         return f
 

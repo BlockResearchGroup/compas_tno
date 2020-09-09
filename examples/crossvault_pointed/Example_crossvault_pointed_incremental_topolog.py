@@ -34,7 +34,7 @@ size_parameters = []  # empty lists to keep track of  the parameters
 thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
-hc_list = [5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66] # [5.00] # [5.00]
+hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66] # [5.00] # [5.00]
 sag = False
 smooth = True
 # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
@@ -44,11 +44,11 @@ gradients = True
 # Basic parameters
 
 type_structure = 'pointed_crossvault'
-type_topology = 'mix'
+type_topology = 'intersect'
 type_formdiagram = 'topology-' + type_topology  # Try also 'fan_fd'
 discretisation = 100
 load_mesh = 'Mesh-' + type_topology
-starting_point = 'existing'
+starting_point = 'loadpath'
 
 # ----------------------- Create Form Diagram for analysis ---------------------------
 
@@ -56,7 +56,6 @@ x0 = y0 = 0
 x1 = span
 y1 = k*span
 boundary_points = [[x0, y0, 0.0], [x1, y0, 0.0], [x1, y1, 0.0], [x0, y1, 0.0]]
-
 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
 file_ = os.path.join(folder, load_mesh + '.json')
 mesh = Mesh.from_json(file_)
@@ -69,16 +68,13 @@ for pt in boundary_points:
 #     form = FormDiagram.from_triangle(boundary_points)
 #     gkey_key = form.gkey_key()
 
-for pt in boundary_points:
-    form.vertex_attribute(gkey_key[geometric_key(pt)], 'is_fixed', True)
-
 if sag:
     apply_sag(form, boundary_force=sag)
 
 if smooth:
     cons = rectangular_smoothing_constraints(form, xy_span=[[0, span], [0, k*span]])
     constrained_smoothing(form, damping=0.5, kmax=100, constraints=cons, algorithm='centroid')
-plot_form(form, show_q=False).show()
+plot_form(form, show_q=False, fix_width=10).show()
 
 
 # --------------------- Create Optimiser ---------------------
@@ -142,7 +138,7 @@ for hc in hc_list:
         address = forms_address + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
         form = FormDiagram.from_json(address)
 
-    # plot_form(form, show_q=False).show()
+    plot_form(form, show_q=False).show()
     # view_thrust(form).show()
 
     # ----------------------- Create Analysis loop on limit analysis --------------------------
@@ -155,8 +151,8 @@ for hc in hc_list:
 
     csv_file = os.path.join(folder, title + '_data.csv')
     # save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
-    sizes = [sizes0[0] + sizes[0][1:], sizes0[1] + sizes[1][1:]]
-    solutions = [solutions0[0] + solutions[0][1:], solutions0[1] + solutions[1][1:]]
+    # sizes = [sizes0[0] + sizes[0][1:], sizes0[1] + sizes[1][1:]]
+    # solutions = [solutions0[0] + solutions[0][1:], solutions0[1] + solutions[1][1:]]
     save_csv_row(sizes, solutions, path=csv_file, title=title)
 
     xy_limits = [[0.60, 0.20], [120, 30]]

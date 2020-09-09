@@ -24,9 +24,6 @@ t0 = thk = 0.75  # thickness on the start in meters
 thk_reduction = 0.05  # in meters
 thk_refined = 0.001
 limit_equal = 0.005
-solutions_min = []  # empty lists to keep track of the solutions for min thrust
-solutions_max = []  # empty lists to keep track of the solutions for max thrust
-size_parameters = []  # empty lists to keep track of  the parameters
 thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
