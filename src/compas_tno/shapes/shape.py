@@ -240,7 +240,7 @@ class Shape(object):
         """
 
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='linear')
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='nearest')
 
         return z
 
@@ -298,7 +298,7 @@ class Shape(object):
         """
 
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='linear')
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='nearest')
 
         return z
 
@@ -336,7 +336,7 @@ class Shape(object):
         """
 
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='linear')
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='nearest')
 
         return z
 

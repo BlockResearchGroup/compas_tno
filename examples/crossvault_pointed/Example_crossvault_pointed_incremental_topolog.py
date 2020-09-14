@@ -34,9 +34,9 @@ size_parameters = []  # empty lists to keep track of  the parameters
 thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
-hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66] # [5.00] # [5.00]
+hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]  # [5.00] # [5.00]
 sag = False
-smooth = True
+smooth = False
 # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 plot = False
 gradients = True
@@ -44,7 +44,7 @@ gradients = True
 # Basic parameters
 
 type_structure = 'pointed_crossvault'
-type_topology = 'intersect'
+type_topology = 'domical'
 type_formdiagram = 'topology-' + type_topology  # Try also 'fan_fd'
 discretisation = 100
 load_mesh = 'Mesh-' + type_topology
@@ -74,6 +74,9 @@ if sag:
 if smooth:
     cons = rectangular_smoothing_constraints(form, xy_span=[[0, span], [0, k*span]])
     constrained_smoothing(form, damping=0.5, kmax=100, constraints=cons, algorithm='centroid')
+
+form.to_json(os.path.join(folder, 'FormDiagram-' + type_topology + '.json'))
+
 plot_form(form, show_q=False, fix_width=10).show()
 
 

@@ -55,6 +55,7 @@ def run_optimisation_scipy(analysis):
     x0 = optimiser.x0
     plot = optimiser.data.get('plot', False)
     printout = optimiser.data.get('printout', True)
+    summary = optimiser.data.get('summary', False)
     grad_choice = optimiser.data.get('gradient', False)
     jac_choice = optimiser.data.get('jacobian', False)
 
@@ -76,7 +77,8 @@ def run_optimisation_scipy(analysis):
             else:
                 q[ind] = xopt[:k].reshape(-1, 1)  # Code the option with only qinds WIP
         else:
-            print(message)
+            if printout:
+                print(message)
     elif solver == 'shgo':
         dict_constr = []
         for i in range(len(fconstr(x0, *args))):
@@ -139,8 +141,6 @@ def run_optimisation_scipy(analysis):
     analysis.form = form
     reactions(form, plot=plot)
 
-    summary = False
-
     if printout or summary:
         print('\n' + '-' * 50)
         print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
@@ -149,7 +149,6 @@ def run_optimisation_scipy(analysis):
         print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
         print('fopt      : {0:.3f}'.format(fopt))
         print('-' * 50 + '\n')
-
 
     return analysis
 

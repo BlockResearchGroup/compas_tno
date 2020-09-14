@@ -107,6 +107,7 @@ def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
             form.vertex_attribute(key, 'is_fixed', True)
+        form = form.delete_boundary_edges()  # Check if this should be here, or explicit
 
     return form
 

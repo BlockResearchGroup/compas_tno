@@ -46,8 +46,8 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
-print(form)
-# plot_form(form, show_q=False, fix_width=False).show()
+# print(form)
+plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 

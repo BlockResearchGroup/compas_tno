@@ -39,8 +39,9 @@ thk = 0.6
 span = 10.0
 type_structures = ['pointed_crossvault']
 type_mesh = 'intersect'
-type_formdiagrams = ['cross_fd', 'fan_fd', 'cross_fd']  # ['cross_fd', 'fan_fd', 'cross_fd', 'fan_fd', 'topology-mix']
-sags = [False, False, 50]  # [False, False, 50.0, 10.0, False]
+type_formdiagrams = ['cross_fd', 'fan_fd', 'topology-mix']  # ['cross_fd', 'fan_fd', 'cross_fd', 'fan_fd', 'topology-mix']
+sags = [False, False, False]  # [False, False, 50.0, 10.0, False]
+smooth = [False, False, True]
 # type_formdiagrams = ['topology-mix']
 hcs = [5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]  # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 Rs = [5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
@@ -62,11 +63,13 @@ for type_structure in type_structures:
         gsf_pattern = []
         rs_pattern = []
         for hc in hcs:
-            if type_formdiagram == 'topology-intersect':
+            if type_formdiagram == 'topology-mix':
                 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'camb_h='+str(hc))
-                title = type_structure + '_' + type_formdiagram + '_Mesh-' + type_mesh + '_discr_' + str(100)
+                title = type_structure + '_' + type_formdiagram + '_discr_' + str(10)
                 if sags[i]:
                     title = title + 'sag_' + str(sags[i])
+                if smooth[i]:
+                    title = title + 'smooth_'
                 csv_file = os.path.join(folder, title + '_data.csv')
             else:
                 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'camb_h='+str(hc))

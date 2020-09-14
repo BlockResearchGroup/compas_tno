@@ -25,6 +25,8 @@ from compas_tno.plotters import plot_independents
 from numpy import array
 from scipy import interpolate
 
+import time
+
 __all__ = ['Analysis']
 
 
@@ -346,8 +348,6 @@ class Analysis(object):
         shape = self.shape
         thk = shape.data['thk']
 
-        # Go over nodes and find node = key and apply the pointed load pz += magnitude
-
         if shape.data['type'] == 'dome' or shape.data['type'] == 'dome_polar':
             [x0, y0] = shape.data['center'][:2]
             for key in form.vertices_where({'is_fixed': True}):
@@ -387,7 +387,32 @@ class Analysis(object):
                 x_ = delt*math.cos(theta)
                 y_ = delt*math.sin(theta)
                 form.vertex_attribute(key, 'b', [x_, y_])
-                # print(x,y,x_,y_)
+
+        if shape.data['type'] == 'pavillionvault':
+            x0, x1 = shape.data['xy_span'][0]
+            y0, y1 = shape.data['xy_span'][1]
+            for key in form.vertices_where({'is_fixed': True}):
+                x, y, _ = form.vertex_coordinates(key)
+                if x == x0:
+                    form.vertex_attribute(key, 'b', [-thk/2, 0])
+                elif x == x1:
+                    form.vertex_attribute(key, 'b', [+thk/2, 0])
+                if y == y0:
+                    if form.vertex_attribute(key, 'b'):
+                        b = form.vertex_attribute(key, 'b')
+                        b[1] = -thk/2
+                        form.vertex_attribute(key, 'b', b)
+                    else:
+                        form.vertex_attribute(key, 'b', [0, -thk/2])
+                elif y == y1:
+                    if form.vertex_attribute(key, 'b'):
+                        b = form.vertex_attribute(key, 'b')
+                        b[1] = +thk/2
+                        form.vertex_attribute(key, 'b', b)
+                    else:
+                        form.vertex_attribute(key, 'b', [0, +thk/2])
+                # print('x = {0:.1f} | y = {1:.1f} | b = {2}'.format(x, y, form.vertex_attribute(key, 'b')))
+            # print('Pavillion limits')
 
         self.form = form  # With correct forces
 
@@ -435,11 +460,12 @@ class Analysis(object):
         thicknesses_min = []
         thicknesses_max = []
         t0 = thk
-        form0 = deepcopy(self.form)
+        form0 = self.form.copy()
         swt0 = self.shape.compute_selfweight()
         thk_reduction0 = thk_reduction
         data_diagram = self.form.parameters
         data_shape = self.shape.data
+        ro = self.shape.ro
         last_min = 0
         last_max = 100
         last_thk_min = t0
@@ -456,21 +482,33 @@ class Analysis(object):
                 pass
             else:
                 objectives = objectives[::-1]
-                print('STILL NEED WORK TO DO...')
+                print('Warning: Did not Achieve precision required. Stopping Anyway.\n')
                 break
 
             for self.optimiser.data['objective'] in objectives:
+
                 self.form = form0
                 exitflag = 0
                 thk = t0
                 thk_reduction = thk_reduction0
                 count = 0
 
+                print('\n----- Starting the [', self.optimiser.data['objective'], '] problem for intial thk:', thk)
+                print('THK  |   Solved  |   Opt.Val |   Opt/W   |   THK red.  |   Setup time  |   Run time')
+
                 while exitflag == 0 and thk > 0:
                     exitflag = 0
-                    print('\n----- Starting the', data_diagram['type'], 'problem for thk:', thk, '\n')
+                    if self.optimiser.data['objective'] == 'max' and count < len(thicknesses_min):
+                        thk = thicknesses_min[count]
+                    try:
+                        address_load = save_forms + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
+                        self.form = FormDiagram.from_json(address_load)
+                    except:
+                        pass
                     data_shape['thk'] = thk
+                    time0 = time.time()
                     self.shape = Shape.from_library(data_shape)
+                    self.shape.ro = ro
                     swt = self.shape.compute_selfweight()
                     if fill_percentage:
                         self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
@@ -485,7 +523,9 @@ class Analysis(object):
                     if fill_percentage:
                         self.apply_fill_load()
                     self.set_up_optimiser()
+                    setup_time = time.time() - time0
                     self.run()
+                    run_time = time.time() - time0 - setup_time
                     if plot:
                         plot_form(self.form, show_q=False, cracks=True).show()
                     exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
@@ -508,46 +548,44 @@ class Analysis(object):
                         else:
                             address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
                         self.form.to_json(address)
-                        print('Solved for thickness {0}. Opt. Value: {1:.1f} and Opt-over-weight: {2:.3f}'.format(thk, fopt, fopt_over_weight))
+                        print('{0}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk, fopt, fopt_over_weight, thk_reduction, setup_time, run_time))
                         thk = round(thk - thk_reduction, 5)
-                        print('Applied reduction of:', thk_reduction, '| New thickness will be:', thk, '\n')
                     else:
-                        print('Failed in THK: {0} | objective: '.format(thk), self.optimiser.data['objective'], '\n')
                         if not address:
                             if self.optimiser.data['objective'] == objectives[0]:
                                 print('Failed in Initial Thickness and objective ({0})'.format(self.optimiser.data['objective']))
                                 objectives = objectives[::-1]
-                        elif self.optimiser.data['objective'] == 'max' and last_thk_min < thk:
-                            print('Try loading next [min] optimisation\n')
+                        elif self.optimiser.data['objective'] == 'max' and last_thk_min <= thk:
+                            print('{0}  |   False  |   XXXX |   XXXX |   Load next [min]  | {1:.2f}s   |  {2:.2f}s'.format(thk, setup_time, run_time))
+                            # print('Try loading next [min] optimisation - 1')
+                            next_min = None
                             for i in range(len(thicknesses_min)):
                                 if thicknesses_min[i] < thk or (thicknesses_min[i] == thk and count == 0):
                                     next_min = thicknesses_min[i]
                                     break
-                            address = save_forms + '_' + 'min' + '_thk_' + str(100*next_min) + '.json'
-                            self.form = FormDiagram.from_json(address)
-                            thk = next_min
-                            exitflag = 0
-                        elif thk_reduction > thk_refined or (self.optimiser.data['objective'] == 'max' and last_thk_min < last_thk_max and thk_reduction > thk_refined/2):
-                            # if (last_max - last_min) > limit_equal and thk_reduction > thk_refined and last_thk_min <= last_thk_max:
-                            self.form = FormDiagram.from_json(address)
-                            thk = round(thk + thk_reduction, 5)
-                            thk_reduction = thk_reduction / 2
-                            thk = round(thk - thk_reduction, 5)
-                            exitflag = 0
-                            print('Refined analysis activated! Reducing thickness to:', thk, '\n')
-                        else:
-                            if self.optimiser.data['objective'] == 'max' and last_thk_min != last_thk_max and thk != last_thk_min:
-                                print('Try loading last [min] optimisation\n')
-                                address = save_forms + '_' + 'min' + '_thk_' + str(100*last_thk_min) + '.json'
+                            if next_min:
+                                address = save_forms + '_' + 'min' + '_thk_' + str(100*next_min) + '.json'
                                 self.form = FormDiagram.from_json(address)
-                                thk = last_thk_min
+                                thk = next_min
                                 exitflag = 0
                             else:
+                                print('Tried loading all [min] optimisation')
                                 print('---------- End of process -----------', '\n')
+                        elif thk_reduction > thk_refined:  # or (self.optimiser.data['objective'] == 'max' and last_thk_min < last_thk_max and thk_reduction > thk_refined/2):
+                            self.form = FormDiagram.from_json(address)  # reload last solved
+                            thk_ = thk
+                            thk = round(thk + thk_reduction, 5)
+                            thk_reduction = thk_reduction / 2
+                            print('{0}  |   False  |   XXXX |   XXXX |   {1}    | {2:.2f}s   |  {3:.2f}s'.format(thk_, thk_reduction, setup_time, run_time))
+                            thk = round(thk - thk_reduction, 5)
+                            exitflag = 0
+                        else:
+                            print('---------- End of process -----------', '\n')
                     count += 1
 
         if printout:
             print('------------------ SUMMARY ------------------ ')
+            print('ANALYSIS FOR THICKNESS t0:', t0)
             print('thicknesses min ({0}):'.format(len(thicknesses_min)))
             print(thicknesses_min)
             print('thicknesses max ({0}):'.format(len(thicknesses_max)))
@@ -557,7 +595,7 @@ class Analysis(object):
             print('max solutions ({0}):'.format(len(solutions_max)))
             print(solutions_max)
 
-        return [thicknesses_min, thicknesses_max], [solutions_min, solutions_max]
+        return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
 
     def limit_analysis_load_mult(self, load0, load_increase, load_direction, percentual=True):
         """"" W.I.P. """""

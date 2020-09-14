@@ -33,6 +33,8 @@ __all__ = [
     'open_csv_row',
     'interpolate_min_thk',
     'prune_data',
+    'filter_min_thk',
+    'lookup_folder',
 ]
 
 
@@ -653,6 +655,8 @@ def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None
     m = len(xmax)
 
     if limit_state:
+        print(xmax, fmax, xmin, fmin)
+        print(n,m)
         x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
         xmin = append(xmin, x_)
         xmax = append(xmax, x_)
@@ -830,6 +834,85 @@ def interpolate_min_thk(sizes, solutions):
     x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
 
     return x_
+
+
+def lookup_folder(folder):
+
+    files = os.listdir(folder)
+    # print(files)
+    jsons = []
+    for f in files:
+        extension = f.split('.')[-1]
+        if extension == 'json':
+            jsons.append('.'.join(f.split('.')[:-1]))
+
+    files_dict = {}
+
+    for title in jsons:
+
+        title_split = title.split('_')
+        thk = float(title_split[-1])
+        type_structure = '_'.join(title_split[:2])
+        type_formdiagram = title_split[2]
+
+        if type_formdiagram == 'cross' or type_formdiagram == 'fan':
+            type_formdiagram = type_formdiagram + '_fd'
+
+        if 'max' in title_split:
+            objective = 'max'
+        if 'min' in title_split:
+            objective = 'min'
+        if 'sag' in title:
+            sag = int(title.split('sag_')[-1].split('_')[0])
+        else:
+            sag = False
+        if 'smooth' in title:
+            smooth = True
+        else:
+            smooth = False
+
+        data_file = {
+            'thk': thk,
+            'type_structure': type_structure,
+            'type_formdiagram': type_formdiagram,
+            'objective': objective,
+            'sag': sag,
+            'smooth': smooth,
+        }
+
+        files_dict[title] = data_file
+
+    return files_dict
+
+
+def filter_min_thk(files_dict, filters=None):
+
+    limit_thk_min = 100
+    limit_thk_max = 100
+    limit_form_min = None
+    limit_form_max = None
+
+    for key, values in files_dict.items():
+        proceed = True
+        if filters:
+            for filter in filters:
+                if filters[filter] == values[filter]:
+                    pass
+                else:
+                    proceed = False
+                    break
+        if proceed:
+            if values['objective'] == 'min':
+                if values['thk'] < limit_thk_min:
+                    limit_thk_min = values['thk']
+                    limit_form_min = {key: values}
+            if values['objective'] == 'max':
+                if values['thk'] < limit_thk_max:
+                    limit_thk_max = values['thk']
+                    limit_form_max = {key: values}
+
+    return limit_form_min, limit_form_max
+
 
 # ==============================================================================
 # Main

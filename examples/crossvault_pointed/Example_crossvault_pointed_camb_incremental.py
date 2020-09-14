@@ -22,15 +22,20 @@ from compas_tno.utilities import rectangular_smoothing_constraints
 
 exitflag = 0  # means that optimisation found a solution
 t0 = thk = 0.75  # thickness on the start in meters
+# Initial Settings
 thk_reduction = 0.05  # in meters
 thk_refined = 0.0001
-limit_equal = 0.001
-thicknesses = []
+limit_equal = 0.002
+# Hursh Settings
+# thk_reduction = 0.01  # in meters
+# thk_refined = 0.00001
+# limit_equal = 0.001
+
 span = 10.0  # square span for analysis
 k = 1
 n = 10  # Discretisation for Surfaces...
 R = [5.5, 6.5, 7.5, 8.5, 9.5]
-hc_list = [6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
+hc_list = [6.32, 6.71, 7.42, 7.75, 8.06]
 # [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
 sag = False
 smooth = True
@@ -43,7 +48,7 @@ type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
 discretisation = 10
 gradients = False
 
-type_topology = 'mix'  # None
+type_topology = None  # None
 if type_topology:
     type_formdiagram = 'topology-' + type_topology
     fd_mesh = 'FormDiagram-' + type_topology
@@ -77,7 +82,7 @@ optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
 # optimiser.data['library'] = 'IPOPT'
 # optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
+optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = False
 optimiser.data['plot'] = False

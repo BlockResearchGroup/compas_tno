@@ -20,16 +20,16 @@ from compas_tno.utilities import rectangular_smoothing_constraints
 
 
 exitflag = 0  # means that optimisation found a solution
-t0 = thk = 0.60  # thickness on the start in meters
+t0 = thk = 0.50  # thickness on the start in meters
 thk_reduction = 0.05  # in meters
 thk_refined = 0.001
 limit_equal = 0.005
 thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
-n = 10  # Discretisation for Surfaces...
+n = 4  # Discretisation for Surfaces...
 R = [5.5, 6.5, 7.5, 8.5, 9.5]
-hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
+hc_list = [5.00]
 # [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
 sag = False
 smooth = False
@@ -37,9 +37,9 @@ smooth = False
 
 # Basic parameters
 
-type_structure = 'pointed_crossvault'
-type_formdiagram = 'fan_fd'  # Try also 'fan_fd'
-discretisation = 12
+type_structure = 'pavillionvault'
+type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
+discretisation = 10
 gradients = True
 
 # ----------------------- Create Form Diagram for analysis ---------------------------
@@ -48,10 +48,11 @@ data_diagram = {
     'type': type_formdiagram,
     'xy_span': [[0, span], [0, k*span]],
     'discretisation': discretisation,
-    'fix': 'corners',
+    'fix': 'all',
 }
 
 form = FormDiagram.from_library(data_diagram)
+
 if sag:
     apply_sag(form, boundary_force=sag)
 if smooth:
@@ -67,12 +68,13 @@ optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
 # optimiser.data['library'] = 'IPOPT'
 # optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope']
+optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = False
+optimiser.data['summary'] = False
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
+optimiser.data['qmax'] = 1e+3
 optimiser.data['gradient'] = gradients
 optimiser.data['jacobian'] = gradients
 
@@ -87,13 +89,14 @@ for hc in hc_list:
         'thk': thk,
         'discretisation': discretisation*n,
         'xy_span': [[0, span], [0, k*span]],
-        't': 0.0,
+        't': 1.0,
         'hc': hc,
         'hm': None,
         'he': None,
     }
 
     vault = Shape.from_library(data_shape)
+    # vault.ro = 1.0
 
     # --------------------- Create Initial point with TNA ---------------------
 
@@ -112,6 +115,7 @@ for hc in hc_list:
     # ----------------------- Create Analysis loop on limit analysis --------------------------
 
     folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'h='+str(hc))
+    os.makedirs(folder, exist_ok=True)
     title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
     if sag:
         title = title + 'sag_' + str(sag)
@@ -128,6 +132,9 @@ for hc in hc_list:
     csv_file = os.path.join(folder, title + '_data.csv')
     save_csv_row(thicknesses, solutions, path=csv_file, title=title)
 
-    xy_limits = [[0.60, 0.20], [120, 30]]
     img_graph = os.path.join(folder, title + '_diagram.pdf')
+    diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True)
+
+    xy_limits = [[0.50, 0.15], [50, 0]]
+    img_graph = os.path.join(folder, title + '_diagram_limits.pdf')
     diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits)

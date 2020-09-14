@@ -58,12 +58,12 @@ def set_up_nonlinear_optimisation(analysis):
     # Set constraints
 
     if 'reac_bounds' in constraints:
-        b = set_b_constraint(form, True, printout)
+        b = set_b_constraint(form, printout)
     else:
         b = None
 
     if 'cracks' in constraints:
-        cracks_lb, cracks_ub = set_cracks_constraint(form, True, printout)
+        cracks_lb, cracks_ub = set_cracks_constraint(form, printout)
     else:
         cracks_lb, cracks_ub = None, None
 
@@ -217,8 +217,8 @@ def set_symmetry_constraint(form, constraints, printout):
         print('Calculated and found symmetry from point:', xc, yc)
         print('Resulted in Asym Matrix Shape:', Asym.shape)
         print('Unique independents:', form.number_of_sym_independents())
-        # from compas_tno.plotters import plot_sym_inds
-        # plot_sym_inds(form).show()
+        from compas_tno.plotters import plot_sym_inds
+        plot_sym_inds(form).show()
 
     return Asym
 

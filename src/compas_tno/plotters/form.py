@@ -1116,7 +1116,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     return plotter
 
 
-def plot_sym_inds(form, radius=0.05, fix_width=True, width=10, save=False):
+def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, save=False):
     """ Extended plotting of a FormDiagram focusing on showing the symmetric relations among independent edges
 
     Parameters
@@ -1156,16 +1156,19 @@ def plot_sym_inds(form, radius=0.05, fix_width=True, width=10, save=False):
 
     for u, v in form.edges_where({'_is_edge': True}):
         colour = '666666'
+        txt = ''
         if form.edge_attribute((u, v), 'is_ind'):
             i_sym = form.edge_attribute((u, v), 'sym_key')
             colour = colors[i_sym]
+            if print_sym:
+                txt = str(i_sym)
 
         lines.append({
             'start': form.vertex_coordinates(u),
             'end':   form.vertex_coordinates(v),
             'color': colour,
             'width': width,
-            'text': '',
+            'text': txt,
         })
 
     rad_colors = {}
