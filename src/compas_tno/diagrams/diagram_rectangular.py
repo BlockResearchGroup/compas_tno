@@ -226,6 +226,7 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_braci
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
             form.vertex_attribute(key, 'is_fixed', True)
+        form.delete_boundary_edges()
 
     return form
 
@@ -250,6 +251,111 @@ def mirror_8x(line, origin, line_hor, line_ver, lines):
     lines = mirror_4x(rot, line_hor, line_ver, lines)
 
     return lines
+
+
+def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='all'):
+    """ Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.
+
+    Parameters
+    ----------
+    xy_span : list
+        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+    discretisation: int
+        Set the density of the grid in x and y directions.
+
+    fix : string
+        Option to select the constrained nodes: 'corners', 'all' are accepted.
+
+    Returns
+    -------
+    obj
+        FormDiagram.
+
+    """
+
+    if isinstance(discretisation, list):
+        discretisation = discretisation[0]
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+    x_span = x1 - x0
+    y_span = y1 - y0
+    dx = x_span/discretisation
+    dy = y_span/discretisation
+
+    lines = []
+
+    for i in range(discretisation+1):
+        for j in range(discretisation+1):
+            if i < discretisation and j < discretisation:
+                # Hor Members:
+                xa = x0 + dx*i
+                ya = y0 + dy*j
+                xb = x0 + dx*(i + 1)
+                yb = y0 + dy*j
+                # Ver Members:
+                xc = x0 + dx*i
+                yc = y0 + dy*j
+                xd = x0 + dx*i
+                yd = y0 + dy*(j + 1)
+                lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+                lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
+                # lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
+                if (i < discretisation/2 and j < discretisation/2) or (i >= discretisation/2 and j >= discretisation/2):
+                    # Diagonal Members in + Direction:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*(i + 1)
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
+                else:
+                    # Diagonal Members in - Direction:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*(j + 1)
+                    xd = x0 + dx*(i + 1)
+                    yd = y0 + dy*j
+                    lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
+                    # if i == (discretisation - 1):
+                    #     xc = x0 + dx*i
+                    #     yc = y0 + dy*j
+                    #     xd = x0 + dx*(i + 1)
+                    #     yd = y0 + dy*(j - 1)
+                    #     lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
+            else:
+                if i == discretisation and j < discretisation:
+                    # Vertical Members on last column:
+                    xa = x0 + dx*j
+                    ya = y0 + dy*i
+                    xb = x0 + dx*(j + 1)
+                    yb = y0 + dy*i
+                    # Horizontal Members:
+                    xc = x0 + dx*i
+                    yc = y0 + dy*j
+                    xd = x0 + dx*i
+                    yd = y0 + dy*(j + 1)
+                    lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+                    lines.append([[xc, yc, 0.0], [xd, yd, 0.0]])
+
+    mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+    form = cls.from_mesh(mesh)
+    # form = cls.from_lines(lines, delete_boundary_face=True)
+    gkey_key = form.gkey_key()
+
+    if fix == 'corners':
+        form.vertex_attribute(gkey_key[geometric_key([x0, y0, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x0, y1, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x1, y0, 0.0])], 'is_fixed', True)
+        form.vertex_attribute(gkey_key[geometric_key([x1, y1, 0.0])], 'is_fixed', True)
+    else:
+        [bnds] = form.vertices_on_boundaries()
+        for key in bnds:
+            form.vertex_attribute(key, 'is_fixed', True)
+        form = form.delete_boundary_edges()  # Check if this should be here, or explicit
+
+    return form
 
 
 def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
@@ -369,6 +475,7 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
             form.vertex_attribute(key, 'is_fixed', True)
+        form.delete_boundary_edges()
 
     return form
 
@@ -438,5 +545,6 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
             form.vertex_attribute(key, 'is_fixed', True)
+        form.delete_boundary_edges()
 
     return form

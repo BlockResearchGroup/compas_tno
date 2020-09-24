@@ -5,26 +5,23 @@ from compas_tno.shapes import Shape
 from compas_tno.optimisers import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis import Analysis
-from compas_tno.algorithms import apply_sag
 from compas_tno.viewers import view_thrust
 from compas_tno.viewers import view_solution
 from compas_tno.plotters import diagram_of_thrust
 from compas_tno.plotters import save_csv
 from compas_tno.plotters import save_csv_row
 from compas_tno.algorithms import constrained_smoothing
+from compas_tno.algorithms import apply_sag
 from compas_tno.utilities import rectangular_smoothing_constraints
 
 # ------------------------------------------------------------------------------------
-# ------ EXAMPLE OF INCREMENTAL MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
+# ------ EXAMPLE OF INCREMENTAL MIN THRUST FOR PAV.VAULT WITH CROSS FD --------------
 # ------------------------------------------------------------------------------------
 
-
-exitflag = 0  # means that optimisation found a solution
 t0 = thk = 0.50  # thickness on the start in meters
 thk_reduction = 0.05  # in meters
 thk_refined = 0.001
 limit_equal = 0.005
-thicknesses = []
 span = 10.0  # square span for analysis
 k = 1
 n = 4  # Discretisation for Surfaces...
@@ -38,7 +35,7 @@ smooth = False
 # Basic parameters
 
 type_structure = 'pavillionvault'
-type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
+type_formdiagram = 'cross_with_diagonal'  # Try also 'fan_fd'
 discretisation = 10
 gradients = True
 
@@ -64,10 +61,12 @@ plot_form(form, show_q=False, fix_width=10).show()
 # --------------------- Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
+# optimiser.data['library'] = 'MMA'
+# optimiser.data['solver'] = 'MMA'
 # optimiser.data['library'] = 'IPOPT'
 # optimiser.data['solver'] = 'IPOPT'
+optimiser.data['library'] = 'Scipy'
+optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = False
@@ -93,6 +92,7 @@ for hc in hc_list:
         'hc': hc,
         'hm': None,
         'he': None,
+        'interpolation_type': 'nearest',
     }
 
     vault = Shape.from_library(data_shape)

@@ -12,7 +12,7 @@ from scipy import interpolate
 from scipy import hstack
 
 
-def set_dome_heighfield(center = [5.0,5.0], radius = 5.0, thk = 0.30, t = 5.0, discretisation=[8, 20]):
+def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20]):
 
     tol = 10e-3
     xc = center[0]
@@ -66,7 +66,7 @@ def set_dome_heighfield(center = [5.0,5.0], radius = 5.0, thk = 0.30, t = 5.0, d
                 p2 = (nr, nc+1)
                 p3 = (nr+1, nc)
                 p4 = (nr+1, nc+1)
-                if nc < n_spikes - 1: # General Case
+                if nc < n_spikes - 1:  # General Case
                     # face = [p1, p2, p4, p3]
                     face = [p3, p4, p2, p1]
                 else:
@@ -81,8 +81,8 @@ def set_dome_heighfield(center = [5.0,5.0], radius = 5.0, thk = 0.30, t = 5.0, d
     for face in faces:
         face_i = []
         for uv in face:
-            u,v = uv
-            i = uv_i[(u,v)]
+            u, v = uv
+            i = uv_i[(u, v)]
             face_i.append(i)
         faces_i.append(face_i)
 
@@ -97,7 +97,7 @@ def set_dome_heighfield(center = [5.0,5.0], radius = 5.0, thk = 0.30, t = 5.0, d
     return intrados, extrados, middle
 
 
-def set_dome_with_spr(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, math.pi/2], t = 5.0, discretisation=[8, 20]):
+def set_dome_with_spr(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi/2], t=5.0, discretisation=[8, 20]):
 
     center.append(0.0)
     ri = radius - thk/2
@@ -105,7 +105,6 @@ def set_dome_with_spr(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, ma
     phi_lower = 0
     phi_upper = 2 * math.pi
     phi_length = discretisation[1]
-    step_phi = (phi_upper - phi_lower)
     phi_range = [phi_lower + x * (phi_upper - phi_lower) / phi_length for x in range(phi_length + 1)]
 
     theta_length = discretisation[0]
@@ -115,10 +114,10 @@ def set_dome_with_spr(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, ma
 
     [xmin, _, _] = geom_dome(center, radius, theta_range[0], phi_range[0])
     [xmax, _, _] = geom_dome(center, radius, theta_range[theta_length], phi_range[phi_length])
-    theta_upper_i = (math.pi/2 - math.acos(min(1,(xmax-center[0])/ri)))
+    theta_upper_i = (math.pi/2 - math.acos(min(1, (xmax-center[0])/ri)))
     theta_lower_e = (math.pi/2 - math.acos((xmin-center[0])/re))
-    print('min/max', xmin, xmax)
-    print('lower/lower_i/upper/upper_e', theta_lower/(math.pi/2), theta_lower_e/(math.pi/2), theta_upper/(math.pi/2), theta_upper_i/(math.pi/2))
+    # print('min/max', xmin, xmax)
+    # print('lower/lower_i/upper/upper_e', theta_lower/(math.pi/2), theta_lower_e/(math.pi/2), theta_upper/(math.pi/2), theta_upper_i/(math.pi/2))
     theta_range_i = [theta_lower + x * (theta_upper_i - theta_lower) / theta_length for x in range(theta_length + 1)]
     theta_range_e = [theta_lower_e + x * (theta_upper - theta_lower_e) / theta_length for x in range(theta_length + 1)]
 
@@ -172,7 +171,7 @@ def set_dome_with_spr(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, ma
     return intrados, extrados, middle
 
 
-def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0, math.pi/2], t = 0.0, discretisation=[8, 20]):
+def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi/2], t=0.0, discretisation=[8, 20]):
 
     center0 = center
     center.append(0.0)
@@ -191,10 +190,10 @@ def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0,
 
     [xmin, _, _] = geom_dome(center, radius, theta_range[0], phi_range[0])
     [xmax, _, _] = geom_dome(center, radius, theta_range[theta_length], phi_range[phi_length])
-    theta_upper_i = (math.pi/2 - math.acos(min(1,(xmax-center[0])/ri)))
+    theta_upper_i = (math.pi/2 - math.acos(min(1, (xmax-center[0])/ri)))
     theta_lower_e = (math.pi/2 - math.acos((xmin-center[0])/re))
-    print('min/max', xmin, xmax)
-    print('lower/lower_i/upper/upper_e', theta_lower/(math.pi/2), theta_lower_e/(math.pi/2), theta_upper/(math.pi/2), theta_upper_i/(math.pi/2))
+    # print('min/max', xmin, xmax)
+    # print('lower/lower_i/upper/upper_e', theta_lower/(math.pi/2), theta_lower_e/(math.pi/2), theta_upper/(math.pi/2), theta_upper_i/(math.pi/2))
     theta_range_i = [theta_lower + x * (theta_upper_i - theta_lower) / theta_length for x in range(theta_length + 1)]
     theta_range_e = [theta_lower_e + x * (theta_upper - theta_lower_e) / theta_length for x in range(theta_length + 1)]
 
@@ -207,7 +206,7 @@ def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0,
     xyz_extrados = []
 
     for i in range(phi_length + 1):
-        for j in range(theta_length + 1):
+        for j in range(theta_length + 2):
             uv_i[(i, j)] = count
             p1 = (i, j)
             p2 = (i, j+1)
@@ -215,15 +214,21 @@ def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0,
             p4 = (i+1, j+1)
             face = []
 
-            ptm = geom_dome(center, radius, theta_range[j], phi_range[i])
-            pti = geom_dome(center, ri, theta_range_i[j], phi_range[i])
-            pte = geom_dome(center, re, theta_range_e[j], phi_range[i])
+            if j <= theta_length:
+                ptm = geom_dome(center, radius, theta_range[j], phi_range[i])
+                pte = geom_dome(center, re, theta_range_e[j], phi_range[i])
+                pti = geom_dome(center, ri, theta_range_i[j], phi_range[i])
+            else:  # This allows a additional meridian to respect the 't' over the points with (x, y) in 'middle'
+                ptm = geom_dome(center, radius, theta_range[-1], phi_range[i])
+                pte = geom_dome(center, re, theta_range_e[-1], phi_range[i])
+                pti[:] = ptm
+                pti[2] = -t
 
             xyz_middle.append(ptm)
             xyz_intrados.append(pti)
             xyz_extrados.append(pte)
 
-            if i < phi_length and j < theta_length:
+            if i < phi_length and j < theta_length + 1:
                 face = [p3, p4, p2, p1]
                 faces.append(face)
 
@@ -249,9 +254,10 @@ def set_dome_polar_coord(center = [5.0,5.0], radius = 5.0, thk = 0.30, theta=[0,
 
     return intrados, extrados, middle
 
+
 def geom_dome(p0, ro, theta, phi):
     x = ro * sin(theta) * cos(phi)
     y = ro * sin(theta) * sin(phi)
     z = ro * cos(theta)
-    point = [p0[0] + x, p0[1] +y, p0[2] + z]
+    point = [p0[0] + x, p0[1] + y, p0[2] + z]
     return point

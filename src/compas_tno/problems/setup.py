@@ -11,6 +11,8 @@ from compas_tno.problems.derivatives import gradient_fmax
 from compas_tno.problems.derivatives import sensitivities_wrapper
 from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities
 
+from compas_tno.plotters import plot_sym_inds
+
 from compas_tno.problems.constraints import constr_wrapper
 
 from compas.datastructures import mesh_bounding_box_xy
@@ -49,6 +51,7 @@ def set_up_nonlinear_optimisation(analysis):
     qmax = optimiser.data['qmax']
     qmin = optimiser.data['qmin']
     constraints = optimiser.data['constraints']
+    plot = optimiser.data.get('plot', False)
 
     i_k = form.index_key()
 
@@ -78,7 +81,7 @@ def set_up_nonlinear_optimisation(analysis):
         joints = None
 
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
-        Asym = set_symmetry_constraint(form, constraints, printout)
+        Asym = set_symmetry_constraint(form, constraints, printout, plot=plot)
     else:
         Asym = None
 
@@ -198,7 +201,7 @@ def set_rollers_constraint(form, printout):
     return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
 
 
-def set_symmetry_constraint(form, constraints, printout):
+def set_symmetry_constraint(form, constraints, printout, plot=False):
 
     horizontal_only = False
     vertical_only = False
@@ -217,7 +220,7 @@ def set_symmetry_constraint(form, constraints, printout):
         print('Calculated and found symmetry from point:', xc, yc)
         print('Resulted in Asym Matrix Shape:', Asym.shape)
         print('Unique independents:', form.number_of_sym_independents())
-        from compas_tno.plotters import plot_sym_inds
+    if plot:
         plot_sym_inds(form).show()
 
     return Asym

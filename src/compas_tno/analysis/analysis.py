@@ -498,13 +498,16 @@ class Analysis(object):
 
                 while exitflag == 0 and thk > 0:
                     exitflag = 0
-                    if self.optimiser.data['objective'] == 'max' and count < len(thicknesses_min):
-                        thk = thicknesses_min[count]
-                    try:
-                        address_load = save_forms + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
-                        self.form = FormDiagram.from_json(address_load)
-                    except:
-                        pass
+                    # if self.optimiser.data['objective'] == 'max':
+                    #     if count < len(thicknesses_min):
+                    #         thk = thicknesses_min[count]
+                    #     else:
+                    #         break
+                    # try:
+                    #     address_load = save_forms + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
+                    #     self.form = FormDiagram.from_json(address_load)
+                    # except:
+                    #     pass
                     data_shape['thk'] = thk
                     time0 = time.time()
                     self.shape = Shape.from_library(data_shape)

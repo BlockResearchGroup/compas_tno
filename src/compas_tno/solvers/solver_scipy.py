@@ -68,8 +68,6 @@ def run_optimisation_scipy(analysis):
 
     if solver == 'slsqp' or solver == 'SLSQP':
         fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, fgrad, fjac, printout, fconstr, args)
-        while exitflag == 9:
-            fopt, xopt, exitflag, niter, message = _slsqp(fobj, xopt, bounds, fgrad, fjac, printout, fconstr, args)
         if exitflag == 0:
             if 'zb' in variables:
                 q[ind] = xopt[:k].reshape(-1, 1)

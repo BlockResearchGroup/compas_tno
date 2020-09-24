@@ -241,6 +241,8 @@ def gradient_wrapper(xopt, *args):
         grad = gradient_fmin
     elif objective == 'max':
         grad = gradient_fmax
+    elif objective == 'feasibility':
+        grad = zeros((len(xopt), 1))
     else:
         raise NotImplementedError
 

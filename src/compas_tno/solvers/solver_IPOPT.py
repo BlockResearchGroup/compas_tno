@@ -103,7 +103,7 @@ class wrapper_ipopt_analytical(object):
         #
         # The callback for calculating the constraints
         #
-        return self.fconstr(x, *self.args)
+        return self.fconstr(x, *self.args).reshape(-1, 1)
 
     def jacobian(self, x):
         #
@@ -142,22 +142,15 @@ def run_optimisation_ipopt(analysis):
     x0 = optimiser.x0
     g0 = optimiser.g0
     plot = optimiser.data['plot']
+    printout = optimiser.data['printout']
+    gradients = optimiser.data.get('gradient', False)
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
 
     # Tensor modification
 
-    try:
-        calculation_type = optimiser.data['calculation_type']
-        if calculation_type is 'tensorial':
-            tensorial = True
-        else:
-            tensorial = False
-    except:
-        tensorial = False
-
-    if tensorial:
+    if not gradients:
 
         EdinvEi = Edinv*Ei
         Edinv_p = Edinv.dot(p)
@@ -177,7 +170,7 @@ def run_optimisation_ipopt(analysis):
 
         args_obj = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
         args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
-                    ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
+                       ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
 
         problem_obj = wrapper_ipopt()
         problem_obj.fobj = f_objective_pytorch
@@ -190,16 +183,20 @@ def run_optimisation_ipopt(analysis):
         problem_obj.fgrad = gradient_fmin
 
         variables = tensor(x0, requires_grad=True)
-        print('variables tensor shape', variables.shape)
         g0 = f_constraints_pytorch(variables, *args_constr)
-        print('g0 shape', g0.shape)
         jac = compute_jacobian(variables, g0)
-        print('jacobian shape', jac.shape)
+        print(jac[596, 44])
         variables = tensor(x0, requires_grad=True)
         f = f_objective_pytorch(variables, *args_obj)
-        print('f0: ', f)
         grad = compute_grad(variables, f)
-        print('shape gradient', grad.shape)
+
+        if printout:
+            print('variables tensor shape', variables.shape)
+            print('g0 shape', g0.shape)
+            print('jacobian shape', jac.shape)
+            print('jacobian shape', array(jac).shape)
+            print('f0: ', f)
+            print('shape gradient', grad.shape)
     else:
         if objective == 'min':
             fobj = f_min_thrust
@@ -218,15 +215,18 @@ def run_optimisation_ipopt(analysis):
         problem_obj.bounds = bounds
         problem_obj.x0 = x0
 
-        print('variables shape:', x0.shape)
-        g0 = constr_wrapper_ipopt(x0, *args)
-        print('g0 shape:', g0.shape)
-        jac = sensitivities_wrapper(x0, *args)
-        print('jacobian shape:', jac.shape)
-        f = fobj(x0, *args)
-        print('f0: ', f)
-        grad = fgrad(x0, *args)
-        print('shape gradient:', grad.shape)
+        if printout:
+            g0 = constr_wrapper_ipopt(x0, *args)
+            jac = sensitivities_wrapper(x0, *args)
+            print('last jac')
+            print(jac[596,44])
+            f = fobj(x0, *args)
+            grad = fgrad(x0, *args)
+            print('x0 shape', x0.shape, 'ind:', len(ind), 'fixed:', len(fixed))
+            print('g0 shape', g0.shape, 'dep:', len(dep), '2*zi:', len(free), 'fixed:', len(fixed))
+            print('jacobian shape', jac.shape)
+            print('f0: ', f)
+            print('shape gradient', grad.shape)
 
     cu = [10e10]*len(g0)
     cl = [0.0]*len(g0)
@@ -248,13 +248,17 @@ def run_optimisation_ipopt(analysis):
     # Set Options
     nlp = _nlp_options(nlp, optimiser)
 
+    # print(x0)
+    print(g0)
+
     # Solve
     xopt, info = nlp.solve(x0)
     fopt = info['obj_val']
     exitflag = info['status']
     if exitflag == 1:
         exitflag = 0
-    print(info['status_msg'])
+    if printout:
+        print(info['status_msg'])
 
     g_final = fconstr(xopt, *args)
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
@@ -288,17 +292,21 @@ def run_optimisation_ipopt(analysis):
     analysis.form = form
     reactions(form, plot=plot)
 
-    print('\n' + '-' * 50)
-    print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-    print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-    print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-    print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
-    print('fopt      : {0:.3f}'.format(fopt))
-    print('-' * 50 + '\n')
+    summary = optimiser.data.get('summary', False)
+
+    if summary:
+        print('\n' + '-' * 50)
+        print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
+        print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
+        print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+        print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
+        print('fopt      : {0:.3f}'.format(fopt))
+        print('-' * 50 + '\n')
 
     return analysis
 
-def _nlp_options(nlp,optimiser):
+
+def _nlp_options(nlp, optimiser):
 
     # Link to instructions: https://coin-or.github.io/Ipopt/OPTIONS.html
 
@@ -316,5 +324,12 @@ def _nlp_options(nlp,optimiser):
     # nlp.addOption('acceptable_dual_inf_tol', 10e10)  # Default 10e10
     # nlp.addOption('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
     # nlp.addOption('max_iter', 500)
+
+    if not optimiser.data['printout']:
+        nlp.addOption('print_level', 0)
+    if optimiser.data.get('derivative_test', None):
+        nlp.addOption('derivative_test', 'first-order')
+        nlp.addOption('derivative_test_perturbation', 10e-8)
+        # nlp.addOption('derivative_test_print_all', 'yes')
 
     return nlp

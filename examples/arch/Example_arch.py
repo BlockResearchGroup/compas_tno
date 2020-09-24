@@ -16,8 +16,8 @@ H = 1.0
 L = 2.0
 thk = 0.2
 discretisation = 20
-b = 0.5
-t = 10.0
+b = 0.5  # Out of plane dimension  of arch
+t = 1.0
 type_structure = 'arch'
 type_formdiagram = 'arch'
 
@@ -42,6 +42,8 @@ print('Self-weight is:', swt)
 print('Area is:', area)
 # view_shapes(arch).show()
 
+gradients = True
+
 # ----------------------- 2. Create Form Diagram ---------------------------
 
 data_diagram = {
@@ -59,8 +61,8 @@ print(form)
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'
@@ -68,6 +70,9 @@ optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
+optimiser.data['gradient'] = gradients
+optimiser.data['jacobian'] = gradients
+optimiser.data['derivative_test'] = True
 print(optimiser.data)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
@@ -79,6 +84,7 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 form = analysis.form
+plot_form_xz(form)
 # file_address = compas_tno.get('test.json')
 # form.to_json(file_address)
 optimiser = analysis.optimiser

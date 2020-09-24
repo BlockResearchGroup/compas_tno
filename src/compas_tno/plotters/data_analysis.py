@@ -25,6 +25,7 @@ __all__ = [
     'diagram_of_thrust',
     'diagram_of_thrust_partial',
     'diagram_of_multiple_thrust',
+    'diagram_multiple_thrust_partial',
     'diagram_of_thrust_load_mult',
     'surface_GSF_load_mult',
     'save_csv',
@@ -43,7 +44,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
 
     Parameters
     ----------
-    dimensions : list of lists [[n],[m]]
+    thicknesses : list of lists [[n],[m]]
         Points with discretised solutions for minimum/maximum thrust.
     solutions : list of lists [[n],[m]]
         Adimensional thrust over weight for minimum/maximum thrust.
@@ -263,19 +264,15 @@ def diagram_of_thrust_partial(xmin, xmax, min_sol, max_sol, limit_state=True, fi
     return plt
 
 
-def diagram_multiple_thrust_partial(parameters, solutions, limit_state=True, fill=False, xy_limits=None, save=False):
+def diagram_multiple_thrust_partial(thicknesses, solutions, legends, limit_state=True, fill=False, xy_limits=None, save=False, colors=None, markers=None):
     """ Plot a diagram of Thrusts based on the collected data from (n) points.
 
     Parameters
     ----------
-    xmin : list (n)
-        Points with discretised solutions of minimum thrust.
-    xmax : list (m)
-        Points with discretised solutions of maximum thrust.
-    min_sol : list (n)
-        Adimensional thrust over weight for minimum thrust.
-    max_sol : list (m)
-        Adimensional thrust over weight for minimum thrust.
+    thicknesses : list of lists [[n],[m]]
+        Points with discretised solutions for minimum/maximum thrust.
+    solutions : list of lists [[n],[m]]
+        Adimensional thrust over weight for minimum/maximum thrust.
     limit_state : bool
         If yes, it interpolates the limit_state based on the two last solutions.
     limit_state : bool
@@ -288,7 +285,7 @@ def diagram_multiple_thrust_partial(parameters, solutions, limit_state=True, fil
 
     """
 
-    kmax = len(dimensions)
+    kmax = len(legends)
     if markers is None:
         markers = ['o', '^', 's', 'D', 'x', '1', '2', '3', 'v', 'p', '4', '8']
 
@@ -300,17 +297,22 @@ def diagram_multiple_thrust_partial(parameters, solutions, limit_state=True, fil
     size_axis_data = 12
     size_legend = 14
 
+    min_sols = solutions[0]
+    max_sols = solutions[1]
+    xmin = thicknesses[0]
+    xmax = thicknesses[1]
+
     fig = plt.figure(figsize=[12, 5])
     ax = fig.add_subplot(1, 1, 1)
     def flatten_list(l): return [item for sublist in l for item in sublist]
     extreme_max = -100*min(flatten_list(max_sols))
     extreme_min = 100*min(flatten_list(min_sols))
 
-    interval_x = abs(flatten_list(dimensions)[0] - flatten_list(dimensions)[1])
+    interval_x = abs(flatten_list(xmin)[0] - flatten_list(xmin)[1])
     interval_y = 20
     if xy_limits is None:
-        max_x = max(flatten_list(dimensions))
-        min_x = min(flatten_list(dimensions)) - interval_x
+        max_x = max(flatten_list(xmin))
+        min_x = min(flatten_list(xmin)) - interval_x
         max_y = interval_y - extreme_max % 10 + extreme_max
         min_y = extreme_min - extreme_min % 10
     else:
@@ -380,7 +382,7 @@ def diagram_multiple_thrust_partial(parameters, solutions, limit_state=True, fil
     return plt
 
 
-def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, fill=False, show_legend=True, save=None, markers=None):
+def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, fill=False, show_legend=True, save=None, markers=None):
     """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
 
     Parameters
@@ -401,7 +403,8 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
 
     """
 
-    kmax = len(dimensions)
+    kmax = len(legends)
+
     if markers is None:
         markers = ['o', '^', 's', 'D', 'x', '1', '2', '3', 'v', 'p', '4', '8']
 
@@ -413,17 +416,18 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     size_axis_data = 12
     size_legend = 14
 
-    fig = plt.figure(figsize=[12, 5])
+    fig = plt.figure(figsize=[15, 5])
     ax = fig.add_subplot(1, 1, 1)
-    def flatten_list(l): return [item for sublist in l for item in sublist]
-    extreme_max = -100*min(flatten_list(max_sols))
-    extreme_min = 100*min(flatten_list(min_sols))
 
-    interval_x = abs(flatten_list(dimensions)[0] - flatten_list(dimensions)[1])
+    interval_x = 0.05 # abs(flatten_list(min_thks)[0] - flatten_list(min_thks)[1])
     interval_y = 20
+
     if xy_limits is None:
-        max_x = max(flatten_list(dimensions))
-        min_x = min(flatten_list(dimensions)) - interval_x
+        def flatten_list(l): return [item for sublist in l for item in sublist]
+        extreme_max = -100*min(flatten_list(max_sols))
+        extreme_min = 100*min(flatten_list(min_sols))
+        max_x = max(flatten_list(min_thks))
+        min_x = min(flatten_list(min_thks)) - interval_x
         max_y = interval_y - extreme_max % 10 + extreme_max
         min_y = extreme_min - extreme_min % 10
     else:
@@ -433,12 +437,20 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
     middle_scale = round((last_scale - 1.0)/2 + 1, 1)
     middle_x = max_x/middle_scale
 
+    print(thicknesses)
+    print(solutions)
+    print(kmax)
     for i in range(kmax):
+        thks = thicknesses[i]
+        sols = solutions[i]
 
-        xmin = xmax = array(dimensions[i])
-        fmin = 100.0*array(min_sols[i])
-        fmax = -100.0*array(max_sols[i])
+        xmin = array(thks[0])
+        xmax = array(thks[1])
+
+        fmin = 100.0*array(sols[0])
+        fmax = -100.0*array(sols[1])
         n = len(xmin)
+        m = len(xmax)
 
         if simplified is True:
             ax.plot(xmin, fmin, markers[i], ls='-', markersize=6, color=colors[i], label=legends[i])
@@ -449,24 +461,31 @@ def diagram_of_multiple_thrust(dimensions, min_sols, max_sols, legends, simplifi
             ax.plot(xmax, fmax, markers[i], ls='-', markersize=6, color='red', label='maximum thrust '+legends[i])
 
         if limit_state:
-            x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
-            extrapolation_max = [fmax[n-1], y_]
-            extrapolation_min = [fmin[n-1], y_]
-            extrapolation_x = [xmax[n-1], x_]
+            x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+            extrapolation_maxy = [fmax[m-1], y_]
+            extrapolation_miny = [fmin[n-1], y_]
+            extrapolation_maxx = [xmax[m-1], x_]
+            extrapolation_minx = [xmin[n-1], x_]
             ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black')
-            ax.plot(extrapolation_x, extrapolation_max, '', ls='--', color=colors[i])
-            ax.plot(extrapolation_x, extrapolation_min, '', ls='--', color=colors[i])
+            ax.plot(extrapolation_maxx, extrapolation_maxy, '', ls='--', color=colors[i])
+            ax.plot(extrapolation_minx, extrapolation_miny, '', ls='--', color=colors[i])
             ax.annotate(str(round(max_x/x_, 1)), (x_, y_), textcoords="offset points", xytext=(20, -5), ha='center', size=12)
 
         if fill:
-            ax.fill_between(xmin, fmin, fmax, color=colors[i], alpha=0.2)
-            ax.fill_between(extrapolation_x, extrapolation_min, extrapolation_max, color=colors[i], alpha=0.2)
+            xmin_ = append(xmin, x_)
+            xmax_ = append(xmax, x_)
+            fmin_ = append(fmin, y_)
+            fmax_ = append(fmax, y_)
+
+            ax.fill(append(xmin_, xmax_[::-1]), append(fmin_, fmax_[::-1]), color=colors[i], alpha=0.2)
+            # ax.fill_between(xmin, fmin, fmax, color=colors[i], alpha=0.2)
+            # ax.fill_between(extrapolation_minx, extrapolation_miny, extrapolation_maxy, color=colors[i], alpha=0.2)
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
     ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100])
     ax2.set_xticklabels(['1.0', str(middle_scale), str(last_scale)], size=size_axis_data)
-    ax1.set_xlabel('thickness/span', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.set_xlabel('thickness', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
     ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
     ax1.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))

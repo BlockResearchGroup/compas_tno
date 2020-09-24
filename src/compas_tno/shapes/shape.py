@@ -238,9 +238,9 @@ class Shape(object):
         z : float
             The extrados evaluated in the point.
         """
-
+        method = self.data.get('interpolation', 'nearest')
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='nearest')
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method=method)
 
         return z
 
@@ -296,9 +296,9 @@ class Shape(object):
         z : float
             The extrados evaluated in the point.
         """
-
+        method = self.data.get('interpolation', 'nearest')
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='nearest')
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method=method)
 
         return z
 
@@ -334,9 +334,9 @@ class Shape(object):
         z : float
             The extrados evaluated in the point.
         """
-
+        method = self.data.get('interpolation', 'nearest')
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method='nearest')
+        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method=method)
 
         return z
 

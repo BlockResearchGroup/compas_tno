@@ -62,7 +62,7 @@ def reac_bound_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C,
     Q = diagflat(q)
     CfQC = mm(mm(Cf.t(), Q), C)
     R = mm(CfQC, xyz) - pfixed
-    length_x = mul(zfixed, abs(div(R[:, 0], R[:, 2])).reshape(-1, 1))
+    length_x = mul(zfixed, abs(div(R[:, 0], R[:, 2])).reshape(-1, 1))  # Missing - s[0]
     length_y = mul(zfixed, abs(div(R[:, 1], R[:, 2])).reshape(-1, 1))
     length = cat([length_x, length_y])
     return length

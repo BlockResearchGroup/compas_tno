@@ -90,9 +90,10 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             if form.edge_attribute((u, v), 'is_symmetry'):
                 colour[1] = 'cc'
             if form.edge_attribute((u, v), 'is_ind'):
+                pass
                 # colour[2] = 'ff'
-                colour[0] = '00'
-                colour[2] = '80'
+                # colour[0] = '00'
+                # colour[2] = '80'
 
         width = max_width if fix_width else (qi / qmax) * max_width
 

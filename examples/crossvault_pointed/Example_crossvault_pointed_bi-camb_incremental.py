@@ -44,7 +44,7 @@ smooth = False
 # Basic parameters
 
 type_structure = 'pointed_crossvault'
-type_formdiagram = 'fan_fd'  # Try also 'fan_fd'
+type_formdiagram = 'cross_fd'  # Try also 'fan_fd'
 discretisation = 10
 gradients = True
 

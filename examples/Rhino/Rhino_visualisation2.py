@@ -12,26 +12,12 @@ import math
 import compas_tno
 import os
 
-# Give a name to your project
-master = 'cross_fd_t=50_partial_1,0_max'
-master = 'fan_fd_t=46_partial_10.0_max'
-master = 'Dome_[8,20]_hor=24-reac_bound'
-master = 'test'
-
-
-# Put here the .json file for the optimisation
-# fnm = '/Users/mricardo/compas_dev/me/bestfit/dome/dome_final_alpha=95.0.json'
-fnm = '/Users/mricardo/compas_dev/me/bestfit/dome/'+master+'.json'
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
-fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/fan_fd/h=5.0/pointed_crossvault_fan_fd_discr_10_partial_ratio_10.0_10.0_max_thk_46.0.json'
-# fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.09_discr_[4, 16]_min.json'
-# fnm = '/Users/mricardo/compas_dev/me/SI_data/Amiens/pointed_crossvault/fan_fd/forms/pointed_crossvault_fan_fd_discr_14_fill_0.8_min_thk_46.0.json'
-# fnm = '/Users/mricardo/compas_dev/me/minmax/dome/flower/flower_discr_8_20_min_t=50.json'
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/test-max.json'
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.24_discr_[8, 20]_min.json'
-
 R = [5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
 H = [5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
+
+R = [5.0]
+H = [5.0]
+
 
 for i in range(len(R)):
     
@@ -39,15 +25,15 @@ for i in range(len(R)):
     dx = 20.0 * i
     trans = [dx, dy, 0]
 
-    master = 'PC_MIX_t=50_R=' + str(R[i])
+    master = 'PAV_CROSS_t=50_R=' + str(R[i])
     # master = 'Min_t='+str(thk)+'_2'
-    fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/camb_h=' + str(H[i]) + '/pointed_crossvault_cross_fd_discr_10_min_thk_50.0.json'
-    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/topology-mix/camb_h=' + str(H[i]) + '/pointed_crossvault_topology-mix_Mesh-mix_discr_100smooth__min_thk_50.0.json'
-    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/fan_fd/camb_h=7.07/pointed_crossvault_fan_fd_discr_10sag_100.0_test_thk_50.0.json'
-    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/camb_h=5.48/pointed_crossvault_cross_fd_discr_10_min_thk_' + str(thk) + '.json'
-
-    # fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[4, 12]_radial_spaced_fd_straight_min.json'
-
+    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/camb_h=' + str(H[i]) + '/pointed_crossvault_cross_fd_discr_10_min_thk_50.0.json'
+    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pavillionvault/cross_fd/h=' + str(H[i]) + '/pavillionvault_cross_fd_discr_10_min_thk_50.0.json'
+    
+    master = 'dome_max_35?'
+    fnm = '/Users/mricardo/compas_dev/me/shape_comparison/dome/radial_spaced_fd/dome_radial_spaced_fd_discr_[8, 20]_min_thk_20.625.json'
+    fnm = '/Users/mricardo/compas_dev/me/shape_comparison/dome_polar/radial_spaced_fd/dome_polar_radial_spaced_fd_discr_[8, 20]_min_thk_23.282.json'
+    fnm = '/Users/mricardo/compas_dev/compas_tno/data/temp/form_max.json'
     # Parameters for the visualisation
     radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
     radius_circlus = 0.15 # Radius of the speres that mark when it touches upper bound and lower bound.

@@ -19,11 +19,13 @@ import matplotlib.pyplot as plt
 from compas_tno.diagrams.diagram_arch import create_arch
 from compas_tno.diagrams.diagram_rectangular import create_cross_form
 from compas_tno.diagrams.diagram_rectangular import create_cross_diagonal
+from compas_tno.diagrams.diagram_rectangular import create_cross_with_diagonal
 from compas_tno.diagrams.diagram_rectangular import create_fan_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_form
 from compas_tno.diagrams.diagram_circular import create_circular_spiral_form
 from compas_tno.diagrams.diagram_rectangular import create_ortho_form
+
 
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_force
@@ -121,9 +123,11 @@ class FormDiagram(FormDiagram):
             form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'cross_diagonal':
             form = cls().create_cross_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], partial_bracing_modules=partial_bracing_modules, fix=data['fix'])
+        if form_type == 'cross_with_diagonal':
+            form = cls().create_cross_with_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data.get('fix', 'all'))
         if form_type == 'fan_fd':
             form = cls().create_fan_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
-        if form_type == 'ortho':
+        if form_type == 'ortho' or form_type == 'ortho_fd':
             form = cls().create_ortho_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'radial_fd':
             form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'],
@@ -192,7 +196,7 @@ class FormDiagram(FormDiagram):
 
     @classmethod
     def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, partial_bracing_modules=None, fix='corners'):
-        """ Construct a FormDiagram based on cross discretiastion with diagonals.
+        """ Construct a FormDiagram based on a mixture of cross and fan discretiastion.
 
         Parameters
         ----------
@@ -213,6 +217,32 @@ class FormDiagram(FormDiagram):
         """
 
         form = create_cross_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, partial_bracing_modules=partial_bracing_modules, fix=fix)
+
+        return form
+
+    @classmethod
+    def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='all'):
+        """ Construct a FormDiagram based on cross discretiastion with diagonals.
+
+        Parameters
+        ----------
+        xy_span : list
+            List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+
+        discretisation: list
+            Set the density of the grid in x and y directions.
+
+        fix : string
+            Option to select the constrained nodes: 'corners', 'all' are accepted.
+
+        Returns
+        -------
+        obj
+            FormDiagram.
+
+        """
+
+        form = create_cross_with_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
 
         return form
 
@@ -730,15 +760,15 @@ class FormDiagram(FormDiagram):
         i = 0
 
         for key in self.vertices():
-            x, y, _ = self.vertex_coordinates(key)
             ub_ = zub[i]
             lb_ = zlb[i]
             # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' ub:', ub_)
             # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' lb:', lb_)
-            if math.isnan(lb_):
-                lb_ = -1 * shape.data['t']
-                keysnan.append(key)
-                print('Shape interpolation got NaN, check results (x,y): ({0:.3f}, {1:.3f})'.format(x, y))
+            # if math.isnan(lb_):  # This check seems deprecated because the get_from_pattern seems to never return NaN...
+            #     lb_ = -1 * shape.data['t']
+            #     keysnan.append(key)
+            #     x, y, _ = self.vertex_coordinates(key)
+            #     print('Shape interpolation got NaN, check results (x,y): ({0:.3f}, {1:.3f})'.format(x, y))
             self.vertex_attribute(key, 'ub', value=ub_)
             self.vertex_attribute(key, 'lb', value=lb_)
             i += 1
@@ -1211,6 +1241,10 @@ class FormDiagram(FormDiagram):
 
         """
 
+        from numpy import float64
+        from scipy.sparse import diags
+        from scipy.sparse.linalg import spsolve
+
         k_i = self.key_index()
         uv_i = self.uv_index()
         vcount = len(self.vertex)
@@ -1220,9 +1254,9 @@ class FormDiagram(FormDiagram):
         fixed = [k_i[key] for key in fixed]
         free = list(set(range(vcount)) - set(fixed))
         edges = [(k_i[u], k_i[v]) for u, v in self.edges_where({'_is_edge': True})]
-        xyz = array(self.get_vertices_attributes('xyz'), dtype=float64)
-        p = array(self.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-        q = [attr.get('q', 1.0) for u, v, attr in self.edges_where({'_is_edge': True}, True)]
+        xyz = array(self.vertices_attributes('xyz'), dtype=float64)
+        p = array(self.vertices_attributes(('px', 'py', 'pz')), dtype=float64)
+        q = [self.edge_attribute((u, v), 'q') for u, v in self.edges_where({'_is_edge': True})]
         q = array(q, dtype=float64).reshape((-1, 1))
         C = connectivity_matrix(edges, 'csr')
         Ci = C[:, free]
@@ -1241,7 +1275,7 @@ class FormDiagram(FormDiagram):
             index = k_i[key]
             attr['z'] = xyz[index, 2]
 
-        for u, v, attr in self.edges_where({'_is_edge': True}, True):
+        for u, v in self.edges_where({'_is_edge': True}):
             index = uv_i[(u, v)]
             attr['q'] = q[index, 0]
 

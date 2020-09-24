@@ -1,3 +1,4 @@
+import os
 from scipy.sparse import diags
 from numpy import hstack
 
@@ -20,6 +21,7 @@ from compas_tno.problems.objectives import f_min_thrust
 from compas_tno.problems.objectives import f_max_thrust
 
 from compas_tno.problems.constraints import constr_wrapper
+import compas_tno
 
 from numpy import append
 
@@ -49,7 +51,7 @@ from compas.utilities import geometric_key
 # numpy.set_printoptions(threshold=sys.maxsize)
 
 exitflag = 0  # means that optimisation found a solution
-t0 = thk = 0.50  # thickness on the start in meters
+# t0 = thk = 0.50  # thickness on the start in meters
 thk_reduction = 0.05  # in meters
 thk_refined = 0.01
 solutions_min = []  # empty lists to keep track of the solutions for min thrust
@@ -61,10 +63,14 @@ k = 1
 hc = 5.0
 # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 
-type_structure = 'pointed_crossvault'
-type_formdiagram = 'fan_fd'  # Try also 'fan_fd'
-discretisation = 8
-discretisation_shape = discretisation
+type_structure = 'dome'
+type_formdiagram = 'radial_spaced_fd'  # Try also 'fan_fd'
+discretisation = [8, 20]
+n = 10
+discretisation_shape = [n*discretisation[0], n*discretisation[1]]
+
+t0 = thk = 0.45  # 0.50
+objective = 'max'
 
 # type_structure = 'dome'
 # type_formdiagram = 'radial_fd'  # Try also 'fan_fd'
@@ -85,9 +91,15 @@ data_diagram = {
     'partial_diagonal': 'right',
 }
 
-import compas_tno
 form = FormDiagram.from_library(data_diagram)
 apply_sag(form)
+
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+path = os.path.join(folder, title)
+address_load = path + '_' + objective + '_thk_' + str(100*thk) + '.json'
+form = FormDiagram.from_json(address_load)
+
 # path = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.24_discr_[8, 20]_min.json'
 # path = compas_tno.get('test-min.json')
 # path = compas_tno.get('test.json')
@@ -103,15 +115,15 @@ plot_form(form).show()
 optimiser = Optimiser()
 optimiser.data['library'] = 'IPOPT'
 optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope']  # Note addition of constraint on rollers
+optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']  # Note addition of constraint on rollers
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['printout'] = False
-optimiser.data['objective'] = 'min'
+optimiser.data['objective'] = objective
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 3000.0
-optimiser.data['gradient'] = True
-optimiser.data['jacobian'] = True
+optimiser.data['qmax'] = 1000.0
+optimiser.data['gradient'] = False
+optimiser.data['jacobian'] = False
 
 data_shape = {
     'type': type_structure,
@@ -132,7 +144,7 @@ form.selfweight_from_shape(vault)
 swt0 = vault.compute_selfweight()
 
 # INITIALISE OR NOT
-form = form.initialise_tna(plot=False)
+# form = form.initialise_tna(plot=False)
 
 # for key in form.vertices_where({'is_fixed': True}):
 #     form.vertex_attribute(key, 'z', 0.5)
@@ -147,7 +159,6 @@ plot_form(form).show()
 
 ### ---------- RUN
 
-optimiser.data['calculation_type'] = 'tensorial'
 analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.apply_selfweight()
 analysis.apply_envelope()
@@ -187,12 +198,12 @@ args = initialise_problem(form, indset=indset, printout=printout, find_inds=find
 q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
 if 'reac_bounds' in constraints:
-    b = set_b_constraint(form, True, True)
+    b = set_b_constraint(form, True)
 else:
     b = None
 
 if 'cracks' in constraints:
-    cracks_lb, cracks_ub = set_cracks_constraint(form, True, True)
+    cracks_lb, cracks_ub = set_cracks_constraint(form, True)
 else:
     cracks_lb, cracks_ub = None, None
 
@@ -207,7 +218,7 @@ else:
     joints = None
 
 if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
-    Asym = set_symmetry_constraint(form, constraints, True)
+    Asym = set_symmetry_constraint(form, constraints)
 else:
     Asym = None
 
@@ -216,7 +227,8 @@ if objective == 'min':
 elif objective == 'max':
     fobj = f_max_thrust
 
-args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym)
+args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y,
+        b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym)
 
 fconstr = constr_wrapper
 
@@ -229,15 +241,13 @@ x0 = append(x0, z[fixed]).reshape(-1, 1)
 # plotter.draw_edges(text={(u,v): uv_i[(u,v)] for u,v in form.edges()})
 # plotter.show()
 
-# plot_independents(form).show()
-
-# CHECK ALSO CASE WITH ZB NON VARIABLE
-
 print('Total of Independents:', len(ind))
 print('Number of Variables:', len(x0))
 f0 = fobj(x0, *args)
 g0 = fconstr(x0, *args)
 print('Number of Constraints:', len(g0))
+
+print(x0)
 
 print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
 print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
@@ -263,7 +273,8 @@ U_th = tensor(U.toarray())
 V_th = tensor(V.toarray())
 
 args_obj = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
-args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
+args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
+               ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
 
 print('shape variables:', x0.shape)
 print('shape inds:', len(ind))
@@ -285,18 +296,18 @@ print('f0: ', f)
 grad = compute_grad(variables, f)
 print('shape gradient', grad.shape)
 
-# print('Jac Rx/Ry dq and dz')
-# start = len(dep)+len(ub_ind)+len(ub_ind)
-# end = start + 2*len(fixed)
-# print(start, end)
-# A = jac[start:end]
-# for i in range(A.shape[0]):
-#     max_ = max(A[i])
-#     min_ = min(A[i])
-#     print(max_, min_)
-# plt.matshow(A)
-# plt.colorbar()
-# plt.show()
+print('Jac Rx/Ry dq and dz')
+start = len(dep)+len(ub_ind)+len(ub_ind)
+end = start + 2*len(fixed)
+print(start, end)
+A = jac[start:end]
+for i in range(A.shape[0]):
+    max_ = max(A[i])
+    min_ = min(A[i])
+    print(max_, min_)
+plt.matshow(A)
+plt.colorbar()
+plt.show()
 
 # print('Jac rollers')
 # startB = len(dep)+len(ub_ind)+len(ub_ind)
@@ -329,7 +340,37 @@ xopt = x0
 jac_hand = sensitivities_wrapper(x0, *args)
 print('Jacobian Hand', jac_hand.shape)
 
-# A_ = jac_hand[start:end]
+print('Some Jacs')
+i = 452
+j = 43
+print(i, j)
+print(jac_hand[i, j])
+print(jac[i, j])
+
+print('Some Jacs')
+i = 576
+j = 44
+print(i, j)
+print(jac_hand[i, j])
+print(jac[i, j])
+
+print('Some Jacs')
+i = 596
+j = 44
+print(i, j)
+print(jac_hand[i, j])
+print(jac[i, j])
+
+
+# * jac_g [  573,   44] =  0.0000000000000000e+00 v  ~  3.6770149597719078e-02  [ 3.677e-02]
+# * jac_g [  574,   44] =  0.0000000000000000e+00 v  ~  2.1189050113428417e-02  [ 2.119e-02]
+# * jac_g [  575,   44] =  0.0000000000000000e+00 v  ~  6.5754127806957163e-01  [ 6.575e-01]
+# * jac_g [  576,   44] = -7.8959121594110115e+00 v  ~  1.4567032470323284e+02  [ 1.054e+00]
+# * jac_g [  578,   44] =  0.0000000000000000e+00 v  ~ -1.0086392640377710e-01  [ 1.009e-01]
+# * jac_g [  579,   44] =  0.0000000000000000e+00 v  ~  1.3536287583894784e-02  [ 1.354e-02]
+
+
+A_ = jac_hand[start:end]
 # B_ = jac_hand[startB:endB]
 
 constr = constr_wrapper_ipopt(x0, *args)
@@ -370,42 +411,42 @@ jac_equivalent = jac  # [list(grad_comp)]
 
 # Comparison of REAC_BOUNDS
 
-# print('Jac Rx/Ry dz')
-# A2 = A[:, len(ind):]
-# A2_ = A_[:, len(ind):]
-# error = 0.0
-# for i in range(A2.shape[0]):
-#     max_ = max(A2[i])
-#     min_ = min(A2[i])
-#     max__ = max(A2_[i])
-#     min__ = min(A2_[i])
-#     norm_i = norm(A2[i] - A2_[i])
-#     error += norm_i
-#     # print('diff here:', norm_i)
-#     # print('max/min jac:', float(max_), float(min_), 'max/min jac_hand:', max__, min__)
-# print('Error Jac Rx/Ry dz is:', error)
-# # plt.matshow(hstack([A2, A2_]))
-# # plt.colorbar()
-# # plt.show()
-# print(z[fixed])
+print('Jac Rx/Ry dz')
+A2 = A[:, len(ind):]
+A2_ = A_[:, len(ind):]
+error = 0.0
+for i in range(A2.shape[0]):
+    max_ = max(A2[i])
+    min_ = min(A2[i])
+    max__ = max(A2_[i])
+    min__ = min(A2_[i])
+    norm_i = norm(A2[i] - A2_[i])
+    error += norm_i
+    # print('diff here:', norm_i)
+    # print('max/min jac:', float(max_), float(min_), 'max/min jac_hand:', max__, min__)
+print('Error Jac Rx/Ry dz is:', error)
+plt.matshow(hstack([A2, A2_]))
+plt.colorbar()
+plt.show()
+print(z[fixed])
 
-# print('Jac Rx/Ry dq')
-# A1 = A[:, :len(ind)]
-# A1_ = A_[:, :len(ind)]
-# for i in range(A1.shape[0]):
-#     max_ = max(A1[i])
-#     min_ = min(A1[i])
-#     max__ = max(A1_[i])
-#     min__ = min(A1_[i])
-#     norm_i = norm(A1[i] - A1_[i])
-#     error += norm_i
-#     # print('diff here:', norm_i)
-#     print('ratio', float(max__/max_), float(min__/min_))
-#     # print('max/min jac:', float(max_), float(min_), 'max/min jac_hand:', max__, min__)
-# print('Error Jac Rx/Ry dz is:', error)
-# plt.matshow(hstack([A1, A1_]))
-# plt.colorbar()
-# plt.show()
+print('Jac Rx/Ry dq')
+A1 = A[:, :len(ind)]
+A1_ = A_[:, :len(ind)]
+for i in range(A1.shape[0]):
+    max_ = max(A1[i])
+    min_ = min(A1[i])
+    max__ = max(A1_[i])
+    min__ = min(A1_[i])
+    norm_i = norm(A1[i] - A1_[i])
+    error += norm_i
+    # print('diff here:', norm_i)
+    print('ratio', float(max__/max_), float(min__/min_))
+    # print('max/min jac:', float(max_), float(min_), 'max/min jac_hand:', max__, min__)
+print('Error Jac Rx/Ry dz is:', error)
+plt.matshow(hstack([A1, A1_]))
+plt.colorbar()
+plt.show()
 
 # plt.matshow(A_)
 # plt.colorbar()
@@ -468,7 +509,8 @@ for matrix in [A]:
         plotter = MeshPlotter(form, figsize=(10, 10))
         plotter.draw_edges()
         plotter.draw_edges(keys=[i_uv[ind[j]]], color='FF0000', width=4)
-        plotter.draw_vertices(text={key: '{0:.1f}'.format((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})}, facecolor={key: i_to_red((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})})
+        plotter.draw_vertices(text={key: '{0:.1f}'.format((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})},
+                              facecolor={key: i_to_red((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})})
         plotter.show()
 error = 0.0
 for i in range(A.shape[0]):
@@ -487,8 +529,8 @@ plt.show()
 # print(lb_ind)
 # print(free)
 
-A = jac_equivalent[len(dep):(len(dep)+len(lb_ind)), len(ind):]
-B = jac_hand[len(dep):(len(dep)+len(lb_ind)), len(ind):]
+A = jac_equivalent
+B = jac_hand
 print('Shape of A, B', A.shape, B.shape, form.number_of_vertices())
 for matrix in [A, B]:
     for j in range(matrix.shape[1]):
@@ -498,7 +540,8 @@ for matrix in [A, B]:
             jac_dict[k_i[free[i]]] = round(float(aij), 2)
         plotter = MeshPlotter(form, figsize=(10, 10))
         plotter.draw_edges()
-        plotter.draw_vertices(text={key: str(jac_dict[key]) for key in form.vertices_where({'is_fixed': False})}, facecolor={key: i_to_red(abs(jac_dict[key])) for key in form.vertices_where({'is_fixed': False})})
+        plotter.draw_vertices(text={key: str(jac_dict[key]) for key in form.vertices_where({'is_fixed': False})}, facecolor={
+                              key: i_to_red(abs(jac_dict[key])) for key in form.vertices_where({'is_fixed': False})})
         plotter.show()
 error = 0.0
 for i in range(A.shape[0]):
