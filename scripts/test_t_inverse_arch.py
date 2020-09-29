@@ -5,6 +5,9 @@ from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form_xz
 from compas_tno.analysis.analysis import Analysis
+from compas_tno.plotters import diagram_of_thrust
+from compas_tno.plotters import save_csv
+from compas_tno.plotters import save_csv_row
 
 # ----------------------------------------------------------------------
 # -----------EXAMPLE OF MIN and MAX THRUST FOR ARCH --------------------
@@ -34,9 +37,9 @@ data_shape = {
     'x0': 0.0
 }
 
-arch = Shape.from_library(data_shape)
-area = arch.middle.area()
-swt = arch.compute_selfweight()
+vault = Shape.from_library(data_shape)
+area = vault.middle.area()
+swt = vault.compute_selfweight()
 print('Arch created!')
 print('Self-weight is:', swt)
 print('Area is:', area)
@@ -64,45 +67,64 @@ optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
+optimiser.data['variables'] = ['ind', 'zb', 't']
+optimiser.data['objective'] = 't'
+optimiser.data['printout'] = False
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
+optimiser.data['qmax'] = 5000.0
 optimiser.data['gradient'] = gradients
 optimiser.data['jacobian'] = gradients
-optimiser.data['derivative_test'] = True
+optimiser.data['thk'] = thk
 print(optimiser.data)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
 
-analysis = Analysis.from_elements(arch, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()
-analysis.run()
+# analysis = Analysis.from_elements(vault, form, optimiser)
+# analysis.apply_selfweight()
+# analysis.apply_envelope()
+# analysis.apply_reaction_bounds()
+# analysis.set_up_optimiser()
+# analysis.run()
+
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+os.makedirs(folder, exist_ok=True)
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+# if sag:
+#     title = title + 'sag_' + str(sag)
+# if smooth:
+#     title = title + 'smooth_'
+forms_address = os.path.join(folder, title)
+
+thk_max = 0.30
+
+analysis = Analysis.from_elements(vault, form, optimiser)
+results = analysis.thk_minmax_GSF(thk_max, save_forms=forms_address, plot=False)
+thicknesses, solutions = results
+
+# ----------------------- Save output data --------------------------
+
+csv_file = os.path.join(folder, title + '_data.csv')
+save_csv_row(thicknesses, solutions, path=csv_file, title=title)
+
+img_graph = os.path.join(folder, title + '_diagram.pdf')
+diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True)
+
+
+
+
 form = analysis.form
-# file_address = compas_tno.get('test.json')
-# form.to_json(file_address)
+file_address = compas_tno.get('test.json')
+form.to_json(file_address)
 optimiser = analysis.optimiser
 fopt = optimiser.fopt
 save_photo = False
 blocks_on_plot = False
-plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
 
-# --------------------- 4.1 Modify Minimisation for maximum thrust ---------------------
+thk_min = form.attributes['thk']
+print(thk_min)
+data_shape['thk'] = thk_min
+arch = Shape.from_library(data_shape)
+form.envelope_from_shape(arch)
 
-optimiser.data['objective'] = 'max'
-
-# ------------------------- 4.2 Run optimisation with scipy ---------------------------
-
-analysis.set_up_optimiser()
-analysis.run()
-form = analysis.form
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
-save_photo = False
-plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
-
+plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_cracks=False, hide_negative=True).show()

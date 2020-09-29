@@ -36,6 +36,7 @@ __email__ = 'mricardo@ethz.ch'
 __all__ = [
     'zlq_from_qid',
     'zlq_from_q',
+    'zq_from_qid',
     'q_from_qid',
     'z_update',
     'z_from_form',
@@ -123,6 +124,34 @@ def zlq_from_qid(qid, args):
     return z, l2, q, q_
 
 
+def zq_from_qid(qid, args):
+    """ Calculate z's from independent edges.
+
+    Parameters
+    ----------
+    qid : list
+        Force densities of the independent edges.
+    args : tuple
+        Arrays and matrices relevant to the operation.
+
+
+    Returns
+    -------
+    z : array
+        Heights of the nodes
+    q : array
+        Force densities
+
+    """
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed = args[:20]
+    q[ind] = array(qid).reshape(-1, 1)
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
+    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
+
+    return z, q
+
+
 def q_from_qid(qid, args):
     """ Calculate q's from all qid's.
 
@@ -141,13 +170,9 @@ def q_from_qid(qid, args):
 
     """
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
-
-    q, ind, dep, E, Edinv, Ei = args[:6]
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p = args[:14]
     q[ind] = array(qid).reshape(-1, 1)
     q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    q_ = 1 * q
-    q[sym] *= 0
 
     return q
 

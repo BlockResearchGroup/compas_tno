@@ -64,15 +64,15 @@ optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
+optimiser.data['variables'] = ['ind', 'zb', 't']
+optimiser.data['objective'] = 't'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
+optimiser.data['qmax'] = 5000.0
 optimiser.data['gradient'] = gradients
 optimiser.data['jacobian'] = gradients
-optimiser.data['derivative_test'] = True
+optimiser.data['thk'] = thk
 print(optimiser.data)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
@@ -84,25 +84,17 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 form = analysis.form
-# file_address = compas_tno.get('test.json')
-# form.to_json(file_address)
+file_address = compas_tno.get('test.json')
+form.to_json(file_address)
 optimiser = analysis.optimiser
 fopt = optimiser.fopt
 save_photo = False
 blocks_on_plot = False
-plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
 
-# --------------------- 4.1 Modify Minimisation for maximum thrust ---------------------
+thk_min = form.attributes['thk']
+print(thk_min)
+data_shape['thk'] = thk_min
+arch = Shape.from_library(data_shape)
+form.envelope_from_shape(arch)
 
-optimiser.data['objective'] = 'max'
-
-# ------------------------- 4.2 Run optimisation with scipy ---------------------------
-
-analysis.set_up_optimiser()
-analysis.run()
-form = analysis.form
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
-save_photo = False
-plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
-
+plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_cracks=False, hide_negative=True).show()

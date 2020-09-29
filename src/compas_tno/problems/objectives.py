@@ -5,6 +5,7 @@ from numpy import hstack
 from numpy import array
 
 from compas_tno.algorithms.equilibrium import zlq_from_qid
+from compas_tno.algorithms.equilibrium import zq_from_qid
 from compas.numerical import normrow
 
 from scipy.sparse import diags
@@ -50,9 +51,9 @@ def f_min_thrust(xopt, *args):
     if len(xopt) > k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
         args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i
-        z, l2, q, _ = zlq_from_qid(qid, args)
+        z, q = zq_from_qid(qid, args)
     else:
-        z, l2, q, _ = zlq_from_qid(xopt, args)
+        z, q = zq_from_qid(qid, args)
 
     CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
     xy = hstack([x, y])
@@ -82,9 +83,9 @@ def f_target(xopt, *args):
     if len(xopt) > k:
         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
         args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i
-        z, l2, q, _ = zlq_from_qid(qid, args)
+        z, q = zq_from_qid(qid, args)
     else:
-        z, l2, q, _ = zlq_from_qid(xopt, args)
+        z, q = zq_from_qid(qid, args)
 
     f = sum((z - s)**2)
 
@@ -96,6 +97,16 @@ def f_constant(xopt, *args):
     f = 1.0
 
     return f
+
+
+def f_reduce_thk(xopt, *args):
+
+    variables = args[-1]
+
+    if 't' not in variables:
+        raise Exception
+    else:
+        return xopt[-1]
 
 
 def f_min_thrust_pytorch(xopt, *args):

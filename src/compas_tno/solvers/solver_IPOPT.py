@@ -185,7 +185,6 @@ def run_optimisation_ipopt(analysis):
         variables = tensor(x0, requires_grad=True)
         g0 = f_constraints_pytorch(variables, *args_constr)
         jac = compute_jacobian(variables, g0)
-        print(jac[596, 44])
         variables = tensor(x0, requires_grad=True)
         f = f_objective_pytorch(variables, *args_obj)
         grad = compute_grad(variables, f)
@@ -218,8 +217,6 @@ def run_optimisation_ipopt(analysis):
         if printout:
             g0 = constr_wrapper_ipopt(x0, *args)
             jac = sensitivities_wrapper(x0, *args)
-            print('last jac')
-            print(jac[596,44])
             f = fobj(x0, *args)
             grad = fgrad(x0, *args)
             print('x0 shape', x0.shape, 'ind:', len(ind), 'fixed:', len(fixed))
@@ -249,7 +246,7 @@ def run_optimisation_ipopt(analysis):
     nlp = _nlp_options(nlp, optimiser)
 
     # print(x0)
-    print(g0)
+    # print(g0)
 
     # Solve
     xopt, info = nlp.solve(x0)

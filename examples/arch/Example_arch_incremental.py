@@ -17,7 +17,7 @@ import os
 
 
 exitflag = 0  # means that optimisation found a solution
-thk = 0.15  # thickness on the start in meters
+thk = 0.20  # thickness on the start in meters
 thk_reduction = 0.010  # in meters
 solutions_min = []  # empty lists to keep track of  the solutions
 solutions_max = []  # empty lists to keep track of  the solutions

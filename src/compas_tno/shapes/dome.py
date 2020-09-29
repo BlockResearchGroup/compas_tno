@@ -11,6 +11,9 @@ from compas.datastructures import Mesh
 from scipy import interpolate
 from scipy import hstack
 
+from numpy import ones
+from numpy import zeros
+
 
 def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20]):
 
@@ -261,3 +264,73 @@ def geom_dome(p0, ro, theta, phi):
     z = ro * cos(theta)
     point = [p0[0] + x, p0[1] + y, p0[2] + z]
     return point
+
+
+def dome_ub_lb_update(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
+
+    xc = center[0]
+    yc = center[1]
+    ri = radius - thk/2
+    re = radius + thk/2
+    ub = ones((len(x), 1))
+    lb = ones((len(x), 1)) * -t
+
+    for i in range(len(x)):
+        zi2 = ri**2 - (x[i] - xc)**2 - (y[i] - yc)**2
+        ze2 = re**2 - (x[i] - xc)**2 - (y[i] - yc)**2
+        ub[i] = math.sqrt(ze2)
+        if zi2 > 0.0:
+            lb[i] = math.sqrt(zi2)
+
+    return ub, lb
+
+
+def dome_dub_dlb(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
+
+    xc = center[0]
+    yc = center[1]
+    ri = radius - thk/2
+    re = radius + thk/2
+    dub = zeros((len(x), 1))
+    dlb = zeros((len(x), 1))
+
+    for i in range(len(x)):
+        zi2 = ri**2 - (x[i] - xc)**2 - (y[i] - yc)**2
+        ze2 = re**2 - (x[i] - xc)**2 - (y[i] - yc)**2
+        ze = math.sqrt(ze2)
+        dub[i] = 1/2 * re/ze
+        if zi2 > 0.0:
+            zi = math.sqrt(zi2)
+            dlb[i] = -1/2 * ri/zi
+
+    return dub, dlb
+
+
+def dome_b_update(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
+
+    [xc, yc] = center[:2]
+    b = zeros((len(fixed), 2))
+
+    for i in range(len(fixed)):
+        i_ = fixed[i]
+        theta = math.atan2((y[i_] - yc), (x[i_] - xc))
+        x_ = abs(thk/2 * math.cos(theta))
+        y_ = abs(thk/2 * math.sin(theta))
+        b[i, :] = [x_, y_]
+
+    return b
+
+
+def dome_db(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
+
+    [xc, yc] = center[:2]
+    db = zeros((len(fixed), 2))
+
+    for i in range(len(fixed)):
+        i_ = fixed[i]
+        theta = math.atan2((y[i_] - yc), (x[i_] - xc))
+        x_ = abs(1/2 * math.cos(theta))
+        y_ = abs(1/2 * math.sin(theta))
+        db[i, :] = [x_, y_]
+
+    return db

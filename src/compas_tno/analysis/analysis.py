@@ -341,7 +341,7 @@ class Analysis(object):
 
         return
 
-    def apply_reaction_bounds(self):  # Make one infividual...
+    def apply_reaction_bounds(self):  # TODO: Move this to an appropriate place
         """Apply limit thk to be respected by the anchor points"""
 
         form = self.form
@@ -497,7 +497,6 @@ class Analysis(object):
                 print('THK  |   Solved  |   Opt.Val |   Opt/W   |   THK red.  |   Setup time  |   Run time')
 
                 while exitflag == 0 and thk > 0:
-                    exitflag = 0
                     # if self.optimiser.data['objective'] == 'max':
                     #     if count < len(thicknesses_min):
                     #         thk = thicknesses_min[count]
@@ -599,6 +598,158 @@ class Analysis(object):
             print(solutions_max)
 
         return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
+
+
+    def thk_minmax_GSF(self, thk_max, thk_step=0.05, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
+
+        solutions_min = []  # empty lists to keep track of the solutions for min thrust
+        solutions_max = []  # empty lists to keep track of the solutions for max thrust
+        thicknesses_min = []
+        thicknesses_max = []
+        objectives = ['min', 'max']
+        ro = self.shape.ro
+        data_shape = self.shape.data
+
+        # Find extreme (min thickness) solution:
+
+        print('\n----- Starting the min thk optimisation for starting thk: {0:.4f}'.format(self.shape.data['thk']))
+
+        time0 = time.time()
+        self.optimiser.data['variables'] = ['ind', 'zb', 't']
+        self.optimiser.data['objective'] = 't'
+        self.apply_selfweight()
+        self.apply_envelope()
+        self.apply_reaction_bounds()
+        self.set_up_optimiser()
+        setup_time = time.time() - time0
+        self.run()
+        run_time = time.time() - time0 - setup_time
+
+        exitflag = self.optimiser.exitflag
+
+        if exitflag == 0:
+            thk_min = self.form.attributes['thk']
+            T = self.form.thrust()
+            swt = self.shape.compute_selfweight()
+            T_over_swt = T/swt
+            thk_increase = 5.0*math.ceil(thk_min*100/5.0)/100 - thk_min
+            print('Min THK  |   Solved  |   Thrust |   T/W   |  THK incr. |  Setup time  |   Run time')
+            print('{0:.4f}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk_min, T, T_over_swt, thk_increase, setup_time, run_time))
+
+            if plot:
+                plot_form(self.form, show_q=False, cracks=True).show()
+
+            # STORE
+            form0 = self.form.copy()
+            solutions_min.append(T_over_swt)
+            solutions_max.append(T_over_swt)
+            thicknesses_min.append(thk_min)
+            thicknesses_max.append(thk_max)
+
+            # SAVE
+            if save_forms:
+                address_min = save_forms + '_' + 'min' + '_thk_' + str(100*thk_min) + '.json'
+                address_max = save_forms + '_' + 'max' + '_thk_' + str(100*thk_min) + '.json'
+                self.form.to_json(address_min)
+                self.form.to_json(address_max)
+            else:
+                address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
+                self.form.to_json(address)
+
+            thk = thk_min + thk_increase
+            thk_increase = thk_step
+            thk0 = thk
+
+            if thk_min == self.shape.data['thk']:
+                print('Warning: Minimum THK Optimisation found optimum at start. Try rescalling the problem.')
+                return
+        else:
+            print('Error: Minimum THK Optimisation did not find a solution: Try scalling the optimisation, or starting in a different thickness value')
+            return
+
+        # Start inverse loop for min/max:
+
+        self.optimiser.data['variables'] = ['ind', 'zb']
+        for self.optimiser.data['objective'] in objectives:
+
+            self.form = form0
+            exitflag = 0
+            thk = thk0
+            count = 0
+
+            print('\n----- Starting the inverse [', self.optimiser.data['objective'], '] problem for minimum thk:', thk)
+            print('THK  |   Solved  |   Opt.Val |   Opt/W   |   THK incr.  |   Setup time  |   Run time')
+
+            while exitflag == 0 and thk <= thk_max:
+
+                data_shape['thk'] = thk
+
+                time0 = time.time()
+                self.shape = Shape.from_library(data_shape)
+                self.shape.ro = ro
+                swt = self.shape.compute_selfweight()
+                lumped_swt = self.form.lumped_swt()
+                if fill_percentage:
+                    self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
+                    swt += self.shape.compute_fill_weight()
+                if rollers_ratio:
+                    self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
+                elif rollers_absolute:
+                    self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
+                self.apply_selfweight()
+                self.form.scale_form(swt/lumped_swt)
+                self.apply_envelope()
+                self.apply_reaction_bounds()
+                if fill_percentage:
+                    self.apply_fill_load()
+                self.set_up_optimiser()
+                setup_time = time.time() - time0
+                self.run()
+                run_time = time.time() - time0 - setup_time
+                if plot:
+                    plot_form(self.form, show_q=False, cracks=True).show()
+                exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
+                fopt = self.optimiser.fopt  # objective function optimum value
+                fopt_over_weight = fopt/swt  # divide by selfweight
+
+                if exitflag == 0:
+                    if self.optimiser.data['objective'] == 'min':
+                        solutions_min.append(fopt_over_weight)
+                        thicknesses_min.append(thk)
+                        last_min = fopt_over_weight
+                        last_thk_min = thk
+                    else:
+                        solutions_max.append(fopt_over_weight)
+                        thicknesses_max.append(thk)
+                        last_max = abs(fopt_over_weight)
+                        last_thk_max = thk
+                    if save_forms:
+                        address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+                    else:
+                        address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
+                    self.form.to_json(address)
+                    print('{0}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk, fopt, fopt_over_weight, thk_increase, setup_time, run_time))
+                    thk = thk + thk_increase
+                else:
+                    # here put some conditions to try to make it work ....
+
+                    print('---------- End of process -----------', '\n')
+                count += 1
+
+        if printout:
+            print('------------------ SUMMARY ------------------ ')
+            print('ANALYSIS FOUND MIN THK:', thk_min)
+            print('thicknesses min ({0}):'.format(len(thicknesses_min)))
+            print(thicknesses_min)
+            print('thicknesses max ({0}):'.format(len(thicknesses_max)))
+            print(thicknesses_max)
+            print('min solutions ({0}):'.format(len(solutions_min)))
+            print(solutions_min)
+            print('max solutions ({0}):'.format(len(solutions_max)))
+            print(solutions_max)
+
+        return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
+
 
     def limit_analysis_load_mult(self, load0, load_increase, load_direction, percentual=True):
         """"" W.I.P. """""

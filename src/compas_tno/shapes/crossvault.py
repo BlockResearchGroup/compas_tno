@@ -2,6 +2,8 @@ from numpy import arange
 import math
 from compas.datastructures import Mesh
 from numpy import array
+from numpy import ones
+from numpy import zeros
 
 
 def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100]):
@@ -326,3 +328,118 @@ def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
     intrados = Mesh.from_vertices_and_faces(xyz, faces_i)
 
     return intrados
+
+
+def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    y1_ub = y1 + thk/2
+    y0_ub = y0 - thk/2
+    x1_ub = x1 + thk/2
+    x0_ub = x0 - thk/2
+
+    y1_lb = y1 - thk/2
+    y0_lb = y0 + thk/2
+    x1_lb = x1 - thk/2
+    x0_lb = x0 + thk/2
+
+    rx_ub = (x1_ub - x0_ub)/2
+    ry_ub = (y1_ub - y0_ub)/2
+    rx_lb = (x1_lb - x0_lb)/2
+    ry_lb = (y1_lb - y0_lb)/2
+
+    ub = ones((len(x), 1))
+    lb = ones((len(x), 1)) * - t
+
+    for i in range(len(x)):
+        xi, yi = x[i], y[i]
+        intrados_null = False
+        if (yi > y1_lb and (xi > x1_lb or xi < x0_lb)) or (yi < y0_lb and (xi > x1_lb or xi < x0_lb)):
+            intrados_null = True
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
+            ub[i] = math.sqrt((ry_ub)**2 - ((yi - y0_ub) - ry_ub)**2)
+            if not intrados_null:
+                lb[i] = math.sqrt((ry_lb)**2 - ((yi - y0_lb) - ry_lb)**2)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
+            ub[i] = math.sqrt((rx_ub)**2 - ((xi - x0_ub) - rx_ub)**2)
+            if not intrados_null:
+                lb[i] = math.sqrt((rx_lb)**2 - ((xi - x0_lb) - rx_lb)**2)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
+            ub[i] = math.sqrt((ry_ub)**2 - ((yi - y0_ub) - ry_ub)**2)
+            if not intrados_null:
+                lb[i] = math.sqrt((ry_lb)**2 - ((yi - y0_lb) - ry_lb)**2)
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
+            ub[i] = math.sqrt((rx_ub)**2 - ((xi - x0_ub) - rx_ub)**2)
+            if not intrados_null:
+                lb[i] = math.sqrt((rx_lb)**2 - ((xi - x0_lb) - rx_lb)**2)
+        else:
+            print('Error Q. (x,y) = ({0},{1})'.format(xi, yi))
+
+    return ub, lb
+
+
+def crossvault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    y1_ub = y1 + thk/2
+    y0_ub = y0 - thk/2
+    x1_ub = x1 + thk/2
+    x0_ub = x0 - thk/2
+
+    y1_lb = y1 - thk/2
+    y0_lb = y0 + thk/2
+    x1_lb = x1 - thk/2
+    x0_lb = x0 + thk/2
+
+    rx_ub = (x1_ub - x0_ub)/2
+    ry_ub = (y1_ub - y0_ub)/2
+    rx_lb = (x1_lb - x0_lb)/2
+    ry_lb = (y1_lb - y0_lb)/2
+
+    ub = ones((len(x), 1))
+    lb = ones((len(x), 1)) * - t
+    dub = zeros((len(x), 1))
+    dlb = zeros((len(x), 1))
+
+    for i in range(len(x)):
+        xi, yi = x[i], y[i]
+        intrados_null = False
+        if (yi > y1_lb and (xi > x1_lb or xi < x0_lb)) or (yi < y0_lb and (xi > x1_lb or xi < x0_lb)):
+            intrados_null = True
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
+            ub[i] = math.sqrt((ry_ub)**2 - ((yi - y0_ub) - ry_ub)**2)
+            dub[i] = 1/2 * ry_ub/ub[i]
+            if not intrados_null:
+                lb[i] = math.sqrt((ry_lb)**2 - ((yi - y0_lb) - ry_lb)**2)
+                dlb[i] = - 1/2 * ry_lb/lb[i]
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
+            ub[i] = math.sqrt((rx_ub)**2 - ((xi - x0_ub) - rx_ub)**2)
+            dub[i] = 1/2 * rx_ub/ub[i]
+            if not intrados_null:
+                lb[i] = math.sqrt((rx_lb)**2 - ((xi - x0_lb) - rx_lb)**2)
+                dlb[i] = - 1/2 * rx_lb/lb[i]
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
+            ub[i] = math.sqrt((ry_ub)**2 - ((yi - y0_ub) - ry_ub)**2)
+            dub[i] = 1/2 * ry_ub/ub[i]
+            if not intrados_null:
+                lb[i] = math.sqrt((ry_lb)**2 - ((yi - y0_lb) - ry_lb)**2)
+                dlb[i] = - 1/2 * ry_lb/lb[i]
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
+            ub[i] = math.sqrt((rx_ub)**2 - ((xi - x0_ub) - rx_ub)**2)
+            dub[i] = 1/2 * rx_ub/ub[i]
+            if not intrados_null:
+                lb[i] = math.sqrt((rx_lb)**2 - ((xi - x0_lb) - rx_lb)**2)
+                dlb[i] = - 1/2 * rx_lb/lb[i]
+        else:
+            print('Error Q. (x,y) = ({0},{1})'.format(xi, yi))
+
+    return dub, dlb  # ub, lb
+

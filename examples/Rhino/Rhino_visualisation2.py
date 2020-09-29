@@ -30,10 +30,10 @@ for i in range(len(R)):
     # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/camb_h=' + str(H[i]) + '/pointed_crossvault_cross_fd_discr_10_min_thk_50.0.json'
     # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pavillionvault/cross_fd/h=' + str(H[i]) + '/pavillionvault_cross_fd_discr_10_min_thk_50.0.json'
     
-    master = 'dome_max_35?'
+    master = 'cross_t=18?'
     fnm = '/Users/mricardo/compas_dev/me/shape_comparison/dome/radial_spaced_fd/dome_radial_spaced_fd_discr_[8, 20]_min_thk_20.625.json'
     fnm = '/Users/mricardo/compas_dev/me/shape_comparison/dome_polar/radial_spaced_fd/dome_polar_radial_spaced_fd_discr_[8, 20]_min_thk_23.282.json'
-    fnm = '/Users/mricardo/compas_dev/compas_tno/data/temp/form_max.json'
+    fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
     # Parameters for the visualisation
     radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
     radius_circlus = 0.15 # Radius of the speres that mark when it touches upper bound and lower bound.

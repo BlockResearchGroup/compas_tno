@@ -47,7 +47,7 @@ def run_optimisation_scipy(analysis):
     fgrad = optimiser.fgrad
     fjac = optimiser.fjac
     args = optimiser.args
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym, variables, shape_data = args[:50]
     i_uv = form.index_uv()
     i_k = form.index_key()
     k_i = form.key_index()
@@ -69,11 +69,14 @@ def run_optimisation_scipy(analysis):
     if solver == 'slsqp' or solver == 'SLSQP':
         fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, fgrad, fjac, printout, fconstr, args)
         if exitflag == 0:
-            if 'zb' in variables:
+            if 'ind' in variables:
                 q[ind] = xopt[:k].reshape(-1, 1)
-                z[fixed] = xopt[k:].reshape(-1, 1)
             else:
-                q[ind] = xopt[:k].reshape(-1, 1)  # Code the option with only qinds WIP
+                q = xopt[:len(q)].reshape(-1, 1)
+            if 'zb' in variables:
+                z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
+            if 't' in variables:
+                thk = xopt[-1]
         else:
             if printout:
                 print(message)
@@ -133,11 +136,15 @@ def run_optimisation_scipy(analysis):
             lp += abs(qi) * li**2
     form.attributes['loadpath'] = float(lp)
 
+
     # form.attributes['iter'] = niter
     optimiser.exitflag = exitflag
     optimiser.fopt = fopt
     analysis.form = form
     reactions(form, plot=plot)
+
+    if 't' in variables:
+        form.attributes['thk'] = thk
 
     if printout or summary:
         print('\n' + '-' * 50)

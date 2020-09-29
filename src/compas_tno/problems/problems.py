@@ -77,7 +77,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     ub_ind = []
     lb = []
     ub = []
-    for key in form.vertices_where({'is_fixed': False}):
+    for key in form.vertices():
         i = k_i[key]
         lbi = form.vertex_attribute(key, 'lb')
         ubi = form.vertex_attribute(key, 'ub')
@@ -170,6 +170,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
             print('Shape Equilibrium Matrix: ', E.shape)
             print('Rank Equilibrium Matrix: ', matrix_rank(E))
             print('Found {0} independents'.format(k))
+            print('# Vertices: {0} | #UB: {1} | #LB: {2}'.format(form.number_of_vertices(), len(ub), len(lb)))
             print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
         for u, v in form.edges_where({'_is_edge': True}):

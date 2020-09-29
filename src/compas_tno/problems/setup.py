@@ -5,15 +5,22 @@ from compas_tno.problems.objectives import f_min_thrust
 from compas_tno.problems.objectives import f_max_thrust
 from compas_tno.problems.objectives import f_target
 from compas_tno.problems.objectives import f_constant
+from compas_tno.problems.objectives import f_reduce_thk
 
 from compas_tno.problems.derivatives import gradient_fmin
 from compas_tno.problems.derivatives import gradient_fmax
+from compas_tno.problems.derivatives import gradient_feasibility
+from compas_tno.problems.derivatives import gradient_reduce_thk
+
 from compas_tno.problems.derivatives import sensitivities_wrapper
+from compas_tno.problems.derivatives import sensitivities_wrapper2
 from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities
+from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities2
 
 from compas_tno.plotters import plot_sym_inds
 
 from compas_tno.problems.constraints import constr_wrapper
+from compas_tno.problems.constraints import constr_wrapper2
 
 from compas.datastructures import mesh_bounding_box_xy
 
@@ -43,22 +50,29 @@ def set_up_nonlinear_optimisation(analysis):
 
     form = analysis.form
     optimiser = analysis.optimiser
+    shape = analysis.shape
+
     indset = form.attributes['indset']
-    find_inds = optimiser.data['find_inds']
-    printout = optimiser.data['printout']
+    find_inds = optimiser.data.get('find_inds', True)
+    printout = optimiser.data.get('printout', True)
+    qmax = optimiser.data.get('qmax', 1e+6)
+    qmin = optimiser.data.get('qmin', 0.0)  # This qmin sometimes is 1e-6...
+    plot = optimiser.data.get('plot', False)
+
+    thk = optimiser.data.get('thk', shape.data['thk'])
+    min_thk = optimiser.data.get('min_thk', 0.001)
+    shape_data = analysis.shape.data
+
     objective = optimiser.data['objective']
     variables = optimiser.data['variables']
-    qmax = optimiser.data['qmax']
-    qmin = optimiser.data['qmin']
     constraints = optimiser.data['constraints']
-    plot = optimiser.data.get('plot', False)
 
     i_k = form.index_key()
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
 
-    # Set constraints
+    # Set specific constraints
 
     if 'reac_bounds' in constraints:
         b = set_b_constraint(form, printout)
@@ -86,11 +100,13 @@ def set_up_nonlinear_optimisation(analysis):
         Asym = None
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
-            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym)
+            ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin,
+            constraints,  max_rol_rx, max_rol_ry, Asym, variables, shape_data)
 
-    fconstr = constr_wrapper
-    fjac = sensitivities_wrapper_inequalities
-
+    # fconstr = constr_wrapper
+    fconstr = constr_wrapper2
+    # fjac = sensitivities_wrapper_inequalities
+    fjac = sensitivities_wrapper_inequalities2
 
     # Select Objetive and Gradient
 
@@ -108,23 +124,35 @@ def set_up_nonlinear_optimisation(analysis):
         fgrad = gradient_fmax
     if objective == 'feasibility':
         fobj = f_constant
-        fgrad = None
+        fgrad = gradient_feasibility
+    if objective == 't':
+        fobj = f_reduce_thk
+        fgrad = gradient_reduce_thk
 
     # Definition of the Variables and starting point
 
-    if 'ind' in variables and 'zb' in variables:
+    if 'ind' in variables:
         x0 = q[ind]
-        zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
-        bounds = [[-10e-6, qmax]] * k + zb_bounds
-        x0 = append(x0, z[fixed]).reshape(-1, 1)
+        bounds = [[qmin, qmax]] * k
     else:
-        x0 = q[ind]
-        bounds = [[-10e-6, qmax]] * k
+        x0 = q
+        bounds = [[qmin, qmax]] * len(q)
 
-    # TODO: Add support to "all-q"
+    if 'zb' in variables:
+        x0 = append(x0, z[fixed]).reshape(-1, 1)
+        zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
+        bounds = bounds + zb_bounds
+
+    if 't' in variables:
+        x0 = append(x0, thk).reshape(-1, 1)
+        bounds = bounds + [[min_thk, thk]]
 
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
+    if fgrad:
+        grad = fgrad(x0, *args)
+    if fjac:
+        jac = fjac(x0, *args)
 
     if printout:
         print('-'*20)
@@ -132,6 +160,10 @@ def set_up_nonlinear_optimisation(analysis):
         print('Total of Independents:', len(ind))
         print('Number of Variables:', len(x0))
         print('Number of Constraints:', len(g0))
+        if fgrad:
+            print('Shape of Gradient:', grad.shape)
+        if fjac:
+            print('Shape of Jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
 

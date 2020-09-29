@@ -1,3 +1,4 @@
+
 import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
@@ -5,6 +6,7 @@ from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrusts
+from compas_tno.viewers.thrust import view_solution
 from copy import deepcopy
 
 # ----------------------------------------------------------------------
@@ -17,7 +19,8 @@ thk = 0.5
 radius = 5.0
 type_structure = 'dome'
 type_formdiagram = 'radial_spaced_fd'
-discretisation = [10, 20]
+discretisation = [8, 20]
+gradients = True
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
@@ -27,7 +30,7 @@ data_shape = {
     'discretisation': [discretisation[0]*5, discretisation[1]*5],
     'center': [5.0, 5.0],
     'radius': radius,
-    't' : 10.0
+    't': 1.0
 }
 
 dome = Shape.from_library(data_shape)
@@ -54,7 +57,7 @@ print(form)
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
+form = form.initialise_tna(plot=True)
 # plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
@@ -63,12 +66,14 @@ optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'slsqp'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
+optimiser.data['variables'] = ['ind', 'zb', 't']
+optimiser.data['objective'] = 't'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
+optimiser.data['gradient'] = gradients
+optimiser.data['jacobian'] = gradients
 print(optimiser.data)
 
 # --------------------- 5. Set up and run analysis ---------------------
@@ -80,22 +85,12 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
-print('Print min Result')
+thk_min = form.attributes['thk']
+print(thk_min)
+data_shape['thk'] = thk_min
+dome = Shape.from_library(data_shape)
+form.envelope_from_shape(dome)
+
 plot_form(form, show_q=False, cracks=True).show()
-form_min = deepcopy(form)
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
 
-# --------------------- 6. Run it for MAX ---------------------
-
-# optimiser.data['objective'] = 'max'
-# analysis.set_up_optimiser()
-# analysis.run()
-
-# print('Print max Result')
-# plot_form(form, show_q=False, cracks=True).show()
-
-# file_address = compas_tno.get('test.json')
-# form.to_json(file_address)
-
-# view_thrusts([form, form_min]).show()
+view_solution(form, dome).show()
