@@ -69,7 +69,7 @@ while exitflag == 0:
     vault = Shape.from_library(data_shape)
     swt = vault.compute_selfweight()
     print('Selfweight computed:', swt)
-    print('Dome created!')
+    print('Vault geometry created!')
 
     # --------------------- 5. Create Minimisation Optimiser ---------------------
 

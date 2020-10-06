@@ -1,25 +1,19 @@
 """
 ********************************************************************************
-compas_tno.solvers
+compas_tno.datastructures
 ********************************************************************************
 
-.. currentmodule:: compas_tno.solvers
+.. currentmodule:: compas_tno.datastructures
 
 .. autosummary::
     :toctree: generated/
     :nosignatures:
 
-    Analysis
+    MeshDos
 
 """
 from __future__ import absolute_import
 
-from .mma_numpy import *
-from .solver_MMA import *
-from .solver_scipy import *
-from .solver_IPOPT import *
-from .solver_pyOpt import *
-from .solver_MATLAB import *
-from .post_process import *
+from .mesh import *
 
 __all__ = [name for name in dir() if not name.startswith('_')]

@@ -3,25 +3,27 @@ from torch import tensor
 
 from compas_tno.algorithms import f_constraints_pytorch
 from compas_tno.algorithms import f_objective_pytorch
-from compas_tno.algorithms import compute_grad
-from compas_tno.algorithms import compute_jacobian
+from compas_tno.algorithms import compute_autograd
+from compas_tno.algorithms import compute_autograd_jacobian
 
 from compas_tno.algorithms import reactions
 from compas_tno.algorithms import zlq_from_qid
 
 from compas.utilities import geometric_key
 
+import time
+
 from numpy import hstack
 from numpy import array
 
 from compas_tno.problems import sensitivities_wrapper
-from compas_tno.problems import constr_wrapper_ipopt
+from compas_tno.problems import constr_wrapper
 from compas_tno.problems import gradient_fmin
 from compas_tno.problems import gradient_fmax
 from compas_tno.problems import f_min_thrust
 from compas_tno.problems import f_max_thrust
 
-from numpy import vstack
+from .post_process import post_process_analysis
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -58,7 +60,7 @@ class wrapper_ipopt(object):
         #
         variables = tensor(x.reshape(-1, 1), requires_grad=True)
         f = self.fobj(variables, *self.args_obj)
-        return array(compute_grad(variables, f))
+        return array(compute_autograd(variables, f))
 
     def constraints(self, x):
         #
@@ -73,7 +75,7 @@ class wrapper_ipopt(object):
         #
         variables = tensor(x.reshape(-1, 1), requires_grad=True)
         constraints = self.fconstr(variables, *self.args_constr)
-        return array(compute_jacobian(variables, constraints)).flatten()
+        return array(compute_autograd_jacobian(variables, constraints)).flatten()
 
 
 class wrapper_ipopt_analytical(object):
@@ -85,6 +87,7 @@ class wrapper_ipopt_analytical(object):
         self.bounds = None
         self.x0 = None
         self.eps = 1e-8
+        self.fjac = None
         pass
 
     def objective(self, x):
@@ -109,7 +112,7 @@ class wrapper_ipopt_analytical(object):
         #
         # The callback for calculating the Jacobian
         #
-        return sensitivities_wrapper(x, *self.args).flatten()
+        return self.fjac(x, *self.args).flatten()
 
 
 def run_optimisation_ipopt(analysis):
@@ -127,23 +130,17 @@ def run_optimisation_ipopt(analysis):
 
     """
 
-    form = analysis.form
     optimiser = analysis.optimiser
-    fconstr = optimiser.fconstr
-    args = optimiser.args
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
-        :48]
+
     constraints = optimiser.data['constraints']
     objective = optimiser.data['objective']
-    i_uv = form.index_uv()
-    i_k = form.index_key()
-    k_i = form.key_index()
+    printout = optimiser.data.get('printout', False)
+    gradients = optimiser.data.get('gradient', False)
+
     bounds = optimiser.bounds
     x0 = optimiser.x0
     g0 = optimiser.g0
-    plot = optimiser.data['plot']
-    printout = optimiser.data['printout']
-    gradients = optimiser.data.get('gradient', False)
+    args = optimiser.args
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
@@ -151,6 +148,9 @@ def run_optimisation_ipopt(analysis):
     # Tensor modification
 
     if not gradients:
+
+        q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
+        :48]
 
         EdinvEi = Edinv*Ei
         Edinv_p = Edinv.dot(p)
@@ -179,51 +179,25 @@ def run_optimisation_ipopt(analysis):
         problem_obj.args_constr = args_constr
         problem_obj.bounds = bounds
         problem_obj.x0 = x0
-        problem_obj.args = args  # Only for comparison
+        problem_obj.args = args
         problem_obj.fgrad = gradient_fmin
 
         variables = tensor(x0, requires_grad=True)
         g0 = f_constraints_pytorch(variables, *args_constr)
-        jac = compute_jacobian(variables, g0)
-        variables = tensor(x0, requires_grad=True)
-        f = f_objective_pytorch(variables, *args_obj)
-        grad = compute_grad(variables, f)
 
-        if printout:
-            print('variables tensor shape', variables.shape)
-            print('g0 shape', g0.shape)
-            print('jacobian shape', jac.shape)
-            print('jacobian shape', array(jac).shape)
-            print('f0: ', f)
-            print('shape gradient', grad.shape)
     else:
-        if objective == 'min':
-            fobj = f_min_thrust
-            fgrad = gradient_fmin
-        elif objective == 'max':
-            fobj = f_max_thrust
-            fgrad = gradient_fmax
-        else:
-            raise NotImplementedError
 
         problem_obj = wrapper_ipopt_analytical()
-        problem_obj.fobj = fobj
-        problem_obj.fconstr = constr_wrapper_ipopt
-        problem_obj.args = args
-        problem_obj.fgrad = fgrad
+        problem_obj.fobj = optimiser.fobj
+        problem_obj.fconstr = optimiser.fconstr
+        problem_obj.fjac = optimiser.fjac
+        problem_obj.args = optimiser.args
+        problem_obj.fgrad = optimiser.fgrad
         problem_obj.bounds = bounds
         problem_obj.x0 = x0
 
         if printout:
-            g0 = constr_wrapper_ipopt(x0, *args)
-            jac = sensitivities_wrapper(x0, *args)
-            f = fobj(x0, *args)
-            grad = fgrad(x0, *args)
-            print('x0 shape', x0.shape, 'ind:', len(ind), 'fixed:', len(fixed))
-            print('g0 shape', g0.shape, 'dep:', len(dep), '2*zi:', len(free), 'fixed:', len(fixed))
-            print('jacobian shape', jac.shape)
-            print('f0: ', f)
-            print('shape gradient', grad.shape)
+            g0 = optimiser.fconstr(x0, *args)
 
     cu = [10e10]*len(g0)
     cl = [0.0]*len(g0)
@@ -242,63 +216,76 @@ def run_optimisation_ipopt(analysis):
         cu=cu
     )
 
-    # Set Options
+    # Set Options and Time
     nlp = _nlp_options(nlp, optimiser)
-
-    # print(x0)
-    # print(g0)
+    start_time = time.time()
 
     # Solve
     xopt, info = nlp.solve(x0)
     fopt = info['obj_val']
     exitflag = info['status']
-    if exitflag == 1:
+    if exitflag == 1:  # IPOPT consider solved = 1. TNO solved = 0
         exitflag = 0
+    elif exitflag == 0:
+        exitflag = 1
     if printout:
         print(info['status_msg'])
 
-    g_final = fconstr(xopt, *args)
-    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
-    z, _, q, q_ = zlq_from_qid(q[ind], args)
+    elapsed_time = time.time() - start_time
+    if printout:
+        print('Solving Time: {0:.1f} sec'.format(elapsed_time))
 
-    gkeys = []
-    for i in ind:
-        u, v = i_uv[i]
-        gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-    form.attributes['indset'] = gkeys
-
-    for i in range(form.number_of_vertices()):
-        key = i_k[i]
-        form.vertex_attribute(key=key, name='z', value=float(z[i]))
-
-    for c, qi in enumerate(list(q_.ravel())):
-        u, v = i_uv[c]
-        form.edge_attribute((u, v), 'q', float(qi))
-
-    lp = 0
-    for u, v in form.edges_where({'_is_edge': True}):
-        if form.edge_attribute((u, v), 'is_symmetry') is False:
-            qi = form.edge_attribute((u, v), 'q')
-            li = form.edge_length(u, v)
-            lp += abs(qi) * li**2
-    form.attributes['loadpath'] = float(lp)
-
-    # form.attributes['iter'] = niter
     optimiser.exitflag = exitflag
+    optimiser.time = elapsed_time
     optimiser.fopt = fopt
-    analysis.form = form
-    reactions(form, plot=plot)
+    optimiser.xopt = xopt
+    optimiser.niter = None  # Did not find a way to display number of iteratinos
+    optimiser.message = info['status_msg']
 
-    summary = optimiser.data.get('summary', False)
+    post_process_analysis(analysis)
 
-    if summary:
-        print('\n' + '-' * 50)
-        print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-        print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-        print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-        print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
-        print('fopt      : {0:.3f}'.format(fopt))
-        print('-' * 50 + '\n')
+    # g_final = fconstr(xopt, *args)
+    # args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
+    # z, _, q, q_ = zlq_from_qid(q[ind], args)
+
+    # gkeys = []
+    # for i in ind:
+    #     u, v = i_uv[i]
+    #     gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
+    # form.attributes['indset'] = gkeys
+
+    # for i in range(form.number_of_vertices()):
+    #     key = i_k[i]
+    #     form.vertex_attribute(key=key, name='z', value=float(z[i]))
+
+    # for c, qi in enumerate(list(q_.ravel())):
+    #     u, v = i_uv[c]
+    #     form.edge_attribute((u, v), 'q', float(qi))
+
+    # lp = 0
+    # for u, v in form.edges_where({'_is_edge': True}):
+    #     if form.edge_attribute((u, v), 'is_symmetry') is False:
+    #         qi = form.edge_attribute((u, v), 'q')
+    #         li = form.edge_length(u, v)
+    #         lp += abs(qi) * li**2
+    # form.attributes['loadpath'] = float(lp)
+
+    # # form.attributes['iter'] = niter
+    # optimiser.exitflag = exitflag
+    # optimiser.fopt = fopt
+    # analysis.form = form
+    # reactions(form, plot=plot)
+
+    # summary = optimiser.data.get('summary', False)
+
+    # if summary:
+    #     print('\n' + '-' * 50)
+    #     print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
+    #     print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
+    #     print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+    #     print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
+    #     print('fopt      : {0:.3f}'.format(fopt))
+    #     print('-' * 50 + '\n')
 
     return analysis
 

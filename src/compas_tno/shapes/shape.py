@@ -16,6 +16,8 @@ from compas.geometry import subtract_vectors
 from compas.geometry import length_vector
 from compas.geometry import cross_vectors
 
+from compas_tno.datastructures import MeshDos
+
 from numpy import array
 
 from scipy import interpolate
@@ -171,13 +173,21 @@ class Shape(object):
         return shape
 
     @classmethod
-    def from_meshes(cls, intrados, extrados, middle, data=None):
+    def from_meshes(cls, intrados, extrados, middle=None, data=None):
 
         shape = cls()
 
-        shape.intrados = intrados
-        shape.extrados = extrados
-        shape.middle = middle
+        shape.intrados = MeshDos.from_mesh(intrados)
+        shape.extrados = MeshDos.from_mesh(extrados)
+        if middle:
+            shape.middle = MeshDos.from_mesh(middle)
+        else:
+            shape.interpolate_middle_from_ub_lb()
+            shape.middle = MeshDos.from_mesh(shape.intrados.copy())
+            for key in shape.intrados.vertices():
+                ub = shape.extrados.vertex_attribute(key, 'z')
+                lb = shape.intrados.vertex_attribute(key, 'z')
+                shape.middle.vertex_attribute(key, 'z', (ub + lb)/2)
 
         if data:
             shape.data = data
@@ -205,6 +215,22 @@ class Shape(object):
 
         return
 
+    def interpolate_middle_from_ub_lb(self, intrados=None, extrados=None):
+
+        if not intrados:
+            intrados = self.intrados
+
+        if not extrados:
+            extrados = self.extrados
+
+        self.middle = MeshDos.from_mesh(self.intrados.copy())
+
+        for key in self.intrados.vertices():
+            ub = self.extrados.vertex_attribute(key, 'z')
+            lb = self.intrados.vertex_attribute(key, 'z')
+            self.middle.vertex_attribute(key, 'z', (ub + lb)/2)
+
+        return
 
     def get_ub(self, x, y):
         """Get the height of the extrados in the point.
@@ -364,10 +390,19 @@ class Shape(object):
         """
 
         middle = self.middle
-        thk = self.data['thk']
-        area = middle.area()
         ro = self.ro
-        total_selfweight = thk * area * ro
+        try:
+            thk = self.data['thk']
+            area = middle.area()
+            total_selfweight = thk * area * ro
+        except:
+            intrados = self.intrados
+            extrados = self.extrados
+            total_selfweight = 0
+            for key in intrados.vertices():
+                h = extrados.vertex_attribute(key, 'z') - intrados.vertex_attribute(key, 'z')
+                vol = h * middle.vertex_projected_area(key)
+                total_selfweight += vol * ro
 
         return total_selfweight
 
@@ -436,6 +471,21 @@ class Shape(object):
         self.fill_volume = volume
         print('Proj area total of shape', proj_area_total)
         self.fill_ro = fill_ro
+
+        return
+
+    def update_dos_from_form(self, form):
+
+        vertices, faces = form.to_vertices_and_faces()
+        intra = MeshDos.from_vertices_and_faces(vertices, faces)
+        extra = MeshDos.from_vertices_and_faces(vertices, faces)
+
+        for key in form.vertices():
+            intra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'lb'))
+            extra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'ub'))
+
+        self.intrados = intra
+        self.extrados = extra
 
         return
 

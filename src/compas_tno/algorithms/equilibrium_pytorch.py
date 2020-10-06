@@ -29,8 +29,8 @@ __all__ = [
     'f_constraints_pytorch_MMA',
     'bounds_constraints_pytorch',
     'f_objective_pytorch',
-    'compute_grad',
-    'compute_jacobian'
+    'compute_autograd',
+    'compute_autograd_jacobian'
 ]
 
 def q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep):
@@ -120,12 +120,6 @@ def f_constraints_pytorch(variables, *args):
         length = reac_bound_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, pfixed, xyz)
         reac_bound = abs(cat([tensor(b[:, 0]), tensor(b[:, 1])]).reshape(-1, 1)) - length
         constraints = cat([constraints, reac_bound])
-    # ONLY FOR DEBUG:
-    if 'R' in dict_constr:
-        Q = diagflat(q)
-        CfQC = mm(mm(Cf_th.t(), Q), C_th)
-        R = mm(CfQC, xyz) - pfixed
-        constraints = cat([constraints, R[:, 0].reshape(-1, 1), R[:, 1].reshape(-1, 1), R[:, 2].reshape(-1, 1)])
     if 'cracks' in dict_constr:
         pass
     if 'rollers' in dict_constr:
@@ -200,13 +194,13 @@ def bounds_constraints_pytorch(variables, *args):
     return cu, cl
 
 
-def compute_grad(variables, f):
+def compute_autograd(variables, f):
     f.backward(retain_graph=True)
     grad = variables.grad.data
     return grad
 
 
-def compute_jacobian(inputs, outputs):
+def compute_autograd_jacobian(inputs, outputs):
     d_otp = outputs.size()[0]
     d_inp = inputs.size()[0]
     jacobian = tensor(zeros((d_otp, d_inp)))

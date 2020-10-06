@@ -11,6 +11,7 @@ compas_tno
 
     compas_tno.algorithms
     compas_tno.analysis
+    compas_tno.datastructures
     compas_tno.diagrams
     compas_tno.optimisers
     compas_tno.shapes
@@ -48,6 +49,7 @@ __all__ = ['HOME', 'DATA', 'DOCS', 'TEMP']
 # from .shapes import *
 # from .solvers import *
 # from .utilities import *
+# from .datastructures import *
 
 def get(filename):
     """Get the full path to one of the sample data files.

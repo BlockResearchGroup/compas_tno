@@ -29,7 +29,7 @@ data_shape = {
 }
 
 dome = Shape.from_library(data_shape)
-print('Dome created!')
+print('Vault geometry created!')
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 

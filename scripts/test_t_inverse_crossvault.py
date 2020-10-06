@@ -8,6 +8,10 @@ from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrusts
 from compas_tno.viewers.thrust import view_solution
 from copy import deepcopy
+import os
+from compas_tno.plotters import save_csv_row
+from compas_tno.plotters import diagram_of_thrust
+
 
 # ----------------------------------------------------------------------
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
@@ -16,26 +20,28 @@ from copy import deepcopy
 # Basic parameters
 
 thk = 0.5
-radius = 5.0
-type_structure = 'dome'
-type_formdiagram = 'radial_spaced_fd'
-discretisation = [8, 20]
-gradients = True
+span = 10.0
+k = 1.0
 n = 1
+type_structure = 'crossvault'
+type_formdiagram = 'cross_fd'
+discretisation = 10
+gradients = True
+sag = None
+smooth = None
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
 data_shape = {
     'type': type_structure,
     'thk': thk,
-    'discretisation': [discretisation[0]*n, discretisation[1]*n],
-    'center': [5.0, 5.0],
-    'radius': radius,
-    't': 1.0
+    'discretisation': discretisation*n,
+    'xy_span': [[0, span], [0, k*span]],
+    't': 0.0,
 }
 
-dome = Shape.from_library(data_shape)
-swt = dome.compute_selfweight()
+vault = Shape.from_library(data_shape)
+swt = vault.compute_selfweight()
 print('Selfweight computed:', swt)
 print('Vault geometry created!')
 
@@ -43,18 +49,15 @@ print('Vault geometry created!')
 
 data_diagram = {
     'type': type_formdiagram,
-    'center': [5.0, 5.0],
-    'radius': radius,
+    'xy_span': [[0, span], [0, k*span]],
     'discretisation': discretisation,
-    'r_oculus': 0.0,
-    'diagonal': False,
-    'partial_diagonal': False,
+    'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 print(form)
-# plot_form(form, show_q=False, fix_width=False).show()
+plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
@@ -66,10 +69,10 @@ form = form.initialise_tna(plot=False)
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb', 't']
 optimiser.data['objective'] = 't'
-optimiser.data['printout'] = True
+optimiser.data['printout'] = False
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
@@ -79,19 +82,27 @@ print(optimiser.data)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
-analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()
-analysis.run()
+hc = 5.0
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'h='+str(hc))
+os.makedirs(folder, exist_ok=True)
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+if sag:
+    title = title + 'sag_' + str(sag)
+if smooth:
+    title = title + 'smooth_'
+forms_address = os.path.join(folder, title)
 
-thk_min = form.attributes['thk']
-print(thk_min)
-data_shape['thk'] = thk_min
-dome = Shape.from_library(data_shape)
-form.envelope_from_shape(dome)
+thk_max = 0.50
+thk_step = 0.05
 
-plot_form(form, show_q=False, cracks=True).show()
+analysis = Analysis.from_elements(vault, form, optimiser)
+results = analysis.thk_minmax_GSF(thk_max, thk_step=thk_step, save_forms=forms_address, plot=False)
+thicknesses, solutions = results
 
-view_solution(form, dome).show()
+# ----------------------- Save output data --------------------------
+
+csv_file = os.path.join(folder, title + '_data.csv')
+save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
+
+img_graph = os.path.join(folder, title + '_diagram.pdf')
+diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False).show()

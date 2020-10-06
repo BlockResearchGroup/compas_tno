@@ -43,5 +43,11 @@ class Optimiser(object):
         self.x0 = None
         self.xopt = None
         self.fopt = None
+        self.mesage = None
+        self.time = None
+        self.niter = None
+        self.args = None
+        self.exitflag = None
+
 
     # This class must separate the functions objective functions and etc...

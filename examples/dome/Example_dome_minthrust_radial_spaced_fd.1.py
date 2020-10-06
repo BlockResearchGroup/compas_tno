@@ -34,7 +34,7 @@ data_shape = {
 dome = Shape.from_library(data_shape)
 swt = dome.compute_selfweight()
 print('Selfweight computed:', swt)
-print('Dome created!')
+print('Vault geometry created!')
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 

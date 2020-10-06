@@ -35,7 +35,7 @@ data_shape = {
 dome = Shape.from_library(data_shape)
 swt = dome.compute_selfweight()
 print('Selfweight computed:', swt)
-print('Dome created!')
+print('Vault geometry created!')
 
 # from compas_tno.viewers import view_shapes
 # view_shapes(dome).show()

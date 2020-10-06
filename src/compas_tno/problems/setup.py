@@ -6,21 +6,21 @@ from compas_tno.problems.objectives import f_max_thrust
 from compas_tno.problems.objectives import f_target
 from compas_tno.problems.objectives import f_constant
 from compas_tno.problems.objectives import f_reduce_thk
+from compas_tno.problems.objectives import f_tight_crosssection
 
 from compas_tno.problems.derivatives import gradient_fmin
 from compas_tno.problems.derivatives import gradient_fmax
 from compas_tno.problems.derivatives import gradient_feasibility
 from compas_tno.problems.derivatives import gradient_reduce_thk
+from compas_tno.problems.derivatives import gradient_tight_crosssection
 
 from compas_tno.problems.derivatives import sensitivities_wrapper
-from compas_tno.problems.derivatives import sensitivities_wrapper2
 from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities
-from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities2
 
 from compas_tno.plotters import plot_sym_inds
 
 from compas_tno.problems.constraints import constr_wrapper
-from compas_tno.problems.constraints import constr_wrapper2
+from compas_tno.problems.constraints import constr_wrapper_inequalities
 
 from compas.datastructures import mesh_bounding_box_xy
 
@@ -59,8 +59,6 @@ def set_up_nonlinear_optimisation(analysis):
     qmin = optimiser.data.get('qmin', 0.0)  # This qmin sometimes is 1e-6...
     plot = optimiser.data.get('plot', False)
 
-    thk = optimiser.data.get('thk', shape.data['thk'])
-    min_thk = optimiser.data.get('min_thk', 0.001)
     shape_data = analysis.shape.data
 
     objective = optimiser.data['objective']
@@ -101,12 +99,7 @@ def set_up_nonlinear_optimisation(analysis):
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
             ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin,
-            constraints,  max_rol_rx, max_rol_ry, Asym, variables, shape_data)
-
-    # fconstr = constr_wrapper
-    fconstr = constr_wrapper2
-    # fjac = sensitivities_wrapper_inequalities
-    fjac = sensitivities_wrapper_inequalities2
+            constraints,  max_rol_rx, max_rol_ry, Asym, variables, shape)
 
     # Select Objetive and Gradient
 
@@ -125,9 +118,24 @@ def set_up_nonlinear_optimisation(analysis):
     if objective == 'feasibility':
         fobj = f_constant
         fgrad = gradient_feasibility
-    if objective == 't':
+    if objective == 't':  # analytical reduce thickness
         fobj = f_reduce_thk
         fgrad = gradient_reduce_thk
+    if objective == 's':  # tight UB and LB 0 -> 1/2
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
+    if objective == 'n':  # vector n -> larger the greater
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
+
+    # Select Constraints and Jacobian (w/ equalities in IPOPT and only Inequalities in SLSQP)
+
+    if optimiser.data['solver'] == 'slsqp' or optimiser.data['solver'] == 'SLSQP':
+        fconstr = constr_wrapper_inequalities
+        fjac = sensitivities_wrapper_inequalities
+    else:
+        fconstr = constr_wrapper
+        fjac = sensitivities_wrapper
 
     # Definition of the Variables and starting point
 
@@ -144,11 +152,24 @@ def set_up_nonlinear_optimisation(analysis):
         bounds = bounds + zb_bounds
 
     if 't' in variables:
+        min_thk = optimiser.data.get('min_thk', 0.001)
+        thk = optimiser.data.get('thk', shape.data['thk'])
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, thk]]
 
+    if 's' in variables:
+        x0 = append(x0, 0.0).reshape(-1, 1)
+        bounds = bounds + [[-1.0, 0.5]]
+
+    if 'n' in variables:
+        thk0_approx = min(ub - lb)
+        print('Thickness approximate:', thk0_approx)
+        x0 = append(x0, 0.0).reshape(-1, 1)
+        bounds = bounds + [[-1.0, thk0_approx/2]]
+
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
+
     if fgrad:
         grad = fgrad(x0, *args)
     if fjac:
@@ -166,6 +187,13 @@ def set_up_nonlinear_optimisation(analysis):
             print('Shape of Jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
+        print('Constraint Mapping: dep: 0-{0} | z: {0}-{1} | reac-bound: {1}-{2}'.format(len(dep), len(dep)+2*len(z), len(dep)+2*len(z)+len(fixed)))
+        violated = []
+        for i in range(len(g0)):
+            if g0[i] < 0:
+                violated.append(i)
+        if violated:
+            print('Constraints Violated #:', violated)
 
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr

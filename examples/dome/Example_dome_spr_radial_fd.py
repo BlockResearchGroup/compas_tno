@@ -40,7 +40,7 @@ data_shape = {
 }
 
 dome = Shape.from_library(data_shape)
-print('Dome created!')
+print('Vault geometry created!')
 swt = dome.compute_selfweight()
 print('Selfweight computed:', swt)
 # view_shapes(dome).show()

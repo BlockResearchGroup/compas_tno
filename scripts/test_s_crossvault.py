@@ -1,13 +1,12 @@
-
+import os
 import compas_tno
 from compas_tno.diagrams import FormDiagram
-from compas_tno.shapes.shape import Shape
-from compas_tno.optimisers.optimiser import Optimiser
+from compas_tno.shapes import Shape
+from compas_tno.optimisers import Optimiser
 from compas_tno.plotters import plot_form
-from compas_tno.analysis.analysis import Analysis
-from compas_tno.viewers.thrust import view_thrusts
-from compas_tno.viewers.thrust import view_solution
-from copy import deepcopy
+from compas_tno.analysis import Analysis
+from compas_tno.viewers import view_shapes
+from compas_tno.viewers import view_solution
 
 # ----------------------------------------------------------------------
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
@@ -34,10 +33,27 @@ data_shape = {
     't': 0.0,
 }
 
-dome = Shape.from_library(data_shape)
-swt = dome.compute_selfweight()
-print('Selfweight computed:', swt)
-print('Vault geometry created!')
+analytical_shape = Shape.from_library(data_shape)
+
+data_general = {
+    'type': 'general',
+    't': 0.0,
+}
+
+vault = Shape.from_meshes(analytical_shape.intrados, analytical_shape.extrados, middle=None, data=data_general)
+
+area = vault.middle.area()
+swt = vault.compute_selfweight()
+
+area_analytical = analytical_shape.middle.area()
+swt_analytical = analytical_shape.compute_selfweight()
+
+print('Interpolated Volume Data:')
+print('Self-weight is:', swt)
+print('Area is:', area)
+
+print('Self-weight is:', swt_analytical)
+print('Area is:', area_analytical)
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -62,34 +78,38 @@ form = form.initialise_tna(plot=False)
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
+optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope']
-optimiser.data['variables'] = ['ind', 'zb', 't']
-optimiser.data['objective'] = 't'
+optimiser.data['variables'] = ['ind', 'zb', 's']
+optimiser.data['objective'] = 's'
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 optimiser.data['gradient'] = gradients
 optimiser.data['jacobian'] = gradients
-print(optimiser.data)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
-analysis = Analysis.from_elements(dome, form, optimiser)
+analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
-thk_min = form.attributes['thk']
+s_reduction = -1*analysis.optimiser.fopt
+
+vault.update_dos_from_form(form)
+plot_form(form, show_q=False, cracks=True).show()
+
+thk_min = thk - 2*s_reduction*thk
+print('Minimum THK:', thk_min)
 data_shape['thk'] = thk_min
-dome = Shape.from_library(data_shape)
-form.envelope_from_shape(dome)
-file_address = compas_tno.get('test.json')
-form.to_json(file_address)
+
+analytical_shape = Shape.from_library(data_shape)
+form.envelope_from_shape(analytical_shape)
 
 plot_form(form, show_q=False, cracks=True).show()
 
-view_solution(form, dome).show()
+view_solution(form, analytical_shape).show()

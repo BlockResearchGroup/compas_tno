@@ -56,7 +56,7 @@ vault = Shape.from_library(data_shape)
 # vault.ro = 0.1
 swt = vault.compute_selfweight()
 print('Selfweight computed:', swt)
-print('Dome created!')
+print('Vault geometry created!')
 # view_shapes(vault).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------

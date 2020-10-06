@@ -69,19 +69,33 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     xmax = thicknesses_max
     fmin = 100.0 * array(min_sol)
     fmax = -100.0 * array(max_sol)
+    print('\n', xmin, xmax, fmin, fmax)
     n = len(xmin)
     m = len(xmax)
     if m > n:
         dimension = xmax
     else:
         dimension = xmin
-    if n >= 2 and m >= 2:
-        x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
-    dim = append(dimension, x_)
-    xmax_ = append(xmax, x_)
-    xmin_ = append(xmin, x_)
-    fmin_ = append(fmin, y_)
-    fmax_ = append(fmax, y_)
+
+    if xmin[-1] == xmax[-1]:
+        x_ = xmin[-1]
+        y_ = fmin[-1]
+        limit_state = True
+        dim = dimension
+        xmax_ = xmax
+        xmin_ = xmin
+        fmin_ = fmin
+        fmax_ = fmax
+    else:
+        if n >= 2 and m >= 2:
+            x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+        dim = append(dimension, x_)
+        xmax_ = append(xmax, x_)
+        xmin_ = append(xmin, x_)
+        fmin_ = append(fmin, y_)
+        fmax_ = append(fmax, y_)
+
+    print('\n', xmin_, xmax_, fmin_, fmax_)
 
     size_axis_label = 14
     size_axis_data = 12
@@ -674,9 +688,10 @@ def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None
     m = len(xmax)
 
     if limit_state:
-        print(xmax, fmax, xmin, fmin)
-        print(n,m)
+        # print(xmax, fmax, xmin, fmin)
+        # print(n,m)
         x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
+        print('Calculated Limit State: (x, y):', x_, y_)
         xmin = append(xmin, x_)
         xmax = append(xmax, x_)
         fmin = append(fmin, y_)

@@ -1263,6 +1263,8 @@ class FormDiagram(FormDiagram):
         Cf = C[:, fixed]
         Cit = Ci.transpose()
 
+        # TODO: Change to use function zq_from_qid
+
         q = q * r
         Q = diags([q.ravel()], [0])
 
@@ -1271,15 +1273,17 @@ class FormDiagram(FormDiagram):
 
         xyz[free, 2] = spsolve(A, p[free, 2] - B.dot(xyz[fixed, 2]))
 
-        for key, attr in self.vertices(True):
-            index = k_i[key]
-            attr['z'] = xyz[index, 2]
+        i = 0
+        for key in self.vertices():
+            self.vertex_attribute(key, 'z', xyz[i, 2])
+            i = i + 1
 
+        i = 0
         for u, v in self.edges_where({'_is_edge': True}):
-            index = uv_i[(u, v)]
-            attr['q'] = q[index, 0]
+            self.edge_attribute((u, v), 'q', q[i, 0])
+            i = i + 1
 
-        return self
+        return
 
     def initialise_tna(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, remove_feet=True, display=False):
 
@@ -1289,11 +1293,11 @@ class FormDiagram(FormDiagram):
         self.edges_attribute('fmax', 10.0)
         leaves = False
         for u, v in self.edges_on_boundary():
-            if self.edge_attribute((u, v), '_is_edge') == False:
+            if self.edge_attribute((u, v), '_is_edge') is False:
                 leaves = True
                 break
         if leaves is False:
-            self.update_boundaries(feet=2)
+            self.update_boundaries()
 
         force = ForceDiagram.from_formdiagram(self)
         if plot:
@@ -1301,21 +1305,19 @@ class FormDiagram(FormDiagram):
             plotter = MeshPlotter(self, figsize=(10, 10))
             plotter.draw_edges(keys=[key for key in self.edges_where({'_is_edge': True})])
             plotter.draw_vertices(radius=0.05)
-            plotter.draw_vertices(keys=[key for key in self.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
+            plotter.draw_vertices(keys=[key for key in self.vertices_where({'is_anchor': True})], radius=0.10, facecolor='000000')
             plotter.show()
             print('Plot of Dual')
             force.plot()
 
         if method == 'nodal':
-            horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
+            horizontal_nodal(self, force, alpha=alpha, kmax=kmax)
         else:
-            horizontal(self, force, alpha=alpha, kmax=kmax, display=False)
-
-        # Vertical Equilibrium with no updated loads
+            horizontal(self, force, alpha=alpha, kmax=kmax)
 
         vertical_from_zmax(self, zmax)
-        if leaves is False and remove_feet is True:
-            self = self.remove_feet()
+        # if leaves is False and remove_feet is True:
+        #     self = self.remove_feet()
 
         if plot:
             print('Plot of Reciprocal')

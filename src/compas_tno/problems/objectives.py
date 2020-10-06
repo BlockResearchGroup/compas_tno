@@ -101,12 +101,7 @@ def f_constant(xopt, *args):
 
 def f_reduce_thk(xopt, *args):
 
-    variables = args[-1]
-
-    if 't' not in variables:
-        raise Exception
-    else:
-        return xopt[-1]
+    return xopt[-1]
 
 
 def f_min_thrust_pytorch(xopt, *args):
@@ -119,3 +114,8 @@ def f_min_thrust_pytorch(xopt, *args):
     Rh = CfQC.dot(xy) - hstack([px, py])[fixed]
     f = sum(normrow(Rh))
     return f
+
+
+def f_tight_crosssection(xopt, *args):
+
+    return -1 * xopt[-1]

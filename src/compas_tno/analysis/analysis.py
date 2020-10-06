@@ -346,6 +346,10 @@ class Analysis(object):
 
         form = self.form
         shape = self.shape
+
+        if shape.data['type'] == 'general':
+            return
+
         thk = shape.data['thk']
 
         if shape.data['type'] == 'dome' or shape.data['type'] == 'dome_polar':
@@ -632,19 +636,22 @@ class Analysis(object):
             T = self.form.thrust()
             swt = self.shape.compute_selfweight()
             T_over_swt = T/swt
-            thk_increase = 5.0*math.ceil(thk_min*100/5.0)/100 - thk_min
+            thk_increase = int(thk_step*100)*math.ceil(thk_min*100.0/int(thk_step*100))/100.0 - thk_min
             print('Min THK  |   Solved  |   Thrust |   T/W   |  THK incr. |  Setup time  |   Run time')
-            print('{0:.4f}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk_min, T, T_over_swt, thk_increase, setup_time, run_time))
+            print('{0:.5f}  |   True  |   {1:.1f} |   {2:.6f} |   {3:.2f}   | {4:.2f}s  |   {5:.2f}s'.format(thk_min, T, T_over_swt, thk_increase, setup_time, run_time))
 
             if plot:
                 plot_form(self.form, show_q=False, cracks=True).show()
 
             # STORE
-            form0 = self.form.copy()
+
+            address0 = os.path.join(compas_tno.get('/temp/'), 'form0.json')
+            self.form.to_json(address0)
+
             solutions_min.append(T_over_swt)
-            solutions_max.append(T_over_swt)
+            solutions_max.append(-1 * T_over_swt)
             thicknesses_min.append(thk_min)
-            thicknesses_max.append(thk_max)
+            thicknesses_max.append(thk_min)
 
             # SAVE
             if save_forms:
@@ -652,11 +659,8 @@ class Analysis(object):
                 address_max = save_forms + '_' + 'max' + '_thk_' + str(100*thk_min) + '.json'
                 self.form.to_json(address_min)
                 self.form.to_json(address_max)
-            else:
-                address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
-                self.form.to_json(address)
 
-            thk = thk_min + thk_increase
+            thk = round(thk_min + thk_increase, 5)
             thk_increase = thk_step
             thk0 = thk
 
@@ -672,7 +676,8 @@ class Analysis(object):
         self.optimiser.data['variables'] = ['ind', 'zb']
         for self.optimiser.data['objective'] in objectives:
 
-            self.form = form0
+            self.form = FormDiagram.from_json(address0)
+
             exitflag = 0
             thk = thk0
             count = 0
@@ -688,6 +693,17 @@ class Analysis(object):
                 self.shape = Shape.from_library(data_shape)
                 self.shape.ro = ro
                 swt = self.shape.compute_selfweight()
+
+                # pzt = 0
+                # z = []
+                # q_ = []
+                # for key in self.form.vertices():
+                #     pzt += self.form.vertex_attribute(key, 'pz')
+                #     z.append(self.form.vertex_attribute(key, 'z'))
+                # for u, v in self.form.edges():
+                #     q_.append(self.form.edge_attribute((u, v), 'q'))
+                # print('Current pz: {0:.2f} | swt: {1:.2f} | z range: {2:.2f} - {3:.2f} | q range: {4:.2f} - {5:.2f}'.format(pzt, swt, min(z), max(z), min(q_), max(q_)))
+
                 lumped_swt = self.form.lumped_swt()
                 if fill_percentage:
                     self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
@@ -696,8 +712,20 @@ class Analysis(object):
                     self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
                 elif rollers_absolute:
                     self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
+
                 self.apply_selfweight()
                 self.form.scale_form(swt/lumped_swt)
+
+                # pzt = 0
+                # z = []
+                # q_ = []
+                # for key in self.form.vertices():
+                #     pzt += self.form.vertex_attribute(key, 'pz')
+                #     z.append(self.form.vertex_attribute(key, 'z'))
+                # for u, v in self.form.edges():
+                #     q_.append(self.form.edge_attribute((u, v), 'q'))
+                # print('Current pz: {0:.2f} | swt: {1:.2f} | z range: {2:.2f} - {3:.2f} | q range: {4:.2f} - {5:.2f}'.format(pzt, swt, min(z), max(z), min(q_), max(q_)))
+
                 self.apply_envelope()
                 self.apply_reaction_bounds()
                 if fill_percentage:
@@ -716,25 +744,26 @@ class Analysis(object):
                     if self.optimiser.data['objective'] == 'min':
                         solutions_min.append(fopt_over_weight)
                         thicknesses_min.append(thk)
-                        last_min = fopt_over_weight
-                        last_thk_min = thk
                     else:
                         solutions_max.append(fopt_over_weight)
                         thicknesses_max.append(thk)
-                        last_max = abs(fopt_over_weight)
-                        last_thk_max = thk
                     if save_forms:
                         address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
                     else:
                         address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
                     self.form.to_json(address)
-                    print('{0}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk, fopt, fopt_over_weight, thk_increase, setup_time, run_time))
+                    print('{0:.5f}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk, fopt, fopt_over_weight, thk_increase, setup_time, run_time))
                     thk = thk + thk_increase
                 else:
                     # here put some conditions to try to make it work ....
 
                     print('---------- End of process -----------', '\n')
                 count += 1
+
+        thicknesses_min.reverse()
+        thicknesses_max.reverse()
+        solutions_min.reverse()
+        solutions_max.reverse()
 
         if printout:
             print('------------------ SUMMARY ------------------ ')

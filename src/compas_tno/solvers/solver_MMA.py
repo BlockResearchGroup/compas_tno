@@ -8,12 +8,16 @@ import numpy as np
 
 from compas_tno.algorithms import f_constraints_pytorch_MMA
 from compas_tno.algorithms import f_objective_pytorch
-from compas_tno.algorithms import compute_grad
-from compas_tno.algorithms import compute_jacobian
+from compas_tno.algorithms import compute_autograd
+from compas_tno.algorithms import compute_autograd_jacobian
 from compas_tno.algorithms import reactions
 from compas_tno.algorithms import zlq_from_qid
 
 from compas.utilities import geometric_key
+
+from .post_process import post_process_analysis
+
+import time
 
 from compas_tno.problems import sensitivities_wrapper_inequalities
 from compas_tno.problems import constr_wrapper
@@ -51,138 +55,97 @@ def run_optimisation_MMA(analysis):
     form = analysis.form
     optimiser = analysis.optimiser
     solver = optimiser.data['solver']
-    variables = optimiser.data['variables']
     constraints = optimiser.data['constraints']
     objective = optimiser.data['objective']
     gradient = optimiser.data.get('gradient', False)
     jacobian = optimiser.data.get('jacobian', False)
     fconstr = optimiser.fconstr
     args = optimiser.args
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
-        :48]
-    i_uv = form.index_uv()
-    i_k = form.index_key()
-    k_i = form.key_index()
+
     bounds = optimiser.bounds
     x0 = optimiser.x0
-    f0 = optimiser.f0
     g0 = optimiser.g0
-    plot = optimiser.data['plot']
 
     if solver != 'MMA':
         print('Error, Only MMA solver is available for this library!')
 
-    if objective == 'min':
-        fobj = f_min_thrust
-        fgrad = gradient_fmin
-    elif objective == 'max':
-        fobj = f_max_thrust
-        fgrad = gradient_fmax
+    fobj = optimiser.fobj
+    fgrad = optimiser.fgrad
+    fjac = optimiser.fjac
+    fconstr = optimiser.fconstr
+
+    start_time = time.time()
+
+    if gradient and jacobian:
+        import nlopt
+        # opt = nlopt.opt(nlopt.LD_MMA, len(x0))
+        opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))
+        fobj_nlopt = create_nlopt_fobj(fobj, fgrad, *args)
+        fconstr_nlopt = create_nlopt_fconstr(fconstr, fjac, *args)
+
+        opt.set_min_objective(fobj_nlopt)
+        lower = array([lw[0] for lw in bounds]).flatten()
+        upper = array([up[1] for up in bounds]).flatten()
+        opt.set_lower_bounds(lower)
+        opt.set_upper_bounds(upper)
+        opt.add_inequality_mconstraint(fconstr_nlopt, zeros((len(g0),)))
+        opt.set_maxtime(1000)
+        opt.set_xtol_rel(1e-8)
+
+        xopt = opt.optimize(x0.flatten())
+        fopt = opt.last_optimum_value()
+        result = opt.last_optimize_result()
+        if result > 0:
+            exitflag = 0
+
+        # args_MMA = list(args)
+        # args_MMA.append([fobj, fgrad])
+        # f_g_eval = analytical_f_g
+        # f_g_df_dg_eval = analytical_f_g_df_dg
     else:
-        raise NotImplementedError
 
-    import nlopt
-    opt = nlopt.opt(nlopt.LD_MMA, len(x0))
-    # opt = nlopt.opt(nlopt.LD_SLSQP, len(x0))
-    fobj_nlopt = create_nlopt_fobj(fobj, fgrad, *args)
-    fconstr_nlopt = create_nlopt_fconstr(fobj, fgrad, *args)
+        q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
+        :48]
 
-    opt.set_min_objective(fobj_nlopt)
-    lower = array([lw[0] for lw in bounds]).flatten()
-    upper = array([up[1] for up in bounds]).flatten()
-    opt.set_lower_bounds(lower)
-    opt.set_upper_bounds(upper)
-    opt.add_inequality_mconstraint(fconstr_nlopt, zeros((len(g0),)))
-    opt.set_maxtime(1000)
-    opt.set_xtol_rel(1e-8)
+        args_MMA = list(args)
+        args_MMA.append([fobj, fconstr])
+        f_g_eval = pytorch_f_g
+        f_g_df_dg_eval = pytorch_f_g_df_dg
+        EdinvEi = Edinv*Ei
+        Edinv_p = Edinv.dot(p)
 
-    xopt = opt.optimize(x0.flatten())
-    fopt = opt.last_optimum_value()
-    result = opt.last_optimize_result()
-    if result > 0:
-        print(result)
-        exitflag = 0
+        EdinvEi_th = tensor(EdinvEi)
+        Edinv_p_th = tensor(Edinv_p)
+        C_th = tensor(C.toarray())
+        Ci_th = tensor(Ci.toarray())
+        Cit_th = Ci_th.t()
+        Cf_th = tensor(Cf.toarray())
+        pzfree = tensor(pz[free])
+        xyz = tensor(hstack([x, y, z]))
+        xy = tensor(hstack([x, y]))
+        pfixed = tensor(hstack([px, py, pz])[fixed])
+        U_th = tensor(U.toarray())
+        V_th = tensor(V.toarray())
 
-    # if not gradient:
-    #     args_MMA = list(args)
-    #     args_MMA.append([fobj, fconstr])
-    #     f_g_eval = pytorch_f_g
-    #     f_g_df_dg_eval = pytorch_f_g_df_dg
-    #     EdinvEi = Edinv*Ei
-    #     Edinv_p = Edinv.dot(p)
+        args_obj = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
+        args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
+                        ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
 
-    #     EdinvEi_th = tensor(EdinvEi)
-    #     Edinv_p_th = tensor(Edinv_p)
-    #     C_th = tensor(C.toarray())
-    #     Ci_th = tensor(Ci.toarray())
-    #     Cit_th = Ci_th.t()
-    #     Cf_th = tensor(Cf.toarray())
-    #     pzfree = tensor(pz[free])
-    #     xyz = tensor(hstack([x, y, z]))
-    #     xy = tensor(hstack([x, y]))
-    #     pfixed = tensor(hstack([px, py, pz])[fixed])
-    #     U_th = tensor(U.toarray())
-    #     V_th = tensor(V.toarray())
+        args_MMA = [args_obj, args_constr]
+        fopt, xopt, exitflag = mma_numpy(f_g_eval, f_g_df_dg_eval, x0, bounds, args_MMA, 10e-4, 100)
 
-    #     args_obj = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
-    #     args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
-    #                    ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
-
-    #     args_MMA = [args_obj, args_constr]
-    # else:
-    #     args_MMA = list(args)
-    #     args_MMA.append([fobj, fgrad])
-    #     f_g_eval = analytical_f_g
-    #     f_g_df_dg_eval = analytical_f_g_df_dg
-
-    # fopt, xopt, exitflag = mma_numpy(f_g_eval, f_g_df_dg_eval, x0, bounds, args_MMA, 10e-4, 100)
-    print('This is exitflag', exitflag)
-
-    if 'ind' in variables and 'zb' in variables:
-        q[ind] = xopt[:k].reshape(-1, 1)
-        z[fixed] = xopt[k:].reshape(-1, 1)
-    else:
-        q[ind] = xopt[:k].reshape(-1, 1)
-
-    g_final = fconstr(xopt, *args)
-    args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
-    z, _, q, q_ = zlq_from_qid(q[ind], args)
-
-    gkeys = []
-    for i in ind:
-        u, v = i_uv[i]
-        gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-    form.attributes['indset'] = gkeys
-
-    for i in range(form.number_of_vertices()):
-        key = i_k[i]
-        form.vertex_attribute(key=key, name='z', value=float(z[i]))
-
-    for c, qi in enumerate(list(q_.ravel())):
-        u, v = i_uv[c]
-        form.edge_attribute((u, v), 'q', float(qi))
-
-    lp = 0
-    for u, v in form.edges_where({'_is_edge': True}):
-        if form.edge_attribute((u, v), 'is_symmetry') is False:
-            qi = form.edge_attribute((u, v), 'q')
-            li = form.edge_length(u, v)
-            lp += abs(qi) * li**2
-    form.attributes['loadpath'] = lp
-
-    # exitflag = 0
+    elapsed_time = time.time() - start_time
     optimiser.exitflag = exitflag
+    optimiser.time = elapsed_time
     optimiser.fopt = fopt
-    analysis.form = form
-    reactions(form)
+    optimiser.xopt = xopt
+    optimiser.niter = None  # Did not find a way to display number of iteratinos
+    if exitflag == 0:
+        optimiser.message = 'Optimisation succesful terminated'  # Did not find a way to display message
+    else:
+        optimiser.message = 'Optimal solution not found'
 
-    print('\n' + '-' * 50)
-    print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-    print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-    print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-    print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
-    print('fopt      : {0:.3f}'.format(float(fopt)))
-    print('-' * 50 + '\n')
+    post_process_analysis(analysis)
 
     return analysis
 
@@ -244,18 +207,18 @@ def analytical_f_g_df_dg(xopt, *args):
 
 def create_nlopt_fobj(fobj, fgrad, *args):
     def fobj_nlopt(x, grad):
-        f = fobj(x, *args)[0]
+        f = fobj(x, *args)
         if grad.size > 0:
             grad[:] = array(fgrad(x, *args)).flatten()
         return f
     return fobj_nlopt
 
 
-def create_nlopt_fconstr(fobj, fgrad, *args):
+def create_nlopt_fconstr(fconstr, fjac, *args):
     def fconstr_nlopt(results, x, grad):
-        results[:] = -1 * constr_wrapper(x, *args).flatten()
+        results[:] = -1 * fconstr(x, *args).flatten()
         if grad.size > 0:
-            grad[:] = -1 * sensitivities_wrapper_inequalities(x, *args)
+            grad[:] = -1 * fjac(x, *args)
         return
     return fconstr_nlopt
 
