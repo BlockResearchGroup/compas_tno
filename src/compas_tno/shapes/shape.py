@@ -24,6 +24,7 @@ from scipy import interpolate
 
 __all__ = ['Shape']
 
+
 class Shape(object):
 
     """The ``Shape`` class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.
@@ -69,11 +70,11 @@ class Shape(object):
     def __init__(self):
         super(Shape, self).__init__()
         self.data = {
-            'type'      : None,
-            'thk'       : 1.0,
-            'discretisation'   : [100, 100],
-            'xy_span'   : [0.0, 10.0],
-            't'         : 10.0,
+            'type': None,
+            'thk': 1.0,
+            'discretisation': [100, 100],
+            'xy_span': [0.0, 10.0],
+            't': 10.0,
         }
         self.intrados = None
         self.extrados = None
@@ -195,6 +196,25 @@ class Shape(object):
         return shape
 
     @classmethod
+    def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+
+        intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
+        extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+    @classmethod
+    def from_pointcloud_and_formdiagram(cls, form, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+
+        intrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(intrados_pts))
+        extrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(extrados_pts))
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+
+    @classmethod
     def from_rhinosurface(cls):
         ''' Work in progress'''
         NotImplementedError
@@ -232,6 +252,32 @@ class Shape(object):
 
         return
 
+    def store_normals(self, mark_fixed_LB=True):
+
+        intrados = self.intrados
+        extrados = self.extrados
+
+        for key in intrados.vertices():
+            normal_intra = intrados.vertex_normal(key)
+            normal_extra = extrados.vertex_normal(key)
+            intrados.vertex_attribute(key, 'n', normal_intra)
+            extrados.vertex_attribute(key, 'n', normal_extra)
+
+        intrados.vertices_attribute('_is_outside', False)
+
+        if mark_fixed_LB:  # Look for the vertices with LB == 't'
+            try:
+                t = self.data['t']
+            except:
+                print('No t is assigned to vertices in intrados.')
+                t = None
+            if t is not None:
+                for key in intrados.vertices():
+                    if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
+                        intrados.vertex_attribute(key, '_is_outside', True)
+
+        return
+
     def get_ub(self, x, y):
         """Get the height of the extrados in the point.
 
@@ -248,7 +294,7 @@ class Shape(object):
         """
 
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y], method='linear'))
+        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y], method='linear'))
 
         return z
 
@@ -266,7 +312,7 @@ class Shape(object):
         """
         method = self.data.get('interpolation', 'nearest')
         vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method=method)
+        z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
 
         return z
 
@@ -286,7 +332,7 @@ class Shape(object):
         """
 
         vertices = array(self.extrados_fill.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y]))
+        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y]))
 
         return z
 
@@ -306,7 +352,7 @@ class Shape(object):
         """
 
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y], method='linear'))
+        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y], method='linear'))
 
         return z
 
@@ -324,7 +370,7 @@ class Shape(object):
         """
         method = self.data.get('interpolation', 'nearest')
         vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method=method)
+        z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
 
         return z
 
@@ -344,7 +390,7 @@ class Shape(object):
         """
 
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:,:2], vertices[:,2], [x,y], method='linear'))
+        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y], method='linear'))
 
         return z
 
@@ -362,14 +408,14 @@ class Shape(object):
         """
         method = self.data.get('interpolation', 'nearest')
         vertices = array(self.middle.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:,:2], vertices[:,2], XY, method=method)
+        z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
 
         return z
 
     def get_target(self, x, y):
         """Get the height of the target/middle surface in the point."""
 
-        z = self.get_middle(x,y)
+        z = self.get_middle(x, y)
 
         return z
 
@@ -441,7 +487,7 @@ class Shape(object):
             zi = self.extrados_fill.vertex_attribute(key, 'z')
             if zi < height:
                 self.extrados_fill.vertex_attribute(key, 'z', height)
-                ##### this should become a method
+                # this should become a method
                 area = 0.
                 p0 = self.extrados_fill.vertex_coordinates(key)
                 p0[2] = 0
@@ -463,7 +509,7 @@ class Shape(object):
                         area += length_vector(cross_vectors(v1, v3))
                 proj_area = area * 0.25
                 proj_area_total += proj_area
-                ##### this should become a method
+                # this should become a method
                 vol_i = proj_area*(height - zi)
                 volume += vol_i
 
@@ -488,7 +534,6 @@ class Shape(object):
         self.extrados = extra
 
         return
-
 
     def compute_fill_weight(self):
 

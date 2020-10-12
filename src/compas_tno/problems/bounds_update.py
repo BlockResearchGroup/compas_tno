@@ -36,7 +36,7 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, variables):
         if 's' in variables:
             return general_ub_lb_update_with_s(ub, lb, thk)  # thk is 's' in this equation
         elif 'n' in variables:
-            return general_ub_lb_update_with_n(ub, lb, thk, shape.intrados, shape.extrados)  # thk is 'n' in this equation
+            return general_ub_lb_update_with_n(ub, lb, thk, shape.intrados, shape.extrados, t)  # thk is 'n' in this equation
         else:
             raise Exception
     else:
@@ -57,7 +57,7 @@ def dub_dlb_update(x, y, thk, t, shape, ub, lb, variables):
         if 's' in variables:
             return general_dub_dlb_with_s(ub, lb)  # thk is 's' in this equation
         elif 'n' in variables:
-            return general_dub_dlb_with_n(ub, lb, thk, shape.intrados, shape.extrados)  # thk is 'n' in this equation
+            return general_dub_dlb_with_n(ub, lb, thk, shape.intrados, shape.extrados, t)  # thk is 'n' in this equation
         else:
             raise Exception
     else:
@@ -72,6 +72,11 @@ def b_update(x, y, thk, fixed, shape):
         return dome_b_update(x, y, thk, fixed, center=shape.data['center'], radius=shape.data['radius'])
     elif shape.data['type'] == 'pavillionvault':
         return pavillionvault_b_update(x, y, thk, fixed, xy_span=shape.data['xy_span'])
+    elif shape.data['type'] == 'general':
+        if 'n' in variables:
+            return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
+        else:
+            raise Exception
     else:
         raise Exception
 
@@ -84,5 +89,10 @@ def db_update(x, y, thk, fixed, shape):
         return dome_db(x, y, thk, fixed, center=shape.data['center'], radius=shape.data['radius'])
     elif shape.data['type'] == 'pavillionvault':
         return pavillionvault_db(x, y, thk, fixed, xy_span=shape.data['xy_span'])
+    elif shape.data['type'] == 'general':
+        if 'n' in variables:
+            return general_db_with_n(b, thk, fixed)  # thk is 'n' in this equation
+        else:
+            raise Exception
     else:
         raise Exception

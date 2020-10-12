@@ -59,8 +59,6 @@ def set_up_nonlinear_optimisation(analysis):
     qmin = optimiser.data.get('qmin', 0.0)  # This qmin sometimes is 1e-6...
     plot = optimiser.data.get('plot', False)
 
-    shape_data = analysis.shape.data
-
     objective = optimiser.data['objective']
     variables = optimiser.data['variables']
     constraints = optimiser.data['constraints']
@@ -124,7 +122,7 @@ def set_up_nonlinear_optimisation(analysis):
     if objective == 's':  # tight UB and LB 0 -> 1/2
         fobj = f_tight_crosssection
         fgrad = gradient_tight_crosssection
-    if objective == 'n':  # vector n -> larger the greater
+    if objective == 'n':  # vector n offset the surfaces -> larger the better (higher GSF)
         fobj = f_tight_crosssection
         fgrad = gradient_tight_crosssection
 
@@ -165,7 +163,7 @@ def set_up_nonlinear_optimisation(analysis):
         thk0_approx = min(ub - lb)
         print('Thickness approximate:', thk0_approx)
         x0 = append(x0, 0.0).reshape(-1, 1)
-        bounds = bounds + [[-1.0, thk0_approx/2]]
+        bounds = bounds + [[0.0, thk0_approx/2]]
 
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)

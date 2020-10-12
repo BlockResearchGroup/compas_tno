@@ -12,6 +12,7 @@ def post_process_analysis(analysis):
 
     form = analysis.form
     optimiser = analysis.optimiser
+    shape = analysis.shape
 
     plot = optimiser.data.get('plot', False)
     summary = optimiser.data.get('summary', False)
@@ -70,6 +71,12 @@ def post_process_analysis(analysis):
             lb = form.vertex_attribute(key, 'lb')
             form.vertex_attribute(key, 'ub', ub - s * (ub - lb))
             form.vertex_attribute(key, 'lb', lb + s * (ub - lb))
+
+    if 'n' in variables:
+        n = -1 * fopt
+        shape.intrados = shape.intrados.offset_mesh(n=n, direction='up')
+        shape.extrados = shape.extrados.offset_mesh(n=n, direction='down')
+        form.envelope_from_shape(shape)
 
     analysis.form = form
     analysis.optimiser = optimiser

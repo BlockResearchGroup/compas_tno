@@ -1,18 +1,20 @@
 from compas_viewers.meshviewer import MeshViewer
 from compas_viewers.multimeshviewer import MultiMeshViewer
-from compas.datastructures import Mesh
+from compas_viewers.objectviewer import ObjectViewer
+from compas.geometry import Point
 
 
 __all__ = [
     'view_intrados',
     'view_extrados',
+    'view_shapes_pointcloud',
     'view_middle',
     'view_shapes',
     'view_fill',
 ]
 
 
-def view_intrados(shape):
+def view_intrados(shape, settings_bounds=None):
     """ Viewer showing the intrados of a shape
 
     Parameters
@@ -23,17 +25,30 @@ def view_intrados(shape):
     Returns
     ----------
     obj
-        Plotter object.
+        Viewer object.
 
     """
 
     mesh = shape.intrados
-    viewer = MeshViewer()
-    viewer.mesh = mesh
+
+    viewer = ObjectViewer()
+
+    if not settings_bounds:
+        settings_bounds = {
+            'color': '#999999',
+            'edges.width': 1,
+            'opacity': 0.5,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': True,
+            }
+
+    viewer.add(mesh, name="Extrados", settings=settings_bounds)
 
     return viewer
 
-def view_extrados(shape):
+def view_extrados(shape, settings_bounds=None):
     """ Viewer showing the extrados of a shape
 
     Parameters
@@ -44,18 +59,67 @@ def view_extrados(shape):
     Returns
     ----------
     obj
-        Plotter object.
+        Viewer object.
 
     """
 
     mesh = shape.extrados
-    viewer = MeshViewer()
-    viewer.mesh = mesh
 
+    viewer = ObjectViewer()
+
+    if not settings_bounds:
+        settings_bounds = {
+            'color': '#999999',
+            'edges.width': 1,
+            'opacity': 0.5,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': True,
+            }
+
+    viewer.add(mesh, name="Extrados", settings=settings_bounds)
 
     return viewer
 
-def view_middle(shape):
+
+def view_shapes_pointcloud(shape, settings_bounds=None):
+    """ Viewer showing the extrados of a shape
+
+    Parameters
+    ----------
+    shape : obj
+        Shape to plot
+
+    Returns
+    ----------
+    obj
+        Viewer object.
+
+    """
+
+    intrados = shape.intrados
+    extrados = shape.extrados
+
+    viewer = ObjectViewer()
+
+    if not settings_bounds:
+        settings_bounds = {
+            'color': '#999999',
+            'edges.width': 1,
+            'opacity': 0.5,
+            'vertices.size': 10,
+            'vertices.on': True,
+            'edges.on': False,
+            'faces.on': True,
+            }
+
+    viewer.add(intrados, name="Intrados", settings=settings_bounds)
+    viewer.add(extrados, name="Extrados", settings=settings_bounds)
+
+    return viewer
+
+def view_middle(shape, settings_middle=None):
     """ Viewer showing the middle (target) surface of a shape
 
     Parameters
@@ -66,17 +130,30 @@ def view_middle(shape):
     Returns
     ----------
     obj
-        Plotter object.
+        Viewer object.
 
     """
 
     mesh = shape.middle
-    viewer = MeshViewer()
-    viewer.mesh = mesh
+
+    viewer = ObjectViewer()
+
+    if not settings_middle:
+        settings_middle = {
+            'color': '#777777',
+            'edges.width': 1,
+            'opacity': 0.8,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': True,
+            }
+
+    viewer.add(mesh, name="Middle/Target", settings=settings_middle)
 
     return viewer
 
-def view_shapes(shape, cut_negatives=True):
+def view_shapes(shape, settings_middle=None, settings_bounds=None):
     """ Viewer showing the middle (target) surface of a shape
 
     Parameters
@@ -89,16 +166,41 @@ def view_shapes(shape, cut_negatives=True):
     Returns
     ----------
     obj
-        Plotter object.
+        Viewer object.
 
     """
 
-    middle = shape.middle
     intrados = shape.intrados
     extrados = shape.extrados
+    middle = shape.middle
 
-    viewer = MultiMeshViewer()
-    viewer.meshes = [middle, intrados, extrados]
+    viewer = ObjectViewer()
+
+    if not settings_middle:
+        settings_middle = {
+            'color': '#777777',
+            'edges.width': 1,
+            'opacity': 0.8,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': True,
+            }
+
+    if not settings_bounds:
+        settings_bounds = {
+            'color': '#999999',
+            'edges.width': 1,
+            'opacity': 0.5,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': True,
+            }
+
+    viewer.add(middle, name="Middle/Target", settings=settings_middle)
+    viewer.add(intrados, name="Intrados", settings=settings_bounds)
+    viewer.add(extrados, name="Extrados", settings=settings_bounds)
 
     return viewer
 
@@ -116,7 +218,7 @@ def view_fill(shape, cut_negatives=True):
     Returns
     ----------
     obj
-        Plotter object.
+        Viewer object.
 
     """
 
