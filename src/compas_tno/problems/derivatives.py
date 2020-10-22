@@ -258,13 +258,13 @@ def sensitivities_wrapper(xopt, *args):
                 signe = - 1.0
             else:
                 signe = + 1.0
-            dslope_dz[i, i] = signe * R[i, 0]/R[i, 2]
+            dslope_dz[i, i] = -1 * abs(R[i, 0]/R[i, 2])
             dslope_dind[i] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRxdq[i] + signe * abs(R[i, 0]) * dRzdq[i])
             if R[i, 1]*R[i, 2] >= 0:
                 signe = - 1.0
             else:
                 signe = + 1.0
-            dslope_dz[i_, i] = signe * R[i, 1]/R[i, 2]
+            dslope_dz[i_, i] = -1 * abs(R[i, 1]/R[i, 2])
             dslope_dind[i_] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRydq[i] + signe * abs(R[i, 1]) * dRzdq[i])
         dslope = hstack([dslope_dind, dslope_dz])
         if 't' in variables:

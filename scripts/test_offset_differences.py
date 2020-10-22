@@ -13,6 +13,7 @@ from copy import deepcopy
 
 from compas_viewers.meshviewer import MeshViewer
 from compas_viewers.multimeshviewer import MultiMeshViewer
+from compas_viewers.objectviewer import ObjectViewer
 from compas.datastructures import Mesh
 
 from compas.geometry import cross_vectors
@@ -49,52 +50,52 @@ data_shape = {
 shape = Shape.from_library(data_shape)
 
 
-# ----------------------- Arch Data ---------------------------
+# # ----------------------- Arch Data ---------------------------
 
-incl = 1.0
-H = 01.0*incl
-L = 2.0
-thk = 0.50
-discretisation = 20
-b = 0.2  # Out of plane dimension  of arch
-t = 1.0
-type_structure = 'arch'
-type_formdiagram = 'arch'
+# incl = 1.0
+# H = 01.0*incl
+# L = 2.0
+# thk = 0.50
+# discretisation = 20
+# b = 0.2  # Out of plane dimension  of arch
+# t = 1.0
+# type_structure = 'arch'
+# type_formdiagram = 'arch'
 
-data_shape = {
-    'type': type_structure,
-    'H': H,
-    'L': L,
-    'thk': thk,
-    'discretisation': discretisation,
-    'b': b,
-    't': 0.0,
-    'x0': 0.0
-}
+# data_shape = {
+#     'type': type_structure,
+#     'H': H,
+#     'L': L,
+#     'thk': thk,
+#     'discretisation': discretisation,
+#     'b': b,
+#     't': 0.0,
+#     'x0': 0.0
+# }
 
-shape = Shape.from_library(data_shape)
+# shape = Shape.from_library(data_shape)
 
 
 # ----------------------- Dome Data ---------------------------
 
-# thk = 0.50
-# radius = 5.0
-# type_structure = 'dome'
-# type_formdiagram = 'radial_spaced_fd'
-# discretisation = [50, 20]
-# gradients = True
-# n = 1
+thk = 0.50
+radius = 5.0
+type_structure = 'dome'
+type_formdiagram = 'radial_spaced_fd'
+discretisation = [8, 20]
+gradients = True
+n = 1
 
-# data_shape = {
-#     'type': type_structure,
-#     'thk': thk,
-#     'discretisation': [discretisation[0]*n, discretisation[1]*n],
-#     'center': [5.0, 5.0],
-#     'radius': radius,
-#     't': 0.0
-# }
+data_shape = {
+    'type': type_structure,
+    'thk': thk,
+    'discretisation': [discretisation[0]*n, discretisation[1]*n],
+    'center': [5.0, 5.0],
+    'radius': radius,
+    't': 0.0
+}
 
-# shape = Shape.from_library(data_shape)
+shape = Shape.from_library(data_shape)
 
 # ------ CODE
 
@@ -106,69 +107,92 @@ intrados = shape.intrados
 extrados = shape.extrados
 
 vertices, faces = intrados.to_vertices_and_faces()
-intra_offset = MeshDos.from_vertices_and_faces(vertices, faces)
-# intra_same_xy = MeshDos.from_vertices_and_faces(vertices, faces)
+intra_meshdos = MeshDos.from_vertices_and_faces(vertices, faces)
 
 vertices, faces = extrados.to_vertices_and_faces()
-extra_offset = MeshDos.from_vertices_and_faces(vertices, faces)
-# extra_same_xy = MeshDos.from_vertices_and_faces(vertices, faces)
+extra_meshdos = MeshDos.from_vertices_and_faces(vertices, faces)
 
-meshes = [intrados, extrados]
 
-# viewer = MultiMeshViewer()
-# viewer.meshes = meshes
-# viewer.show()
+for n in [0.10]:
+    intra_offset = intra_meshdos.offset_mesh(n, 'up')
+    extra_offset = extra_meshdos.offset_mesh(n, 'down')
 
-for n in [0.05]:
-    vertices, faces = intra_offset.to_vertices_and_faces()
-    intra_offset = MeshDos.from_vertices_and_faces(vertices, faces)
+# Settings to visualise
 
-    vertices, faces = extra_offset.to_vertices_and_faces()
-    extra_offset = MeshDos.from_vertices_and_faces(vertices, faces)
+viewer = ObjectViewer()
 
-    print('INTRADOS')
-    new_intrados = []
-    for key in intra_offset.vertices():
-        normal = (intra_offset.vertex_normal(key))
-        x, y, z = intra_offset.vertex_coordinates(key)
-        deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
-        print(n*1/deviation)
-        new_intrados.append(z + n*1/deviation)
-        # if not intrados.is_vertex_on_boundary(key):
-        #     intra_offset.vertex_attribute(key, 'x', x + normal[0]*n)
-        #     intra_offset.vertex_attribute(key, 'y', y + normal[1]*n)
-        #     intra_offset.vertex_attribute(key, 'z', z + normal[2]*n)
-        # else:
-        #     deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
-        #     intra_offset.vertex_attribute(key, 'z', z + n*1/deviation)
-    i = 0
-    for key in intra_offset.vertices():
-        intra_offset.vertex_attribute(key, 'z', new_intrados[i])
-        i += 1
-    meshes.append(intra_offset)
+settings_original = {
+    'color': '#0000FF',
+    'edges.width': 1,
+    'opacity': 0.8,
+    'vertices.size': 0,
+    'vertices.on': False,
+    'edges.on': True,
+    'faces.on': True,
+    }
 
-    print('EXTRADOS')
-    new_extrados = []
-    for key in extra_offset.vertices():
-        normal = extra_offset.vertex_normal(key)
-        x, y, z = extra_offset.vertex_coordinates(key)
-        deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
-        print(- n*1/deviation)
-        new_extrados.append(z - n*1/deviation)
-        # print('x y:', x, y, 'normal:', normal)
-        # if not extrados.is_vertex_on_boundary(key):
-        #     extra_offset.vertex_attribute(key, 'x', x + normal[0]*n)
-        #     extra_offset.vertex_attribute(key, 'y', y + normal[1]*n)
-        #     extra_offset.vertex_attribute(key, 'z', z + normal[2]*n)
-        # else:  # correction for vertices in the boundary for extrados
-        #     deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
-        #     extra_offset.vertex_attribute(key, 'z', z - n*1/deviation)
-    i = 0
-    for key in extra_offset.vertices():
-        extra_offset.vertex_attribute(key, 'z', new_extrados[i])
-        i += 1
-    meshes.append(extra_offset)
+settings_offset = {
+        'color': '#999999',
+        'edges.width': 1,
+        'opacity': 0.5,
+        'vertices.size': 0,
+        'vertices.on': False,
+        'edges.on': True,
+        'faces.on': True,
+        }
 
-viewer = MultiMeshViewer()
-viewer.meshes = meshes  # [intra_offset, intrados, extra_offset, extrados]
+# viewer.add(intra_meshdos, name="Intra-Original", settings=settings_original)
+viewer.add(extra_meshdos, name="Extra-Original", settings=settings_original)
+# viewer.add(intra_offset, name="Intra-Offset-n", settings=settings_offset)
+viewer.add(extra_offset, name="Extra-Offset-n", settings=settings_offset)
+
+data_shape['thk'] -= 2* n
+shape_offset = Shape.from_library(data_shape)
+intra_offset_anal = shape_offset.intrados
+extra_offset_anal = shape_offset.extrados
+
+# viewer.add(intra_offset_anal, name="Intra-Offset-anal", settings=settings_offset)
+viewer.add(extra_offset_anal, name="Extra-Offset-anal", settings=settings_offset)
+
+
+
+# Calculating differences and plotting
+
+print('extra')
+max_diff_extrados = 0.0
+diff_extrados = {}
+for key in extra_meshdos.vertices():
+    diff_extrados[key] = extra_offset.vertex_attribute(key, 'z') - extra_offset_anal.vertex_attribute(key, 'z')
+    if abs(diff_extrados[key]) > max_diff_extrados:
+        max_diff_extrados = abs(diff_extrados[key])
+        print(extra_meshdos.vertex_attribute(key, 'z'))
+        print(extra_offset.vertex_attribute(key, 'z'))
+        print(extra_offset_anal.vertex_attribute(key, 'z'))
+print(max_diff_extrados)
+
+print('intra')
+max_diff_intrados = 0.0
+diff_intrados = {}
+for key in intra_meshdos.vertices():
+    diff_intrados[key] = intra_offset.vertex_attribute(key, 'z') - intra_offset_anal.vertex_attribute(key, 'z')
+    if abs(diff_intrados[key]) > max_diff_intrados:
+        max_diff_intrados = abs(diff_intrados[key])
+        print(intra_meshdos.vertex_attribute(key, 'z'))
+        print(intra_offset.vertex_attribute(key, 'z'))
+        print(intra_offset_anal.vertex_attribute(key, 'z'))
+print(max_diff_intrados)
+
+from compas_plotters import MeshPlotter
+from compas.utilities import i_to_red
+plotter = MeshPlotter(extra_meshdos, figsize=(10, 10))
+plotter.draw_edges()
+plotter.draw_vertices(text={key: round(diff_extrados[key], 2) for key in extra_meshdos.vertices()}, facecolor={key: i_to_red(abs(diff_extrados[key])/max_diff_extrados) for key in extra_meshdos.vertices()})
+plotter.show()
+
+plotter = MeshPlotter(intra_meshdos, figsize=(10, 10))
+plotter.draw_edges()
+plotter.draw_vertices(text={key: round(diff_intrados[key], 2) for key in intra_meshdos.vertices()}, facecolor={key: i_to_red(abs(diff_intrados[key])/max_diff_intrados) for key in intra_meshdos.vertices()})
+plotter.show()
+
+
 viewer.show()

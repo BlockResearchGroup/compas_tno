@@ -2,9 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.viewers.shapes import view_shapes
 from compas_tno.viewers.thrust import view_thrust
-from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
-from compas_tno.analysis.analysis import Analysis
 
 # ----------------------------------------------------------------------
 # -----------EXAMPLE OF MIN and MAX THRUST FOR DOME --------------------

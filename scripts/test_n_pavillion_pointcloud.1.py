@@ -20,14 +20,14 @@ from scipy import rand
 
 thk = 0.5
 radius = 5.0
-type_structure = 'dome'
-type_formdiagram = 'radial_spaced_fd'
-# type_formdiagram = 'radial_fd'
-discretisation = [8, 20]
-center = [5.0, 5.0]
+span = 10.0
+k = 1.0
+type_structure = 'pavillionvault'
+type_formdiagram = 'ortho_fd'
+discretisation = 10
 gradients = False
 n = 4
-error = 0.10
+error = 0.0
 ro = 1.0
 
 # ----------------------- Shape Analytical ---------------------------
@@ -35,10 +35,9 @@ ro = 1.0
 data_shape = {
     'type': type_structure,
     'thk': thk,
-    'discretisation': [discretisation[0]*n, discretisation[1]*n],
-    'center': center,
-    'radius': radius,
-    't': 0.0
+    'discretisation': discretisation*n,
+    'xy_span': [[0, span], [0, k*span]],
+    't': 0.0,
 }
 
 analytical_shape = Shape.from_library(data_shape)
@@ -54,18 +53,10 @@ print('Analytical Area is:', area_analytical)
 xy = []
 points_ub = []
 points_lb = []
-xc = center[0]
-yc = center[1]
-n_radial = discretisation[0] * n
-n_spikes = discretisation[1] * n
-r_div = radius/n_radial
-theta = 2*math.pi/n_spikes
 
-for nr in range(n_radial+1):
-    for nc in range(n_spikes):
-        xi = xc + nr * r_div * math.cos(theta * nc)
-        yi = yc + nr * r_div * math.sin(theta * nc)
-        xy.append([xi, yi])
+for i in range(n * discretisation + 1):
+    for j in range(n * discretisation + 1):
+        xy.append([i * span / (n * discretisation), j * span / (n * discretisation)])
 
 z_ub = analytical_shape.get_ub_pattern(xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
 z_lb = analytical_shape.get_lb_pattern(xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
@@ -74,8 +65,8 @@ for i in range(len(xy)):
     points_lb.append([xy[i][0], xy[i][1], float(z_lb[i])])
     points_ub.append([xy[i][0], xy[i][1], float(z_ub[i])])
 
-# # triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
-# view_shapes_pointcloud(triangulated_shape).show()
+triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
+view_shapes_pointcloud(triangulated_shape).show()
 
 # ----------------------- Form Diagram ---------------------------
 
@@ -94,9 +85,6 @@ print('Form Diagram Created!')
 plot_form(form, show_q=False, fix_width=False).show()
 
 # ------- Create shape given a topology and a point cloud --------
-
-triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
-view_shapes_pointcloud(triangulated_shape).show()
 
 vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub, middle=analytical_shape.middle, data={'type': 'general', 't': 0.0, 'thk': thk})
 vault.store_normals()

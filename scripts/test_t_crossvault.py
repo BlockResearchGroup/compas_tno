@@ -9,7 +9,7 @@ from compas_tno.viewers.thrust import view_thrusts
 from compas_tno.viewers.thrust import view_solution
 from copy import deepcopy
 
-# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------- 
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
 # ----------------------------------------------------------------------
 
@@ -34,8 +34,8 @@ data_shape = {
     't': 0.0,
 }
 
-dome = Shape.from_library(data_shape)
-swt = dome.compute_selfweight()
+vault = Shape.from_library(data_shape)
+swt = vault.compute_selfweight()
 print('Selfweight computed:', swt)
 print('Vault geometry created!')
 
@@ -55,8 +55,10 @@ plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
-# plot_form(form).show()
+# form = form.initialise_tna(plot=False)
+form.selfweight_from_shape(vault)
+form = form.initialise_loadpath()
+plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
@@ -76,7 +78,7 @@ print(optimiser.data)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
-analysis = Analysis.from_elements(dome, form, optimiser)
+analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
@@ -92,4 +94,4 @@ form.to_json(file_address)
 
 plot_form(form, show_q=False, cracks=True).show()
 
-view_solution(form, dome).show()
+view_solution(form, vault).show()
