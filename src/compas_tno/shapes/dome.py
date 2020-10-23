@@ -1,21 +1,15 @@
 
 
-from scipy.interpolate import interp2d
-from numpy import arange
 from numpy import zeros
 from numpy import array
 import math
-from math import pi
 from math import sin, cos
 from compas.datastructures import Mesh
-from scipy import interpolate
-from scipy import hstack
 
 from numpy import ones
-from numpy import zeros
 
 
-def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20]):
+def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], expanded=False):
 
     tol = 10e-3
     xc = center[0]
@@ -79,7 +73,37 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discreti
                     face = [p3, p4, p2, p1]
                 faces.append(face)
 
-            i = i+1
+            i += 1
+
+    if expanded:
+        nr = n_radial + 1
+        faces_exp = faces[:]
+        x1d_exp = x1d[:]
+        y1d_exp = y1d[:]
+        for nc in range(n_spikes):
+            uv_i[(nr, nc)] = i
+            ze = -t
+            zi = -t
+            xi = xc + re * math.cos(theta * nc)
+            yi = yc + re * math.sin(theta * nc)
+            x1d_exp.append(xi)
+            y1d_exp.append(yi)
+            zi1d.append(zi)
+            ze1d.append(ze)
+
+            p1 = (nr-1, nc)
+            p2 = (nr-1, nc+1)
+            p3 = (nr, nc)
+            p4 = (nr, nc+1)
+            if nc < n_spikes - 1:  # General Case
+                face = [p3, p4, p2, p1]
+            else:
+                p2 = (nr-1, 0)
+                p4 = (nr, 0)
+                face = [p3, p4, p2, p1]
+            faces_exp.append(face)
+
+            i += 1
 
     for face in faces:
         face_i = []
@@ -90,12 +114,31 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discreti
         faces_i.append(face_i)
 
     xyz_middle = array([x1d, y1d, zt1d]).transpose()
-    xyz_intrados = array([x1d, y1d, zi1d]).transpose()
-    xyz_extrados = array([x1d, y1d, ze1d]).transpose()
-
-    intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i)
-    extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i)
     middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
+
+    if expanded:
+        faces_i_exp = []
+        for face in faces_exp:
+            face_i = []
+            for uv in face:
+                u, v = uv
+                i = uv_i[(u, v)]
+                face_i.append(i)
+            faces_i_exp.append(face_i)
+
+        xyz_middle = array([x1d, y1d, zt1d]).transpose()
+        xyz_intrados = array([x1d_exp, y1d_exp, zi1d]).transpose()
+        xyz_extrados = array([x1d_exp, y1d_exp, ze1d]).transpose()
+        middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
+        intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i_exp)
+        extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i_exp)
+    else:
+        xyz_middle = array([x1d, y1d, zt1d]).transpose()
+        xyz_intrados = array([x1d, y1d, zi1d]).transpose()
+        xyz_extrados = array([x1d, y1d, ze1d]).transpose()
+        middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
+        intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i)
+        extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i)
 
     return intrados, extrados, middle
 
@@ -183,7 +226,7 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
     phi_lower = 0
     phi_upper = 2 * math.pi
     phi_length = discretisation[1]
-    step_phi = (phi_upper - phi_lower)
+    # step_phi = (phi_upper - phi_lower)
     phi_range = [phi_lower + x * (phi_upper - phi_lower) / phi_length for x in range(phi_length + 1)]
 
     theta_length = discretisation[0]
@@ -221,7 +264,7 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
                 ptm = geom_dome(center, radius, theta_range[j], phi_range[i])
                 pte = geom_dome(center, re, theta_range_e[j], phi_range[i])
                 pti = geom_dome(center, ri, theta_range_i[j], phi_range[i])
-            else:  # This allows a additional meridian to respect the 't' over the points with (x, y) in 'middle'
+            else:
                 ptm = geom_dome(center, radius, theta_range[-1], phi_range[i])
                 pte = geom_dome(center, re, theta_range_e[-1], phi_range[i])
                 pti[:] = ptm

@@ -124,6 +124,7 @@ class Shape(object):
         thk = data['thk']
         discretisation = data['discretisation']
         t = data.get('t', 0.0)
+        expanded = data.get('expanded', False)
 
         if typevault == 'crossvault':
             xy_span = data['xy_span']
@@ -134,7 +135,7 @@ class Shape(object):
         elif typevault == 'dome':
             center = data['center']
             radius = data['radius']
-            intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
+            intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
         elif typevault == 'dome_polar':
             center = data['center']
             radius = data['radius']

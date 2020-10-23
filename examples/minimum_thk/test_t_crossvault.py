@@ -9,7 +9,7 @@ from compas_tno.viewers.thrust import view_thrusts
 from compas_tno.viewers.thrust import view_solution
 from copy import deepcopy
 
-# ---------------------------------------------------------------------- 
+# ----------------------------------------------------------------------
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
 # ----------------------------------------------------------------------
 

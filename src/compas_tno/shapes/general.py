@@ -118,8 +118,6 @@ def _invert_vector(vector):
 
 def general_b_update_with_n(b, n, fixed):
 
-
-
     return b_new
 
 def general_db_with_n(b, n, fixed):

@@ -31,23 +31,23 @@ def invert_vector(vector):
 
 # ----------------------- Cross Vault Data ---------------------------
 
-thk = 0.5
-span = 10.0
-k = 1.0
-n = 1
-type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
-discretisation = 10
+# thk = 0.5
+# span = 10.0
+# k = 1.0
+# n = 1
+# type_structure = 'crossvault'
+# type_formdiagram = 'cross_fd'
+# discretisation = 10
 
-data_shape = {
-    'type': type_structure,
-    'thk': thk,
-    'discretisation': discretisation*n,
-    'xy_span': [[0, span], [0, k*span]],
-    't': 0.0,
-}
+# data_shape = {
+#     'type': type_structure,
+#     'thk': thk,
+#     'discretisation': discretisation*n,
+#     'xy_span': [[0, span], [0, k*span]],
+#     't': 0.0,
+# }
 
-shape = Shape.from_library(data_shape)
+# shape = Shape.from_library(data_shape)
 
 
 # # ----------------------- Arch Data ---------------------------
@@ -81,7 +81,7 @@ shape = Shape.from_library(data_shape)
 thk = 0.50
 radius = 5.0
 type_structure = 'dome'
-type_formdiagram = 'radial_spaced_fd'
+type_formdiagram = 'radial_fd'
 discretisation = [8, 20]
 gradients = True
 n = 1
@@ -92,10 +92,12 @@ data_shape = {
     'discretisation': [discretisation[0]*n, discretisation[1]*n],
     'center': [5.0, 5.0],
     'radius': radius,
-    't': 0.0
+    't': 0.0,
+    'expanded': True
 }
 
 shape = Shape.from_library(data_shape)
+# view_shapes(shape).show()
 
 # ------ CODE
 
@@ -117,7 +119,7 @@ for n in [0.10]:
     intra_offset = intra_meshdos.offset_mesh(n, 'up')
     extra_offset = extra_meshdos.offset_mesh(n, 'down')
 
-# Settings to visualise
+# ------ Settings to visualise
 
 viewer = ObjectViewer()
 
@@ -141,18 +143,18 @@ settings_offset = {
         'faces.on': True,
         }
 
-# viewer.add(intra_meshdos, name="Intra-Original", settings=settings_original)
-viewer.add(extra_meshdos, name="Extra-Original", settings=settings_original)
-# viewer.add(intra_offset, name="Intra-Offset-n", settings=settings_offset)
-viewer.add(extra_offset, name="Extra-Offset-n", settings=settings_offset)
+viewer.add(intra_meshdos, name="Intra-Original", settings=settings_original)
+# viewer.add(extra_meshdos, name="Extra-Original", settings=settings_original)
+viewer.add(intra_offset, name="Intra-Offset-n", settings=settings_offset)
+# viewer.add(extra_offset, name="Extra-Offset-n", settings=settings_offset)
 
-data_shape['thk'] -= 2* n
+data_shape['thk'] -= 2 * n
 shape_offset = Shape.from_library(data_shape)
 intra_offset_anal = shape_offset.intrados
 extra_offset_anal = shape_offset.extrados
 
-# viewer.add(intra_offset_anal, name="Intra-Offset-anal", settings=settings_offset)
-viewer.add(extra_offset_anal, name="Extra-Offset-anal", settings=settings_offset)
+viewer.add(intra_offset_anal, name="Intra-Offset-anal", settings=settings_offset)
+# viewer.add(extra_offset_anal, name="Extra-Offset-anal", settings=settings_offset)
 
 
 
@@ -193,6 +195,5 @@ plotter = MeshPlotter(intra_meshdos, figsize=(10, 10))
 plotter.draw_edges()
 plotter.draw_vertices(text={key: round(diff_intrados[key], 2) for key in intra_meshdos.vertices()}, facecolor={key: i_to_red(abs(diff_intrados[key])/max_diff_intrados) for key in intra_meshdos.vertices()})
 plotter.show()
-
 
 viewer.show()
