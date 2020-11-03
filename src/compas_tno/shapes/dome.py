@@ -4,7 +4,8 @@ from numpy import zeros
 from numpy import array
 import math
 from math import sin, cos
-from compas.datastructures import Mesh
+# from compas.datastructures import Mesh
+from compas_tno.datastructures import MeshDos
 
 from numpy import ones
 
@@ -114,7 +115,7 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discreti
         faces_i.append(face_i)
 
     xyz_middle = array([x1d, y1d, zt1d]).transpose()
-    middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
+    middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
 
     if expanded:
         faces_i_exp = []
@@ -129,16 +130,16 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discreti
         xyz_middle = array([x1d, y1d, zt1d]).transpose()
         xyz_intrados = array([x1d_exp, y1d_exp, zi1d]).transpose()
         xyz_extrados = array([x1d_exp, y1d_exp, ze1d]).transpose()
-        middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
-        intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i_exp)
-        extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i_exp)
+        middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
+        intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i_exp)
+        extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i_exp)
     else:
         xyz_middle = array([x1d, y1d, zt1d]).transpose()
         xyz_intrados = array([x1d, y1d, zi1d]).transpose()
         xyz_extrados = array([x1d, y1d, ze1d]).transpose()
-        middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
-        intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i)
-        extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i)
+        middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
+        intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i)
+        extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i)
 
     return intrados, extrados, middle
 
@@ -210,9 +211,9 @@ def set_dome_with_spr(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi
     xyz_extrados = array(xyz_extrados)
     xyz_intrados = array(xyz_intrados)
 
-    middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
-    extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i)
-    intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i)
+    middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
+    extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i)
+    intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i)
 
     return intrados, extrados, middle
 
@@ -292,9 +293,9 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
     xyz_extrados = array(xyz_extrados)
     xyz_intrados = array(xyz_intrados)
 
-    middle = Mesh.from_vertices_and_faces(xyz_middle, faces_i)
-    extrados = Mesh.from_vertices_and_faces(xyz_extrados, faces_i)
-    intrados = Mesh.from_vertices_and_faces(xyz_intrados, faces_i)
+    middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
+    extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i)
+    intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i)
 
     center = center0
 
@@ -307,6 +308,22 @@ def geom_dome(p0, ro, theta, phi):
     z = ro * cos(theta)
     point = [p0[0] + x, p0[1] + y, p0[2] + z]
     return point
+
+
+def dome_zt_update(x, y, radius, t, center=[5.0, 5.0]):
+
+    xc = center[0]
+    yc = center[1]
+    zt = ones((len(x), 1))
+
+    for i in range(len(x)):
+        zt2 = radius**2 - (x[i] - xc)**2 - (y[i] - yc)**2
+        if zt2 > 0:
+            zt[i] = math.sqrt(zt2)
+        else:
+            zt[i] = 0.0
+
+    return zt
 
 
 def dome_ub_lb_update(x, y, thk, t, center=[5.0, 5.0], radius=5.0):

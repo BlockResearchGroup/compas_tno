@@ -26,6 +26,8 @@ from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_f
 from compas_tno.diagrams.diagram_circular import create_circular_spiral_form
 from compas_tno.diagrams.diagram_rectangular import create_ortho_form
 
+from compas_tno.shapes.dome import dome_zt_update
+from compas_tno.shapes.dome import dome_ub_lb_update
 
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_force
@@ -752,16 +754,19 @@ class FormDiagram(FormDiagram):
 
     def envelope_from_shape(self, shape):
 
-        XY = self.vertices_attributes('xy')
-        zub = shape.get_ub_pattern(XY)
-        zlb = shape.get_lb_pattern(XY)
+        XY = array(self.vertices_attributes('xy'))
+        if shape.data['type'] == 'dome':
+            zub, zlb = dome_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], shape.data['center'], shape.data['radius'])
+        else:
+            zub = shape.get_ub_pattern(XY)
+            zlb = shape.get_lb_pattern(XY)
 
         keysnan = []
         i = 0
 
         for key in self.vertices():
-            ub_ = zub[i]
-            lb_ = zlb[i]
+            ub_ = float(zub[i])
+            lb_ = float(zlb[i])
             # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' ub:', ub_)
             # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' lb:', lb_)
             # if math.isnan(lb_):  # This check seems deprecated because the get_from_pattern seems to never return NaN...
@@ -788,8 +793,11 @@ class FormDiagram(FormDiagram):
         form_ = self.copy()
         total_selfweight = shape.compute_selfweight()
 
-        XY = self.vertices_attributes('xy')
-        zt = shape.get_middle_pattern(XY)
+        XY = array(self.vertices_attributes('xy'))
+        if shape.data['type'] == 'dome':
+            zt = dome_zt_update(XY[:, 0], XY[:, 1], shape.data['radius'], shape.data['t'], shape.data['center'])
+        else:
+            zt = shape.get_middle_pattern(XY)
 
         i = 0
         for key in form_.vertices():
@@ -817,6 +825,48 @@ class FormDiagram(FormDiagram):
         for key in self.vertices():
             pzi = factor * self.vertex_attribute(key, 'pz')
             self.vertex_attribute(key, 'pz', value=pzi)
+
+        return
+
+
+    def selfweight_from_pattern(self, pattern, plot=False, tol=10e-4):
+        """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
+
+        form = self
+        form_ = pattern
+
+        self.vertices_attribute('pz', 0.0)
+        key_real_to_key = {}
+
+        for key in form_.vertices():
+            x, y, _ = form_.vertex_coordinates(key)
+            for key_real in self.vertices():
+                x_real, y_real, _ = self.vertex_coordinates(key_real)
+                if x - tol < x_real < x + tol and y - tol < y_real < y + tol:
+                    key_real_to_key[key_real] = key
+                    break
+
+        pzt = 0
+        for key in key_real_to_key:
+            pz = form_.vertex_area(key_real_to_key[key])
+            self.vertex_attribute(key, 'pz', value=pz)
+            pzt += pz
+
+        if plot:
+            plotter = MeshPlotter(self, figsize=(10, 10))
+            plotter.draw_edges()
+            plotter.draw_vertices(text=key_real_to_key)
+            plotter.show()
+
+            plotter = MeshPlotter(form_, figsize=(10, 10))
+            plotter.draw_edges()
+            plotter.draw_vertices(text={key: key for key in form_.vertices()})
+            plotter.show()
+
+            plotter = MeshPlotter(self, figsize=(10, 10))
+            plotter.draw_edges()
+            plotter.draw_vertices(text={key: round(self.vertex_attribute(key, 'pz'), 1) for key in self.vertices()})
+            plotter.show()
 
         return
 

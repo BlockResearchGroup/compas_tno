@@ -99,6 +99,25 @@ data_shape = {
 shape = Shape.from_library(data_shape)
 # view_shapes(shape).show()
 
+
+# ----------------------- Form Diagram ---------------------------
+
+data_diagram = {
+    'type': type_formdiagram,
+    'center': [5.0, 5.0],
+    'radius': radius,
+    'discretisation': discretisation,
+    'r_oculus': 0.0,
+    'diagonal': False,
+    'partial_diagonal': False,
+}
+
+form = FormDiagram.from_library(data_diagram)
+print('Form Diagram Created!')
+plot_form(form, show_q=False, fix_width=False).show()
+
+shape = Shape.from_meshes_and_formdiagram(form, shape.intrados, shape.extrados, middle=shape.middle, data={'type': 'general', 't': 0.0, 'thk': thk})
+
 # ------ CODE
 
 swt = shape.compute_selfweight()

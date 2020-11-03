@@ -1,6 +1,8 @@
 from compas.geometry import subtract_vectors
 from compas.geometry import length_vector
 from compas.geometry import cross_vectors
+from compas.geometry import is_point_in_convex_polygon_xy
+from compas.utilities import geometric_key_xy
 
 from compas.datastructures import Mesh
 
@@ -33,7 +35,7 @@ class MeshDos(Mesh):
 
     __module__ = 'compas_tno.datastructures'
 
-    def __init__(self):
+    def __init__(self):  # add '_is_outside': False as default
         super(Mesh, self).__init__()
 
     @classmethod
@@ -110,7 +112,45 @@ class MeshDos(Mesh):
 
         return mesh
 
-    def offset_mesh(self, n=0.1, direction='up'):
+    @classmethod
+    def from_topology_and_mesh(cls, formdiagram, mesh_base, keep_normals=True):
+
+        vertices, faces = formdiagram.to_vertices_and_faces()
+        mesh = cls().from_vertices_and_faces(vertices, faces)
+        XY = array(mesh.vertices_attributes('xy'))
+        XYZ_base = array(mesh_base.vertices_attributes('xyz'))
+        z = interpolate.griddata(XYZ_base[:, :2], XYZ_base[:, 2], XY, method='linear')
+        count_vertex_normals = 0
+        count_face_normals = 0
+        if keep_normals:
+            XY_project = []
+            keys_project = []
+            intra_gkey_key_xy = mesh_base.geometric_key_xy_key()
+            for i, key in enumerate(mesh.vertices()):
+                x, y = XY[i]
+                try:
+                    key_base = intra_gkey_key_xy[geometric_key_xy([x, y])]
+                    mesh.vertex_attribute(key, 'n', mesh_base.vertex_normal(key_base))
+                    count_vertex_normals += 1
+                except:
+                    XY_project.append([x, y])
+                    keys_project.append(key)
+                    count_face_normals += 1
+            normals = mesh_base.get_xy_face_normals(XY)
+            for i in range(len(normals)):
+                mesh.vertex_attribute(keys_project[i], 'n', normals[i])
+
+        for i, key in enumerate(mesh.vertices()):
+            mesh.vertex_attribute(key, 'z', float(z[i]))
+
+        # for key in mesh.vertices():
+        #     print('n', mesh.vertex_attribute(key, 'n'))
+
+        print('count normals {0} and faces {1}'.format(count_vertex_normals, count_face_normals))
+
+        return mesh
+
+    def offset_mesh(self, n=0.1, direction='up', t=0.0):
         """
         Offset the mesh upwards considering it as intrados.
 
@@ -129,18 +169,93 @@ class MeshDos(Mesh):
         new_offset = []
 
         for key in new_mesh.vertices():
-            normal = new_mesh.vertex_normal(key)
+            normal = new_mesh.vertex_attribute(key, 'n')
+            # normal = new_mesh.vertex_normal(key)
             z = new_mesh.vertex_coordinates(key)[2]
             deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
-            if direction == 'up':
-                new_offset.append(z + n*1/deviation)
+            if new_mesh.vertex_attribute(key, '_is_outside'):
+                new_offset.append(t)
             else:
-                new_offset.append(z - n*1/deviation)
+                if direction == 'up':
+                    new_offset.append(z + n*1/deviation)
+                else:
+                    new_offset.append(z - n*1/deviation)
 
         for i, key in enumerate(new_mesh.vertices()):
             new_mesh.vertex_attribute(key, 'z', new_offset[i])
 
         return new_mesh
+
+    def get_xy_face_normal(self, x, y):
+        """
+        Get normal based on the face normal in which the point encounters (please use vertex_normal if x, y = xi, yi where i is a vertex of the mesh) .
+
+        Parameters
+        ----------
+        x : float
+            X-Coordinate.
+        y : float
+            Y-Coordinate.
+        Returns
+        -------
+        obj
+            MeshDos.
+
+        """
+
+        for fkey in self.faces():
+            xy_face = self.face_coordinates(fkey)
+            print('xy_face', xy_face)
+            if is_point_in_convex_polygon_xy([x, y], xy_face):
+                return self.face_normal(fkey)
+
+        return None
+
+    def get_xy_face_normals(self, XY):
+        """
+        Get normal based on the face normal in which the points are in the plan.
+
+        Parameters
+        ----------
+        XY : list
+            List of Points
+        Returns
+        -------
+        obj
+            MeshDos.
+
+        """
+
+        face_coords = [self.face_coordinates(fkey) for fkey in self.faces()]
+        normals = []
+        i = 0
+        for face_coord in face_coords:
+            for xy in XY:
+                if is_point_in_convex_polygon_xy(xy, face_coord):
+                    normal = self.face_normal(list(self.faces())[i])
+                    normals.append(normal)
+                    print('xy, normal', xy, normal)
+            i = i+1
+        # print(normals)
+        return normals
+
+    def geometric_key_xy_key(self, precision=None):
+        """Returns a dictionary that maps *geometric keys* of a certain precision
+        to the keys of the corresponding vertices.
+
+        Parameters
+        ----------
+        precision : str (3f)
+            The float precision specifier used in string formatting.
+
+        Returns
+        -------
+        dict
+            A dictionary of geometric key-key pairs.
+
+        """
+        XY = self.vertices_attributes('xy')
+        return {geometric_key_xy(XY[i], precision): key for i, key in enumerate(self.vertices())}
 
 
     def vertex_projected_area(self, key):

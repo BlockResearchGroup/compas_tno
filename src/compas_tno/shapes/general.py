@@ -26,7 +26,7 @@ def general_dub_dlb_with_s(ub, lb):
     return dub, dlb
 
 
-def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represents the magnitude of the normal vector
+def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represents the magnitude of the normal offset vector
 
     ub_update = zeros((len(ub), 1))
     lb_update = zeros((len(ub), 1))

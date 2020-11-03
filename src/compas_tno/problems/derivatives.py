@@ -292,6 +292,8 @@ def sensitivities_wrapper(xopt, *args):
                 drol[i + len(rol_x), :len(ind)] = - droly[i]
         deriv = vstack([deriv, drol])
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
+        if len(variables) == 3:
+            Asym = hstack([Asym, zeros((Asym.shape[0], 1))])
         deriv = vstack([deriv, Asym])
 
     return deriv
@@ -304,6 +306,8 @@ def sensitivities_wrapper_inequalities(xopt, *args):
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
     deriv = sensitivities_wrapper(xopt, *args)
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
+        if len(variables) == 3:
+            Asym = hstack([Asym, zeros((Asym.shape[0], 1))])
         deriv = vstack([deriv, -Asym])
 
     return deriv

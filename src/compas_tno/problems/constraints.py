@@ -5,14 +5,8 @@ from numpy import divide
 from numpy import array
 from numpy import zeros
 from numpy import transpose
-from compas.geometry import is_intersection_segment_segment_xy
-from compas.geometry import intersection_line_segment_xy
-from compas.geometry import distance_point_point_xy
-from compas_tno.algorithms.equilibrium import zlq_from_qid
 from compas_tno.algorithms.equilibrium import zq_from_qid
-from compas_tno.algorithms.equilibrium import q_from_qid
 from scipy.sparse import diags
-from scipy.sparse.linalg import spsolve
 
 from compas_tno.problems.bounds_update import ub_lb_update
 from compas_tno.problems.bounds_update import b_update
@@ -118,6 +112,7 @@ def constr_wrapper_inequalities(xopt, *args):  # This considers a equality in As
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
     constraints = constr_wrapper(xopt, *args)
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
-        constraints = vstack([constraints, -Asym])
+        Aq = Asym.dot(vstack([q[ind], z[fixed]])).flatten()
+        constraints = hstack([constraints, -Aq])
 
     return constraints

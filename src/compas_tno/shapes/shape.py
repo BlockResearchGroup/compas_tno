@@ -87,35 +87,17 @@ class Shape(object):
 
     @classmethod
     def from_library(cls, data):
-        """Construct a FormDiagram from a library.
+        """Construct a Shape from a library.
 
         Parameters
         ----------
         data : dictionary
             Dictionary with the options to create the vault.
 
-        *   ``type``  : The type of the vault to be constructed. Supported: arch, dome, crossvault, pointedvault, pavillionvault.
-        *   ``xy_span``  : Planar range of the structure.
-        *   ``discretisation``  : Density of the highfield.
-        *   ``thickness`` : Mean thickness of the vault.
-
         Returns
         -------
         Shape
             A Shape object.
-
-        Examples
-        --------
-        .. code-block:: python
-
-            from compas_tno.diagrams import FormDiagram
-            data_diagram = {
-                'type': 'cross_fd',
-                'xy_span': [[0, 10], [0, 10]],
-                'discretisation': 10,
-                'fix': 'corners',
-            }
-            form = FormDiagram.from_library(data_diagram)
 
         """
         shape = cls()
@@ -176,7 +158,25 @@ class Shape(object):
 
     @classmethod
     def from_meshes(cls, intrados, extrados, middle=None, data=None):
+        """Construct a Shape from meshes for intrados, extrados, and middle.
 
+        Parameters
+        ----------
+        intrados : mesh
+            Mesh for intrados.
+        extrados : mesh
+            Mesh for extrados.
+        middle : mesh
+            Mesh for middle.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
         shape = cls()
 
         shape.intrados = MeshDos.from_mesh(intrados)
@@ -198,6 +198,25 @@ class Shape(object):
 
     @classmethod
     def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pointcloud.
+
+        Parameters
+        ----------
+        intrados_pts : list
+            List of points collected in the intrados.
+        extrados : mesh
+            List of points collected in the extrados.
+        middle : mesh (None)
+            Mesh for middle.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
 
         intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
         extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
@@ -207,9 +226,61 @@ class Shape(object):
 
     @classmethod
     def from_pointcloud_and_formdiagram(cls, form, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pointcloud and a formdiagram that will have its topology copied.
+
+        Parameters
+        ----------
+        form: FormDiagram
+            Form Diagram with the topology to be used.
+        intrados_pts : list
+            List of points collected in the intrados.
+        extrados : mesh
+            List of points collected in the extrados.
+        middle : mesh (None)
+            Mesh for middle.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
 
         intrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(intrados_pts))
         extrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(extrados_pts))
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+
+    @classmethod
+    def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied.
+
+        Parameters
+        ----------
+        form: FormDiagram
+            Form Diagram with the topology to be used.
+        intrados : mesh
+            Mesh for intrados.
+        extrados : mesh
+            Mesh for extrados.
+        middle : mesh (None)
+            Mesh for middle.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+
+        intrados_mesh = MeshDos.from_topology_and_mesh(form, intrados, keep_normals=True)
+        extrados_mesh = MeshDos.from_topology_and_mesh(form, extrados, keep_normals=True)
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
         return shape
@@ -256,6 +327,7 @@ class Shape(object):
     def store_normals(self, mark_fixed_LB=True):
 
         intrados = self.intrados
+        intra_gkey_key = intrados.gkey_key
         extrados = self.extrados
 
         for key in intrados.vertices():
@@ -265,6 +337,7 @@ class Shape(object):
             extrados.vertex_attribute(key, 'n', normal_extra)
 
         intrados.vertices_attribute('_is_outside', False)
+        extrados.vertices_attribute('_is_outside', False)
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
@@ -276,6 +349,8 @@ class Shape(object):
                 for key in intrados.vertices():
                     if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
                         intrados.vertex_attribute(key, '_is_outside', True)
+                    if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
+                        extrados.vertex_attribute(key, '_is_outside', True)
 
         return
 
