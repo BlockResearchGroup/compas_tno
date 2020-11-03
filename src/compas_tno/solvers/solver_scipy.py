@@ -100,7 +100,6 @@ def run_optimisation_scipy(analysis):
     return analysis
 
 
-
 def _slsqp(fn, qid0, bounds, fprime, fprime_ieqcons, printout, fieq, args):
     pout = 2 if printout else 0
     opt = fmin_slsqp(fn, qid0, args=args, disp=pout, fprime=fprime, f_ieqcons=fieq, fprime_ieqcons=fprime_ieqcons, bounds=bounds, full_output=1, iter=500)

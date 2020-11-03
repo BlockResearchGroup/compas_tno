@@ -25,7 +25,7 @@ for x_discr in [4, 8, 12, 16]:
         thk = 0.5
         radius = 5.0
         type_structure = 'dome'
-        type_formdiagram = 'radial_fd'
+        type_formdiagram = 'radial_spaced_fd'
         # discretisation = [4, 12]
         ro = 1.0
         gradients = True
@@ -115,7 +115,7 @@ for x_discr in [4, 8, 12, 16]:
         analysis.set_up_optimiser()
         analysis.run()
 
-        if optimiser.data['exitflag'] == 0:
+        if optimiser.exitflag == 0:
             thk_min = form.attributes['thk']
             print(thk_min)
             data_shape['thk'] = thk_min
@@ -130,8 +130,10 @@ for x_discr in [4, 8, 12, 16]:
 
             sols[str(discretisation)] = thk_min
 
+            print('Solved:', discretisation, thk_min)
+
         else:
 
-            print('Not Solved!')
+            print('Not Solved:', discretisation)
 
 print(sols)

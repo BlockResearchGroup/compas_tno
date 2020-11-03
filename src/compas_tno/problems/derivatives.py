@@ -239,9 +239,9 @@ def sensitivities_wrapper(xopt, *args):
             dub, dlb = dub_dlb_update(x, y, thk, t, shape, ub, lb, variables)
             dzub = hstack([-dz, dub])
             dzlb = hstack([dz, - dlb])
-            deriv = vstack([deriv, dzub, dzlb])  # dz IN ALL Z's
+            deriv = vstack([deriv, dzub[ub_ind], dzlb[lb_ind]])  # dz IN ALL Z's
         else:
-            deriv = vstack([deriv, -dz, dz])  # dz IN ALL Z's
+            deriv = vstack([deriv, -dz[ub_ind], dz[lb_ind]])  # dz IN ALL Z's
     if 'reac_bounds' in dict_constr:
         CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
         dRxdq = Cf.transpose().dot(U).dot(dQ)
