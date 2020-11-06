@@ -341,19 +341,21 @@ class Analysis(object):
 
         return
 
-    def apply_reaction_bounds(self):  # TODO: Move this to an appropriate place
+    def apply_reaction_bounds(self, assume_shape=None):  # TODO: Move this to an appropriate place
         """Apply limit thk to be respected by the anchor points"""
 
         form = self.form
         shape = self.shape
 
-        if shape.data['type'] == 'general':
-            return
+        if assume_shape:
+            data = assume_shape
+        else:
+            data = shape.data
 
-        thk = shape.data['thk']
+        thk = data['thk']
 
-        if shape.data['type'] == 'dome' or shape.data['type'] == 'dome_polar':
-            [x0, y0] = shape.data['center'][:2]
+        if data['type'] == 'dome' or data['type'] == 'dome_polar':
+            [x0, y0] = data['center'][:2]
             for key in form.vertices_where({'is_fixed': True}):
                 x, y, _ = form.vertex_coordinates(key)
                 theta = math.atan2((y - y0), (x - x0))
@@ -361,11 +363,11 @@ class Analysis(object):
                 y_ = thk/2*math.sin(theta)
                 form.vertex_attribute(key, 'b', [x_, y_])
 
-        b_manual = shape.data.get('b_manual', None)
-        if shape.data['type'] == 'arch':
-            H = shape.data['H']
-            L = shape.data['L']
-            thk = shape.data['thk']
+        b_manual = data.get('b_manual', None)
+        if data['type'] == 'arch':
+            H = data['H']
+            L = data['L']
+            thk = data['thk']
             radius = H / 2 + (L**2 / (8 * H))
             zc = radius - H
             re = radius + thk/2
@@ -376,12 +378,11 @@ class Analysis(object):
                     form.vertex_attribute(key, 'b', [b_manual, 0.0])
                     print('Applied b manual')
 
-        if shape.data['type'] == 'dome_spr':
-            # print(shape.data['center'])
-            x0 = shape.data['center'][0]
-            y0 = shape.data['center'][1]
-            radius = shape.data['radius']
-            [_, theta_f] = shape.data['theta']
+        if data['type'] == 'dome_spr':
+            x0 = data['center'][0]
+            y0 = data['center'][1]
+            radius = data['radius']
+            [_, theta_f] = data['theta']
             r_proj_e = (radius + thk/2) * math.sin(theta_f)
             r_proj_m = (radius) * math.sin(theta_f)
             delt = r_proj_e - r_proj_m
@@ -392,9 +393,9 @@ class Analysis(object):
                 y_ = delt*math.sin(theta)
                 form.vertex_attribute(key, 'b', [x_, y_])
 
-        if shape.data['type'] == 'pavillionvault':
-            x0, x1 = shape.data['xy_span'][0]
-            y0, y1 = shape.data['xy_span'][1]
+        if data['type'] == 'pavillionvault':
+            x0, x1 = data['xy_span'][0]
+            y0, y1 = data['xy_span'][1]
             for key in form.vertices_where({'is_fixed': True}):
                 x, y, _ = form.vertex_coordinates(key)
                 if x == x0:
@@ -415,10 +416,8 @@ class Analysis(object):
                         form.vertex_attribute(key, 'b', b)
                     else:
                         form.vertex_attribute(key, 'b', [0, +thk/2])
-                # print('x = {0:.1f} | y = {1:.1f} | b = {2}'.format(x, y, form.vertex_attribute(key, 'b')))
-            # print('Pavillion limits')
 
-        self.form = form  # With correct forces
+        self.form = form  # With correct 'b'
 
         return
 

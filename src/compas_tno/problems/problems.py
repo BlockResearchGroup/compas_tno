@@ -81,10 +81,11 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
         i = k_i[key]
         lbi = form.vertex_attribute(key, 'lb')
         ubi = form.vertex_attribute(key, 'ub')
-        if lb is not None:
+        pz = form.vertex_attribute(key, 'pz')  # WIP: take out nodes unloaded from the constraints
+        if lb is not None and pz != 0.0:
             lb.append(lbi)
             lb_ind.append(i)
-        if ub is not None:
+        if ub is not None and pz != 0.0:
             ub.append(ubi)
             ub_ind.append(i)
     lb = array(lb).reshape(-1, 1)

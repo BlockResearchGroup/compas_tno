@@ -239,9 +239,9 @@ def sensitivities_wrapper(xopt, *args):
             dub, dlb = dub_dlb_update(x, y, thk, t, shape, ub, lb, variables)
             dzub = hstack([-dz, dub])
             dzlb = hstack([dz, - dlb])
-            deriv = vstack([deriv, dzub[ub_ind], dzlb[lb_ind]])  # dz IN ALL Z's
+            deriv = vstack([deriv, dzub[ub_ind], dzlb[lb_ind]])  # dz IN ub_ind / lb_ind
         else:
-            deriv = vstack([deriv, -dz[ub_ind], dz[lb_ind]])  # dz IN ALL Z's
+            deriv = vstack([deriv, -dz[ub_ind], dz[lb_ind]])  # dz IN ub_ind / lb_ind
     if 'reac_bounds' in dict_constr:
         CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
         dRxdq = Cf.transpose().dot(U).dot(dQ)
@@ -267,8 +267,8 @@ def sensitivities_wrapper(xopt, *args):
             dslope_dz[i_, i] = -1 * abs(R[i, 1]/R[i, 2])
             dslope_dind[i_] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRydq[i] + signe * abs(R[i, 1]) * dRzdq[i])
         dslope = hstack([dslope_dind, dslope_dz])
-        if 't' in variables:
-            db = db_update(x, y, thk, fixed, shape)
+        if 't' in variables or 'n' in variables:
+            db = db_update(x, y, thk, fixed, shape, b, variables)
             db_column = vstack([db[:, 0].reshape(-1, 1), db[:, 1].reshape(-1, 1)])
             dslope = hstack([dslope, db_column])
         deriv = vstack([deriv, dslope])

@@ -9,6 +9,7 @@ from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
 from compas_tno.datastructures import MeshDos
+from compas.datastructures import mesh_delete_duplicate_vertices
 
 from scipy import rand
 
@@ -130,7 +131,7 @@ analysis.set_up_optimiser()
 analysis.run()
 
 n_reduction = -1 * analysis.optimiser.fopt
-thk_min = thk - 2*n_reduction
+thk_min = thk - 2 * n_reduction
 print('Approx. Minimum THK:', thk_min)
 data_shape['thk'] = thk_min
 

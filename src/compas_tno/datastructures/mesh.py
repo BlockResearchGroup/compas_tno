@@ -1,7 +1,10 @@
 from compas.geometry import subtract_vectors
 from compas.geometry import length_vector
 from compas.geometry import cross_vectors
+from compas.geometry import normalize_vector
 from compas.geometry import is_point_in_convex_polygon_xy
+from compas.geometry import centroid_points
+from compas.geometry import normal_polygon
 from compas.utilities import geometric_key_xy
 
 from compas.datastructures import Mesh
@@ -125,20 +128,23 @@ class MeshDos(Mesh):
         if keep_normals:
             XY_project = []
             keys_project = []
-            intra_gkey_key_xy = mesh_base.geometric_key_xy_key()
+            base_gkey_key_xy = mesh_base.geometric_key_xy_key()
             for i, key in enumerate(mesh.vertices()):
                 x, y = XY[i]
                 try:
-                    key_base = intra_gkey_key_xy[geometric_key_xy([x, y])]
-                    mesh.vertex_attribute(key, 'n', mesh_base.vertex_normal(key_base))
+                    key_base = base_gkey_key_xy[geometric_key_xy([x, y])]
+                    n_vertex = mesh_base.vertex_normal(key_base)
+                    mesh.vertex_attribute(key, 'n', n_vertex)
                     count_vertex_normals += 1
                 except:
                     XY_project.append([x, y])
                     keys_project.append(key)
                     count_face_normals += 1
-            normals = mesh_base.get_xy_face_normals(XY)
-            for i in range(len(normals)):
-                mesh.vertex_attribute(keys_project[i], 'n', normals[i])
+            if XY_project:
+                normals_faces = mesh_base.get_xy_face_normals(XY_project)
+                # print(len(XY_project), len(keys_project), len(normals_faces))
+                for i in range(len(normals_faces)):
+                    mesh.vertex_attribute(keys_project[i], 'n', normals_faces[i])
 
         for i, key in enumerate(mesh.vertices()):
             mesh.vertex_attribute(key, 'z', float(z[i]))
@@ -172,10 +178,10 @@ class MeshDos(Mesh):
             normal = new_mesh.vertex_attribute(key, 'n')
             # normal = new_mesh.vertex_normal(key)
             z = new_mesh.vertex_coordinates(key)[2]
-            deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
             if new_mesh.vertex_attribute(key, '_is_outside'):
                 new_offset.append(t)
             else:
+                deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
                 if direction == 'up':
                     new_offset.append(z + n*1/deviation)
                 else:
@@ -228,15 +234,22 @@ class MeshDos(Mesh):
 
         face_coords = [self.face_coordinates(fkey) for fkey in self.faces()]
         normals = []
-        i = 0
-        for face_coord in face_coords:
-            for xy in XY:
+        for xy in XY:
+            normals_for_pt = []
+            for face_coord in face_coords:
+                i = 0
                 if is_point_in_convex_polygon_xy(xy, face_coord):
-                    normal = self.face_normal(list(self.faces())[i])
-                    normals.append(normal)
-                    print('xy, normal', xy, normal)
-            i = i+1
-        # print(normals)
+                    normal = normal_polygon(face_coord, unitized=False)
+                    normals_for_pt.append(normal)
+                    i = i+1
+            # print('xy, normal', xy, normals_for_pt)
+            if len(normals_for_pt) == 1:
+                normal = normalize_vector(normals_for_pt[0])
+            else:
+                normal = normalize_vector(centroid_points(normals_for_pt))
+                # print('sum vector', normal)
+            normals.append(normal)
+        # print(len(normals), len(XY))
         return normals
 
     def geometric_key_xy_key(self, precision=None):

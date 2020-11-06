@@ -832,7 +832,6 @@ class FormDiagram(FormDiagram):
     def selfweight_from_pattern(self, pattern, plot=False, tol=10e-4):
         """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
 
-        form = self
         form_ = pattern
 
         self.vertices_attribute('pz', 0.0)
@@ -848,9 +847,10 @@ class FormDiagram(FormDiagram):
 
         pzt = 0
         for key in key_real_to_key:
-            pz = form_.vertex_area(key_real_to_key[key])
+            pz = form_.vertex_attribute(key_real_to_key[key], 'pz')
             self.vertex_attribute(key, 'pz', value=pz)
             pzt += pz
+        print('total load applied:', pzt)
 
         if plot:
             plotter = MeshPlotter(self, figsize=(10, 10))

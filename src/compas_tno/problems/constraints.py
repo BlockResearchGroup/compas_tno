@@ -82,8 +82,8 @@ def constr_wrapper(xopt, *args):  # change name shape data to shape
             ub, lb = ub_lb_update(x, y, thk, t, shape, ub, lb, variables)
         constraints = vstack([constraints, ub[ub_ind] - z[ub_ind], z[lb_ind] - lb[lb_ind]])
     if 'reac_bounds' in dict_constr:
-        if 't' in variables:
-            b = b_update(x, y, thk, fixed, shape)
+        if 't' in variables or 'n' in variables:
+            b = b_update(x, y, thk, fixed, shape, b, variables)
         CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
         xyz = hstack([x, y, z])
         p_fixed = hstack([px, py, pz])[fixed]

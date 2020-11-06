@@ -224,9 +224,9 @@ def run_optimisation_ipopt(analysis):
     xopt, info = nlp.solve(x0)
     fopt = info['obj_val']
     exitflag = info['status']
-    if exitflag == 1:  # IPOPT consider solved = 1. TNO solved = 0
+    if exitflag == 1 or exitflag == 0:  # IPOPT consider solved = 1. Solved in tolerances 0 -> TNO solved = 0
         exitflag = 0
-    elif exitflag == 0:
+    else:
         exitflag = 1
     if printout:
         print(info['status_msg'])

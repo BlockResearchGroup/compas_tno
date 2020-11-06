@@ -1,3 +1,5 @@
+from compas.utilities import i_to_red
+from compas_plotters import MeshPlotter
 import os
 import compas_tno
 from compas_tno.diagrams import FormDiagram
@@ -8,6 +10,7 @@ from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
+from compas_tno.viewers import view_normals
 from compas_tno.datastructures import MeshDos
 import math
 from scipy import rand
@@ -16,131 +19,142 @@ from scipy import rand
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
 # ----------------------------------------------------------------------
 
-# Basic parameters
+sols = {}
+for x_discr in [4, 8, 12, 16]:
+    for y_discr in [12, 16, 20, 24]:
+        discretisation = [x_discr, y_discr]
 
-thk = 0.5
-radius = 5.0
-type_structure = 'dome_polar'
-type_formdiagram = 'radial_fd'
-discretisation = [8, 20]
-center = [5.0, 5.0]
-gradients = False
-n = 1
-error = 0.00
-ro = 20.0
+        # Basic parameters
 
-# ----------------------- Shape Analytical ---------------------------
+        thk = 0.5
+        radius = 5.0
+        type_structure = 'dome'
+        type_formdiagram = 'radial_spaced_fd'
+        # discretisation = [8, 20]
+        center = [5.0, 5.0]
+        gradients = False
+        n = 1
+        error = 0.00
+        ro = 1.0
 
-data_shape = {
-    'type': type_structure,
-    'thk': thk,
-    'discretisation': [discretisation[0]*n, discretisation[1]*n],
-    'center': center,
-    'radius': radius,
-    't': 0.0,
-    'expanded': True
-}
+        # ----------------------- Shape Analytical ---------------------------
 
-analytical_shape = Shape.from_library(data_shape)
-analytical_shape.ro = ro
-area_analytical = analytical_shape.middle.area()
-swt_analytical = analytical_shape.compute_selfweight()
+        data_shape = {
+            'type': type_structure,
+            'thk': thk,
+            'discretisation': [discretisation[0]*n, discretisation[1]*n],
+            'center': center,
+            'radius': radius,
+            't': 0.0,
+            'expanded': True
+        }
 
-print('Analytical Self-weight is:', swt_analytical)
-print('Analytical Area is:', area_analytical)
+        analytical_shape = Shape.from_library(data_shape)
+        analytical_shape.ro = ro
+        area_analytical = analytical_shape.middle.area()
+        swt_analytical = analytical_shape.compute_selfweight()
 
-analytical_shape.store_normals()
-# view_shapes(analytical_shape).show()
+        print('Analytical Self-weight is:', swt_analytical)
+        print('Analytical Area is:', area_analytical)
 
-# ----------------------- Form Diagram ---------------------------
+        analytical_shape.store_normals()
+        # view_shapes(analytical_shape).show()
 
-data_diagram = {
-    'type': type_formdiagram,
-    'center': [5.0, 5.0],
-    'radius': radius,
-    'discretisation': discretisation,
-    'r_oculus': 0.0,
-    'diagonal': False,
-    'partial_diagonal': False,
-}
+        # ----------------------- Form Diagram ---------------------------
 
-form = FormDiagram.from_library(data_diagram)
-print('Form Diagram Created!')
-# plot_form(form, show_q=False, fix_width=False).show()
+        data_diagram = {
+            'type': type_formdiagram,
+            'center': [5.0, 5.0],
+            'radius': radius,
+            'discretisation': discretisation,
+            'r_oculus': 0.0,
+            'diagonal': False,
+            'partial_diagonal': False,
+        }
 
-# ------- Create shape given a topology and a shape defined by meshes --------
+        form = FormDiagram.from_library(data_diagram)
+        # print('Form Diagram Created!')
+        # plot_form(form, show_q=False, fix_width=False).show()
 
-vault = Shape.from_meshes_and_formdiagram(form, analytical_shape.intrados, analytical_shape.extrados, middle=analytical_shape.middle, data={'type': 'general', 't': 0.0, 'thk': thk})
+        # ------- Create shape given a topology and a shape defined by meshes --------
 
-area = vault.middle.area()
-swt = vault.compute_selfweight()
+        vault = Shape.from_meshes_and_formdiagram(form, analytical_shape.intrados, analytical_shape.extrados, middle=analytical_shape.middle,
+                                                data={'type': 'general', 't': 0.0, 'thk': thk, 'base_structure': data_shape})
+        vault.ro = ro
 
-print('Interpolated Volume Data:')
-print('Self-weight is: {0:.2f} diff ({1:.2f}%)'.format(swt, 100*(swt - swt_analytical)/(swt_analytical)))
-print('Area is: {0:.2f} diff ({1:.2f}%)'.format(area, 100*(area - area_analytical)/(area_analytical)))
+        area = vault.middle.area()
+        swt = vault.compute_selfweight()
 
-form.selfweight_from_shape(vault)
-# view_shapes(vault).show()
+        print('Interpolated Volume Data:')
+        print('Self-weight is: {0:.2f} diff ({1:.2f}%)'.format(swt, 100*(swt - swt_analytical)/(swt_analytical)))
+        print('Area is: {0:.2f} diff ({1:.2f}%)'.format(area, 100*(area - area_analytical)/(area_analytical)))
 
-# Plot the normals:
+        vault.analytical_normals(assume_shape=data_shape)
 
-normals = {}
-for key in vault.intrados.vertices():
-    normals[key] = vault.intrados.vertex_attribute(key, 'n')
-    print(vault.intrados.vertex_attribute(key, 'n'))
+        form.selfweight_from_shape(analytical_shape)
+        form.envelope_from_shape(analytical_shape)
+        # view_normals(vault).show()
+        # view_shapes(vault).show()
+        # view_shapes_pointcloud(vault).show()
 
-from compas_plotters import MeshPlotter
-from compas.utilities import i_to_red
-plotter = MeshPlotter(vault.intrados, figsize=(10, 10))
-plotter.draw_edges()
-plotter.draw_vertices(text=normals)
-plotter.show()
+        # --------------------- 3. Create Starting point with TNA ---------------------
 
-view_shapes(vault).show()
-# view_shapes_pointcloud(vault).show()
+        # form = form.initialise_tna(plot=False)
+        form.initialise_loadpath()
+        # plot_form(form).show()
 
-# --------------------- 3. Create Starting point with TNA ---------------------
+        # --------------------- 4. Create Minimisation Optimiser ---------------------
 
-# form = form.initialise_tna(plot=False)
-form.initialise_loadpath()
-# plot_form(form).show()
+        optimiser = Optimiser()
+        optimiser.data['library'] = 'Scipy'
+        optimiser.data['solver'] = 'SLSQP'
+        optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+        optimiser.data['variables'] = ['ind', 'zb', 'n']
+        optimiser.data['objective'] = 'n'
+        optimiser.data['printout'] = True
+        optimiser.data['plot'] = False
+        optimiser.data['find_inds'] = True
+        optimiser.data['qmax'] = 1000.0
+        optimiser.data['gradient'] = gradients
+        optimiser.data['jacobian'] = gradients
 
-# --------------------- 4. Create Minimisation Optimiser ---------------------
+        # --------------------- 5. Set up and run analysis ---------------------
 
-optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb', 'n']
-optimiser.data['objective'] = 'n'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
+        analysis = Analysis.from_elements(vault, form, optimiser)
+        # analysis.apply_selfweight()
+        # analysis.apply_envelope()
+        analysis.apply_reaction_bounds(assume_shape=data_shape)
+        analysis.set_up_optimiser()
+        analysis.run()
 
-# --------------------- 5. Set up and run analysis ---------------------
+        n_reduction = - 1 * analysis.optimiser.fopt
+        thk_min = thk - 2 * n_reduction
+        print('Approx. Minimum THK:', thk_min)
+        data_shape['thk'] = thk_min
 
-analysis = Analysis.from_elements(vault, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()
-analysis.run()
+        analytical_shape = Shape.from_library(data_shape)
+        form.envelope_from_shape(analytical_shape)
 
-n_reduction = -1 * analysis.optimiser.fopt
-thk_min = thk - 2*n_reduction*thk
-print('Approx. Minimum THK:', thk_min)
-data_shape['thk'] = thk_min
+        if optimiser.exitflag == 0:
+            data_shape['thk'] = thk_min
+            dome = Shape.from_library(data_shape)
+            form.envelope_from_shape(dome)
 
-plot_form(form, show_q=False, cracks=True).show()
+            folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram)
+            title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+            save_form = os.path.join(folder, title)
 
-# analytical_shape = Shape.from_library(data_shape)
-# form.envelope_from_shape(analytical_shape)
+            form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
 
-# plot_form(form, show_q=False, cracks=True).show()
+            sols[str(discretisation)] = thk_min
 
-form.to_json(compas_tno.get('test.json'))
+            print('Solved:', discretisation, thk_min)
 
-view_solution(form, vault).show()
+        else:
+
+            print('Not Solved:', discretisation)
+
+        form.to_json(compas_tno.get('test.json'))
+
+
+print(sols)

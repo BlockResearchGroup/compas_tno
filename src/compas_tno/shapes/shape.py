@@ -15,6 +15,7 @@ from copy import deepcopy
 from compas.geometry import subtract_vectors
 from compas.geometry import length_vector
 from compas.geometry import cross_vectors
+from compas.geometry import normalize_vector
 
 from compas_tno.datastructures import MeshDos
 
@@ -179,8 +180,8 @@ class Shape(object):
         """
         shape = cls()
 
-        shape.intrados = MeshDos.from_mesh(intrados)
-        shape.extrados = MeshDos.from_mesh(extrados)
+        shape.intrados = intrados  # MeshDos.from_mesh(intrados)
+        shape.extrados = extrados  # MeshDos.from_mesh(extrados)
         if middle:
             shape.middle = MeshDos.from_mesh(middle)
         else:
@@ -254,7 +255,6 @@ class Shape(object):
 
         return shape
 
-
     @classmethod
     def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
         """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied.
@@ -327,14 +327,58 @@ class Shape(object):
     def store_normals(self, mark_fixed_LB=True):
 
         intrados = self.intrados
-        intra_gkey_key = intrados.gkey_key
         extrados = self.extrados
 
         for key in intrados.vertices():
+            # print(intrados.vertex_faces(key))
+            # for fkey in intrados.vertex_faces(key):
+            #     print(intrados.face_coordinates(fkey))
             normal_intra = intrados.vertex_normal(key)
             normal_extra = extrados.vertex_normal(key)
             intrados.vertex_attribute(key, 'n', normal_intra)
             extrados.vertex_attribute(key, 'n', normal_extra)
+
+        intrados.vertices_attribute('_is_outside', False)
+        extrados.vertices_attribute('_is_outside', False)
+
+        if mark_fixed_LB:  # Look for the vertices with LB == 't'
+            try:
+                t = self.data['t']
+            except:
+                print('No t is assigned to vertices in intrados.')
+                t = None
+            if t is not None:
+                for key in intrados.vertices():
+                    if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
+                        intrados.vertex_attribute(key, '_is_outside', True)
+                    if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
+                        extrados.vertex_attribute(key, '_is_outside', True)
+
+        return
+
+    def analytical_normals(self, assume_shape=None, mark_fixed_LB=True):
+
+        if assume_shape:
+            data = assume_shape
+        else:
+            data = self.data
+
+        if data['type'] == 'dome':
+            xc, yc = data['center']
+            thk = data['thk']
+        else:
+            return Exception
+
+        intrados = self.intrados
+        extrados = self.extrados
+
+        for key in intrados.vertices():
+            x, y, zlb = intrados.vertex_coordinates(key)
+            _, _, zub = extrados.vertex_coordinates(key)
+            nlb = normalize_vector([(x - xc),(y - yc), zlb])
+            nub = normalize_vector([(x - xc),(y - yc), zub])
+            intrados.vertex_attribute(key, 'n', nlb)
+            extrados.vertex_attribute(key, 'n', nub)
 
         intrados.vertices_attribute('_is_outside', False)
         extrados.vertices_attribute('_is_outside', False)

@@ -6,6 +6,7 @@ import math
 from math import sin, cos
 # from compas.datastructures import Mesh
 from compas_tno.datastructures import MeshDos
+from compas.datastructures import mesh_delete_duplicate_vertices
 
 from numpy import ones
 
@@ -141,6 +142,30 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discreti
         intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i)
         extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i)
 
+    mesh_delete_duplicate_vertices(middle)  # this is a hack. Do it better
+    mesh_delete_duplicate_vertices(intrados)
+    mesh_delete_duplicate_vertices(extrados)
+
+    # Print of KEY at Nodes
+    # from compas_plotters import MeshPlotter
+    # plotter = MeshPlotter(middle, figsize=(10, 10))
+    # plotter.draw_edges()
+    # plotter.draw_vertices(radius=0.10)
+    # plotter.draw_vertices(text={key: key for key in middle.vertices()}, radius=0.10)
+    # plotter.show()
+
+    # plotter = MeshPlotter(intrados, figsize=(10, 10))
+    # plotter.draw_edges()
+    # plotter.draw_vertices(radius=0.10)
+    # plotter.draw_vertices(text={key: key for key in intrados.vertices()}, radius=0.10)
+    # plotter.show()
+
+    # plotter = MeshPlotter(extrados, figsize=(10, 10))
+    # plotter.draw_edges()
+    # plotter.draw_vertices(radius=0.10)
+    # plotter.draw_vertices(text={key: key for key in extrados.vertices()}, radius=0.10)
+    # plotter.show()
+
     return intrados, extrados, middle
 
 
@@ -214,6 +239,10 @@ def set_dome_with_spr(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi
     middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
     extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i)
     intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i)
+
+    mesh_delete_duplicate_vertices(middle)  # this is a hack. Do it better
+    mesh_delete_duplicate_vertices(intrados)
+    mesh_delete_duplicate_vertices(extrados)
 
     return intrados, extrados, middle
 
@@ -296,6 +325,26 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
     middle = MeshDos.from_vertices_and_faces(xyz_middle, faces_i)
     extrados = MeshDos.from_vertices_and_faces(xyz_extrados, faces_i)
     intrados = MeshDos.from_vertices_and_faces(xyz_intrados, faces_i)
+
+    for mesh in [middle, intrados, extrados]:
+        mesh_delete_duplicate_vertices(mesh)  # this is a hack. Do it better
+
+    for mesh in [middle, intrados, extrados]:
+        delete_fkey = []
+        for fkey in mesh.faces():
+            if len(mesh.face_coordinates(fkey)) == 2:
+                delete_fkey.append(fkey)
+        for fkey in delete_fkey:
+            mesh.delete_face(fkey)
+
+    # from compas_plotters import MeshPlotter
+
+    # for mesh in [middle, intrados, extrados]:
+    #     plotter = MeshPlotter(mesh, figsize=(10, 10))
+    #     plotter.draw_edges()
+    #     plotter.draw_vertices(text={key: key for key in mesh.vertices()}, radius=0.10)
+    #     plotter.draw_faces(text={fkey: fkey for fkey in mesh.faces()})
+    #     plotter.show()
 
     center = center0
 
@@ -392,5 +441,33 @@ def dome_db(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
         x_ = abs(1/2 * math.cos(theta))
         y_ = abs(1/2 * math.sin(theta))
         db[i, :] = [x_, y_]
+
+    return db
+
+
+def dome_b_update_with_n(x, y, n, fixed, b, center=[5.0, 5.0]):  # Update the reaction bounds considering as variable the extrusion from the surface,
+
+    [xc, yc] = center[:2]
+    new_b = zeros((len(fixed), 2))
+
+    for i in range(len(fixed)):
+        i_ = fixed[i]
+        theta = math.atan2((y[i_] - yc), (x[i_] - xc))
+        new_b[i, 0] = b[i, 0] - n * abs(math.cos(theta))
+        new_b[i, 1] = b[i, 1] - n * abs(math.sin(theta))
+
+    return new_b
+
+
+def dome_db_with_n(x, y, fixed, center=[5.0, 5.0]):  # Update the reaction bounds considering as variable the extrusion from the surface,
+
+    [xc, yc] = center[:2]
+    db = zeros((len(fixed), 2))
+
+    for i in range(len(fixed)):
+        i_ = fixed[i]
+        theta = math.atan2((y[i_] - yc), (x[i_] - xc))
+        db[i, 0] = - abs(math.cos(theta))
+        db[i, 1] = - abs(math.sin(theta))
 
     return db

@@ -7,6 +7,8 @@ from compas_tno.shapes.dome import dome_ub_lb_update
 from compas_tno.shapes.dome import dome_b_update
 from compas_tno.shapes.dome import dome_dub_dlb
 from compas_tno.shapes.dome import dome_db
+from compas_tno.shapes.dome import dome_b_update_with_n
+from compas_tno.shapes.dome import dome_db_with_n
 
 from compas_tno.shapes.pavillionvault import pavillionvault_ub_lb_update
 from compas_tno.shapes.pavillionvault import pavillionvault_b_update
@@ -20,6 +22,8 @@ from compas_tno.shapes.general import general_ub_lb_update_with_s
 from compas_tno.shapes.general import general_dub_dlb_with_s
 from compas_tno.shapes.general import general_ub_lb_update_with_n
 from compas_tno.shapes.general import general_dub_dlb_with_n
+from compas_tno.shapes.general import general_b_update_with_n
+from compas_tno.shapes.general import general_db_with_n
 
 
 def ub_lb_update(x, y, thk, t, shape, ub, lb, variables):
@@ -64,7 +68,7 @@ def dub_dlb_update(x, y, thk, t, shape, ub, lb, variables):
         raise Exception
 
 
-def b_update(x, y, thk, fixed, shape):
+def b_update(x, y, thk, fixed, shape, b, variables):
 
     if shape.data['type'] == 'arch':
         return arch_b_update(x, y, thk, fixed, H=shape.data['H'], L=shape.data['L'], x0=shape.data['x0'])
@@ -74,14 +78,17 @@ def b_update(x, y, thk, fixed, shape):
         return pavillionvault_b_update(x, y, thk, fixed, xy_span=shape.data['xy_span'])
     elif shape.data['type'] == 'general':
         if 'n' in variables:
-            return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
+            if shape.data['base_structure']['type'] == 'dome' or shape.data['base_structure']['type'] == 'dome_polar':
+                return dome_b_update_with_n(x, y, thk, fixed, b, center=shape.data['base_structure']['center'])
+            else:
+                return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
         else:
             raise Exception
     else:
         raise Exception
 
 
-def db_update(x, y, thk, fixed, shape):
+def db_update(x, y, thk, fixed, shape, b, variables):
 
     if shape.data['type'] == 'arch':
         return arch_db(x, y, thk, fixed, H=shape.data['H'], L=shape.data['L'], x0=shape.data['x0'])
@@ -91,7 +98,10 @@ def db_update(x, y, thk, fixed, shape):
         return pavillionvault_db(x, y, thk, fixed, xy_span=shape.data['xy_span'])
     elif shape.data['type'] == 'general':
         if 'n' in variables:
-            return general_db_with_n(b, thk, fixed)  # thk is 'n' in this equation
+            if shape.data['base_structure']['type'] == 'dome':
+                return dome_db_with_n(x, y, fixed, center=shape.data['base_structure']['center'])
+            else:
+                return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
         else:
             raise Exception
     else:

@@ -33,25 +33,20 @@ def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represen
 
     # Intrados and Extrados must me diagrams with exactly same topology as the form diagram: i.e. projections of the form diagram with z = ub,lb.
 
-    # vertices, faces = intrados.to_vertices_and_faces()
-    # intrados = intrados.copy()
-    # extrados = extrados.copy()
-    # vertices, faces = extrados.to_vertices_and_faces()
-    # extrados = MeshDos.from_vertices_and_faces(vertices, faces)
-
     i = 0
     for key in intrados.vertices():
         normal_intra = intrados.vertex_attribute(key, 'n')
         normal_extra = extrados.vertex_attribute(key, 'n')
-        x, y, z_lb = intrados.vertex_coordinates(key)
-        x, y, z_ub = extrados.vertex_coordinates(key)
+
+        deviation_extra = 1/math.sqrt(1/(1 + (normal_extra[0]**2 + normal_extra[1]**2)/normal_extra[2]**2))  # 1/cos(a)
+        ub_update[i] = ub[i] - n * deviation_extra
+
         if intrados.vertex_attribute(key, '_is_outside'):
-            deviation_intra = t
+            lb_update[i] = t
         else:
             deviation_intra = 1/math.sqrt(1/(1 + (normal_intra[0]**2 + normal_intra[1]**2)/normal_intra[2]**2))  # 1/cos(a)
-        deviation_extra = 1/math.sqrt(1/(1 + (normal_extra[0]**2 + normal_extra[1]**2)/normal_extra[2]**2))  # 1/cos(a)
-        lb_update[i] = z_lb + n * deviation_intra
-        ub_update[i] = z_ub - n * deviation_extra
+            lb_update[i] = lb[i] + n * deviation_intra
+
         i += 1
 
     return ub_update, lb_update
@@ -59,18 +54,8 @@ def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represen
 
 def general_dub_dlb_with_n(ub, lb, n, intrados, extrados, t):
 
-    # ub_update = zeros((len(ub), 1))
-    # lb_update = zeros((len(ub), 1))
     dub = zeros((len(ub), 1))
     dlb = zeros((len(ub), 1))
-
-    # vertices, faces = intrados.to_vertices_and_faces()
-    # intrados = MeshDos.from_vertices_and_faces(vertices, faces)
-    # vertices, faces = extrados.to_vertices_and_faces()
-    # extrados = MeshDos.from_vertices_and_faces(vertices, faces)
-
-    # intrados = intrados.copy()
-    # extrados = extrados.copy()
 
     i = 0
     for key in intrados.vertices():
@@ -79,35 +64,13 @@ def general_dub_dlb_with_n(ub, lb, n, intrados, extrados, t):
         x, y, z_lb = intrados.vertex_coordinates(key)
         x, y, z_ub = extrados.vertex_coordinates(key)
         if intrados.vertex_attribute(key, '_is_outside'):
-            deviation_intra = t
+            deviation_intra = 0.0
         else:
             deviation_intra = 1/math.sqrt(1/(1 + (normal_intra[0]**2 + normal_intra[1]**2)/normal_intra[2]**2))  # 1/cos(a)
         deviation_extra = 1/math.sqrt(1/(1 + (normal_extra[0]**2 + normal_extra[1]**2)/normal_extra[2]**2))  # 1/cos(a)
-        # lb_update[i] = z_lb + n * deviation_intra
-        # ub_update[i] = z_ub - n * deviation_extra
         dlb[i] = + deviation_intra
         dub[i] = - deviation_extra
         i += 1
-
-    # If we must update it before calculating dlb and dub... This is more non linear... Don't actually make sense for the simple thing we are doing....
-
-    # i = 0
-    # for key in intrados.vertices():
-    #     intrados.vertex_attribute(key, 'z', lb_update[i])
-    #     extrados.vertex_attribute(key, 'z', ub_update[i])
-    #     i += 1
-
-    # i = 0
-    # for key in intrados.vertices():
-    #     normal_intra = intrados.vertex_normal(key)
-    #     normal_extra = extrados.vertex_normal(key)
-    #     x, y, z_lb = intrados.vertex_coordinates(key)
-    #     x, y, z_ub = extrados.vertex_coordinates(key)
-    #     deviation_intra = 1/math.sqrt(1/(1 + (normal_intra[0]**2 + normal_intra[1]**2)/normal_intra[2]**2))  # 1/cos(a)
-    #     deviation_extra = 1/math.sqrt(1/(1 + (normal_extra[0]**2 + normal_extra[1]**2)/normal_extra[2]**2))  # 1/cos(a)
-    #     dlb[i] = + deviation_intra
-    #     dub[i] = - deviation_extra
-    #     i += 1
 
     return dub, dlb
 
@@ -117,8 +80,8 @@ def _invert_vector(vector):
 
 
 def general_b_update_with_n(b, n, fixed):
+    return
 
-    return b_new
 
 def general_db_with_n(b, n, fixed):
 
