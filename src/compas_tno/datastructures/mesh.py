@@ -111,6 +111,8 @@ class MeshDos(Mesh):
         z = interpolate.griddata(pointcloud[:, :2], pointcloud[:, 2], XY, method='linear')
 
         for i, key in enumerate(mesh.vertices()):
+            if math.isnan(z[i]):
+                print(XY[i])
             mesh.vertex_attribute(key, 'z', float(z[i]))
 
         return mesh
@@ -270,6 +272,22 @@ class MeshDos(Mesh):
         XY = self.vertices_attributes('xy')
         return {geometric_key_xy(XY[i], precision): key for i, key in enumerate(self.vertices())}
 
+    def round_xy_boundary(self, span=[[0, 10], [0, 10]], tol=10e-4):
+        """Prevent rounding errors by rounding boundary vertices
+        """
+
+        for key in self.vertices():
+            x, y, z = self.vertex_coordinates(key)
+            if abs(x - span[0][0]) < tol:
+                self.vertex_attribute(key, 'x', span[0][0])
+            if abs(x - span[1][0]) < tol:
+                self.vertex_attribute(key, 'x', span[1][0])
+            if abs(y - span[0][1]) < tol:
+                self.vertex_attribute(key, 'y', span[0][1])
+            if abs(y - span[1][1]) < tol:
+                self.vertex_attribute(key, 'y', span[1][1])
+
+        return
 
     def vertex_projected_area(self, key):
         """Compute the projected tributary area of a vertex.

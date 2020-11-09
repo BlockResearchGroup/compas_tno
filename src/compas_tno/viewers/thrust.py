@@ -119,7 +119,7 @@ def view_thrusts(forms, settings_form=None, cracks=True):
 
     return viewer
 
-def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=True):
+def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=True, outside=True):
     """ Viewer showing the thrust network together with intrados and extrados.
 
     Parameters
@@ -143,6 +143,7 @@ def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=
 
     intrad = 1
     extrad = 1
+    out = 1
 
     for key in form.vertices():
         lb = form.vertex_attribute(key, 'lb')
@@ -155,6 +156,13 @@ def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=
             elif abs(lb - z) < 10e-4:
                 viewer.add(Point(x, y, z), name="Intrados (%s)"%intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
                 intrad += 1
+        if outside:
+            if z > ub:
+                viewer.add(Point(x, y, z), name="Outside - Intra (%s)"%out, settings={'vertices.color': '#000000', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                out += 1
+            elif z < lb:
+                viewer.add(Point(x, y, z), name="Outside - Extra (%s)"%out, settings={'vertices.color': '#000000', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                out += 1
 
     if not settings_form:
         settings_form = {

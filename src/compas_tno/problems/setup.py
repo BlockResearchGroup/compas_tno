@@ -163,7 +163,8 @@ def set_up_nonlinear_optimisation(analysis):
         thk0_approx = min(ub - lb)
         print('Thickness approximate:', thk0_approx)
         x0 = append(x0, 0.0).reshape(-1, 1)
-        bounds = bounds + [[0.0, thk0_approx/2]]
+        min_limit = - thk0_approx/2  # 0.0
+        bounds = bounds + [[min_limit, thk0_approx/2]]
 
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
