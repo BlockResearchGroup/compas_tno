@@ -21,7 +21,7 @@ from scipy import rand
 
 sols = {}
 for x_discr in [4, 8, 12, 16]:
-    for y_discr in [12, 16, 20, 24]:
+    for y_discr in [12, 16, 20, 24, 28]:
         discretisation = [x_discr, y_discr]
 
         # Basic parameters
@@ -29,10 +29,11 @@ for x_discr in [4, 8, 12, 16]:
         thk = 0.5
         radius = 5.0
         type_structure = 'dome'
-        type_formdiagram = 'radial_spaced_fd'
+        type_formdiagram = 'radial_fd'
         # discretisation = [8, 20]
         center = [5.0, 5.0]
         gradients = False
+        diagonal = False
         n = 1
         error = 0.00
         ro = 1.0
@@ -57,7 +58,7 @@ for x_discr in [4, 8, 12, 16]:
         print('Analytical Self-weight is:', swt_analytical)
         print('Analytical Area is:', area_analytical)
 
-        analytical_shape.store_normals()
+        # analytical_shape.store_normals()
         # view_shapes(analytical_shape).show()
 
         # ----------------------- Form Diagram ---------------------------
@@ -90,6 +91,7 @@ for x_discr in [4, 8, 12, 16]:
         print('Area is: {0:.2f} diff ({1:.2f}%)'.format(area, 100*(area - area_analytical)/(area_analytical)))
 
         vault.analytical_normals(assume_shape=data_shape)
+        view_normals(vault).show()
 
         form.selfweight_from_shape(analytical_shape)
         form.envelope_from_shape(analytical_shape)

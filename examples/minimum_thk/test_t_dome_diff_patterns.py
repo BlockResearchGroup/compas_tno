@@ -7,6 +7,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers.thrust import view_thrusts
 from compas_tno.viewers.thrust import view_solution
+from compas_tno.viewers import view_shapes
 from compas_plotters import MeshPlotter
 from copy import deepcopy
 import os
@@ -18,14 +19,14 @@ import os
 # Basic parameters
 
 sols = {}
-for x_discr in [4, 8, 12, 16]:
-    for y_discr in [12, 16, 20, 24]:
+for x_discr in [24]:  # More sensible  #[8, 12, 16, 20, 24]
+    for y_discr in [24]:  # Less sensible  #[12, 16, 20, 24]
         discretisation = [x_discr, y_discr]
 
         thk = 0.5
         radius = 5.0
         type_structure = 'dome'
-        type_formdiagram = 'radial_spaced_fd'
+        type_formdiagram = 'radial_fd'
         # discretisation = [4, 12]
         ro = 1.0
         gradients = True
@@ -39,7 +40,8 @@ for x_discr in [4, 8, 12, 16]:
             'discretisation': [discretisation[0]*n, discretisation[1]*n],
             'center': [5.0, 5.0],
             'radius': radius,
-            't': 1.0
+            't': 0.0,
+            'expanded': True
         }
 
         dome = Shape.from_library(data_shape)
@@ -47,6 +49,7 @@ for x_discr in [4, 8, 12, 16]:
         swt = dome.compute_selfweight()
         print('Selfweight computed:', swt)
         print('Vault geometry created!')
+        view_shapes(dome).show()
 
         # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -137,3 +140,8 @@ for x_discr in [4, 8, 12, 16]:
             print('Not Solved:', discretisation)
 
 print(sols)
+
+for sol in sols:
+    n_par = int(sol.split(',')[0].replace('[', ''))
+    n_mer = int(sol.split(',')[1].replace(']', ''))
+    print('{0}, {1}, {2}'.format(n_par, n_mer, sols[sol]))

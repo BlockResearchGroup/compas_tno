@@ -18,6 +18,7 @@ for j in range(len(layers)):
         point = compas_rhino.rs.PointCoordinates(guid)
         data[UBLB[j]][i] = list(point)
         i += 1
+        
 
 with open('/Users/mricardo/compas_dev/me/min_thk/pointcloud/nurbs' + str(k) + '.json', 'w') as outfile:
     json.dump(data, outfile)

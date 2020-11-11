@@ -365,7 +365,6 @@ class Shape(object):
 
         if data['type'] == 'dome':
             xc, yc = data['center']
-            thk = data['thk']
         else:
             return Exception
 
@@ -375,8 +374,16 @@ class Shape(object):
         for key in intrados.vertices():
             x, y, zlb = intrados.vertex_coordinates(key)
             _, _, zub = extrados.vertex_coordinates(key)
-            nlb = normalize_vector([(x - xc),(y - yc), zlb])
-            nub = normalize_vector([(x - xc),(y - yc), zub])
+            nlb = normalize_vector([(x - xc), (y - yc), zlb])
+            nub = normalize_vector([(x - xc), (y - yc), zub])
+            # nlb_old = intrados.vertex_attribute(key, 'n')
+            # nub_old = intrados.vertex_attribute(key, 'n')
+            # print('I-Current:', nlb_old)
+            # print('I-New:', nlb)
+            # print('I-Diff, key {}:'.format(key), [nlb[0]-nlb_old[0], nlb[1]-nlb_old[1], nlb[2]-nlb_old[2]])
+            # print('E-Current:', nub_old)
+            # print('E-New:', nub)
+            # print('E-Diff, key {}:'.format(key), [nub[0]-nub_old[0], nub[1]-nub_old[1], nub[2]-nub_old[2]])
             intrados.vertex_attribute(key, 'n', nlb)
             extrados.vertex_attribute(key, 'n', nub)
 

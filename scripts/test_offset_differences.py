@@ -81,7 +81,7 @@ def invert_vector(vector):
 thk = 0.50
 radius = 5.0
 type_structure = 'dome'
-type_formdiagram = 'radial_fd'
+type_formdiagram = 'radial_spaced_fd'
 discretisation = [8, 20]
 gradients = True
 n = 1
@@ -93,10 +93,10 @@ data_shape = {
     'center': [5.0, 5.0],
     'radius': radius,
     't': 0.0,
-    'expanded': True
+    'expanded': False
 }
 
-shape = Shape.from_library(data_shape)
+shape_analytical = Shape.from_library(data_shape)
 # view_shapes(shape).show()
 
 
@@ -116,7 +116,7 @@ form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 plot_form(form, show_q=False, fix_width=False).show()
 
-shape = Shape.from_meshes_and_formdiagram(form, shape.intrados, shape.extrados, middle=shape.middle, data={'type': 'general', 't': 0.0, 'thk': thk})
+shape = Shape.from_meshes_and_formdiagram(form, shape_analytical.intrados, shape_analytical.extrados, middle=shape_analytical.middle, data={'type': 'general', 't': 0.0, 'thk': thk})
 
 # ------ CODE
 
@@ -125,18 +125,15 @@ print('Selfweight computed:', swt)
 print('Vault geometry created!')
 
 intrados = shape.intrados
+intrados0 = shape.intrados.copy()
 extrados = shape.extrados
+extrados0 = shape.extrados.copy()
 
-vertices, faces = intrados.to_vertices_and_faces()
-intra_meshdos = MeshDos.from_vertices_and_faces(vertices, faces)
-
-vertices, faces = extrados.to_vertices_and_faces()
-extra_meshdos = MeshDos.from_vertices_and_faces(vertices, faces)
-
+shape.analytical_normals(assume_shape=data_shape)
 
 for n in [0.10]:
-    intra_offset = intra_meshdos.offset_mesh(n, 'up')
-    extra_offset = extra_meshdos.offset_mesh(n, 'down')
+    intra_offset = intrados.offset_mesh(n, 'up')
+    extra_offset = extrados.offset_mesh(n, 'down')
 
 # ------ Settings to visualise
 
@@ -162,20 +159,20 @@ settings_offset = {
         'faces.on': True,
         }
 
-viewer.add(intra_meshdos, name="Intra-Original", settings=settings_original)
-# viewer.add(extra_meshdos, name="Extra-Original", settings=settings_original)
-viewer.add(intra_offset, name="Intra-Offset-n", settings=settings_offset)
-# viewer.add(extra_offset, name="Extra-Offset-n", settings=settings_offset)
+# viewer.add(intrados0, name="Intra-Original", settings=settings_original)
+viewer.add(extrados0, name="Extra-Original", settings=settings_original)
+# viewer.add(intra_offset, name="Intra-Offset-n", settings=settings_offset)
+viewer.add(extra_offset, name="Extra-Offset-n", settings=settings_offset)
 
 data_shape['thk'] -= 2 * n
 shape_offset = Shape.from_library(data_shape)
 intra_offset_anal = shape_offset.intrados
 extra_offset_anal = shape_offset.extrados
 
-viewer.add(intra_offset_anal, name="Intra-Offset-anal", settings=settings_offset)
-# viewer.add(extra_offset_anal, name="Extra-Offset-anal", settings=settings_offset)
+# viewer.add(intra_offset_anal, name="Intra-Offset-anal", settings=settings_offset)
+viewer.add(extra_offset_anal, name="Extra-Offset-anal", settings=settings_offset)
 
-
+viewer.show()
 
 # Calculating differences and plotting
 

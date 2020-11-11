@@ -9,8 +9,6 @@ from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_normals
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
-from compas_tno.datastructures import MeshDos
-from compas.datastructures import mesh_delete_duplicate_vertices
 import json
 from scipy import rand
 

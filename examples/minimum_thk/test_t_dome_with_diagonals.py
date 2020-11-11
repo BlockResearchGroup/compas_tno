@@ -13,13 +13,13 @@ import os
 
 
 sols = {}
-for x_discr in [4, 8, 12, 16]:
-    for y_discr in [12, 16, 20, 24]:
+for x_discr in [20, 24]:
+    for y_discr in [20, 24]:
         discretisation = [x_discr, y_discr]
 
         # Basic parameters
 
-        thk = 0.50
+        thk = 0.30
         radius = 5.0
         type_structure = 'dome'
         type_formdiagram = 'radial_fd'
@@ -83,6 +83,12 @@ for x_discr in [4, 8, 12, 16]:
         form.envelope_from_shape(dome)
         # form.selfweight_from_shape(dome)
         form.initialise_loadpath()
+
+        folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram)
+        title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+        save_form = os.path.join(folder, title)
+        form.to_json(save_form + '_min_thk_diagonal_' + type_diagonal + '_' + 'lp' + '_' + str(thk) + '.json')
+
         # form = form.initialise_tna(plot=False)
         # plot_form(form).show()
 
@@ -153,10 +159,10 @@ for x_discr in [4, 8, 12, 16]:
             sols[str(discretisation)] = thk_min
             print('Solved:', discretisation, thk_min)
 
+            plot_form(form, show_q=False, cracks=True, save=save_form + '_min_thk_diagonal_' + type_diagonal + '_' + optimiser.data['objective'] + '_' + str(thk_min) + '.pdf')
+
         else:
             print('Not Solved:', discretisation)
-
-        plot_form(form, show_q=False, cracks=True, save=save_form + '_min_thk_diagonal_' + type_diagonal + '_' + optimiser.data['objective'] + '_' + str(thk_min) + '.pdf')
 
 print(sols)
 # view_solution(form, dome).show()

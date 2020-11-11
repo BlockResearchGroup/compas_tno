@@ -144,7 +144,6 @@ class MeshDos(Mesh):
                     count_face_normals += 1
             if XY_project:
                 normals_faces = mesh_base.get_xy_face_normals(XY_project)
-                # print(len(XY_project), len(keys_project), len(normals_faces))
                 for i in range(len(normals_faces)):
                     mesh.vertex_attribute(keys_project[i], 'n', normals_faces[i])
 
