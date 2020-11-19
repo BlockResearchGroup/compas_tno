@@ -373,6 +373,7 @@ def pointed_vault_heightfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisa
 
             if ((yi) > y1 and ((xi) > x1 or (xi) < x0)) or ((yi) < y0 and ((xi) > x1 or (xi) < x0)):
                 zi = - 1*t
+                print('happens')
             else:
                 if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q1
                     # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius

@@ -9,10 +9,11 @@ from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_normals
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
+from compas_tno.viewers import view_mesh
+from compas_tno.datastructures import MeshDos
 import json
 from scipy import rand
-from compas_tno.viewers import view_mesh
-
+from numpy import array
 
 # ----------------------------------------------------------------------
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
@@ -20,44 +21,33 @@ from compas_tno.viewers import view_mesh
 
 # Basic parameters
 
-thk = 0.5
+thk = 0.50
 error = 0.0
 span = 10.0
 k = 1.0
 n = 2
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 discretisation = 10
 gradients = True  # False
 
 # ----------------------- Point Cloud -----------------------
 
-file_name = 'fanvaulting_t=50'
-file_name = 'amiens'
+file_name = 'jeronimos2'
 pointcloud = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + file_name + '.json'
 
-points_ub = []
-points_lb = []
-
+middle = []
 tol = 10e-4
 
 with open(pointcloud) as json_file:
     data = json.load(json_file)
-    for key, pt in data['UB'].items():
-        if abs(pt[0] - 0.0) < tol:
-            pt[0] = 0.0
-        if abs(pt[0] - span) < tol:
-            pt[0] = span
-        if abs(pt[1] - 0.0) < tol:
-            pt[1] = 0.0
-        if abs(pt[1] - span) < tol:
-            pt[1] = span
-        points_ub.append(pt)
-    for key, pt in data['LB'].items():
-        points_lb.append(pt)
+    for key, pt in data['target'].items():
+        middle.append(pt)
 
-triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
+triangulated_shape = Shape.from_middle_pointcloud(middle, thk=thk)
+# view_normals(triangulated_shape).show()
 # view_shapes_pointcloud(triangulated_shape).show()
+
 
 # ----------------------- Form Diagram ---------------------------
 
@@ -70,18 +60,35 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
-plot_form(form, show_q=False, fix_width=False).show()
+# plot_form(form, show_q=False, fix_width=False).show()
 
 # ------- Create shape given a topology and a point cloud --------
 
 # roots - not considering real middle
 # vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub)
 # more improved, considers the real middle
+points_lb = triangulated_shape.intrados.vertices_attributes('xyz')
+points_ub = triangulated_shape.extrados.vertices_attributes('xyz')
+
+i = 0
+for pt in points_lb:
+    if abs(pt[0] - 10) < 10e-3 and abs(pt[1] - 10) < 10e-3:
+        points_lb[i][:2] = [10.0, 10.0]
+    if abs(pt[0] - 8) < 10e-3 and abs(pt[1] - 10) < 10e-3:
+        points_lb[i][:2] = [8.0, 10.0]
+    i += 1
+i = 0
+for pt in points_ub:
+    if abs(pt[0] - 10) < 10e-3 and abs(pt[1] - 10) < 10e-3:
+        points_ub[i][:2] = [10.0, 10.0]
+    if abs(pt[0] - 8) < 10e-3 and abs(pt[1] - 10) < 10e-3:
+        points_ub[i][:2] = [8.0, 10.0]
+    i += 1
+
 vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub, data={'type': 'general', 't': 0.0, 'thk': thk})
 vault.store_normals()
 # view_shapes_pointcloud(vault).show()
 # view_normals(vault).show()
-
 
 area = vault.middle.area()
 swt = vault.compute_selfweight()

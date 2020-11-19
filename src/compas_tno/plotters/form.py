@@ -137,7 +137,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     if radius:
-        plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+        plotter.draw_vertices(keys=rad_colors.keys(), facecolor=rad_colors, radius=radius)
         if heights:
             plotter.draw_vertices(keys=[i for i in form.vertices_where({'is_fixed': True})], facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
                                   radius=radius, text={i: [round(form.vertex_attribute(i, 'lb'), 3), round(form.vertex_attribute(i, 'ub'), 3), round(form.vertex_attribute(i, 'z'), 3)] for i in form.vertices()})  # form.vertex_attribute(i, 'z')
@@ -860,11 +860,10 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
                 vertices_considered.append(key)
                 edges_added.append(form.vertex_coordinates(key))
                 ngb = list(form.vertex_neighborhood(key))
-                print(ngb)
                 edges_added.append(form.vertex_coordinates(ngb[1]))
         # print(vertices_considered)
-        print('Drawing initial total of vertices:', len(vertices_considered))
-        print('Drawing initial total of edges:', len(edges_considered))
+        # print('Drawing initial total of vertices:', len(vertices_considered))
+        # print('Drawing initial total of edges:', len(edges_considered))
         edges_added.sort()
         if len(edges_considered) == 0:
             for i in range(len(edges_added)):
@@ -875,8 +874,8 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
                     v = gkey_key[geometric_key(edges_added[i+1])]
                     edges_considered.append((u, v))
         print('Drawing total of edges:', len(edges_considered))
-        print(edges_considered)
-        print(vertices_considered)
+        # print(edges_considered)
+        # print(vertices_considered)
         print('Drawing total of vertices:', len(vertices_considered))
 
     for key in vertices_considered:
@@ -938,7 +937,6 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
 
     xc = (max(xs) - min(xs))/2
     discr = 200
-    print('xs:', xc)
     print('Visualisation on Re: {0:.3f} / Ri: {1:.3f}'.format(Re, Ri))
 
     for R in [Re, Ri]:
@@ -946,6 +944,18 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
             lines.append({
                 'start': [xc-R+2*R*i/discr, sqrt(abs(R**2 - (2*R*i/discr-R)**2))],
                 'end':   [xc-R+2*R*(i+1)/discr, sqrt(abs(R**2 - (2*R*(i+1)/discr-R)**2))],
+                'color': '000000',
+                'width': 0.5,
+            })
+        lines.append({
+                'start': [xc - Re,  0],
+                'end':   [xc - Ri, 0],
+                'color': '000000',
+                'width': 0.5,
+            })
+        lines.append({
+                'start': [xc + Re,  0],
+                'end':   [xc + Ri, 0],
                 'color': '000000',
                 'width': 0.5,
             })

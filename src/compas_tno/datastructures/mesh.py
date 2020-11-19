@@ -79,13 +79,24 @@ class MeshDos(Mesh):
         data = {'vertices': [point[0:2] for point in points]}
         result = triangulate(data, opts='c')
         vertices = []
+        vertices_flat = []
         i = 0
         for x, y in result['vertices']:
             vertices.append([x, y, points[i][2]])
+            vertices_flat.append([x, y, 0.0])
             i += 1
         faces = result['triangles']
+        faces_meaningful = []
 
-        mesh = cls().from_vertices_and_faces(vertices, faces)
+        mesh_flat = cls().from_vertices_and_faces(vertices_flat, faces)
+
+        i = 0
+        for fkey in mesh_flat.faces():
+            if mesh_flat.face_area(fkey) > 0.001:
+                faces_meaningful.append(faces[i])
+            i = i+1
+
+        mesh = cls().from_vertices_and_faces(vertices, faces_meaningful)  # Did this to avoid faces with area = 0, see if it is necessary
 
         return mesh
 
@@ -112,7 +123,7 @@ class MeshDos(Mesh):
 
         for i, key in enumerate(mesh.vertices()):
             if math.isnan(z[i]):
-                print(XY[i])
+                print('Height (nan) for [x,y]:', XY[i])
             mesh.vertex_attribute(key, 'z', float(z[i]))
 
         return mesh
@@ -192,6 +203,13 @@ class MeshDos(Mesh):
             new_mesh.vertex_attribute(key, 'z', new_offset[i])
 
         return new_mesh
+
+    def store_normals(self):
+
+        for key in self.vertices():
+            self.vertex_attribute(key, 'n', self.vertex_normal(key))
+
+        return
 
     def get_xy_face_normal(self, x, y):
         """

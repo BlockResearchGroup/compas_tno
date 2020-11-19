@@ -473,9 +473,22 @@ class FormDiagram(FormDiagram):
     # -----------------------ULTILITIES------------------------------ #
     # --------------------------------------------------------------- #
 
+    def update_f(self):
+        """ Update 'f' attribute.
+        """
+
+        for u, v in self.edges():
+            f = self.edge_attribute((u, v), 'q') * self.edge_length(u, v)
+            self.edge_attribute((u, v), 'f', f)
+
+        return
+
+
     def overview_forces(self):
         """ Quick overview of the important parameters of a network.
         """
+
+        self.update_f()
 
         f = []
         q = []
@@ -484,13 +497,12 @@ class FormDiagram(FormDiagram):
 
         lp = 0
 
-        for u, v in self.edges_where({'_is_external': False}):
-            if self.edge_attribute((u, v), '_is_edge') is True and self.edge_attribute((u, v), 'is_symmetry') is False:
-                qi = self.edge_attribute((u, v), 'q')
-                li = self.edge_length(u, v)
-                lp += qi*li**2
-                q.append(qi)
-                f.append(qi*li)
+        for u, v in self.edges_where({'_is_edge': True}):
+            qi = self.edge_attribute((u, v), 'q')
+            li = self.edge_length(u, v)
+            lp += qi*li**2
+            q.append(qi)
+            f.append(qi*li)
 
         print('='*20)
         print('Overview on forces:')

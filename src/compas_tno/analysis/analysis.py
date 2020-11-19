@@ -680,6 +680,7 @@ class Analysis(object):
             exitflag = 0
             thk = thk0
             count = 0
+            first_fail = True
 
             print('\n----- Starting the inverse [', self.optimiser.data['objective'], '] problem for minimum thk:', thk)
             print('THK  |   Solved  |   Opt.Val |   Opt/W   |   THK incr.  |   Setup time  |   Run time')
@@ -753,11 +754,213 @@ class Analysis(object):
                     self.form.to_json(address)
                     print('{0:.5f}  |   True  |   {1:.1f} |   {2:.6f} |   {3}   | {4:.2f}s  |   {5:.2f}s'.format(thk, fopt, fopt_over_weight, thk_increase, setup_time, run_time))
                     thk = thk + thk_increase
+                    first_fail = True
                 else:
-                    # here put some conditions to try to make it work ....
-
-                    print('---------- End of process -----------', '\n')
+                    print('Failed Optimisation for [{0}] with thk: {1}'.format(self.optimiser.data['objective'], thk))
+                    other_objective = 'min' if self.optimiser.data['objective'] is 'max' else 'max'
+                    if thk < thk_max:
+                        if not first_fail:
+                            thk = thk + thk_increase
+                            first_fail = True
+                            print('Second Fail with [{0}] opt, will load [{1}] opt in incr. thk: {2}'.format(self.optimiser.data['objective'], other_objective, thk))
+                        else:
+                            print('First Fail with [{0}] opt, will load [{1}] opt in thk: {2}'.format(self.optimiser.data['objective'], other_objective, thk))
+                            first_fail = False
+                        address_other_obj = save_forms + '_' + other_objective + '_thk_' + str(100*thk) + '.json'
+                        self.form = FormDiagram.from_json(address_other_obj)
+                        exitflag = 0
                 count += 1
+            print('---------- End of process -----------', '\n')
+
+        thicknesses_min.reverse()
+        thicknesses_max.reverse()
+        solutions_min.reverse()
+        solutions_max.reverse()
+
+        if printout:
+            print('------------------ SUMMARY ------------------ ')
+            print('ANALYSIS FOUND MIN THK:', thk_min)
+            print('thicknesses min ({0}):'.format(len(thicknesses_min)))
+            print(thicknesses_min)
+            print('thicknesses max ({0}):'.format(len(thicknesses_max)))
+            print(thicknesses_max)
+            print('min solutions ({0}):'.format(len(solutions_min)))
+            print(solutions_min)
+            print('max solutions ({0}):'.format(len(solutions_max)))
+            print(solutions_max)
+
+        return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
+
+
+    def max_n_minmax_GSF(self, n_step=0.01, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
+
+        solutions_min = []  # empty lists to keep track of the solutions for min thrust
+        solutions_max = []  # empty lists to keep track of the solutions for max thrust
+        thicknesses_min = []
+        thicknesses_max = []
+        objectives = ['min', 'max']
+        ro = self.shape.ro
+        data_shape = self.shape.data
+        thk0 = data_shape['thk']
+        t = data_shape['t']
+        initial_intrados = self.shape.intrados.copy()
+        initial_extrados = self.shape.extrados.copy()
+        middle = self.shape.middle.copy()
+
+        # Find extreme (min thickness) solution:
+
+        print('\n----- Starting the min thk optimisation for approx. thk: {0:.4f}'.format(thk0))
+
+        time0 = time.time()
+        self.optimiser.data['variables'] = ['ind', 'zb', 'n']
+        self.optimiser.data['objective'] = 'n'
+        self.apply_selfweight()
+        self.apply_envelope()
+        self.apply_reaction_bounds()
+        self.set_up_optimiser()
+        setup_time = time.time() - time0
+        self.run()
+        run_time = time.time() - time0 - setup_time
+
+        exitflag = self.optimiser.exitflag
+
+        if exitflag == 0:
+            n = - 1 * self.optimiser.fopt
+            thk = thk0 - 2 * n
+            thk_min = thk
+            T = self.form.thrust()
+            swt = self.shape.compute_selfweight()
+            T_over_swt = T/swt
+            n_reduction = int(n_step*100)*math.ceil(n*100.0/int(n_step*100))/100.0 - n
+            print('n (offset) | Min THK  |   Solved  |   Thrust |   T/W   |  n decr. |  Setup time  |   Run time')
+            print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4:.2f}   | {5:.2f}s  |   {6:.2f}s'.format(n_reduction, thk_min, T, T_over_swt, n_reduction, setup_time, run_time))
+
+            if plot:
+                plot_form(self.form, show_q=False, cracks=True).show()
+
+            # STORE
+
+            address0 = os.path.join(compas_tno.get('/temp/'), 'form0.json')
+            self.form.to_json(address0)
+
+            solutions_min.append(T_over_swt)
+            solutions_max.append(-1 * T_over_swt)
+            thicknesses_min.append(thk)
+            thicknesses_max.append(thk)
+
+            # SAVE
+            if save_forms:
+                address_min = save_forms + '_' + 'min' + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                address_max = save_forms + '_' + 'max' + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                self.form.to_json(address_min)
+                self.form.to_json(address_max)
+
+            if n < 0:
+                print('Warning: Reduction of cross section (n), or offset is negative:', n_reduction)
+                return
+
+            n0 = round(n - n_reduction, 5)
+            n_reduction = n_step
+
+        else:
+            print('Error: Minimum THK Optimisation did not find a solution: Try entering a different geometry')
+            return
+
+        # Start inverse loop for min/max:
+
+        self.optimiser.data['variables'] = ['ind', 'zb']
+        for self.optimiser.data['objective'] in objectives:
+
+            self.form = FormDiagram.from_json(address0)
+
+            exitflag = 0
+            n = n0
+            thk = thk0 - 2 * n
+            count = 0
+            first_fail = True
+
+            print('\n----- Starting the inverse [', self.optimiser.data['objective'], '] problem for minimum thk:', thk)
+            print('n (offset) | THK  |   Solved  |   Opt.Val |   Opt/W   |   THK incr.  |   Setup time  |   Run time')
+
+            while exitflag == 0 and thk <= thk0:
+
+                time0 = time.time()
+                intrados = initial_intrados.offset(n=n, direction='up')
+                extrados = initial_extrados.offset(n=n, direction='down')
+                self.shape = Shape.from_meshes_and_formdiagram(self.form, intrados, extrados, middle=middle, data={'type': 'general', 't': t, 'thk': thk})
+                self.shape.ro = ro
+                swt = self.shape.compute_selfweight()
+
+                lumped_swt = self.form.lumped_swt()
+                if fill_percentage:
+                    self.shape.add_fill_with_height(max([point[2] for point in self.shape.extrados.bounding_box()]) * fill_percentage)
+                    swt += self.shape.compute_fill_weight()
+                if rollers_ratio:
+                    self.form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
+                elif rollers_absolute:
+                    self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
+
+                self.apply_selfweight()
+                self.form.scale_form(swt/lumped_swt)
+                print('scale on forces', swt/lumped_swt)
+
+                # pzt = 0
+                # z = []
+                # q_ = []
+                # for key in self.form.vertices():
+                #     pzt += self.form.vertex_attribute(key, 'pz')
+                #     z.append(self.form.vertex_attribute(key, 'z'))
+                # for u, v in self.form.edges():
+                #     q_.append(self.form.edge_attribute((u, v), 'q'))
+                # print('Current pz: {0:.2f} | swt: {1:.2f} | z range: {2:.2f} - {3:.2f} | q range: {4:.2f} - {5:.2f}'.format(pzt, swt, min(z), max(z), min(q_), max(q_)))
+
+                self.apply_envelope()
+                self.apply_reaction_bounds()
+                if fill_percentage:
+                    self.apply_fill_load()
+                self.set_up_optimiser()
+                setup_time = time.time() - time0
+                self.run()
+                run_time = time.time() - time0 - setup_time
+                if plot:
+                    plot_form(self.form, show_q=False, cracks=True).show()
+                exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
+                fopt = self.optimiser.fopt  # objective function optimum value
+                fopt_over_weight = fopt/swt  # divide by selfweight
+
+                if exitflag == 0:
+                    if self.optimiser.data['objective'] == 'min':
+                        solutions_min.append(fopt_over_weight)
+                        thicknesses_min.append(thk)
+                    else:
+                        solutions_max.append(fopt_over_weight)
+                        thicknesses_max.append(thk)
+                    if save_forms:
+                        address = save_forms + '_' + self.optimiser.data['objective'] + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                    else:
+                        address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
+                    self.form.to_json(address)
+                    print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4}   | {5:.2f}s  |   {6:.2f}s'.format(n, thk, fopt, fopt_over_weight, n_reduction, setup_time, run_time))
+                    n = n - n_reduction
+                    thk = thk0 - 2*n
+                    first_fail = True
+                else:
+                    print('Failed Optimisation for [{0}] with thk: {1}'.format(self.optimiser.data['objective'], thk))
+                    other_objective = 'min' if self.optimiser.data['objective'] == 'max' else 'max'
+                    if thk < thk0:
+                        if not first_fail:
+                            n = n - n_reduction
+                            thk = thk0 - 2*n
+                            first_fail = True
+                            print('Second Fail with [{0}] opt, will load [{1}] opt in incr. thk: {2}'.format(self.optimiser.data['objective'], other_objective, thk))
+                        else:
+                            print('First Fail with [{0}] opt, will load [{1}] opt in thk: {2}'.format(self.optimiser.data['objective'], other_objective, thk))
+                            first_fail = False
+                        address_other_obj = save_forms + '_' + other_objective + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                        self.form = FormDiagram.from_json(address_other_obj)
+                        exitflag = 0
+                count += 1
+            print('---------- End of process -----------', '\n')
 
         thicknesses_min.reverse()
         thicknesses_max.reverse()

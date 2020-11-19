@@ -22,9 +22,10 @@ from compas_tno.plotters import diagram_of_thrust
 thk = 0.5
 radius = 5.0
 type_structure = 'dome'
-type_formdiagram = 'radial_spaced_fd'
-discretisation = [8, 20]
-n = 5
+type_formdiagram = 'radial_fd'
+discretisation = [20, 16]
+n = 1
+ro = 1.0
 gradients = True
 
 # ----------------------- 1. Create Dome shape ---------------------------
@@ -35,13 +36,16 @@ data_shape = {
     'discretisation': [discretisation[0]*n, discretisation[1]*n],
     'center': [5.0, 5.0],
     'radius': radius,
-    't': 1.0
+    't': 0.5,
+    'expanded': True
 }
 
-vault = Shape.from_library(data_shape)
-swt = vault.compute_selfweight()
+dome = Shape.from_library(data_shape)
+dome.ro = ro
+swt = dome.compute_selfweight()
 print('Selfweight computed:', swt)
 print('Vault geometry created!')
+# view_shapes(dome).show()
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -62,7 +66,10 @@ print(form)
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
+form.envelope_from_shape(dome)
+form.selfweight_from_shape(dome)
+form.initialise_loadpath()
+# form = form.initialise_tna(plot=False)
 # plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
@@ -76,14 +83,14 @@ optimiser.data['objective'] = 't'
 optimiser.data['printout'] = False
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1500.0
+optimiser.data['qmax'] = 1000.0
 optimiser.data['gradient'] = gradients
 optimiser.data['jacobian'] = gradients
 print(optimiser.data)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
-folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'min_max')
 os.makedirs(folder, exist_ok=True)
 title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
 
@@ -92,7 +99,7 @@ forms_address = os.path.join(folder, title)
 thk_max = 0.50
 thk_step = 0.05
 
-analysis = Analysis.from_elements(vault, form, optimiser)
+analysis = Analysis.from_elements(dome, form, optimiser)
 results = analysis.thk_minmax_GSF(thk_max, thk_step=thk_step, save_forms=forms_address, plot=False)
 thicknesses, solutions = results
 

@@ -39,7 +39,7 @@ __all__ = [
 ]
 
 
-def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_limits=None, save=False):
+def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_limits=None, GSF_ticks=False, save=False):
     """ Plot a diagram of Thrusts based on the collected data from (n) points.
 
     Parameters
@@ -111,11 +111,17 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
         max_y = interval_y - max(fmax_) % 10 + max(fmax_)
         min_y = min(fmin_) - min(fmin_) % 10
 
-    last_scale = round(max_x/min_x, 2)
-    middle_scale = round((last_scale - 1.0)/2 + 1, 2)
-    quad_scale = round((last_scale - 1.0)*3/4 + 1, 2)
-    middle_x = max_x/middle_scale
-    quad_x = max_x/quad_scale
+    if not GSF_ticks:
+        last_scale = round(max_x/min_x, 2)
+        middle_scale = round((last_scale - 1.0)/2 + 1, 2)
+        quad_scale = round((last_scale - 1.0)*3/4 + 1, 2)
+        ticks_GSF = [middle_scale, quad_scale, last_scale]
+    else:
+        ticks_GSF = GSF_ticks
+
+    ticks_x = []
+    for tck in ticks_GSF:
+        ticks_x.append(max_x/tck)
 
     fig = plt.figure(figsize=[12, 4])
 
@@ -138,8 +144,10 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
-    ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100*(max_x - quad_x)/(max_x-min_x), 100])
-    ax2.set_xticklabels(['1.0', str(round(middle_scale, 2)), str(round(quad_scale, 2)), str(last_scale)], size=size_axis_data)
+
+    ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
+    ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
+
     ax1.set_xlabel('thickness', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
     ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)

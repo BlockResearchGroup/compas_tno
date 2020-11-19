@@ -11,11 +11,12 @@ import json
 import math
 
 # Give a name to your project
-master = 'PX_0,30'
+master = 'Dome_16_20_minthk'
 
 # Put here the .json file for the optimisation
 # fnm = '/Users/mricardo/compas_dev/me/reformulation/test.json'
 fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[8, 20]_min.json'
+fnm = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/dome_radial_fd_discr_[16, 20]_min_thk_t_0.19759055506490839.json'
 
 # Parameters for the visualisation
 radius_max = 0.10  # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault

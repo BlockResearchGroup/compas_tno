@@ -2,6 +2,7 @@ from compas_viewers.meshviewer import MeshViewer
 from compas_viewers.multimeshviewer import MultiMeshViewer
 from compas_viewers.objectviewer import ObjectViewer
 from compas.datastructures import Mesh
+from compas.geometry import Line
 
 from compas.geometry import Point
 
@@ -119,7 +120,7 @@ def view_thrusts(forms, settings_form=None, cracks=True):
 
     return viewer
 
-def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=True, outside=True):
+def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=True, thickness=False, outside=True):
     """ Viewer showing the thrust network together with intrados and extrados.
 
     Parameters
@@ -187,8 +188,15 @@ def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=
             'faces.on': True,
             }
 
-    viewer.add(form, name="FormDiagram", settings=settings_form)
     viewer.add(intrados, name="Intrados", settings=settings_bounds)
     viewer.add(extrados, name="Extrados", settings=settings_bounds)
+
+    if not thickness:
+        viewer.add(form, name="FormDiagram", settings=settings_form)
+    else:
+        f_range = [form.edge_attribute((u, v), 'f') for u, v in form.edges()]
+        for u, v in form.edges_where({'_is_edge': True}):
+            return
+            # Figure out how to make this plot.
 
     return viewer

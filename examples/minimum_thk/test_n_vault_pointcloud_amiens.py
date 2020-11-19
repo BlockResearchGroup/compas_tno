@@ -22,18 +22,19 @@ from compas_tno.viewers import view_mesh
 
 thk = 0.5
 error = 0.0
-span = 10.0
+span_x = 5.76  # 5.76 - 7.2
+span_y = 9.84  # 9.85 - 12.31
 k = 1.0
 n = 2
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 discretisation = 10
 gradients = True  # False
 
 # ----------------------- Point Cloud -----------------------
 
 file_name = 'fanvaulting_t=50'
-file_name = 'amiens'
+file_name = 'amiens-small'
 pointcloud = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + file_name + '.json'
 
 points_ub = []
@@ -44,14 +45,6 @@ tol = 10e-4
 with open(pointcloud) as json_file:
     data = json.load(json_file)
     for key, pt in data['UB'].items():
-        if abs(pt[0] - 0.0) < tol:
-            pt[0] = 0.0
-        if abs(pt[0] - span) < tol:
-            pt[0] = span
-        if abs(pt[1] - 0.0) < tol:
-            pt[1] = 0.0
-        if abs(pt[1] - span) < tol:
-            pt[1] = span
         points_ub.append(pt)
     for key, pt in data['LB'].items():
         points_lb.append(pt)
@@ -63,14 +56,14 @@ triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
 
 data_diagram = {
     'type': type_formdiagram,
-    'xy_span': [[0, span], [0, k*span]],
+    'xy_span': [[0, span_x], [0, span_y]],
     'discretisation': discretisation,
     'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
-plot_form(form, show_q=False, fix_width=False).show()
+# plot_form(form, show_q=False, fix_width=False).show()
 
 # ------- Create shape given a topology and a point cloud --------
 
@@ -81,7 +74,6 @@ vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub, data={
 vault.store_normals()
 # view_shapes_pointcloud(vault).show()
 # view_normals(vault).show()
-
 
 area = vault.middle.area()
 swt = vault.compute_selfweight()

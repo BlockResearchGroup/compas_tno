@@ -226,6 +226,32 @@ class Shape(object):
         return shape
 
     @classmethod
+    def from_middle_pointcloud(cls, middle_pts, thk=0.50, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pointcloud.
+
+        Parameters
+        ----------
+        middle_pts : list
+            List of points collected in the intrados.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+
+        middle = MeshDos.from_points_delaunay(middle_pts)
+        middle.store_normals()
+        extrados_mesh = middle.offset_mesh(thk/2, direction='up')
+        intrados_mesh = middle.offset_mesh(thk/2, direction='down')
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+    @classmethod
     def from_pointcloud_and_formdiagram(cls, form, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
         """Construct a Shape from a pointcloud and a formdiagram that will have its topology copied.
 
@@ -329,14 +355,8 @@ class Shape(object):
         intrados = self.intrados
         extrados = self.extrados
 
-        for key in intrados.vertices():
-            # print(intrados.vertex_faces(key))
-            # for fkey in intrados.vertex_faces(key):
-            #     print(intrados.face_coordinates(fkey))
-            normal_intra = intrados.vertex_normal(key)
-            normal_extra = extrados.vertex_normal(key)
-            intrados.vertex_attribute(key, 'n', normal_intra)
-            extrados.vertex_attribute(key, 'n', normal_extra)
+        intrados.store_normals()
+        extrados.store_normals()
 
         intrados.vertices_attribute('_is_outside', False)
         extrados.vertices_attribute('_is_outside', False)

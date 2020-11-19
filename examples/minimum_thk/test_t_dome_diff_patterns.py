@@ -19,8 +19,8 @@ import os
 # Basic parameters
 
 sols = {}
-for x_discr in [24]:  # More sensible  #[8, 12, 16, 20, 24]
-    for y_discr in [24]:  # Less sensible  #[12, 16, 20, 24]
+for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
+    for y_discr in [20]:  # Less sensible  #[12, 16, 20, 24]
         discretisation = [x_discr, y_discr]
 
         thk = 0.5
@@ -49,7 +49,7 @@ for x_discr in [24]:  # More sensible  #[8, 12, 16, 20, 24]
         swt = dome.compute_selfweight()
         print('Selfweight computed:', swt)
         print('Vault geometry created!')
-        view_shapes(dome).show()
+        # view_shapes(dome).show()
 
         # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -129,7 +129,7 @@ for x_discr in [24]:  # More sensible  #[8, 12, 16, 20, 24]
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
 
-            form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min), '.json')
+            form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
 
             sols[str(discretisation)] = thk_min
 

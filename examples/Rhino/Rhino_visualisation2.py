@@ -21,19 +21,13 @@ H = [5.0]
 
 for i in range(len(R)):
     
-    dy = 0 # - 20.0
-    dx = 20.0 * i
+    dy = 0  # - 20.0
+    dx = 0  # 20.0 * i
     trans = [dx, dy, 0]
 
-    master = 'PAV_CROSS_t=50_R=' + str(R[i])
-    # master = 'Min_t='+str(thk)+'_2'
-    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/camb_h=' + str(H[i]) + '/pointed_crossvault_cross_fd_discr_10_min_thk_50.0.json'
-    # fnm = '/Users/mricardo/compas_dev/me/shape_comparison/pavillionvault/cross_fd/h=' + str(H[i]) + '/pavillionvault_cross_fd_discr_10_min_thk_50.0.json'
+    master = 'Dome_20_16_minthickness'
+    fnm = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/min_max/dome_radial_fd_discr_[20, 16]_min_thk_20.454691527171835.json'
     
-    master = 'cross_t=18?'
-    fnm = '/Users/mricardo/compas_dev/me/shape_comparison/dome/radial_spaced_fd/dome_radial_spaced_fd_discr_[8, 20]_min_thk_20.625.json'
-    fnm = '/Users/mricardo/compas_dev/me/shape_comparison/dome_polar/radial_spaced_fd/dome_polar_radial_spaced_fd_discr_[8, 20]_min_thk_23.282.json'
-    fnm = '/Users/mricardo/compas_dev/compas_tno/data/test.json'
     # Parameters for the visualisation
     radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
     radius_circlus = 0.15 # Radius of the speres that mark when it touches upper bound and lower bound.
@@ -130,11 +124,10 @@ for i in range(len(R)):
         q = form.edge_attribute((u,v), 'q')
         sp = [form.vertex_coordinates(u)[i]+trans[i] for i in range(3)]
         ep = [form.vertex_coordinates(v)[i]+trans[i] for i in range(3)]
-        sp[2] = form.vertex_attribute(u, 'target')
-        ep[2] = form.vertex_attribute(v, 'target')
+        sp[2] = form.vertex_attribute(u, 'target')[0]  # this [0] is annoying
+        ep[2] = form.vertex_attribute(v, 'target')[0]
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(q))
-
 
     loads_layer = master + '::Loads'
     rs.AddLayer(loads_layer)
@@ -248,11 +241,11 @@ for i in range(len(R)):
             rs.DeleteObject(id)
     rs.CurrentLayer('Default')
     rs.LayerVisible(target_layer, False)
-    rs.LayerVisible(ub_layer, True)
-    rs.LayerVisible(lb_layer, True)
+    rs.LayerVisible(ub_layer, False)
+    rs.LayerVisible(lb_layer, False)
     rs.LayerVisible(thrust_layer, False)
     rs.LayerVisible(reac_layer, False)
-    rs.LayerVisible(thrust_limits, False)
-    rs.LayerVisible(pipes_layer, False)
+    rs.LayerVisible(thrust_limits, True)
+    rs.LayerVisible(pipes_layer, True)
     rs.LayerVisible(loads_layer, False)
     print(max(fs))
