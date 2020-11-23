@@ -6,6 +6,7 @@ from compas.geometry import is_point_in_convex_polygon_xy
 from compas.geometry import centroid_points
 from compas.geometry import normal_polygon
 from compas.utilities import geometric_key_xy
+from compas_plotters import MeshPlotter
 
 from compas.datastructures import Mesh
 
@@ -130,7 +131,23 @@ class MeshDos(Mesh):
 
     @classmethod
     def from_topology_and_mesh(cls, formdiagram, mesh_base, keep_normals=True):
+        """
+        Create a mesh based on a given topology and the heights based in a base mesh (usually denser).
 
+        Parameters
+        ----------
+        formdiagram : compas_tno.diagrams.FormDiagram
+            Topology that is intended to keep
+        mesh_base : mesh
+            Mesh usually denser to base the heights on
+        keep_normals : bool (True)
+            Go through the process of
+        Returns
+        -------
+        obj
+            MeshDos.
+
+        """
         vertices, faces = formdiagram.to_vertices_and_faces()
         mesh = cls().from_vertices_and_faces(vertices, faces)
         XY = array(mesh.vertices_attributes('xy'))
@@ -208,6 +225,15 @@ class MeshDos(Mesh):
 
         for key in self.vertices():
             self.vertex_attribute(key, 'n', self.vertex_normal(key))
+
+        return
+
+    def plot_normals(self):
+
+        plotter = MeshPlotter(self)
+        plotter.draw_edges()
+        plotter.draw_vertices(text={key: self.vertex_attribute(key, 'n') for key in self.vertices()})
+        plotter.show()
 
         return
 

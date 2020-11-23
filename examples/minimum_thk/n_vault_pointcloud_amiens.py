@@ -22,8 +22,8 @@ from compas_tno.viewers import view_mesh
 
 thk = 0.5
 error = 0.0
-span_x = 5.76  # 5.76 - 7.2
-span_y = 9.84  # 9.85 - 12.31
+span_x = 5.97447  # 5.76 - 7.2 - 5.97448
+span_y = 11.2  # 9.85 - 12.31 - 11.2
 k = 1.0
 n = 2
 type_structure = 'crossvault'
@@ -34,7 +34,7 @@ gradients = True  # False
 # ----------------------- Point Cloud -----------------------
 
 file_name = 'fanvaulting_t=50'
-file_name = 'amiens-small'
+file_name = 'amiens_internet'
 pointcloud = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + file_name + '.json'
 
 points_ub = []
@@ -71,7 +71,7 @@ print('Form Diagram Created!')
 # vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub)
 # more improved, considers the real middle
 vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub, data={'type': 'general', 't': 0.0, 'thk': thk})
-vault.store_normals()
+vault.store_normals(plot=True)
 # view_shapes_pointcloud(vault).show()
 # view_normals(vault).show()
 

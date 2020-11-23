@@ -10,6 +10,8 @@ from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
 from compas_tno.datastructures import MeshDos
 from compas.datastructures import mesh_delete_duplicate_vertices
+from compas_tno.plotters import diagram_of_thrust
+from compas_tno.plotters import save_csv_row
 
 from scipy import rand
 
@@ -26,7 +28,9 @@ k = 1.0
 n = 2
 type_structure = 'crossvault'
 type_formdiagram = 'cross_fd'
+file_name = 'pointcloud_from_shape'
 discretisation = 10
+n_step = 0.02
 gradients = True  # False
 
 # ----------------------- Shape Analytical ---------------------------
@@ -64,8 +68,8 @@ for i in range(len(xy)):
     points_lb.append([xy[i][0], xy[i][1], float(z_lb[i])])
     points_ub.append([xy[i][0], xy[i][1], float(z_ub[i])])
 
-triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
-view_shapes_pointcloud(triangulated_shape).show()
+# triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
+# view_shapes_pointcloud(triangulated_shape).show()
 
 # ----------------------- Form Diagram ---------------------------
 
@@ -109,12 +113,12 @@ form.initialise_loadpath()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
+optimiser.data['library'] = 'Scipy'
+optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb', 'n']
 optimiser.data['objective'] = 'n'
-optimiser.data['printout'] = True
+optimiser.data['printout'] = False
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
@@ -123,25 +127,20 @@ optimiser.data['jacobian'] = gradients
 
 # --------------------- 5. Set up and run analysis ---------------------
 
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'max_n', file_name, type_structure, type_formdiagram, 'min_max')
+os.makedirs(folder, exist_ok=True)
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method'
+
+forms_address = os.path.join(folder, title)
+
 analysis = Analysis.from_elements(vault, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()
-analysis.run()
+results = analysis.max_n_minmax_GSF(n_step=n_step, save_forms=forms_address, plot=False)
+thicknesses, solutions = results
 
-n_reduction = -1 * analysis.optimiser.fopt
-thk_min = thk - 2 * n_reduction
-print('Approx. Minimum THK:', thk_min)
-data_shape['thk'] = thk_min
+# ----------------------- Save output data --------------------------
 
-plot_form(form, show_q=False, cracks=True).show()
+csv_file = os.path.join(folder, title + '_data.csv')
+save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
 
-# analytical_shape = Shape.from_library(data_shape)
-# form.envelope_from_shape(analytical_shape)
-
-# plot_form(form, show_q=False, cracks=True).show()
-
-form.to_json(compas_tno.get('test.json'))
-
-view_solution(form, vault).show()
+img_graph = os.path.join(folder, title + '_diagram.pdf')
+diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False).show()

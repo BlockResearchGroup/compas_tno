@@ -3,7 +3,7 @@ import compas_rhino
 import json
 
 # Modify Parameters
-title = 'amiens'
+title = 'amiens_internet'
 layers = ['UB', 'LB']
 
 # Create dictionary and save as .json

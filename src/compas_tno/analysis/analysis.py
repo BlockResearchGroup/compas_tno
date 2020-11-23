@@ -831,9 +831,9 @@ class Analysis(object):
             T = self.form.thrust()
             swt = self.shape.compute_selfweight()
             T_over_swt = T/swt
-            n_reduction = int(n_step*100)*math.ceil(n*100.0/int(n_step*100))/100.0 - n
+            n_reduction = n - int(n_step*100)*math.floor(n*100.0/int(n_step*100))/100.0
             print('n (offset) | Min THK  |   Solved  |   Thrust |   T/W   |  n decr. |  Setup time  |   Run time')
-            print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4:.2f}   | {5:.2f}s  |   {6:.2f}s'.format(n_reduction, thk_min, T, T_over_swt, n_reduction, setup_time, run_time))
+            print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4:.4f}   | {5:.2f}s  |   {6:.2f}s'.format(n, thk_min, T, T_over_swt, n_reduction, setup_time, run_time))
 
             if plot:
                 plot_form(self.form, show_q=False, cracks=True).show()
@@ -850,8 +850,8 @@ class Analysis(object):
 
             # SAVE
             if save_forms:
-                address_min = save_forms + '_' + 'min' + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
-                address_max = save_forms + '_' + 'max' + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                address_min = save_forms + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
+                address_max = save_forms + '_' + 'max' + '_thk_' + str(100*thk) + '.json'
                 self.form.to_json(address_min)
                 self.form.to_json(address_max)
 
@@ -860,6 +860,7 @@ class Analysis(object):
                 return
 
             n0 = round(n - n_reduction, 5)
+            print('from here we ewill use this n:', n0)
             n_reduction = n_step
 
         else:
@@ -876,6 +877,7 @@ class Analysis(object):
             exitflag = 0
             n = n0
             thk = thk0 - 2 * n
+            print('resulting in this start thickness', thk)
             count = 0
             first_fail = True
 
@@ -885,8 +887,8 @@ class Analysis(object):
             while exitflag == 0 and thk <= thk0:
 
                 time0 = time.time()
-                intrados = initial_intrados.offset(n=n, direction='up')
-                extrados = initial_extrados.offset(n=n, direction='down')
+                intrados = initial_intrados.offset_mesh(n=n, direction='up')
+                extrados = initial_extrados.offset_mesh(n=n, direction='down')
                 self.shape = Shape.from_meshes_and_formdiagram(self.form, intrados, extrados, middle=middle, data={'type': 'general', 't': t, 'thk': thk})
                 self.shape.ro = ro
                 swt = self.shape.compute_selfweight()
@@ -936,7 +938,7 @@ class Analysis(object):
                         solutions_max.append(fopt_over_weight)
                         thicknesses_max.append(thk)
                     if save_forms:
-                        address = save_forms + '_' + self.optimiser.data['objective'] + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                        address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
                     else:
                         address = os.path.join(compas_tno.get('/temp/'), 'form_' + self.optimiser.data['objective'] + '.json')
                     self.form.to_json(address)
@@ -956,7 +958,7 @@ class Analysis(object):
                         else:
                             print('First Fail with [{0}] opt, will load [{1}] opt in thk: {2}'.format(self.optimiser.data['objective'], other_objective, thk))
                             first_fail = False
-                        address_other_obj = save_forms + '_' + other_objective + '_offset-method_' + '_thk_' + str(100*thk) + '.json'
+                        address_other_obj = save_forms + '_' + other_objective + '_thk_' + str(100*thk) + '.json'
                         self.form = FormDiagram.from_json(address_other_obj)
                         exitflag = 0
                 count += 1

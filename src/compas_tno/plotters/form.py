@@ -116,14 +116,15 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         i = i + 1
 
     rad_colors = {}
+    tol_cracks = 10e-5
     if cracks:
         for key in form.vertices():
             ub = form.vertex_attribute(key, 'ub')
             lb = form.vertex_attribute(key, 'lb')
             z = form.vertex_attribute(key, 'z')
-            if abs(z - ub) < 10e-4:
+            if abs(z - ub) < tol_cracks:
                 rad_colors[key] = '#008000'  # Green extrados
-            elif abs(z - lb) < 10e-4:
+            elif abs(z - lb) < tol_cracks:
                 rad_colors[key] = '#0000FF'  # Blue intrados
             elif z - ub > 0 or lb - z > 0:
                 rad_colors[key] = '#000000'  # Black outside

@@ -350,7 +350,7 @@ class Shape(object):
 
         return
 
-    def store_normals(self, mark_fixed_LB=True):
+    def store_normals(self, mark_fixed_LB=True, plot=False):
 
         intrados = self.intrados
         extrados = self.extrados
@@ -373,6 +373,10 @@ class Shape(object):
                         intrados.vertex_attribute(key, '_is_outside', True)
                     if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
                         extrados.vertex_attribute(key, '_is_outside', True)
+
+        if plot:
+            intrados.plot_normals()
+            extrados.plot_normals()
 
         return
 
