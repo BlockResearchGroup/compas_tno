@@ -4,9 +4,10 @@ from compas.datastructures import Mesh
 from numpy import array
 from numpy import ones
 from numpy import zeros
+from numpy import concatenate
 
 
-def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100]):
+def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100], expanded=False):
     """ Set Cross-Vault heights.
 
     Parameters
@@ -111,13 +112,19 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e
     xyz = array([x1d, y1d, z1d]).transpose()
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
 
-    extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol=tol, discretisation=discretisation)
-    intrados = cross_vault_highfields_lb(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation)
+    extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol=tol, discretisation=discretisation, expanded=expanded)
+    intrados = cross_vault_highfields_lb(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation, expanded=expanded)
+
+    # from compas_viewers.objectviewer import ObjectViewer
+    # viewer = ObjectViewer()
+    # viewer.add(extrados, name='extrados')
+    # # viewer.add(intrados, name='intrados')
+    # viewer.show()
 
     return intrados, extrados, middle
 
 
-def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, discretisation=[100, 100]):
+def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, discretisation=[100, 100], expanded=False):
     """ Helper function to set the extrados of a parametric Cross-Vault.
 
     Parameters
@@ -151,6 +158,9 @@ def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
     density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
+    if expanded:
+        x = concatenate(([x0 - thk/2], x, [x1 + thk/2]))
+        y = concatenate(([y0 - thk/2], y, [y1 + thk/2]))
 
     y1 = xy_span[1][1] + thk/2
     y0 = xy_span[1][0] - thk/2
@@ -215,7 +225,7 @@ def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
     return extrados
 
 
-def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100]):
+def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100], expanded=False):
     """ Helper function to set the intrados of Cross-Vaults.
 
     Parameters
@@ -252,6 +262,9 @@ def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
     density_y = discretisation[1]
     x = arange(x0, x1 + dx/density_x, dx/density_x)
     y = arange(y0, y1 + dy/density_y, dy/density_y)
+    if expanded:
+        x = concatenate(([x0 - thk/2], x, [x1 + thk/2]))
+        y = concatenate(([y0 - thk/2], y, [y1 + thk/2]))
 
     y1 = xy_span[1][1] - thk/2
     y0 = xy_span[1][0] + thk/2

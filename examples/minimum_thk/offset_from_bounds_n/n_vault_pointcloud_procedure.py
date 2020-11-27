@@ -28,14 +28,14 @@ span_y = 11.2  # 9.85 - 12.31 - 11.2
 k = 1.0
 n = 2
 type_structure = 'crossvault'
-type_formdiagram = 'fan_fd'
-discretisation = 10
+type_formdiagram = 'cross_fd'
+discretisation = 14
 gradients = True  # False
 n_step = 0.01
 
 # ----------------------- Point Cloud -----------------------
 
-file_name = 'fanvaulting_t=50'
+# file_name = 'fanvaulting_t=50'
 file_name = 'amiens_internet'
 pointcloud = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + file_name + '.json'
 
@@ -66,7 +66,7 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
-# plot_form(form, show_q=False, fix_width=False).show()
+plot_form(form, show_q=False, fix_width=False).show()
 
 # ------- Create shape given a topology and a point cloud --------
 
@@ -105,7 +105,7 @@ optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb', 'n']
 optimiser.data['objective'] = 'n'
 optimiser.data['printout'] = False
-optimiser.data['plot'] = True
+optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1000.0
 optimiser.data['gradient'] = gradients

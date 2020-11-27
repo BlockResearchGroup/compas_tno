@@ -15,7 +15,7 @@ import os
 # ----------------------------------------------------------------------
 
 sols = {}
-for discretisation in [18, 20]:
+for discretisation in [20]:
 
     # Basic parameters
 
@@ -60,8 +60,10 @@ for discretisation in [18, 20]:
 
     # form = form.initialise_tna(plot=False)
     form.selfweight_from_shape(vault)
-    form = form.initialise_loadpath()
+    form.envelope_from_shape(vault)
+    form.initialise_loadpath()
     # plot_form(form).show()
+
 
     # --------------------- 4. Create Minimisation Optimiser ---------------------
 

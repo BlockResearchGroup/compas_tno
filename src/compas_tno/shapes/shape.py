@@ -111,7 +111,7 @@ class Shape(object):
 
         if typevault == 'crossvault':
             xy_span = data['xy_span']
-            intrados, extrados, middle = cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
+            intrados, extrados, middle = cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
         elif typevault == 'pavillionvault':
             xy_span = data['xy_span']
             intrados, extrados, middle = pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
@@ -283,7 +283,7 @@ class Shape(object):
 
     @classmethod
     def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
-        """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied.
+        """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.
 
         Parameters
         ----------

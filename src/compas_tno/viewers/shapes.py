@@ -7,6 +7,7 @@ from compas.geometry import Line
 
 __all__ = [
     'view_mesh',
+    'view_meshes',
     'view_intrados',
     'view_extrados',
     'view_middle',
@@ -46,6 +47,26 @@ def view_mesh(mesh, name='mesh', settings=None):
             }
 
     viewer.add(mesh, name=name, settings=settings)
+
+    return viewer
+
+def view_meshes(meshes, settings=None):
+
+    viewer = ObjectViewer()
+
+    if not settings:
+        settings = {
+            'color': '#999999',
+            'edges.width': 1,
+            'opacity': 0.5,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': True,
+            }
+
+    for mesh in meshes:
+        viewer.add(mesh, settings=settings)
 
     return viewer
 
@@ -137,7 +158,7 @@ def view_shapes_pointcloud(shape, settings_bounds=None):
 
     return viewer
 
-def view_shapes(shape, settings_middle=None, settings_bounds=None):
+def view_shapes(shape, show_middle=True, settings_middle=None, settings_bounds=None):
     """ Viewer showing the middle (target) surface of a shape
 
     Parameters
@@ -182,7 +203,8 @@ def view_shapes(shape, settings_middle=None, settings_bounds=None):
             'faces.on': True,
             }
 
-    viewer.add(middle, name="Middle/Target", settings=settings_middle)
+    if show_middle:
+        viewer.add(middle, name="Middle/Target", settings=settings_middle)
     viewer.add(intrados, name="Intrados", settings=settings_bounds)
     viewer.add(extrados, name="Extrados", settings=settings_bounds)
 
@@ -206,7 +228,7 @@ def view_normals(shape, length=0.5):
 
     """
 
-    viewer = view_shapes(shape)
+    viewer = view_shapes(shape, show_middle=False)
     intrados = shape.intrados
     extrados = shape.extrados
 

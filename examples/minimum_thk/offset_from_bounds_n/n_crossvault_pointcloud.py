@@ -111,7 +111,7 @@ form.initialise_loadpath()
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQp'
+optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb', 'n']
 optimiser.data['objective'] = 'n'

@@ -12,6 +12,7 @@ from matplotlib.ticker import FormatStrFormatter
 from matplotlib import cm
 
 import compas_tno
+import json
 import csv
 import os
 
@@ -36,6 +37,7 @@ __all__ = [
     'prune_data',
     'filter_min_thk',
     'lookup_folder',
+    'save_pointcloud'
 ]
 
 
@@ -954,6 +956,30 @@ def filter_min_thk(files_dict, filters=None):
                     limit_form_max = {key: values}
 
     return limit_form_min, limit_form_max
+
+
+def save_pointcloud(points_lb, points_ub, json_path):
+
+    data = {'UB': {}, 'LB': {}}
+
+    i = 0
+    for pt in points_lb:
+        data['LB'][i] = pt
+        i += 1
+
+    print('Found {0} points in LB'.format(i))
+
+    i = 0
+    for pt in points_ub:
+        data['UB'][i] = pt
+        i += 1
+
+    print('Found {0} points in UB'.format(i))
+
+    with open(json_path, 'w') as outfile:
+        json.dump(data, outfile)
+
+    return
 
 
 # ==============================================================================

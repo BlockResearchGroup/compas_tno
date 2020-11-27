@@ -5,6 +5,7 @@ from compas.geometry import normalize_vector
 from compas.geometry import is_point_in_convex_polygon_xy
 from compas.geometry import centroid_points
 from compas.geometry import normal_polygon
+from compas.geometry import norm_vector
 from compas.utilities import geometric_key_xy
 from compas_plotters import MeshPlotter
 
@@ -200,26 +201,25 @@ class MeshDos(Mesh):
 
         """
 
-        new_mesh = self.copy()
-        new_offset = []
+        offset_list = []
 
-        for key in new_mesh.vertices():
-            normal = new_mesh.vertex_attribute(key, 'n')
+        for key in self.vertices():
+            normal = self.vertex_attribute(key, 'n')
             # normal = new_mesh.vertex_normal(key)
-            z = new_mesh.vertex_coordinates(key)[2]
-            if new_mesh.vertex_attribute(key, '_is_outside'):
-                new_offset.append(t)
+            z = self.vertex_coordinates(key)[2]
+            if self.vertex_attribute(key, '_is_outside'):
+                offset_list.append(t)
             else:
-                deviation = math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
+                deviation = 1/math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
                 if direction == 'up':
-                    new_offset.append(z + n*1/deviation)
+                    offset_list.append(z + n*deviation*norm_vector(normal))  # Experimenting with this normal norm!
                 else:
-                    new_offset.append(z - n*1/deviation)
+                    offset_list.append(z - n*deviation*norm_vector(normal))  # Experimenting with this normal norm!
 
-        for i, key in enumerate(new_mesh.vertices()):
-            new_mesh.vertex_attribute(key, 'z', new_offset[i])
+        for i, key in enumerate(self.vertices()):
+            self.vertex_attribute(key, 'z', offset_list[i])
 
-        return new_mesh
+        return self
 
     def store_normals(self):
 

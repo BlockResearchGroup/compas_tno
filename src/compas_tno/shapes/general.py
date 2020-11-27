@@ -1,6 +1,7 @@
 from numpy import zeros
 import math
 from compas_tno.datastructures import MeshDos
+from compas.geometry import norm_vector
 
 def general_ub_lb_update_with_s(ub, lb, s):  # s represents the "half-portion" of the section that is still remaining
 
@@ -39,14 +40,13 @@ def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represen
         normal_extra = extrados.vertex_attribute(key, 'n')
 
         deviation_extra = 1/math.sqrt(1/(1 + (normal_extra[0]**2 + normal_extra[1]**2)/normal_extra[2]**2))  # 1/cos(a)
-        ub_update[i] = ub[i] - n * deviation_extra
+        ub_update[i] = ub[i] - n * deviation_extra * norm_vector(normal_extra)  # Experimenting with this normal norm!
 
         if intrados.vertex_attribute(key, '_is_outside'):
             lb_update[i] = t
         else:
             deviation_intra = 1/math.sqrt(1/(1 + (normal_intra[0]**2 + normal_intra[1]**2)/normal_intra[2]**2))  # 1/cos(a)
-            lb_update[i] = lb[i] + n * deviation_intra
-
+            lb_update[i] = lb[i] + n * deviation_intra * norm_vector(normal_intra)  # Experimenting with this normal norm!
         i += 1
 
     return ub_update, lb_update
@@ -68,8 +68,8 @@ def general_dub_dlb_with_n(ub, lb, n, intrados, extrados, t):
         else:
             deviation_intra = 1/math.sqrt(1/(1 + (normal_intra[0]**2 + normal_intra[1]**2)/normal_intra[2]**2))  # 1/cos(a)
         deviation_extra = 1/math.sqrt(1/(1 + (normal_extra[0]**2 + normal_extra[1]**2)/normal_extra[2]**2))  # 1/cos(a)
-        dlb[i] = + deviation_intra
-        dub[i] = - deviation_extra
+        dlb[i] = + deviation_intra * norm_vector(normal_intra)  # Experimenting with this normal norm!
+        dub[i] = - deviation_extra * norm_vector(normal_extra)  # Experimenting with this normal norm!
         i += 1
 
     return dub, dlb

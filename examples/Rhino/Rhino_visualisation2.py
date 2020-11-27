@@ -25,8 +25,12 @@ for i in range(len(R)):
     dx = 0  # 20.0 * i
     trans = [dx, dy, 0]
 
-    master = 'Dome_20_16_minthickness'
+    master = 'Crossvault_50cm_n_analytical'
     fnm = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/min_max/dome_radial_fd_discr_[20, 16]_min_thk_20.454691527171835.json'
+    fnm = '/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_20_min_thk_t_0.33818060747322387.json'
+    fnm = '/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_20_lp.json'
+    fnm = '/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/crossvault_cross_fd_discr_10_offset-method_min_thk_n_0.347975602932157.json'
+    fnm = '/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/test_offset_n_10_analytical_50cm.json'
     
     # Parameters for the visualisation
     radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
@@ -124,8 +128,8 @@ for i in range(len(R)):
         q = form.edge_attribute((u,v), 'q')
         sp = [form.vertex_coordinates(u)[i]+trans[i] for i in range(3)]
         ep = [form.vertex_coordinates(v)[i]+trans[i] for i in range(3)]
-        sp[2] = form.vertex_attribute(u, 'target')[0]  # this [0] is annoying
-        ep[2] = form.vertex_attribute(v, 'target')[0]
+        sp[2] = form.vertex_attribute(u, 'target')  # this [0] is annoying
+        ep[2] = form.vertex_attribute(v, 'target')
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(q))
 
