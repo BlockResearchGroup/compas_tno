@@ -1,10 +1,12 @@
 from numpy import arange
 import math
 from compas.datastructures import Mesh
+from compas_tno.datastructures import MeshDos
 from numpy import array
 from numpy import ones
 from numpy import zeros
 from numpy import concatenate
+from numpy import linspace
 
 
 def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100], expanded=False):
@@ -50,12 +52,10 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
 
-    dx = x1 - x0
-    dy = y1 - y0
     density_x = discretisation[0]
     density_y = discretisation[1]
-    x = arange(x0, x1 + dx/density_x, dx/density_x)
-    y = arange(y0, y1 + dy/density_y, dy/density_y)
+    x = linspace(x0, x1, num=density_x+1, endpoint=True)  # arange(x0, x1 + dx/density_x, dx/density_x)
+    y = linspace(y0, y1, num=density_y+1, endpoint=True)  # arange(y0, y1 + dy/density_y, dy/density_y)
 
     rx = (x1 - x0)/2
     ry = (y1 - y0)/2
@@ -97,8 +97,16 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e
                 p2 = (i, j+1)
                 p3 = (i+1, j)
                 p4 = (i+1, j+1)
-                face = [p1, p2, p4, p3]
-                faces.append(face)
+                if i != j and i + j != density_x - 1:
+                    face = [p1, p2, p4, p3]
+                    faces.append(face)
+                else:
+                    if i == j:
+                        faces.append([p1, p2, p4])
+                        faces.append([p1, p4, p3])
+                    else:
+                        faces.append([p2, p3, p1])
+                        faces.append([p2, p4, p3])
             index = index + 1
 
     for face in faces:
@@ -110,7 +118,7 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e
         faces_i.append(face_i)
 
     xyz = array([x1d, y1d, z1d]).transpose()
-    middle = Mesh.from_vertices_and_faces(xyz, faces_i)
+    middle = MeshDos.from_vertices_and_faces(xyz, faces_i)
 
     extrados = cross_vault_highfields_ub(xy_span=xy_span, thk=thk, tol=tol, discretisation=discretisation, expanded=expanded)
     intrados = cross_vault_highfields_lb(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation, expanded=expanded)
@@ -152,12 +160,11 @@ def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
     y0 = xy_span[1][0]
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
-    dx = x1 - x0
-    dy = y1 - y0
     density_x = discretisation[0]
     density_y = discretisation[1]
-    x = arange(x0, x1 + dx/density_x, dx/density_x)
-    y = arange(y0, y1 + dy/density_y, dy/density_y)
+    x = linspace(x0, x1, num=density_x+1, endpoint=True)  #arange(x0, x1 + dx/density_x, dx/density_x)
+    y = linspace(y0, y1, num=density_y+1, endpoint=True)  #arange(y0, y1 + dy/density_y, dy/density_y)
+
     if expanded:
         x = concatenate(([x0 - thk/2], x, [x1 + thk/2]))
         y = concatenate(([y0 - thk/2], y, [y1 + thk/2]))
@@ -206,9 +213,16 @@ def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
                 p2 = (i, j+1)
                 p3 = (i+1, j)
                 p4 = (i+1, j+1)
-                face = [p1, p2, p4, p3]
-                faces.append(face)
-
+                if i != j and i + j != density_x - 1:
+                    face = [p1, p2, p4, p3]
+                    faces.append(face)
+                else:
+                    if i == j:
+                        faces.append([p1, p2, p4])
+                        faces.append([p1, p4, p3])
+                    else:
+                        faces.append([p2, p3, p1])
+                        faces.append([p2, p4, p3])
             index = index + 1
 
     for face in faces:
@@ -220,7 +234,7 @@ def cross_vault_highfields_ub(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
         faces_i.append(face_i)
 
     xyz = array([x1d, y1d, z1d]).transpose()
-    extrados = Mesh.from_vertices_and_faces(xyz, faces_i)
+    extrados = MeshDos.from_vertices_and_faces(xyz, faces_i)
 
     return extrados
 
@@ -256,12 +270,11 @@ def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
     y0 = xy_span[1][0]
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
-    dx = x1 - x0
-    dy = y1 - y0
     density_x = discretisation[0]
     density_y = discretisation[1]
-    x = arange(x0, x1 + dx/density_x, dx/density_x)
-    y = arange(y0, y1 + dy/density_y, dy/density_y)
+    x = linspace(x0, x1, num=density_x+1, endpoint=True)  #arange(x0, x1 + dx/density_x, dx/density_x)
+    y = linspace(y0, y1, num=density_y+1, endpoint=True)  #arange(y0, y1 + dy/density_y, dy/density_y)
+
     if expanded:
         x = concatenate(([x0 - thk/2], x, [x1 + thk/2]))
         y = concatenate(([y0 - thk/2], y, [y1 + thk/2]))
@@ -324,9 +337,16 @@ def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
                 p2 = (i, j+1)
                 p3 = (i+1, j)
                 p4 = (i+1, j+1)
-                face = [p1, p2, p4, p3]
-                faces.append(face)
-
+                if i != j and i + j != density_x - 1:
+                    face = [p1, p2, p4, p3]
+                    faces.append(face)
+                else:
+                    if i == j:
+                        faces.append([p1, p2, p4])
+                        faces.append([p1, p4, p3])
+                    else:
+                        faces.append([p2, p3, p1])
+                        faces.append([p2, p4, p3])
             index = index + 1
 
     for face in faces:
@@ -338,12 +358,12 @@ def cross_vault_highfields_lb(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=
         faces_i.append(face_i)
 
     xyz = array([x1d, y1d, z1d]).transpose()
-    intrados = Mesh.from_vertices_and_faces(xyz, faces_i)
+    intrados = MeshDos.from_vertices_and_faces(xyz, faces_i)
 
     return intrados
 
 
-def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault
+def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault !!
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -395,7 +415,7 @@ def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], to
     return ub, lb
 
 
-def crossvault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault
+def crossvault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault !!
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -456,3 +476,36 @@ def crossvault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-
 
     return dub, dlb  # ub, lb
 
+
+def crossvault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Only for Square Cross Vault
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    rx = (x1 - x0)/2
+    ry = (y1 - y0)/2
+    hc = max(rx, ry)
+
+    middle = zeros((len(x), 1))
+
+    for i in range(len(x)):
+        xi, yi = x[i], y[i]
+        xd = x0 + (x1 - x0)/(y1 - y0) * (yi - y0)
+        yd = y0 + (y1 - y0)/(x1 - x0) * (xi - x0)
+        hxd = (math.sqrt((rx)**2 - ((xd - x0) - rx)**2))
+        hyd = (math.sqrt((ry)**2 - ((yd - y0) - ry)**2))
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
+            middle[i] = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
+            middle[i] = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
+            middle[i] = hc*(hxd + math.sqrt((ry)**2 - ((yi - y0) - ry)**2))/(rx + ry)
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
+            middle[i] = hc*(hyd + math.sqrt((rx)**2 - ((xi - x0) - rx)**2))/(rx + ry)
+        else:
+            print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
+            middle[i] = 0.0
+
+    return middle

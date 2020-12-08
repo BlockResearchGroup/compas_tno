@@ -8,6 +8,10 @@ from compas.geometry import normal_polygon
 from compas.geometry import norm_vector
 from compas.utilities import geometric_key_xy
 from compas_plotters import MeshPlotter
+from compas.geometry import sum_vectors
+from compas.geometry import scale_vector
+from compas.geometry import angle_vectors
+import math
 
 from compas.datastructures import Mesh
 
@@ -40,7 +44,7 @@ class MeshDos(Mesh):
 
     __module__ = 'compas_tno.datastructures'
 
-    def __init__(self):  # add '_is_outside': False as default
+    def __init__(self):  # add 'is_outside': False as default
         super(Mesh, self).__init__()
 
     @classmethod
@@ -202,12 +206,13 @@ class MeshDos(Mesh):
         """
 
         offset_list = []
+        mesh_copy = self.copy()
 
         for key in self.vertices():
             normal = self.vertex_attribute(key, 'n')
             # normal = new_mesh.vertex_normal(key)
             z = self.vertex_coordinates(key)[2]
-            if self.vertex_attribute(key, '_is_outside'):
+            if self.vertex_attribute(key, 'is_outside'):
                 offset_list.append(t)
             else:
                 deviation = 1/math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
@@ -216,15 +221,199 @@ class MeshDos(Mesh):
                 else:
                     offset_list.append(z - n*deviation*norm_vector(normal))  # Experimenting with this normal norm!
 
-        for i, key in enumerate(self.vertices()):
-            self.vertex_attribute(key, 'z', offset_list[i])
+        for i, key in enumerate(mesh_copy.vertices()):
+            mesh_copy.vertex_attribute(key, 'z', offset_list[i])
 
-        return self
+        return mesh_copy
 
-    def store_normals(self):
+    def offset_up_and_down(self, n=1.0, t=0.0):
+        """
+        Offset the mesh upwards considering it as intrados.
+
+        Parameters
+        ----------
+        n : float
+            Percentage of the normal vector to use.
+        Returns
+        -------
+        obj
+            MeshDos.
+
+        """
+
+        ub_update = []
+        lb_update = []
+        mesh_ub = self.copy()
+        mesh_lb = self.copy()
+
+        for key in self.vertices():
+            nub = self.vertex_attribute(key, 'nub')
+            nlb = self.vertex_attribute(key, 'nlb')
+            z = self.vertex_coordinates(key)[2]
+            dev_ub = 1/math.sqrt(1/(1 + (nub[0]**2 + nub[1]**2)/nub[2]**2))
+            if self.vertex_attribute(key, 'is_outside'):
+                dev_lb = 0.0
+            else:
+                dev_lb = 1/math.sqrt(1/(1 + (nlb[0]**2 + nlb[1]**2)/nlb[2]**2))
+            ub_update.append(z + n * dev_ub * norm_vector(nub))
+            lb_update.append(z - n * dev_lb * norm_vector(nlb))
+
+        for i, key in enumerate(mesh_ub.vertices()):
+            mesh_ub.vertex_attribute(key, 'z', ub_update[i])
+            mesh_lb.vertex_attribute(key, 'z', lb_update[i])
+
+        return mesh_ub, mesh_lb
+
+    def store_normals(self, correct_creases=False, printout=False, plot=False):
 
         for key in self.vertices():
             self.vertex_attribute(key, 'n', self.vertex_normal(key))
+
+        if correct_creases:
+            self.magnify_normal_at_ribs(printout=printout, plot=plot)
+
+        return
+
+    def identify_creases_by_angle(self, deviation=20):
+        """
+        Identify creses in the structure based on a threshold angle limit.
+
+        Parameters
+        ----------
+        deviation : float
+            Angle (deg) deviation of normals along an edge so it is considered a crease.
+        Returns
+        -------
+        obj
+            MeshDos.
+        """
+
+        self.vertices_attribute('is_crease', False)
+        self.edges_attribute('is_crease', False)
+        for u, v in self.edges():
+            faces = self.edge_faces(u, v)
+            if faces[0] is not None and faces[1] is not None:
+                normals = [self.face_normal(face) for face in faces]
+                dev = angle_vectors(normals[0], normals[1], deg=True)
+                if dev > deviation:
+                    self.vertex_attribute(u, 'is_crease', True)
+                    self.vertex_attribute(v, 'is_crease', True)
+                    self.edge_attribute((u, v), 'is_crease', True)
+
+        return
+
+    def identify_creases_at_diagonals(self, xy_span=[[0.0, 10.0], [0.0, 10.0]]):
+        """
+        Identify creses in the structure based on the diagonal of a rectangular.
+
+        Parameters
+        ----------
+        deviation : float
+            Angle (deg) deviation of normals along an edge so it is considered a crease.
+        Returns
+        -------
+        obj
+            MeshDos.
+        """
+
+        self.vertices_attribute('is_crease', False)
+        self.edges_attribute('is_crease', False)
+        tol = 10E-3
+
+        y1 = xy_span[1][1]
+        y0 = xy_span[1][0]
+        x1 = xy_span[0][1]
+        x0 = xy_span[0][0]
+
+        for key in self.vertices():
+            xi, yi, _ = self.vertex_coordinates(key)
+            if abs(yi - (y0 + (y1 - y0)/(x1 - x0) * (xi - x0))) <= tol or abs(yi - (y1 - (y1 - y0)/(x1 - x0) * (xi - x0))) <= tol:
+                self.vertex_attribute(key, 'is_crease', True)
+
+        for u, v in self.edges():
+            if self.vertex_attribute(u, 'is_crease') and self.vertex_attribute(v, 'is_crease'):
+                self.edge_attribute((u, v), 'is_crease', True)
+
+        return
+
+    def magnify_normal_at_ribs(self, printout=False, plot=False):
+
+        keys = list(self.vertices_where({'is_crease': True}))
+
+        for vkey in keys:
+            vfaces = self.vertex_faces(vkey, ordered=True)
+            vfaces = vfaces + [vfaces[0]]
+            right = []
+            left = []
+            for i in range(len(vfaces) - 2):
+                halfedge = self.face_adjacency_halfedge(vfaces[i], vfaces[i + 1])
+                if i == 0:
+                    right.append(vfaces[i])
+                    if self.edge_attribute(halfedge, 'is_crease'):
+                        left.append(vfaces[i + 1])
+                    else:
+                        right.append(vfaces[i + 1])
+                else:
+                    if self.edge_attribute(halfedge, 'is_crease'):
+                        if vfaces[i] in right:
+                            left.append(vfaces[i + 1])
+                        else:
+                            right.append(vfaces[i + 1])
+                    else:
+                        if vfaces[i] in right:
+                            right.append(vfaces[i + 1])
+                        else:
+                            left.append(vfaces[i + 1])
+
+            normal_right = normalize_vector(centroid_points([self.face_normal(fkey, False) for fkey in right]))
+            normal_left = normalize_vector(centroid_points([self.face_normal(fkey, False) for fkey in left]))
+            angle = angle_vectors(normal_right, normal_left)/2
+            n = scale_vector(normalize_vector(sum_vectors([normal_right, normal_left])), 1/math.cos(angle))
+            self.vertex_attribute(vkey, 'n', n)
+
+            if printout:
+                x, y, z = self.vertex_coordinates(vkey)
+                print('x, y, n, norm', x, y, n, norm_vector(n))
+
+            if plot:
+                color_right = {key: '00FF00' for key in right}
+                color_left = {key: '0000FF' for key in left}
+                colors = {**color_right, **color_left}
+                plotter = MeshPlotter(self, figsize=(6, 6))
+                plotter.draw_edges(color={key: 'FF0000' for key in self.edges_where({'is_crease': True})})
+                plotter.draw_vertices(text={vkey: vkey}, facecolor={key: 'FF0000' for key in self.vertices_where({'is_crease': True})})
+                plotter.draw_faces(text={key: key for key in vfaces}, facecolor=colors)
+                plotter.show()
+
+        return
+
+    def scale_normals_with_ub_lb(self, zub, zlb, tol=10e-3):
+        """Scale the normals on the middle surface to match zub and zlb.
+
+        Parameters
+        ----------
+        zub : array (n x 1)
+            Height of the nodes of extrados.
+        zlb : array (n x 1)
+            Height of the nodes of intrados.
+
+        """
+
+        self.vertices_attribute('is_outside', False)
+        i = 0
+        for key in self.vertices():
+            n = self.vertex_attribute(key, 'n')
+            zti = self.vertex_attribute(key, 'z')
+            deviation = 1/math.sqrt(1/(1 + (n[0]**2 + n[1]**2)/n[2]**2))
+            fac_ub = (zub[i] - zti)/deviation
+            fac_lb = (zlb[i] - zti)/deviation
+            nub = scale_vector(n, fac_ub/norm_vector(n))
+            nlb = scale_vector(n, fac_lb/norm_vector(n))
+            self.vertex_attribute(key, 'nub', nub)
+            self.vertex_attribute(key, 'nlb', nlb)
+            if abs(fac_lb) < tol:
+                self.vertex_attribute(key, 'is_outside', True)
+            i += 1
 
         return
 

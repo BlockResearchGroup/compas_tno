@@ -15,25 +15,32 @@ import os
 # ----------------------------------------------------------------------
 
 sols = {}
-for discretisation in [20]:
+# for discretisation in [10, 12, 14, 16, 18, 20]:
+for A in [1.00, 1.025, 1.05000001, 1.075, 1.10, 1.125, 1.15, 1.175, 1.20]:
+# for A in [1.05000001]:
 
     # Basic parameters
 
+    discretisation = 14
+    # A = 1.00
+    span = span_x = span_y = 10.0
+    xy_span = [[0, span_x], [0, span_y]]
+    xy_span_shape = [[-span_x/2*(A - 1), span_x*(1 + (A - 1)/2)], [-span_y/2*(A - 1), span_y*(1 + (A - 1)/2)]]
     thk = 0.5
-    span = 10.0
+
     k = 1.0
-    n = 1
+    n = 4
     type_structure = 'crossvault'
-    type_formdiagram = 'cross_fd'
+    type_formdiagram = 'fan_fd'
     gradients = True
 
-    # ----------------------- 1. Create Dome shape ---------------------------
+    # ----------------------- 1. Create shape ---------------------------
 
     data_shape = {
         'type': type_structure,
         'thk': thk,
         'discretisation': discretisation*n,
-        'xy_span': [[0, span], [0, k*span]],
+        'xy_span': xy_span_shape,
         't': 0.0,
     }
 
@@ -60,10 +67,9 @@ for discretisation in [20]:
 
     # form = form.initialise_tna(plot=False)
     form.selfweight_from_shape(vault)
-    form.envelope_from_shape(vault)
+    # form.envelope_from_shape(vault)
     form.initialise_loadpath()
     # plot_form(form).show()
-
 
     # --------------------- 4. Create Minimisation Optimiser ---------------------
 
@@ -98,21 +104,27 @@ for discretisation in [20]:
 
         folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram)
         os.makedirs(folder, exist_ok=True)
-        title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+        title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + 'A=' + str(A)
         save_form = os.path.join(folder, title)
 
         form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
 
-        sols[str(discretisation)] = thk_min
+        # sols[str(discretisation)] = thk_min
+        sols[str(A)] = thk_min
 
-        print('Solved:', discretisation, thk_min)
+        # print('Solved:', discretisation, thk_min)
+        print('Solved:', A, thk_min)
 
     else:
 
-        print('Not Solved:', discretisation)
+        # print('Not Solved:', discretisation)
+        print('Not Solved:', A)
+
+    # plot_form(form, show_q=False, simple=True, cracks=True).show()
+    # view_solution(form, vault).show()
 
 print(sols)
 
 for sol in sols:
-    discr = int(sol)
+    discr = float(sol)
     print('{0}, {1}'.format(discr, sols[sol]))

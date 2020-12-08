@@ -1,5 +1,6 @@
 from compas_tno.algorithms import reactions
 from compas_tno.algorithms import zq_from_qid
+from compas_tno.shapes import Shape
 
 from compas.utilities import geometric_key
 
@@ -18,6 +19,7 @@ def post_process_analysis(analysis):
     summary = optimiser.data.get('summary', False)
     printout = optimiser.data.get('printout', True)
     variables = optimiser.data['variables']
+    thickness_type = optimiser.data.get('thickness_type', 'constant')
 
     fconstr = optimiser.fconstr
     args = optimiser.args
@@ -62,7 +64,33 @@ def post_process_analysis(analysis):
     reactions(form, plot=plot)
 
     if 't' in variables:
-        form.attributes['thk'] = thk
+        if shape.data['type'] == 'general':
+            if thickness_type == 'constant':
+                form.attributes['thk'] = thk
+                shape.data['thk'] = thk
+                shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
+                shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
+                form.envelope_from_shape(shape)
+            elif thickness_type == 'variable':
+                t0 = shape.data['thk']
+                thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
+                form.attributes['thk'] = thk
+                shape.data['thk'] = thk
+                if printout:
+                    print('Optimum Value corresponds to a thickness of:', thk)
+                shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
+                form.envelope_from_shape(shape)
+            elif thickness_type == 'intrados':
+                form.attributes['thk'] = thk
+                shape.data['thk'] = thk
+                shape.middle = shape.intrados.offset_mesh(n=thk/2, direction='up')
+                shape.extrados = shape.intrados.offset_mesh(n=thk, direction='up')
+                form.envelope_from_shape(shape)
+        else:
+            form.attributes['thk'] = thk
+            shape.data['thk'] = thk
+            shape = Shape.from_library(shape.data)
+            form.envelope_from_shape(shape)
 
     if 's' in variables:
         s = -1 * fopt

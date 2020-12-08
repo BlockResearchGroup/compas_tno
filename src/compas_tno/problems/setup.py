@@ -58,6 +58,7 @@ def set_up_nonlinear_optimisation(analysis):
     qmax = optimiser.data.get('qmax', 1e+6)
     qmin = optimiser.data.get('qmin', 0.0)  # This qmin sometimes is 1e-6...
     plot = optimiser.data.get('plot', False)
+    thickness_type = optimiser.data.get('thickness_type', 'constant')
 
     objective = optimiser.data['objective']
     variables = optimiser.data['variables']
@@ -95,6 +96,7 @@ def set_up_nonlinear_optimisation(analysis):
     else:
         Asym = None
 
+    shape.data['thickness_type'] = thickness_type  # thhis argument is useful if minimising thickness
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
             ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin,
             constraints,  max_rol_rx, max_rol_ry, Asym, variables, shape)
@@ -152,8 +154,9 @@ def set_up_nonlinear_optimisation(analysis):
     if 't' in variables:
         min_thk = optimiser.data.get('min_thk', 0.001)
         thk = optimiser.data.get('thk', shape.data['thk'])
+        max_thk = optimiser.data.get('max_thk', thk)
         x0 = append(x0, thk).reshape(-1, 1)
-        bounds = bounds + [[min_thk, thk]]
+        bounds = bounds + [[min_thk, max_thk]]  # allow higher than thk as up bound?
 
     if 's' in variables:
         x0 = append(x0, 0.0).reshape(-1, 1)
@@ -163,7 +166,7 @@ def set_up_nonlinear_optimisation(analysis):
         thk0_approx = min(ub - lb)
         print('Thickness approximate:', thk0_approx)
         x0 = append(x0, 0.0).reshape(-1, 1)
-        min_limit = - thk0_approx#/2  # 0.0
+        min_limit = - thk0_approx  #/2  # 0.0
         bounds = bounds + [[min_limit, thk0_approx/2]]
 
     f0 = fobj(x0, *args)

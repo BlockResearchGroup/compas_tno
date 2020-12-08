@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-def view_mesh(mesh, name='mesh', settings=None):
+def view_mesh(mesh, name='mesh', normals=False, length=1.0, settings=None):
     """ Viewer showing the extrados of a shape
 
     Parameters
@@ -47,6 +47,14 @@ def view_mesh(mesh, name='mesh', settings=None):
             }
 
     viewer.add(mesh, name=name, settings=settings)
+
+    if normals:
+        for key in mesh.vertices():
+            n = mesh.vertex_attribute(key, 'n')
+            pt0 = mesh.vertex_coordinates(key)
+            pt1 = [pt0[0] + n[0]*length, pt0[1] + n[1]*length, pt0[2] + n[2]*length]
+            line = Line(pt0, pt1)
+            viewer.add(line, name='normal-{}'.format(key))
 
     return viewer
 

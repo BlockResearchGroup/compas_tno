@@ -57,7 +57,7 @@ __all__ = [
 #     return transpose(constraints)[0]  # .reshape(-1, 1)
 
 
-def constr_wrapper(xopt, *args):  # change name shape data to shape
+def constr_wrapper(xopt, *args):
 
     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
 
@@ -65,7 +65,7 @@ def constr_wrapper(xopt, *args):  # change name shape data to shape
         q[ind] = xopt[:k].reshape(-1, 1)
     if 'zb' in variables:
         z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
-    # if 't' in variables or 's' in variables or 'n' in variables:
+    # if 't' in variables or 's' in variables or 'n' in variables or 't-middle' in variables:
     if len(xopt) > len(fixed) + len(ind):
         thk = xopt[-1].item()
         t = shape.data['t']
@@ -79,7 +79,7 @@ def constr_wrapper(xopt, *args):  # change name shape data to shape
         constraints = vstack([constraints, (q[dep] - qmin).reshape(-1, 1)])  # >= 0
     if 'envelope' in dict_constr:
         if 't' in variables or 's' in variables or 'n' in variables:
-            ub, lb = ub_lb_update(x, y, thk, t, shape, ub, lb, variables)
+            ub, lb = ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables)
         constraints = vstack([constraints, ub[ub_ind] - z[ub_ind], z[lb_ind] - lb[lb_ind]])
     if 'reac_bounds' in dict_constr:
         if 't' in variables or 'n' in variables:

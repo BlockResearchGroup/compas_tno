@@ -1,0 +1,197 @@
+
+import compas_tno
+from compas_tno.diagrams import FormDiagram
+from compas_tno.shapes.shape import Shape
+from compas_tno.optimisers.optimiser import Optimiser
+from compas_tno.plotters import plot_form
+from compas_tno.analysis.analysis import Analysis
+from compas_tno.viewers.thrust import view_thrusts
+from compas_tno.viewers.thrust import view_solution
+from compas_tno.viewers import view_shapes
+from compas_tno.viewers import view_normals
+from compas_tno.viewers import view_mesh
+from compas_tno.viewers import view_solution
+from compas_tno.viewers import view_shapes_pointcloud
+from compas_tno.viewers import view_solution
+from compas_tno.datastructures import MeshDos
+from compas.geometry import normalize_vector
+from compas.geometry import sum_vectors
+from compas.geometry import norm_vector
+from compas.geometry import scale_vector
+from compas.geometry import angle_vectors
+from compas.geometry import centroid_points
+from compas_tno.shapes.crossvault import crossvault_middle_update
+import math
+from numpy import array
+from copy import deepcopy
+
+# ----------------------------------------------------------------------
+# ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
+# ----------------------------------------------------------------------
+
+# A = 1.1  # Parameter similar to a spring angle
+
+sols = {}
+# for discretisation in [10, 12, 14, 16, 18, 20]:
+# for discretisation in [10, 12, 14, 16, 18, 20]:
+for A in [1.00, 1.025, 1.050, 1.075, 1.100, 1.125, 1.150, 1.175, 1.20]:
+# for A in [1.00]:
+
+    discretisation = 14
+    thk = 0.5
+    span_x = 10.0
+    span_y = 10.0
+    span = max(span_x, span_y)
+    xy_span = [[0, span_x], [0, span_y]]
+    xy_span_shape = [[-span_x/2*(A - 1), span_x*(1 + (A - 1)/2)], [-span_y/2*(A - 1), span_y*(1 + (A - 1)/2)]]
+    k = 1.0
+    n = 4
+    type_structure = 'crossvault'
+    type_formdiagram = 'cross_fd'
+    gradients = True
+    t = 0.0
+
+    # --------------------
+    # Shape
+    # --------------------
+
+    data_shape = {
+        'type': type_structure,
+        'thk': thk,
+        'discretisation': discretisation*n,
+        'xy_span': xy_span_shape,
+        't': t,
+    }
+
+    analytical_shape = Shape.from_library(data_shape)
+    swt = analytical_shape.compute_selfweight()
+    print('Selfweight computed:', swt)
+    print('Vault geometry created!')
+
+    # --------------------
+    # Diagrams
+    # --------------------
+
+    data_diagram = {
+        'type': type_formdiagram,
+        'xy_span': xy_span,
+        'discretisation': discretisation,
+        'fix': 'corners',
+    }
+
+    form = FormDiagram.from_library(data_diagram)
+    print('Form Diagram Created!')
+
+    # --------------------
+    # PointCloud in the middle
+    # --------------------
+
+    # xy = []
+    # points_central = []
+
+    # for i in range(n * discretisation + 1):
+    #     for j in range(n * discretisation + 1):
+    #         xy.append([i * span / (n * discretisation), j * span / (n * discretisation)])
+
+    # zt = analytical_shape.get_middle_pattern(xy).reshape(-1, 1)
+
+    # for i in range(len(xy)):
+    #     points_central.append([xy[i][0], xy[i][1], float(zt[i])])
+
+    # vault = Shape.from_middle_pointcloud(points_central, topology=form, thk=thk, treat_creases=True)
+
+    # --------------------
+    # Mesh in the middle
+    # --------------------
+
+    xyz = array(form.vertices_attributes('xyz'))
+    zt = crossvault_middle_update(xyz[:, 0], xyz[:, 1],  t,  xy_span=xy_span_shape)
+    middle = MeshDos.from_mesh(form)
+    i = 0
+    for key in middle.vertices():
+        middle.vertex_attribute(key, 'z', zt[i])
+        i += 1
+
+    vault = Shape.from_middle(middle, thk=thk, treat_creases=True)
+
+    # --------------------
+    # Mesh as a percentage
+    # --------------------
+
+    # from numpy import array
+    # XY = array(vault.middle.vertices_attributes('xyz'))[:, :2]
+    # zub = analytical_shape.get_ub_pattern(XY)
+    # zlb = analytical_shape.get_lb_pattern(XY)
+
+    # vault.middle.scale_normals_with_ub_lb(zub, zlb)
+    # vault.extrados, vault.intrados = vault.middle.offset_up_and_down(n=1.0)
+
+    # vault.middle.scale_normals
+    # view_shapes(vault).show()
+    # view_shapes(analytical_shape).show()
+
+    # --------------------
+    # Initialise
+    # --------------------
+
+    # form = form.initialise_tna(plot=False)
+    form.selfweight_from_shape(vault)
+    form.envelope_from_shape(vault)
+    form.initialise_loadpath()
+    # plot_form(form).show()
+
+    # --------------------
+    # Optimiser
+    # --------------------
+
+    optimiser = Optimiser()
+    optimiser.data['library'] = 'Scipy'
+    optimiser.data['solver'] = 'slsqp'
+    optimiser.data['constraints'] = ['funicular', 'envelope']
+    # optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
+    optimiser.data['variables'] = ['ind', 'zb', 't']
+    optimiser.data['objective'] = 't'
+    optimiser.data['thickness_type'] = 'constant'
+    optimiser.data['min_thk'] = 0.0
+    optimiser.data['max_thk'] = thk*2.0
+    optimiser.data['printout'] = True
+    optimiser.data['plot'] = False
+    optimiser.data['find_inds'] = True
+    optimiser.data['qmax'] = 1000.0
+    optimiser.data['gradient'] = gradients
+    optimiser.data['jacobian'] = gradients
+
+    # --------------------
+    # Analysis
+    # --------------------
+
+    analysis = Analysis.from_elements(vault, form, optimiser)
+    analysis.apply_selfweight()
+    analysis.apply_envelope()
+    analysis.set_up_optimiser()
+    analysis.run()
+
+    if optimiser.exitflag == 0:
+
+        thk_min = form.attributes['thk']
+
+        # sols[str(discretisation)] = thk_min
+        sols[str(A)] = thk_min
+
+        # print('Solved:', discretisation, thk_min)
+        print('Solved:', A, thk_min)
+
+        # plot_form(form, show_q=False, simple=True, cracks=True).show()
+        # view_solution(form, vault).show()
+        # view_shapes(vault).show()
+        # view_normals(vault).show()
+    else:
+        # print('Not Solved:', discretisation)
+        print('Not Solved:', A)
+
+print(sols)
+
+for sol in sols:
+    # discr = int(sol)
+    discr = float(sol)
+    print('{0}, {1}'.format(discr, sols[sol]))

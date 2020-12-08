@@ -236,7 +236,7 @@ def sensitivities_wrapper(xopt, *args):
             dz_zb[fixed] = identity(len(fixed))
             dz = hstack([dz, dz_zb])
         if 't' in variables or 's' in variables or 'n' in variables:
-            dub, dlb = dub_dlb_update(x, y, thk, t, shape, ub, lb, variables)
+            dub, dlb = dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables)
             dzub = hstack([-dz, dub])
             dzlb = hstack([dz, - dlb])
             deriv = vstack([deriv, dzub[ub_ind], dzlb[lb_ind]])  # dz IN ub_ind / lb_ind

@@ -32,8 +32,8 @@ gradients = True  # False
 
 # ----------------------- Point Cloud -----------------------
 
-file_name = 'fanvaulting_t=50'
-file_name = 'amiens'
+file_name = 'nurbs1'
+# file_name = 'amiens'
 pointcloud = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + file_name + '.json'
 
 points_ub = []
@@ -70,7 +70,7 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
-plot_form(form, show_q=False, fix_width=False).show()
+# plot_form(form, show_q=False, fix_width=False).show()
 
 # ------- Create shape given a topology and a point cloud --------
 
@@ -99,7 +99,7 @@ form.selfweight_from_shape(vault)
 
 # form = form.initialise_tna(plot=False)
 form.initialise_loadpath()
-plot_form(form).show()
+# plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 

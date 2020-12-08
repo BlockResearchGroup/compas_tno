@@ -183,7 +183,7 @@ class Shape(object):
         shape.intrados = intrados  # MeshDos.from_mesh(intrados)
         shape.extrados = extrados  # MeshDos.from_mesh(extrados)
         if middle:
-            shape.middle = MeshDos.from_mesh(middle)
+            shape.middle = middle # MeshDos.from_mesh(middle)
         else:
             shape.interpolate_middle_from_ub_lb()
             shape.middle = MeshDos.from_mesh(shape.intrados.copy())
@@ -226,13 +226,13 @@ class Shape(object):
         return shape
 
     @classmethod
-    def from_middle_pointcloud(cls, middle_pts, thk=0.50, data={'type': 'general', 't': 0.0}):
+    def from_middle(cls, middle, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
         """Construct a Shape from a pointcloud.
 
         Parameters
         ----------
-        middle_pts : list
-            List of points collected in the intrados.
+        middle : mesh
+            Mesh with middle. Topology will be considered.
         data : dict (None)
             Dictionary with the data in required.
 
@@ -243,10 +243,51 @@ class Shape(object):
 
         """
 
-        middle = MeshDos.from_points_delaunay(middle_pts)
-        middle.store_normals()
+        if treat_creases:
+            middle.identify_creases_at_diagonals(xy_span=data['xy_span'])
+            middle.store_normals(correct_creases=True)
+        else:
+            middle.store_normals()
         extrados_mesh = middle.offset_mesh(thk/2, direction='up')
         intrados_mesh = middle.offset_mesh(thk/2, direction='down')
+        data['thk'] = thk
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+
+    @classmethod
+    def from_middle_pointcloud(cls, middle_pts, topology=None, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
+        """Construct a Shape from a pointcloud.
+
+        Parameters
+        ----------
+        middle_pts : list
+            List of points collected in the intrados.
+        topology : mesh (None)
+            If a mesh is given the middle, intrados and extrados meshes will repeat the topology.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+
+        if not topology:
+            middle = MeshDos.from_points_delaunay(middle_pts)
+        else:
+            middle = MeshDos.from_topology_and_pointcloud(topology, array(middle_pts))
+        if treat_creases:
+            middle.identify_creases_at_diagonals(xy_span=data['xy_span'])
+            middle.store_normals(correct_creases=True)
+        else:
+            middle.store_normals()
+        extrados_mesh = middle.offset_mesh(thk/2, direction='up')
+        intrados_mesh = middle.offset_mesh(thk/2, direction='down')
+        data['thk'] = thk
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
         return shape
@@ -358,8 +399,8 @@ class Shape(object):
         intrados.store_normals()
         extrados.store_normals()
 
-        intrados.vertices_attribute('_is_outside', False)
-        extrados.vertices_attribute('_is_outside', False)
+        intrados.vertices_attribute('is_outside', False)
+        extrados.vertices_attribute('is_outside', False)
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
@@ -370,9 +411,9 @@ class Shape(object):
             if t is not None:
                 for key in intrados.vertices():
                     if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        intrados.vertex_attribute(key, '_is_outside', True)
+                        intrados.vertex_attribute(key, 'is_outside', True)
                     if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        extrados.vertex_attribute(key, '_is_outside', True)
+                        extrados.vertex_attribute(key, 'is_outside', True)
 
         if plot:
             intrados.plot_normals()
@@ -411,8 +452,8 @@ class Shape(object):
             intrados.vertex_attribute(key, 'n', nlb)
             extrados.vertex_attribute(key, 'n', nub)
 
-        intrados.vertices_attribute('_is_outside', False)
-        extrados.vertices_attribute('_is_outside', False)
+        intrados.vertices_attribute('is_outside', False)
+        extrados.vertices_attribute('is_outside', False)
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
@@ -423,9 +464,9 @@ class Shape(object):
             if t is not None:
                 for key in intrados.vertices():
                     if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        intrados.vertex_attribute(key, '_is_outside', True)
+                        intrados.vertex_attribute(key, 'is_outside', True)
                     if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        extrados.vertex_attribute(key, '_is_outside', True)
+                        extrados.vertex_attribute(key, 'is_outside', True)
 
         return
 

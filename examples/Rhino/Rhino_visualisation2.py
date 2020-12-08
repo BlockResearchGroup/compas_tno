@@ -25,12 +25,12 @@ for i in range(len(R)):
     dx = 0  # 20.0 * i
     trans = [dx, dy, 0]
 
-    master = 'Crossvault_50cm_n_analytical'
+    master = 'Crossvault_50cm_offset_middle'
     fnm = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/min_max/dome_radial_fd_discr_[20, 16]_min_thk_20.454691527171835.json'
     fnm = '/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_20_min_thk_t_0.33818060747322387.json'
     fnm = '/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_20_lp.json'
     fnm = '/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/crossvault_cross_fd_discr_10_offset-method_min_thk_n_0.347975602932157.json'
-    fnm = '/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/test_offset_n_10_analytical_50cm.json'
+    fnm = '/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/test_offset_from_middle_50cm.json'
     
     # Parameters for the visualisation
     radius_max = 0.10 # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault

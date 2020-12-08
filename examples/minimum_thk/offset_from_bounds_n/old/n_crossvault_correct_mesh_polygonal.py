@@ -27,7 +27,8 @@ import math
 # ----------------------------------------------------------------------
 
 sols = {}
-for discretisation in [10, 12, 14, 16, 18, 20]:
+# for discretisation in [10, 12, 14, 16, 18, 20]:
+for discretisation in [10]:
 
     # Basic parameters
 
@@ -79,9 +80,9 @@ for discretisation in [10, 12, 14, 16, 18, 20]:
         points_lb.append([xy[i][0], xy[i][1], float(z_lb[i])])
         points_ub.append([xy[i][0], xy[i][1], float(z_ub[i])])
 
-    title = 'square_crossvault'
-    json = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + title + '.json'
-    save_pointcloud(points_lb, points_ub, json)
+    # title = 'square_crossvault'
+    # json = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + title + '.json'
+    # save_pointcloud(points_lb, points_ub, json)
 
     # triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
     # view_shapes_pointcloud(triangulated_shape).show()
@@ -108,83 +109,33 @@ for discretisation in [10, 12, 14, 16, 18, 20]:
     vault.store_normals()
     vault.ro = ro
 
-    tol = 10e-3
-    keys = []
-    text = {}
-    for key in form.vertices():
-        x, y, _ = form.vertex_coordinates(key)
-        _, _, zub = vault.extrados.vertex_coordinates(key)
-        _, _, zlb = vault.intrados.vertex_coordinates(key)
-        if abs(x - 5) > tol and abs(y - 5) > tol and (abs(x - y) < tol or abs(x + y - 10) < tol):
-            # nub0 = vault.extrados.vertex_attribute(key, 'n')
-            na = normalize_vector([(x - xc), 0, zub])
-            nb = normalize_vector([0, (y - yc), zub])
-            angle = angle_vectors(na, nb)/2
-            nub = scale_vector(normalize_vector(sum_vectors([na, nb])), 1/math.cos(angle))
+    vault.intrados.identify_creases_at_diagonals(xy_span=data_diagram['xy_span'])
+    vault.extrados.identify_creases_at_diagonals(xy_span=data_diagram['xy_span'])
 
-            na = normalize_vector([(x - xc), 0, zlb])
-            nb = normalize_vector([0, (y - yc), zlb])
-            angle = angle_vectors(na, nb)/2
-            nlb = scale_vector(normalize_vector(sum_vectors([na, nb])), 1/math.cos(angle))
+    vault.intrados.store_normals(correct_creases=True)
+    vault.extrados.store_normals(correct_creases=True)
 
-            # deviation = 1/math.sqrt(1/(1 + (nub[0]**2 + nub[1]**2)/nub[2]**2))
-            # deviation0 = 1/math.sqrt(1/(1 + (nub0[0]**2 + nub0[1]**2)/nub0[2]**2))
-            # text[key] = round(deviation, 2)
-            # print('x, y:', x, y)
-            # print('deviation nub / deviation nub * norm / deviation 0', deviation, norm_vector(nub)*deviation, deviation0)
-            # print('deviation 0:', deviation0)
-            # print('different normal in', x, y)
-            # print(nub, nlb)
-            vault.extrados.vertex_attribute(key, 'n', nub)
-            # print('x, y, z diff:'x, y, zub - z)
-            # keys.append(key)
-            if not vault.intrados.vertex_attribute(key, '_is_outside'):
-                vault.intrados.vertex_attribute(key, 'n', nlb)
-        if vault.intrados.vertex_attribute(key, '_is_outside'):
-            vault.intrados.vertex_attribute(key, 'n', [0, 0, 0])
-    #     # else:
-    #     #     nub = normalize_vector([(x - xc), (y - yc), 2*zub])
-    #     #     nlb = normalize_vector([(x - xc), (y - yc), 2*zlb])
-    #     # if not vault.intrados.vertex_attribute(key, '_is_outside'):
-    #     #     vault.intrados.vertex_attribute(key, 'n', nlb)
-    #     # else:
-    #     #     vault.intrados.vertex_attribute(key, 'n', [0, 0, 0])
+    for key in vault.intrados.vertices_where({'is_crease': True}):
+        x, y, _ = vault.intrados.vertex_coordinates(key)
+        n = vault.intrados.vertex_attribute(key, 'n')
+        print('INTRA: x, y, n, norm', x, y, n, norm_vector(n))
+    for key in vault.extrados.vertices_where({'is_crease': True}):
+        x, y, _ = vault.extrados.vertex_coordinates(key)
+        n = vault.extrados.vertex_attribute(key, 'n')
+        print('EXTRA x, y, n, norm', x, y, n, norm_vector(n))
+
+    from compas_plotters import MeshPlotter
+    plotter = MeshPlotter(vault.intrados)
+    plotter.draw_edges()
+    plotter.draw_vertices(text={key: norm_vector(vault.intrados.vertex_attribute(key, 'n')) for key in vault.intrados.vertices()})
+    plotter.show()
+
+    plotter = MeshPlotter(vault.extrados)
+    plotter.draw_edges()
+    plotter.draw_vertices(text={key: norm_vector(vault.extrados.vertex_attribute(key, 'n')) for key in vault.extrados.vertices()})
+    plotter.show()
 
     # view_normals(vault).show()
-
-    # from compas_plotters import MeshPlotter
-    # plotter = MeshPlotter(form)
-    # plotter.draw_edges()
-    # plotter.draw_vertices(keys=keys, text=text)
-    # # plotter.draw_vertices(text={key: key for key in form.vertices()})
-    # plotter.show()
-
-    # plotter = MeshPlotter(analytical_shape.extrados)
-    # plotter.draw_edges()
-    # # plotter.draw_vertices(keys=keys, text=text)
-    # plotter.draw_vertices(text={key: key for key in analytical_shape.extrados.vertices()})
-    # plotter.show()
-
-    # n = 0.10
-    # vault.intrados = vault.intrados.offset_mesh(n=0.10, direction='up')
-    # vault.extrados = vault.extrados.offset_mesh(n=0.10, direction='down')
-
-    # form.envelope_from_shape(vault)
-    # form.to_json('/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/test_offset_n_10.json')
-
-    # data_shape['thk'] = 0.30
-    # analytical_shape_30 = Shape.from_library(data_shape)
-
-    # for key in analytical_shape_30.extrados.vertices():
-    #     x, y, z30 = analytical_shape_30.extrados.vertex_coordinates(key)
-    #     x, y, z50 = analytical_shape.extrados.vertex_coordinates(key)
-    #     if abs(x - 5) > tol and abs(y - 5) > tol and (abs(x - y) < tol or abs(x + y - 10) < tol):
-    #         print('x, y, z diff:', x, y, z50 - z30)
-
-    # form.envelope_from_shape(analytical_shape_30)
-    # form.to_json('/Users/mricardo/compas_dev/me/max_n/crossvault/cross_fd/test_offset_n_10_analytical_50cm.json')
-
-    # view_meshes([vault.intrados, vault.extrados, analytical_shape_30.intrados, analytical_shape_30.extrados]).show()
 
     area = vault.middle.area()
     swt = vault.compute_selfweight()
@@ -192,7 +143,6 @@ for discretisation in [10, 12, 14, 16, 18, 20]:
     print('Interpolated Volume Data:')
     print('Self-weight is: {0:.2f} diff ({1:.2f}%)'.format(swt, 100*(swt - swt_analytical)/(swt_analytical)))
     print('Area is: {0:.2f} diff ({1:.2f}%)'.format(area, 100*(area - area_analytical)/(area_analytical)))
-
 
     form.selfweight_from_shape(vault)
     # form.selfweight_from_shape(analytical_shape)
