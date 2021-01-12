@@ -85,7 +85,7 @@ def f_target(xopt, *args):
         args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i
         z, q = zq_from_qid(qid, args)
     else:
-        z, q = zq_from_qid(qid, args)
+        z, q = zq_from_qid(xopt, args)
 
     f = sum((z - s)**2)
 

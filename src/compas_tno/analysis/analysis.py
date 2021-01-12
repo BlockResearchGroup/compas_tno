@@ -17,6 +17,10 @@ from compas_tno.solvers import run_optimisation_MATLAB
 from compas_tno.solvers import run_optimisation_MMA
 from compas_tno.solvers import run_optimisation_ipopt
 
+from compas_tno.shapes.crossvault import crossvault_ub_lb_update
+
+from compas_tno.algorithms import reactions
+
 from compas_tno.diagrams import FormDiagram
 
 from compas_tno.plotters import plot_form
@@ -630,10 +634,13 @@ class Analysis(object):
 
         exitflag = self.optimiser.exitflag
 
+        # self.form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_14A=1.064177772475912_min_thk_t_0.2322171754922745.json')
+
         if exitflag == 0:
             thk_min = self.form.attributes['thk']
+            # reactions(self.form)
+            swt = self.form.lumped_swt()
             T = self.form.thrust()
-            swt = self.shape.compute_selfweight()
             T_over_swt = T/swt
             thk_increase = int(thk_step*100)*math.ceil(thk_min*100.0/int(thk_step*100))/100.0 - thk_min
             print('Min THK  |   Solved  |   Thrust |   T/W   |  THK incr. |  Setup time  |   Run time')
@@ -663,7 +670,7 @@ class Analysis(object):
             thk_increase = thk_step
             thk0 = thk
 
-            if thk_min == self.shape.data['thk']:
+            if thk_min == thk_max:
                 print('Warning: Minimum THK Optimisation found optimum at start. Try rescalling the problem.')
                 return
         else:
@@ -715,6 +722,7 @@ class Analysis(object):
 
                 self.apply_selfweight()
                 self.form.scale_form(swt/lumped_swt)
+                lumped_swt = self.form.lumped_swt()
 
                 # pzt = 0
                 # z = []
@@ -727,6 +735,15 @@ class Analysis(object):
                 # print('Current pz: {0:.2f} | swt: {1:.2f} | z range: {2:.2f} - {3:.2f} | q range: {4:.2f} - {5:.2f}'.format(pzt, swt, min(z), max(z), min(q_), max(q_)))
 
                 self.apply_envelope()
+
+                xyz = array(self.form.vertices_attributes('xyz'))
+                zub, zlb = crossvault_ub_lb_update(xyz[:, 0], xyz[:, 1], thk, 0.0,  xy_span=self.shape.data['xy_span'])
+                i = 0
+                for key in self.form.vertices():
+                    self.form.vertex_attribute(key, 'lb', zlb[i])
+                    self.form.vertex_attribute(key, 'ub', zub[i])
+                    i+=1
+
                 self.apply_reaction_bounds()
                 if fill_percentage:
                     self.apply_fill_load()
@@ -738,7 +755,7 @@ class Analysis(object):
                     plot_form(self.form, show_q=False, cracks=True).show()
                 exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
                 fopt = self.optimiser.fopt  # objective function optimum value
-                fopt_over_weight = fopt/swt  # divide by selfweight
+                fopt_over_weight = fopt/lumped_swt  # divide by selfweight
 
                 if exitflag == 0:
                     if self.optimiser.data['objective'] == 'min':

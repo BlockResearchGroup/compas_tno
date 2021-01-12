@@ -12,6 +12,7 @@ from compas_tno.viewers import view_solution
 import json
 from scipy import rand
 from compas_tno.viewers import view_mesh
+from numpy import array
 
 
 # ----------------------------------------------------------------------
@@ -28,6 +29,7 @@ n = 2
 type_structure = 'crossvault'
 type_formdiagram = 'cross_fd'
 discretisation = 10
+thickness_type = 'variable'
 gradients = True  # False
 
 # ----------------------- Point Cloud -----------------------
@@ -38,6 +40,7 @@ pointcloud = '/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + file_name + '
 
 points_ub = []
 points_lb = []
+xy_span = [[0, span], [0, k*span]]
 
 tol = 10e-4
 
@@ -63,7 +66,7 @@ triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
 
 data_diagram = {
     'type': type_formdiagram,
-    'xy_span': [[0, span], [0, k*span]],
+    'xy_span': xy_span,
     'discretisation': discretisation,
     'fix': 'corners',
 }
@@ -78,10 +81,16 @@ print('Form Diagram Created!')
 # vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub)
 # more improved, considers the real middle
 vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub, data={'type': 'general', 't': 0.0, 'thk': thk})
-vault.store_normals()
-# view_shapes_pointcloud(vault).show()
-# view_normals(vault).show()
 
+# --------------------
+# Mesh as a percentage
+# --------------------
+
+zub = array(vault.intrados.vertices_attributes('z'))
+zlb = array(vault.extrados.vertices_attributes('z'))
+vault.middle.store_normals()
+vault.middle.scale_normals_with_ub_lb(zub, zlb)
+vault.data['thickness_type'] = thickness_type
 
 area = vault.middle.area()
 swt = vault.compute_selfweight()
@@ -107,8 +116,11 @@ optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
 optimiser.data['constraints'] = ['funicular', 'envelope']
-optimiser.data['variables'] = ['ind', 'zb', 'n']
-optimiser.data['objective'] = 'n'
+optimiser.data['variables'] = ['ind', 'zb', 't']
+optimiser.data['objective'] = 't'
+optimiser.data['thickness_type'] = thickness_type
+optimiser.data['min_thk'] = 0.0
+optimiser.data['max_thk'] = 2.0
 optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
@@ -124,11 +136,6 @@ analysis.apply_envelope()
 analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
-
-n_reduction = - 1 * analysis.optimiser.fopt
-thk_min = thk - 2 * n_reduction
-print('Approx. Minimum THK:', thk_min)
-# data_shape['thk'] = thk_min
 
 plot_form(form, show_q=False, cracks=True).show()
 

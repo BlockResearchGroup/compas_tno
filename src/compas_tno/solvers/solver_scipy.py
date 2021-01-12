@@ -49,6 +49,7 @@ def run_optimisation_scipy(analysis):
     printout = optimiser.data.get('printout', True)
     grad_choice = optimiser.data.get('gradient', False)
     jac_choice = optimiser.data.get('jacobian', False)
+    max_iter = optimiser.data.get('max_iter', 500)
 
     if grad_choice is False:
         fgrad = None
@@ -58,7 +59,7 @@ def run_optimisation_scipy(analysis):
     start_time = time.time()
 
     if solver == 'slsqp' or solver == 'SLSQP':
-        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, fgrad, fjac, printout, fconstr, args)
+        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, fgrad, fjac, printout, fconstr, args, iter=max_iter)
     elif solver == 'shgo':
         dict_constr = []
         for i in range(len(fconstr(x0, *args))):
@@ -100,9 +101,9 @@ def run_optimisation_scipy(analysis):
     return analysis
 
 
-def _slsqp(fn, qid0, bounds, fprime, fprime_ieqcons, printout, fieq, args):
+def _slsqp(fn, qid0, bounds, fprime, fprime_ieqcons, printout, fieq, args, iter):
     pout = 2 if printout else 0
-    opt = fmin_slsqp(fn, qid0, args=args, disp=pout, fprime=fprime, f_ieqcons=fieq, fprime_ieqcons=fprime_ieqcons, bounds=bounds, full_output=1, iter=500)
+    opt = fmin_slsqp(fn, qid0, args=args, disp=pout, fprime=fprime, f_ieqcons=fieq, fprime_ieqcons=fprime_ieqcons, bounds=bounds, full_output=1, iter=iter)
 
     return opt[1], opt[0], opt[3], opt[2], opt[4]
 

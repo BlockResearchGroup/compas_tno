@@ -406,7 +406,7 @@ def diagram_multiple_thrust_partial(thicknesses, solutions, legends, limit_state
     return plt
 
 
-def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, fill=False, show_legend=True, save=None, markers=None):
+def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, GSF_ticks=False, fill=False, show_legend=True, save=None, markers=None):
     """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
 
     Parameters
@@ -457,9 +457,17 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
     else:
         [[max_x, min_x], [max_y, min_y]] = xy_limits
 
-    last_scale = round(max_x/min_x, 2)
-    middle_scale = round((last_scale - 1.0)/2 + 1, 1)
-    middle_x = max_x/middle_scale
+    if not GSF_ticks:
+        last_scale = round(max_x/min_x, 2)
+        middle_scale = round((last_scale - 1.0)/2 + 1, 2)
+        quad_scale = round((last_scale - 1.0)*3/4 + 1, 2)
+        ticks_GSF = [middle_scale, quad_scale, last_scale]
+    else:
+        ticks_GSF = GSF_ticks
+
+    ticks_x = []
+    for tck in ticks_GSF:
+        ticks_x.append(max_x/tck)
 
     print(thicknesses)
     print(solutions)
@@ -507,12 +515,12 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
-    ax2.set_xticks([0, 100*(max_x - middle_x)/(max_x-min_x), 100])
-    ax2.set_xticklabels(['1.0', str(middle_scale), str(last_scale)], size=size_axis_data)
-    ax1.set_xlabel('thickness', size=size_axis_label, weight='bold', labelpad=8)
+    ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
+    ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
+    ax1.set_xlabel('thickness (m)', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
     ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
-    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.3f'))
+    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
     ax1.set_xlim(max_x, min_x)
     ax.set_ylim(min_y, max_y)

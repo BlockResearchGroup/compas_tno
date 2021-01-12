@@ -65,8 +65,7 @@ def constr_wrapper(xopt, *args):
         q[ind] = xopt[:k].reshape(-1, 1)
     if 'zb' in variables:
         z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
-    # if 't' in variables or 's' in variables or 'n' in variables or 't-middle' in variables:
-    if len(xopt) > len(fixed) + len(ind):
+    if 't' in variables or 's' in variables or 'n' in variables:
         thk = xopt[-1].item()
         t = shape.data['t']
 

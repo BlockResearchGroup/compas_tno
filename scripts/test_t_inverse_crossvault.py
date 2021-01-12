@@ -23,6 +23,7 @@ thk = 0.5
 span = 10.0
 k = 1.0
 n = 1
+# ro =  1.0
 type_structure = 'crossvault'
 type_formdiagram = 'cross_fd'
 discretisation = 10
@@ -41,6 +42,7 @@ data_shape = {
 }
 
 vault = Shape.from_library(data_shape)
+# vault.ro = ro
 swt = vault.compute_selfweight()
 print('Selfweight computed:', swt)
 print('Vault geometry created!')
@@ -61,7 +63,8 @@ plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
+# form = form.initialise_tna(plot=False)
+form.initialise_loadpath()
 # plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------

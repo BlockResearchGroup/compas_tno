@@ -20,7 +20,7 @@ from compas_tno.viewers import view_mesh
 
 # Basic parameters
 
-thk = 0.5
+thk = 0.44
 error = 0.0
 span_x = 5.97447  # 5.76 - 7.2 - 5.97448
 span_y = 11.2  # 9.85 - 12.31 - 11.2

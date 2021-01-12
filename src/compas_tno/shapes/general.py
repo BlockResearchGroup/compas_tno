@@ -42,7 +42,7 @@ def general_db_with_t_middle_constant(s, middle):
     return dub, dlb
 
 
-def general_ub_lb_update_with_t_middle_variable(thk, s, middle, t):
+def general_ub_lb_update_with_t_middle_variable(thk_alfa, s, middle, t):
     """ This general  update takes into consideration nub and nlb. scaled, so t is a (%)
     """
 
@@ -59,8 +59,8 @@ def general_ub_lb_update_with_t_middle_variable(thk, s, middle, t):
             dev_lb = 0.0
         else:
             dev_lb = 1/math.sqrt(1/(1 + (nlb[0]**2 + nlb[1]**2)/nlb[2]**2))  # 1/cos(a)
-        ub_update[i] = + thk * dev_ub * norm_vector(nub)  # Experimenting with this normal norm!
-        lb_update[i] = - thk * dev_lb * norm_vector(nlb)  # check if neeed to divide by 2
+        ub_update[i] = + thk_alfa * dev_ub * norm_vector(nub)  # Experimenting with this normal norm!
+        lb_update[i] = - thk_alfa * dev_lb * norm_vector(nlb)  # check if neeed to divide by 2
         # if intrados.vertex_attribute(key, 'is_outside'):
         #     lb_update[i] = t
         i += 1

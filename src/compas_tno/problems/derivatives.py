@@ -31,6 +31,7 @@ __all__ = [
     'gradient_fmax',
     'gradient_feasibility',
     'gradient_reduce_thk',
+    'gradient_bestfit',
     'gradient_tight_crosssection'
 ]
 
@@ -386,7 +387,43 @@ def gradient_wrapper(xopt, *args):
         grad = gradient_fmax
     elif objective == 'feasibility':
         grad = gradient_feasibility
+    elif objective == 'target' or objective == 'bestfit':
+        grad = gradient_feasibility
     else:
         raise NotImplementedError
+
+    return grad
+
+
+def gradient_bestfit(xopt, *args):
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+
+    q[ind] = xopt[:k].reshape(-1, 1)
+    if 'zb' in variables:
+        z[fixed] = xopt[k:k + len(fixed)].reshape(-1, 1)
+
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
+    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
+
+    f = 2*(z - s)
+    grad = zeros((len(xopt), 1))
+
+    dz = zeros([len(z), len(xopt)])
+    Q = diags(q.ravel())
+    CitQCi = Cit.dot(Q).dot(Ci)
+    SPLU_D = splu(CitQCi)
+    dQ, dQdep = compute_dQ(q, ind, dep, Edinv, Ei)
+    Cz = diags((C.dot(z)).ravel())
+    B = - Cit.dot(Cz)
+    dz[free, :k] = SPLU_D.solve(B.dot(dQ))
+
+    if 'zb' in variables:
+        B = - Cit.dot(Q).dot(Cf).toarray()
+        dz[free, k:] = SPLU_D.solve(B)
+        dz[fixed, k:] = identity(len(fixed))
+
+    for j in range(len(xopt)):
+        grad[j] = f.transpose().dot(dz[:, j].reshape(-1, 1))
 
     return grad

@@ -13,6 +13,7 @@ from compas_tno.problems.derivatives import gradient_fmax
 from compas_tno.problems.derivatives import gradient_feasibility
 from compas_tno.problems.derivatives import gradient_reduce_thk
 from compas_tno.problems.derivatives import gradient_tight_crosssection
+from compas_tno.problems.derivatives import gradient_bestfit
 
 from compas_tno.problems.derivatives import sensitivities_wrapper
 from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities
@@ -108,7 +109,7 @@ def set_up_nonlinear_optimisation(analysis):
         fgrad = None
     if objective == 'target' or objective == 'bestfit':
         fobj = f_target
-        fgrad = None
+        fgrad = gradient_bestfit
     if objective == 'min':
         fobj = f_min_thrust
         fgrad = gradient_fmin
@@ -156,7 +157,7 @@ def set_up_nonlinear_optimisation(analysis):
         thk = optimiser.data.get('thk', shape.data['thk'])
         max_thk = optimiser.data.get('max_thk', thk)
         x0 = append(x0, thk).reshape(-1, 1)
-        bounds = bounds + [[min_thk, max_thk]]  # allow higher than thk as up bound?
+        bounds = bounds + [[min_thk, max_thk]]
 
     if 's' in variables:
         x0 = append(x0, 0.0).reshape(-1, 1)
@@ -166,11 +167,13 @@ def set_up_nonlinear_optimisation(analysis):
         thk0_approx = min(ub - lb)
         print('Thickness approximate:', thk0_approx)
         x0 = append(x0, 0.0).reshape(-1, 1)
-        min_limit = - thk0_approx  #/2  # 0.0
+        min_limit = - thk0_approx  # /2  # 0.0
         bounds = bounds + [[min_limit, thk0_approx/2]]
 
     f0 = fobj(x0, *args)
     g0 = fconstr(x0, *args)
+
+    # print(max(g0), min(g0))
 
     if fgrad:
         grad = fgrad(x0, *args)

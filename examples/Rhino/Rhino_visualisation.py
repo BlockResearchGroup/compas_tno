@@ -11,12 +11,13 @@ import json
 import math
 
 # Give a name to your project
-master = 'Dome_16_20_minthk'
+master = 'corners3'
+fnm = '/Users/mricardo/compas_dev/me/freeform/IASS/fan_fd/corners3_fan_fd_discr_10_min_thk_t_0.30552379902755783.json' 
 
 # Put here the .json file for the optimisation
 # fnm = '/Users/mricardo/compas_dev/me/reformulation/test.json'
-fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[8, 20]_min.json'
-fnm = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/dome_radial_fd_discr_[16, 20]_min_thk_t_0.19759055506490839.json'
+# fnm = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.3_discr_[8, 20]_min.json'
+# fnm = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/dome_radial_fd_discr_[16, 20]_min_thk_t_0.19759055506490839.json'
 
 # Parameters for the visualisation
 radius_max = 0.10  # 0.175 for dome radial and 0.15 for dome flower, and 0.25 for the fan-vault
@@ -125,9 +126,9 @@ for u, v in form.edges():
     ep = form.vertex_coordinates(v)
     sp[2] = form.vertex_attribute(u, 'lb')
     ep[2] = form.vertex_attribute(v, 'lb')
-    if sp[2] >= -1e-3 and ep[2] >= -1e-3:
-        id = rs.AddLine(sp, ep)
-        rs.ObjectName(id, str(q))
+    # if sp[2] >= -1e-3 and ep[2] >= -1e-3:  # activate this if want to not show lb negative
+    id = rs.AddLine(sp, ep)
+    rs.ObjectName(id, str(q))
 
 reac_layer = master + '::Reactions'
 reac_val = master + '::Reactions-val'
@@ -217,6 +218,7 @@ for u, v in form.edges_where({'_is_edge': True}):
         pipe = rs.AddPipe(id, 0, radius_colored_pipes)
         rs.ObjectColor(pipe, color=(r, g, b))
         rs.DeleteObject(id)
+        
 rs.CurrentLayer('Default')
 rs.LayerVisible(target_layer, False)
 rs.LayerVisible(ub_layer, False)

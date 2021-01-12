@@ -8,6 +8,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_normals
+from compas_tno.viewers import view_mesh
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
 from compas_tno.datastructures import MeshDos
@@ -23,8 +24,9 @@ import math
 # ----------------------------------------------------------------------
 
 disc = []
-discretisations = [12]
-degs = [30]
+discretisations = [20]
+degs = [40]
+# degs = [15]
 
 for discretisation in discretisations:
     sols = {}
@@ -51,9 +53,11 @@ for discretisation in discretisations:
         print('A, deg, discretisation:', A, deg, discretisation)
 
         xy_span_shape = [[-span_x/2*(A - 1), span_x*(1 + (A - 1)/2)], [-span_y/2*(A - 1), span_y*(1 + (A - 1)/2)]]
-        thk = 0.40
+
+        thk = 0.5
+        k = 1.0
         n = 1
-        type_structure = 'crossvault'
+
         gradients = True  # False
         t = 0.0
 
@@ -73,45 +77,26 @@ for discretisation in discretisations:
         print('Analytical Self-weight is:', swt_analytical)
         print('Analytical Area is:', area_analytical)
 
-        # ----------------------- Form Diagram ---------------------------
-
-        data_diagram = {
-            'type': type_formdiagram,
-            'xy_span': [[0, span], [0, k*span]],
-            'discretisation': discretisation,
-            'fix': 'corners',
-        }
-
-        form = FormDiagram.from_library(data_diagram)
-        print('Form Diagram Created!')
-        # plot_form(form, show_q=False, fix_width=False).show()
-
         # ------- Create shape given a topology and a point cloud --------
 
-        # roots - not considering real middle
-        # vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub)
-        # improved, considers the real middle
-
         xyz = array(form.vertices_attributes('xyz'))
-        zt = crossvault_middle_update(xyz[:, 0], xyz[:, 1],  t,  xy_span=xy_span_shape)
-        zub, zlb = crossvault_ub_lb_update(xyz[:, 0], xyz[:, 1], thk, t,  xy_span=xy_span_shape)
+        # zt = crossvault_middle_update(xyz[:, 0], xyz[:, 1],  t,  xy_span=xy_span_shape)
+        _, zlb = crossvault_ub_lb_update(xyz[:, 0], xyz[:, 1], thk, t,  xy_span=xy_span_shape)
         intrados = MeshDos.from_mesh(form)
-        extrados = MeshDos.from_mesh(form)
-        middle = MeshDos.from_mesh(form)
         i = 0
-        for key in middle.vertices():
+        for key in intrados.vertices():
             intrados.vertex_attribute(key, 'z', zlb[i])
-            extrados.vertex_attribute(key, 'z', zub[i])
-            middle.vertex_attribute(key, 'z', zt[i])
             i += 1
 
+        intrados.identify_creases_at_diagonals(xy_span=data_diagram['xy_span'])
+        intrados.store_normals(correct_creases=True)
+
+        extrados = intrados.offset_mesh(n=thk, direction='up')
+        middle = intrados.offset_mesh(n=thk/2, direction='up')
+
+        # If results are weird try using the 'right' middle
+
         vault = Shape.from_meshes(intrados, extrados, middle=middle, data={'type': 'general', 't': 0.0, 'thk': thk})
-
-        vault.intrados.identify_creases_at_diagonals(xy_span=data_diagram['xy_span'])
-        vault.extrados.identify_creases_at_diagonals(xy_span=data_diagram['xy_span'])
-
-        vault.intrados.store_normals(correct_creases=True)
-        vault.extrados.store_normals(correct_creases=True)
 
         area = vault.middle.area()
         swt = vault.compute_selfweight()
@@ -121,13 +106,14 @@ for discretisation in discretisations:
         print('Area is: {0:.2f} diff ({1:.2f}%)'.format(area, 100*(area - area_analytical)/(area_analytical)))
 
         # view_shapes(vault).show()
+        # view_mesh(vault.intrados, normals=True).show()
 
         form.selfweight_from_shape(vault)
         # form.selfweight_from_shape(analytical_shape)
 
-        # SAVE FOLDER
+        # SAVE FORM
 
-        folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', 'numerical_n', type_structure, type_formdiagram)
+        folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', 'numerical_intrados', type_structure, type_formdiagram)
         os.makedirs(folder, exist_ok=True)
         title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_deg=' + str(deg)
         save_form = os.path.join(folder, title)
@@ -135,7 +121,6 @@ for discretisation in discretisations:
         # --------------------- 3. Create Starting point with TNA ---------------------
 
         # form = form.initialise_tna(plot=False)
-        # if j == 0:
         try:
             form = FormDiagram.from_json(save_form + '_lp_' + '.json')
         except:
@@ -149,15 +134,14 @@ for discretisation in discretisations:
         optimiser.data['library'] = 'Scipy'
         optimiser.data['solver'] = 'SLSQP'
         optimiser.data['constraints'] = ['funicular', 'envelope']
-        optimiser.data['variables'] = ['ind', 'zb', 'n']
-        optimiser.data['objective'] = 'n'
-        optimiser.data['thickness_type'] = 'constant'
-        optimiser.data['min_thk'] = -thk
-        optimiser.data['max_thk'] = 0.0
+        optimiser.data['variables'] = ['ind', 'zb', 't']
+        optimiser.data['objective'] = 't'
+        optimiser.data['thickness_type'] = 'intrados'  # 'variable', 'intrados'
+        optimiser.data['min_thk'] = 0.0
+        optimiser.data['max_thk'] = thk*1.0
         optimiser.data['printout'] = True
         optimiser.data['plot'] = False
         optimiser.data['find_inds'] = True
-        optimiser.data['max_iter'] = 5000
         optimiser.data['qmax'] = 1000.0
         optimiser.data['gradient'] = gradients
         optimiser.data['jacobian'] = gradients
@@ -171,11 +155,8 @@ for discretisation in discretisations:
         analysis.set_up_optimiser()
         analysis.run()
 
-        j += 1
-
         if optimiser.exitflag == 0:
-            n_reduction = -1 * analysis.optimiser.fopt
-            thk_min = thk - 2 * n_reduction
+            thk_min = optimiser.fopt
             data_shape['thk'] = thk_min
 
             form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
@@ -196,8 +177,7 @@ for discretisation in discretisations:
             # print('Not Solved:', A)
             print('Not Solved:', deg)
 
-    print(type_formdiagram)
-    print(discretisation)
+    print('discretisation:', discretisation)
     print(sols)
     for sol in sols:
         discr = float(sol)

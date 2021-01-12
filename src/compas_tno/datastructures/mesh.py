@@ -120,7 +120,7 @@ class MeshDos(Mesh):
         return mesh
 
     @classmethod
-    def from_topology_and_pointcloud(cls, formdiagram, pointcloud):
+    def from_topology_and_pointcloud(cls, formdiagram, pointcloud, isnan_height=0.0):
 
         vertices, faces = formdiagram.to_vertices_and_faces()
         mesh = cls().from_vertices_and_faces(vertices, faces)
@@ -130,6 +130,7 @@ class MeshDos(Mesh):
         for i, key in enumerate(mesh.vertices()):
             if math.isnan(z[i]):
                 print('Height (nan) for [x,y]:', XY[i])
+                z[i] = isnan_height
             mesh.vertex_attribute(key, 'z', float(z[i]))
 
         return mesh

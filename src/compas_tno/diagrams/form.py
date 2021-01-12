@@ -28,6 +28,7 @@ from compas_tno.diagrams.diagram_rectangular import create_ortho_form
 
 from compas_tno.shapes.dome import dome_zt_update
 from compas_tno.shapes.dome import dome_ub_lb_update
+from compas_tno.shapes.crossvault import crossvault_middle_update
 
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_force
@@ -808,6 +809,8 @@ class FormDiagram(FormDiagram):
         XY = array(self.vertices_attributes('xy'))
         if shape.data['type'] == 'dome':
             zt = dome_zt_update(XY[:, 0], XY[:, 1], shape.data['radius'], shape.data['t'], shape.data['center'])
+        if shape.data['type'] == 'crossvault':
+            zt = crossvault_middle_update(XY[:, 0], XY[:, 1],  shape.data['t'],  xy_span=shape.data['xy_span'])
         else:
             zt = shape.get_middle_pattern(XY)
 

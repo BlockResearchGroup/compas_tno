@@ -158,7 +158,7 @@ class Shape(object):
         return shape
 
     @classmethod
-    def from_meshes(cls, intrados, extrados, middle=None, data=None):
+    def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data=None):
         """Construct a Shape from meshes for intrados, extrados, and middle.
 
         Parameters
@@ -183,7 +183,7 @@ class Shape(object):
         shape.intrados = intrados  # MeshDos.from_mesh(intrados)
         shape.extrados = extrados  # MeshDos.from_mesh(extrados)
         if middle:
-            shape.middle = middle # MeshDos.from_mesh(middle)
+            shape.middle = middle  # MeshDos.from_mesh(middle)
         else:
             shape.interpolate_middle_from_ub_lb()
             shape.middle = MeshDos.from_mesh(shape.intrados.copy())
@@ -502,7 +502,7 @@ class Shape(object):
         z : float
             The extrados evaluated in the point.
         """
-        method = self.data.get('interpolation', 'nearest')
+        method = self.data.get('interpolation', 'linear')
         vertices = array(self.extrados.vertices_attributes('xyz'))
         z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
 
@@ -560,7 +560,7 @@ class Shape(object):
         z : float
             The extrados evaluated in the point.
         """
-        method = self.data.get('interpolation', 'nearest')
+        method = self.data.get('interpolation', 'linear')
         vertices = array(self.intrados.vertices_attributes('xyz'))
         z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
 
@@ -598,7 +598,7 @@ class Shape(object):
         z : float
             The extrados evaluated in the point.
         """
-        method = self.data.get('interpolation', 'nearest')
+        method = self.data.get('interpolation', 'linear')
         vertices = array(self.middle.vertices_attributes('xyz'))
         z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
 
