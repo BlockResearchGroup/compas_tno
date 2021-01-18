@@ -14,6 +14,7 @@ from compas_tno.problems.derivatives import gradient_feasibility
 from compas_tno.problems.derivatives import gradient_reduce_thk
 from compas_tno.problems.derivatives import gradient_tight_crosssection
 from compas_tno.problems.derivatives import gradient_bestfit
+from compas_tno.problems.derivatives import gradient_loadpath
 
 from compas_tno.problems.derivatives import sensitivities_wrapper
 from compas_tno.problems.derivatives import sensitivities_wrapper_inequalities
@@ -60,6 +61,7 @@ def set_up_nonlinear_optimisation(analysis):
     qmin = optimiser.data.get('qmin', 0.0)  # This qmin sometimes is 1e-6...
     plot = optimiser.data.get('plot', False)
     thickness_type = optimiser.data.get('thickness_type', 'constant')
+    fjac = optimiser.data.get('jacobian', False)
 
     objective = optimiser.data['objective']
     variables = optimiser.data['variables']
@@ -106,7 +108,7 @@ def set_up_nonlinear_optimisation(analysis):
 
     if objective == 'loadpath':
         fobj = f_min_loadpath
-        fgrad = None
+        fgrad = gradient_loadpath
     if objective == 'target' or objective == 'bestfit':
         fobj = f_target
         fgrad = gradient_bestfit
@@ -133,10 +135,12 @@ def set_up_nonlinear_optimisation(analysis):
 
     if optimiser.data['solver'] == 'slsqp' or optimiser.data['solver'] == 'SLSQP':
         fconstr = constr_wrapper_inequalities
-        fjac = sensitivities_wrapper_inequalities
+        if fjac:
+            fjac = sensitivities_wrapper_inequalities
     else:
         fconstr = constr_wrapper
-        fjac = sensitivities_wrapper
+        if fjac:
+            fjac = sensitivities_wrapper
 
     # Definition of the Variables and starting point
 

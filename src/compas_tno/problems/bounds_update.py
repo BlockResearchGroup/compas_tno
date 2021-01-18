@@ -18,6 +18,8 @@ from compas_tno.shapes.pavillionvault import pavillionvault_db
 from compas_tno.shapes.crossvault import crossvault_ub_lb_update
 from compas_tno.shapes.crossvault import crossvault_dub_dlb
 
+from compas_tno.shapes.pointed_crossvault import pointed_vault_ub_lb_update
+
 from compas_tno.shapes.general import general_ub_lb_update_with_s
 from compas_tno.shapes.general import general_dub_dlb_with_s
 from compas_tno.shapes.general import general_ub_lb_update_with_n
@@ -42,6 +44,8 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
         return crossvault_ub_lb_update(x, y, thk, t, xy_span=shape.data['xy_span'])
     elif shape.data['type'] == 'pavillionvault':
         return pavillionvault_ub_lb_update(x, y, thk, t, xy_span=shape.data['xy_span'])
+    elif shape.data['type'] == 'pointed_crossvault':
+        return pointed_vault_ub_lb_update(x, y, thk, t, xy_span=shape.data['xy_span'], hc=shape.data['hc'], he=shape.data['he'], hm=shape.data['hm'])
     elif shape.data['type'] == 'general':
         if 't' in variables:
             thickness_type = shape.data['thickness_type']

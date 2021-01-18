@@ -32,6 +32,7 @@ __all__ = [
     'gradient_feasibility',
     'gradient_reduce_thk',
     'gradient_bestfit',
+    'gradient_loadpath',
     'gradient_tight_crosssection'
 ]
 
@@ -425,5 +426,50 @@ def gradient_bestfit(xopt, *args):
 
     for j in range(len(xopt)):
         grad[j] = f.transpose().dot(dz[:, j].reshape(-1, 1))
+
+    return grad
+
+
+def gradient_loadpath(xopt, *args):
+
+    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+
+    q[ind] = xopt[:k].reshape(-1, 1)
+    if 'zb' in variables:
+        z[fixed] = xopt[k:k + len(fixed)].reshape(-1, 1)
+
+    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
+    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
+
+    grad = zeros((len(xopt), 1))
+
+    dZ = zeros((len(z), k))
+
+    Q = diags(q.ravel())
+    CitQCi = Cit.dot(Q).dot(Ci)
+    SPLU_D = splu(CitQCi)
+    dQ, dQdep = compute_dQ(q, ind, dep, Edinv, Ei)
+    Cz = diags((C.dot(z)).ravel())
+    B = - Cit.dot(Cz)
+    dZi = SPLU_D.solve(B.dot(dQ))
+    dZ[free, :] = dZi
+    dW = C.dot(dZ)
+
+    WdW = 2*Cz.dot(dW)
+    l2 = lh + C.dot(z)**2
+
+    for j in range(k):
+        grad[j] = dQ[:, j].reshape(1, -1).dot(l2) + q.transpose().dot(WdW[:, j].reshape(-1, 1))
+
+    if 'zb' in variables:  # This is correct but can lead to unexpected results for symmetric problems, try to constraint to symmetry
+        B = - Cit.dot(Q).dot(Cf).toarray()
+        dZ = zeros((len(z), len(fixed)))
+        dZ[free] = SPLU_D.solve(B)
+        dZ[fixed] = identity(len(fixed))
+        dW = C.dot(dZ)
+        WdW = 2*Cz.dot(dW)
+
+        for i in range(len(fixed)):
+            grad[j+i+1] = q.transpose().dot(WdW[:, i].reshape(-1, 1))
 
     return grad

@@ -19,10 +19,11 @@ thk = 0.5
 span = 10.0
 k = 1.0
 n = 1
-type_structure = 'crossvault'
+hc = 8.0  #5.0*math.sqrt(2)
+type_structure = 'pointed_crossvault'
 type_formdiagram = 'cross_fd'
 discretisation = 10
-gradients = True
+gradients = False
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
@@ -31,7 +32,10 @@ data_shape = {
     'thk': thk,
     'discretisation': discretisation*n,
     'xy_span': [[0, span], [0, k*span]],
-    't': 0.0,
+    't': 1.0,
+    'hc': hc,
+    'hm': None,
+    'he': None,
 }
 
 vault = Shape.from_library(data_shape)

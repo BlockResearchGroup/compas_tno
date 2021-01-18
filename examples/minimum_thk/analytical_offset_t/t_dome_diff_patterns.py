@@ -127,9 +127,9 @@ for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
 
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-            save_form = os.path.join(folder, title)
+            # save_form = os.path.join(folder, title)
 
-            form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+            # form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
 
             sols[str(discretisation)] = thk_min
 

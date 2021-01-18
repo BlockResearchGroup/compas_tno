@@ -8,23 +8,37 @@ import math
 # -----------PARAMERIC SHAPES (uncomment data) -----------------
 # --------------------------------------------------------------
 
+n = 50
+
 # data = {
 #     'type': 'crossvault',
 #     'thk': 0.5,
-#     'discretisation': [50, 50],
-#     'xy_span': [[0.0,10.0],[0.0,10.0]],
-#     't' : 0.0
+#     'discretisation': [n, n],
+#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     't': 0.0,
 # }
+
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 1.0,
+    'hc': 8.0,
+    'hm': None,
+    'he': None,
+}
+
 
 # data = {
 #     'type': 'pointed_crossvault',
 #     'thk': 0.5,
-#     'discretisation': [50, 50],
-#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     'discretisation': [n, n],
+#     'xy_span': [[0.0, 10.0], [0.0, 6.0]],
 #     't': 0.0,
-#     'hc': 5.0*math.sqrt(2),
-#     'hm': None,
-#     'he': None,
+#     'hc': 8.0,
+#     'hm': [6, 6, 6, 6],
+#     'he': [6, 6, 6, 6],
 # }
 
 # data = {
@@ -91,16 +105,16 @@ import math
 # }
 
 
-n = 2
+# n = 2
 
-data = {
-    'type': 'dome_polar',
-    'thk': 0.15,
-    'discretisation': [8*n, 20*n],
-    't' : 1.0,
-    'center': [5.0, 5.0],
-    'radius': 5.0,
-}
+# data = {
+#     'type': 'dome_polar',
+#     'thk': 0.15,
+#     'discretisation': [8*n, 20*n],
+#     't' : 1.0,
+#     'center': [5.0, 5.0],
+#     'radius': 5.0,
+# }
 
 # data = {
 #     'type': 'arch',
@@ -130,5 +144,6 @@ for pt in points:
     print(vault.get_ub(pt[0], pt[1]))
     print(vault.get_lb(pt[0], pt[1]))
 
-view_middle(vault).show()
+# view_middle(vault).show()
 view_shapes(vault).show()
+

@@ -137,8 +137,8 @@ class Shape(object):
         elif typevault == 'pointed_crossvault':
             xy_span = data['xy_span']
             hc = data['hc']
-            hm = data['hm']
-            he = data['he']
+            hm = data.get('hm', None)
+            he = data.get('he', None)
             intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm, thk=thk)
         elif typevault == 'domicalvault':
             xy_span = data['xy_span']
