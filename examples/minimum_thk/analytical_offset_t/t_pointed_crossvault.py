@@ -19,11 +19,11 @@ thk = 0.5
 span = 10.0
 k = 1.0
 n = 1
-hc = 8.0  #5.0*math.sqrt(2)
+hc = 6.0  # 5.0*math.sqrt(2)
 type_structure = 'pointed_crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 discretisation = 10
-gradients = False
+gradients = True
 
 # ----------------------- 1. Create Dome shape ---------------------------
 
@@ -35,7 +35,7 @@ data_shape = {
     't': 1.0,
     'hc': hc,
     'hm': None,
-    'he': None,
+    'he': [5.0, 5.0, 5.0, 5.0],
 }
 
 vault = Shape.from_library(data_shape)
@@ -94,7 +94,7 @@ data_shape['thk'] = thk_min
 print('Min THK = ', thk_min)
 vault = Shape.from_library(data_shape)
 form.envelope_from_shape(vault)
-file_address = compas_tno.get('test.json')
+# file_address = compas_tno.get('test.json')
 # form.to_json(file_address)
 
 plot_form(form, show_q=False, cracks=True).show()

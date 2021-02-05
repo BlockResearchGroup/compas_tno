@@ -354,6 +354,44 @@ class Shape(object):
 
 
     @classmethod
+    def from_formdiagram_and_attributes(cls, form, data=None):
+        """Construct a Shape from the form diagram and its attributes 'ub' and 'lb'.
+
+        Parameters
+        ----------
+        form: FormDiagram
+            Form Diagram with the topology to be used.
+        intrados : mesh
+            Mesh for intrados.
+        extrados : mesh
+            Mesh for extrados.
+        middle : mesh (None)
+            Mesh for middle.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+
+        vertices, faces = form.to_vertices_and_faces()
+        intra = MeshDos.from_vertices_and_faces(vertices, faces)
+        extra = MeshDos.from_vertices_and_faces(vertices, faces)
+        middle = MeshDos.from_vertices_and_faces(vertices, faces)
+
+        for key in form.vertices():
+            intra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'lb'))
+            extra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'ub'))
+            middle.vertex_attribute(key, 'z', form.vertex_attribute(key, 'target'))
+
+        shape = cls().from_meshes(intra, extra, middle=middle, data=data)
+
+        return shape
+
+    @classmethod
     def from_rhinosurface(cls):
         ''' Work in progress'''
         NotImplementedError
@@ -709,21 +747,6 @@ class Shape(object):
         self.fill_volume = volume
         print('Proj area total of shape', proj_area_total)
         self.fill_ro = fill_ro
-
-        return
-
-    def update_dos_from_form(self, form):
-
-        vertices, faces = form.to_vertices_and_faces()
-        intra = MeshDos.from_vertices_and_faces(vertices, faces)
-        extra = MeshDos.from_vertices_and_faces(vertices, faces)
-
-        for key in form.vertices():
-            intra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'lb'))
-            extra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'ub'))
-
-        self.intrados = intra
-        self.extrados = extra
 
         return
 

@@ -735,15 +735,6 @@ class Analysis(object):
                 # print('Current pz: {0:.2f} | swt: {1:.2f} | z range: {2:.2f} - {3:.2f} | q range: {4:.2f} - {5:.2f}'.format(pzt, swt, min(z), max(z), min(q_), max(q_)))
 
                 self.apply_envelope()
-
-                xyz = array(self.form.vertices_attributes('xyz'))
-                zub, zlb = crossvault_ub_lb_update(xyz[:, 0], xyz[:, 1], thk, 0.0,  xy_span=self.shape.data['xy_span'])
-                i = 0
-                for key in self.form.vertices():
-                    self.form.vertex_attribute(key, 'lb', zlb[i])
-                    self.form.vertex_attribute(key, 'ub', zub[i])
-                    i+=1
-
                 self.apply_reaction_bounds()
                 if fill_percentage:
                     self.apply_fill_load()

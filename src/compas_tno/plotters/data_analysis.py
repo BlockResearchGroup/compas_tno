@@ -71,7 +71,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     xmax = thicknesses_max
     fmin = 100.0 * array(min_sol)
     fmax = -100.0 * array(max_sol)
-    print('\n', xmin, xmax, fmin, fmax)
+    # print('\n', xmin, xmax, fmin, fmax)
     n = len(xmin)
     m = len(xmax)
     if m > n:
@@ -97,7 +97,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
         fmin_ = append(fmin, y_)
         fmax_ = append(fmax, y_)
 
-    print('\n', xmin_, xmax_, fmin_, fmax_)
+    # print('\n', xmin_, xmax_, fmin_, fmax_)
 
     size_axis_label = 14
     size_axis_data = 12
@@ -469,9 +469,9 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
     for tck in ticks_GSF:
         ticks_x.append(max_x/tck)
 
-    print(thicknesses)
-    print(solutions)
-    print(kmax)
+    # print(thicknesses)
+    # print(solutions)
+    # print(kmax)
     for i in range(kmax):
         thks = thicknesses[i]
         sols = solutions[i]
@@ -706,10 +706,8 @@ def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None
     m = len(xmax)
 
     if limit_state:
-        # print(xmax, fmax, xmin, fmin)
-        # print(n,m)
         x_, y_, _ = intersection_line_line_xy([[xmax[m-1], fmax[m-1]], [xmax[m-2], fmax[m-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
-        print('Calculated Limit State: (x, y):', x_, y_)
+        # print('Calculated Limit State: (x, y):', x_, y_)
         xmin = append(xmin, x_)
         xmax = append(xmax, x_)
         fmin = append(fmin, y_)
@@ -912,8 +910,14 @@ def lookup_folder(folder):
 
         if 'max' in title_split:
             objective = 'max'
-        if 'min' in title_split:
+        elif 'min' in title_split:
             objective = 'min'
+        elif 'lp' in title_split:
+            objective = 'lp'
+        elif 'bestfit' in title_split:
+            objective = 'bestfit'
+        else:
+            objective = 'other'
         if 'sag' in title:
             sag = int(title.split('sag_')[-1].split('_')[0])
         else:
@@ -923,8 +927,18 @@ def lookup_folder(folder):
         else:
             smooth = False
 
+        discr_sag_smooth = title_split[title_split.index('discr')+1]
+
+        if not sag and not smooth:
+            discr = int(discr_sag_smooth)
+        elif sag:
+            discr = int(discr_sag_smooth.split('sag')[0])
+        else:
+            discr = int(discr_sag_smooth.split('smooth')[0])
+
         data_file = {
             'thk': thk,
+            'discretisation': discr,
             'type_structure': type_structure,
             'type_formdiagram': type_formdiagram,
             'objective': objective,
@@ -1011,45 +1025,58 @@ if __name__ == "__main__":
     # ymax = [-0.9339822060582105, -0.9153600350687701, -0.8967801607082414, -0.8749268981352708, -0.8527838337729975, -0.8308005117230084, -0.8090235909790843, -0.7873861336721817, -0.7658154927226042, -0.7442314431375009, -0.7225437965300713, -0.7004737016559901]
     # diagram_of_thrust(x, ymin, ymax).show()
 
-    import os
-    import compas_tno
+    # import os
+    # import compas_tno
 
-    xmin = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11]
-    xmax = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11]
-    fmin = [0.3156661298394508, 0.32311911534847704, 0.3308390621181395, 0.3388453032161659, 0.3471585269156108,
-            0.35580111627201505, 0.36479709543689537, 0.3741725632219149, 0.3839558880917538, 0.39417800061787767]
-    fmax = [-0.5123282218463301, -0.5017195584958144, -0.4905221616645659, -0.47952876134490424, -0.46873301700175324, -
-            0.4553465263042089, -0.4422725500626189, -0.42952494206519887, -0.41704137084847154, -0.40008805784514884]
-    limit_state = False
-    fill = False
-    xy_limits = [[0.20, 0.10], [60, 30]]
-    n = len(xmin)
-    m = len(xmax)
+    # xmin = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11]
+    # xmax = [0.2, 0.19, 0.18, 0.17, 0.16, 0.15, 0.14, 0.13, 0.12, 0.11]
+    # fmin = [0.3156661298394508, 0.32311911534847704, 0.3308390621181395, 0.3388453032161659, 0.3471585269156108,
+    #         0.35580111627201505, 0.36479709543689537, 0.3741725632219149, 0.3839558880917538, 0.39417800061787767]
+    # fmax = [-0.5123282218463301, -0.5017195584958144, -0.4905221616645659, -0.47952876134490424, -0.46873301700175324, -
+    #         0.4553465263042089, -0.4422725500626189, -0.42952494206519887, -0.41704137084847154, -0.40008805784514884]
+    # limit_state = False
+    # fill = False
+    # xy_limits = [[0.20, 0.10], [60, 30]]
+    # n = len(xmin)
+    # m = len(xmax)
 
-    img_graph = os.path.join(compas_tno.get('/temp/'), 'diagram{0}.png')
-    images = []
-    j = 0
-    k = 0
-    for i in range(1, n + 1):
-        save_diagram = img_graph.format(k)
-        images.append(save_diagram)
-        diagram_of_thrust_partial(xmin[:i], xmax[:j], fmin[:i], fmax[:j], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
-        # diagram_of_thrust_partial(xmin[:i], xmax[:i], fmin[:i], fmax[:i], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
-        k += 1
-    for j in range(1, m + 1):
-        save_diagram = img_graph.format(k)
-        images.append(save_diagram)
-        diagram_of_thrust_partial(xmin[:i], xmax[:j], fmin[:i], fmax[:j], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
-        k += 1
+    # img_graph = os.path.join(compas_tno.get('/temp/'), 'diagram{0}.png')
+    # images = []
+    # j = 0
+    # k = 0
+    # for i in range(1, n + 1):
+    #     save_diagram = img_graph.format(k)
+    #     images.append(save_diagram)
+    #     diagram_of_thrust_partial(xmin[:i], xmax[:j], fmin[:i], fmax[:j], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+    #     # diagram_of_thrust_partial(xmin[:i], xmax[:i], fmin[:i], fmax[:i], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+    #     k += 1
+    # for j in range(1, m + 1):
+    #     save_diagram = img_graph.format(k)
+    #     images.append(save_diagram)
+    #     diagram_of_thrust_partial(xmin[:i], xmax[:j], fmin[:i], fmax[:j], xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+    #     k += 1
 
-    limit_state = True
-    fill = True
-    save_diagram = img_graph.format(k)
-    images.append(save_diagram)
-    diagram_of_thrust_partial(xmin, xmax, fmin, fmax, xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
+    # limit_state = True
+    # fill = True
+    # save_diagram = img_graph.format(k)
+    # images.append(save_diagram)
+    # diagram_of_thrust_partial(xmin, xmax, fmin, fmax, xy_limits=xy_limits, limit_state=limit_state, fill=fill, save=save_diagram)
 
-    save_gif = os.path.join(compas_tno.get('/temp/'), 'GIF_v1.gif')
-    delay = 0.5
-    from compas_plotters import Plotter
-    plotter = Plotter(figsize=(12, 4))
-    plotter.save_gif(save_gif, images, delay=delay*100)
+    # save_gif = os.path.join(compas_tno.get('/temp/'), 'GIF_v1.gif')
+    # delay = 0.5
+    # from compas_plotters import Plotter
+    # plotter = Plotter(figsize=(12, 4))
+    # plotter.save_gif(save_gif, images, delay=delay*100)
+
+    for hc in [6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]:
+        folder = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/h=' + str(hc) + '/min_thk/'
+        print('\n***Folder:',folder)
+        files = os.listdir(folder)
+        for f in files:
+            if 'smooth' in f:
+                print(f)
+                new_f = ''.join(f.split('smooth_'))
+                print(new_f)
+                address_old = os.path.join(folder, f)
+                address_new = os.path.join(folder, new_f)
+                os.rename(address_old, address_new)

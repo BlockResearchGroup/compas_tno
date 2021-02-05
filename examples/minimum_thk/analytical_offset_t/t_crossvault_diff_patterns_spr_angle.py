@@ -1,4 +1,4 @@
-
+from numpy import array
 import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
@@ -15,6 +15,9 @@ import os
 # ----------------------------------------------------------------------
 # --------- ANALYTICAL MIN THK WITH SPRING ANGLE - CROSSVAULT ----------
 # ----------------------------------------------------------------------
+
+# To use the script check the discretisations, degs, type structure/formdiagram
+
 
 disc = []
 discretisations = [14]
@@ -51,7 +54,7 @@ for discretisation in discretisations:
         xy_span_shape = [[-span_x/2*(A - 1), span_x*(1 + (A - 1)/2)], [-span_y/2*(A - 1), span_y*(1 + (A - 1)/2)]]
         thk = 0.50
 
-        n = 8
+        n = 1
         gradients = True
 
         # ----------------------- 1. Create shape ---------------------------
@@ -105,7 +108,6 @@ for discretisation in discretisations:
         analysis.run()
 
         thk_min = form.attributes['thk']
-        from numpy import array
         xyz = array(form.vertices_attributes('xyz'))
         zub, zlb = crossvault_ub_lb_update(xyz[:, 0], xyz[:, 1], thk_min, 0.0,  xy_span=xy_span_shape)
         i = 0
@@ -134,7 +136,6 @@ for discretisation in discretisations:
             # sols[str(discretisation)] = thk_min
             sols[str(deg)] = thk_min
             # sols[str(A)] = thk_min
-
 
             # print('Solved:', discretisation, thk_min)
             print('Solved:', deg, thk_min)

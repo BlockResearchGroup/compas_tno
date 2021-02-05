@@ -29,6 +29,9 @@ from compas_tno.diagrams.diagram_rectangular import create_ortho_form
 from compas_tno.shapes.dome import dome_zt_update
 from compas_tno.shapes.dome import dome_ub_lb_update
 from compas_tno.shapes.crossvault import crossvault_middle_update
+from compas_tno.shapes.crossvault import crossvault_ub_lb_update
+from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
+from compas_tno.shapes.pointed_crossvault import pointed_vault_ub_lb_update
 
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_force
@@ -602,7 +605,7 @@ class FormDiagram(FormDiagram):
 
         lp = 0
         for u, v in self.edges_where({'_is_external': False}):
-            if self.edge_attribute((u, v), '_is_edge') is True and form.edge_attribute((u, v), 'is_symmetry') is False:
+            if self.edge_attribute((u, v), '_is_edge') is True and self.edge_attribute((u, v), 'is_symmetry') is False:
                 qi = self.edge_attribute((u, v), 'q')
                 li = self.edge_length(u, v)
                 lp += qi*li**2
@@ -768,11 +771,18 @@ class FormDiagram(FormDiagram):
     def envelope_from_shape(self, shape):
 
         XY = array(self.vertices_attributes('xy'))
+
         if shape.data['type'] == 'dome':
             zub, zlb = dome_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], shape.data['center'], shape.data['radius'])
-        else:
+        elif shape.data['type'] == 'crossvault':
+            zub, zlb = crossvault_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], shape.data['xy_span'])
+        elif shape.data['type'] == 'pointed_crossvault':
+            zub, zlb = pointed_vault_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], shape.data['xy_span'], hc=shape.data['hc'], he=shape.data['he'], hm=shape.data['hm'])
+        elif shape.data['type'] == 'general':
             zub = shape.get_ub_pattern(XY)
             zlb = shape.get_lb_pattern(XY)
+        else:
+            raise Exception
 
         keysnan = []
         i = 0
@@ -809,8 +819,10 @@ class FormDiagram(FormDiagram):
         XY = array(self.vertices_attributes('xy'))
         if shape.data['type'] == 'dome':
             zt = dome_zt_update(XY[:, 0], XY[:, 1], shape.data['radius'], shape.data['t'], shape.data['center'])
-        if shape.data['type'] == 'crossvault':
+        elif shape.data['type'] == 'crossvault':
             zt = crossvault_middle_update(XY[:, 0], XY[:, 1],  shape.data['t'],  xy_span=shape.data['xy_span'])
+        elif shape.data['type'] == 'pointed_crossvault':
+            zt = pointed_vault_middle_update(XY[:, 0], XY[:, 1],  shape.data['t'],  xy_span=shape.data['xy_span'], hc=shape.data['hc'], he=shape.data['he'], hm=shape.data['hm'])
         else:
             zt = shape.get_middle_pattern(XY)
 

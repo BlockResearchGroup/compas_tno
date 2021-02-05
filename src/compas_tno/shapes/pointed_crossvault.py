@@ -100,7 +100,7 @@ def pointed_vault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=
     for i in range(len(x)):
         xi, yi = x[i], y[i]
 
-        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q1
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
             # Equation (xi - hx) ** 2 + (hi - kx) ** 2 = rx **2 to find the height of the pointed part (middle of quadrant) with that height one find the equivalent radius
             if he:
                 hi = k1 + math.sqrt(r1 ** 2 - (xi - h1) ** 2)
@@ -124,7 +124,7 @@ def pointed_vault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=
             else:
                 zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
 
-        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q2
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
             if he:
                 hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
             else:
@@ -135,7 +135,7 @@ def pointed_vault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=
             else:
                 zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
 
-        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
             if he:
                 hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
             else:
@@ -221,10 +221,7 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
     for i in range(len(x)):
         xi, yi = x[i], y[i]
 
-        # if ((yi) > y1_lb and ((xi) > x1_lb or (xi) < x0_lb)) or ((yi) < y0_lb and ((xi) > x1_lb or (xi) < x0_lb)):
-        #     lb[i] = - 1*t
-
-        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q1
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
             if he:
                 hi_ub = k1_ub + math.sqrt(r1_ub ** 2 - (xi - h1_ub) ** 2)
                 hi_lb = k1_lb + math.sqrt(r1_lb ** 2 - (xi - h1_lb) ** 2)
@@ -242,71 +239,208 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
 
         elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
             if he:
+                hi_ub = k3_ub + math.sqrt(r3_ub ** 2 - (yi - h3_ub) ** 2)
+                hi_lb = k3_lb + math.sqrt(r3_lb ** 2 - (yi - h3_lb) ** 2)
+            else:
+                hi_ub = hc_ub
+                hi_lb = hc_lb
+            ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if xi <= (x0 + x1)/2:
+                ub[i] = _sqrt((ri_ub)**2 - (xi-(x0_ub+ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (xi-(x0_lb+ri_lb))**2)
+            else:
+                ub[i] = _sqrt((ri_ub)**2 - (xi-(x1_ub-ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (xi-(x1_lb-ri_lb))**2)
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
+            if he:
+                hi_ub = k2_ub + math.sqrt(r2_ub ** 2 - (xi - h2_ub) ** 2)
+                hi_lb = k2_lb + math.sqrt(r2_lb ** 2 - (xi - h2_lb) ** 2)
+            else:
+                hi_ub = hc_ub
+                hi_lb = hc_lb
+            ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if yi <= (y1 + y0)/2:
+                ub[i] = _sqrt((ri_ub)**2 - (yi-(y0_ub+ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (yi-(y0_lb+ri_lb))**2)
+            else:
+                ub[i] = _sqrt((ri_ub)**2 - (yi-(y1_ub-ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (yi-(y1_lb-ri_lb))**2)
+
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
+            if he:
+                hi_ub = k4_ub + math.sqrt(r4_ub ** 2 - (yi - h4_ub) ** 2)
+                hi_lb = k4_lb + math.sqrt(r4_lb ** 2 - (yi - h4_lb) ** 2)
+            else:
+                hi_ub = hc_ub
+                hi_lb = hc_lb
+            ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if xi <= (x0 + x1)/2:
+                ub[i] = _sqrt((ri_ub)**2 - (xi-(x0_ub+ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (xi-(x0_lb+ri_lb))**2)
+            else:
+                ub[i] = _sqrt((ri_ub)**2 - (xi-(x1_ub-ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (xi-(x1_lb-ri_lb))**2)
+        else:
+            print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
+
+        if ((yi) > y1_lb and ((xi) > x1_lb or (xi) < x0_lb)) or ((yi) < y0_lb and ((xi) > x1_lb or (xi) < x0_lb)):
+            lb[i] = - 1*t
+
+    return ub, lb
+
+
+def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8.0, he=None, hm=None, tol=1e-6):
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    y1_ub = y1 + thk/2
+    y0_ub = y0 - thk/2
+    x1_ub = x1 + thk/2
+    x0_ub = x0 - thk/2
+
+    y1_lb = y1 - thk/2
+    y0_lb = y0 + thk/2
+    x1_lb = x1 - thk/2
+    x0_lb = x0 + thk/2
+
+    lx_ub = x1_ub - x0_ub
+    ly_ub = y1_ub - y0_ub
+
+    lx_lb = x1_lb - x0_lb
+    ly_lb = y1_lb - y0_lb
+
+    hc_ub = hc + thk/2
+    hc_lb = hc - thk/2
+
+    if he:
+        he_ub = he.copy()
+        he_lb = he.copy()
+        for i in range(len(he)):
+            he_ub[i] += thk/2
+            he_lb[i] -= thk/2
+    if hm:
+        hm_ub = hm.copy()
+        hm_lb = hm.copy()
+        for i in range(len(hm)):
+            hm_ub[i] += thk/2
+            hm_lb[i] -= thk/2
+
+    if he and hm is None:
+        h1_ub, k1_ub, r1_ub = circle_3points_xy([x0, he_ub[1]], [(x1+x0)/2, hc_ub], [x1, he_ub[0]])
+        h2_ub, k2_ub, r2_ub = h1_ub, k1_ub, r1_ub
+        h3_ub, k3_ub, r3_ub = circle_3points_xy([y0, he_ub[3]], [(y1+y0)/2, hc_ub], [y1, he_ub[2]])
+        h4_ub, k4_ub, r4_ub = h3_ub, k3_ub, r3_ub
+
+        h1_lb, k1_lb, r1_lb = circle_3points_xy([x0, he_lb[1]], [(x1+x0)/2, hc_lb], [x1, he_lb[0]])
+        h2_lb, k2_lb, r2_lb = h1_lb, k1_lb, r1_lb
+        h3_lb, k3_lb, r3_lb = circle_3points_xy([y0, he_lb[3]], [(y1+y0)/2, hc_lb], [y1, he_lb[2]])
+        h4_lb, k4_lb, r4_lb = h3_lb, k3_lb, r3_lb
+
+    elif hm and he:
+        h1_ub, k1_ub, r1_ub = circle_3points_xy([(x1+x0)/2, hc_ub], [3*(x1+x0)/4, hm_ub[0]], [x1, he_ub[0]])
+        h2_ub, k2_ub, r2_ub = circle_3points_xy([(x1+x0)/2, hc_ub], [1*(x1+x0)/4, hm_ub[1]], [x0, he_ub[1]])
+        h3_ub, k3_ub, r3_ub = circle_3points_xy([(y1+y0)/2, hc_ub], [3*(y1+y0)/4, hm_ub[2]], [y1, he_ub[2]])
+        h4_ub, k4_ub, r4_ub = circle_3points_xy([(y1+y0)/2, hc_ub], [1*(y1+y0)/4, hm_ub[3]], [y0, he_ub[3]])
+
+        h1_lb, k1_lb, r1_lb = circle_3points_xy([(x1+x0)/2, hc_lb], [3*(x1+x0)/4, hm_lb[0]], [x1, he_lb[0]])
+        h2_lb, k2_lb, r2_lb = circle_3points_xy([(x1+x0)/2, hc_lb], [1*(x1+x0)/4, hm_lb[1]], [x0, he_lb[1]])
+        h3_lb, k3_lb, r3_lb = circle_3points_xy([(y1+y0)/2, hc_lb], [3*(y1+y0)/4, hm_lb[2]], [y1, he_lb[2]])
+        h4_lb, k4_lb, r4_lb = circle_3points_xy([(y1+y0)/2, hc_lb], [1*(y1+y0)/4, hm_lb[3]], [y0, he_lb[3]])
+
+    ub = ones((len(x), 1))
+    lb = ones((len(x), 1)) * - t
+    dub = zeros((len(x), 1))
+    dlb = zeros((len(x), 1))
+
+    for i in range(len(x)):
+        xi, yi = x[i], y[i]
+
+        if yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q1
+            if he:
+                hi_ub = k1_ub + math.sqrt(r1_ub ** 2 - (xi - h1_ub) ** 2)
+                hi_lb = k1_lb + math.sqrt(r1_lb ** 2 - (xi - h1_lb) ** 2)
+            else:
+                hi_ub = hc_ub
+                hi_lb = hc_lb
+            ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
+            if yi <= (y1 + y0)/2:
+                ub[i] = _sqrt((ri_ub)**2 - (yi-(y0_ub+ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (yi-(y0_lb+ri_lb))**2)
+            else:
+                ub[i] = _sqrt((ri_ub)**2 - (yi-(y1_ub-ri_ub))**2)
+                lb[i] = _sqrt((ri_lb)**2 - (yi-(y1_lb-ri_lb))**2)
+            dub[i] = 1/2 * ri_ub/ub[i]
+            dlb[i] = - 1/2 * ri_lb/lb[i]
+
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi >= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q3
+            if he:
                 # hi = k3 + math.sqrt(r3 ** 2 - (yi - h3) ** 2)
                 hi_ub = k3_ub + math.sqrt(r3_ub ** 2 - (yi - h3_ub) ** 2)
                 hi_lb = k3_lb + math.sqrt(r3_lb ** 2 - (yi - h3_lb) ** 2)
             else:
                 hi_ub = hc_ub
                 hi_lb = hc_lb
-            # ri = _find_r_given_h_l(hi, lx)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             if xi <= (x0 + x1)/2:
-                # zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
                 ub[i] = _sqrt((ri_ub)**2 - (xi-(x0_ub+ri_ub))**2)
                 lb[i] = _sqrt((ri_lb)**2 - (xi-(x0_lb+ri_lb))**2)
             else:
-                # zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
                 ub[i] = _sqrt((ri_ub)**2 - (xi-(x1_ub-ri_ub))**2)
                 lb[i] = _sqrt((ri_lb)**2 - (xi-(x1_lb-ri_lb))**2)
+            dub[i] = 1/2 * ri_ub/ub[i]
+            dlb[i] = - 1/2 * ri_lb/lb[i]
 
-        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) - tol:  # Q2
+        elif yi >= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q2
             if he:
-                # hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
                 hi_ub = k2_ub + math.sqrt(r2_ub ** 2 - (xi - h2_ub) ** 2)
                 hi_lb = k2_lb + math.sqrt(r2_lb ** 2 - (xi - h2_lb) ** 2)
             else:
                 hi_ub = hc_ub
                 hi_lb = hc_lb
-            # ri = _find_r_given_h_l(hi, ly)
             ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             if yi <= (y1 + y0)/2:
-                # zi = _sqrt((ri)**2 - (yi-(y0+ri))**2)
                 ub[i] = _sqrt((ri_ub)**2 - (yi-(y0_ub+ri_ub))**2)
                 lb[i] = _sqrt((ri_lb)**2 - (yi-(y0_lb+ri_lb))**2)
             else:
-                # zi = _sqrt((ri)**2 - (yi-(y1-ri))**2)
                 ub[i] = _sqrt((ri_ub)**2 - (yi-(y1_ub-ri_ub))**2)
                 lb[i] = _sqrt((ri_lb)**2 - (yi-(y1_lb-ri_lb))**2)
+            dub[i] = 1/2 * ri_ub/ub[i]
+            dlb[i] = - 1/2 * ri_lb/lb[i]
 
-        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) - tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
+        elif yi <= y0 + (y1 - y0)/(x1 - x0) * (xi - x0) + tol and yi <= y1 - (y1 - y0)/(x1 - x0) * (xi - x0) + tol:  # Q4
             if he:
-                # hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
                 hi_ub = k4_ub + math.sqrt(r4_ub ** 2 - (yi - h4_ub) ** 2)
                 hi_lb = k4_lb + math.sqrt(r4_lb ** 2 - (yi - h4_lb) ** 2)
             else:
                 hi_ub = hc_ub
                 hi_lb = hc_lb
-            # ri = _find_r_given_h_l(hi, lx)
             ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             if xi <= (x0 + x1)/2:
-                # zi = _sqrt((ri)**2 - (xi-(x0+ri))**2)
                 ub[i] = _sqrt((ri_ub)**2 - (xi-(x0_ub+ri_ub))**2)
                 lb[i] = _sqrt((ri_lb)**2 - (xi-(x0_lb+ri_lb))**2)
             else:
-                # zi = _sqrt((ri)**2 - (xi-(x1-ri))**2)
                 ub[i] = _sqrt((ri_ub)**2 - (xi-(x1_ub-ri_ub))**2)
                 lb[i] = _sqrt((ri_lb)**2 - (xi-(x1_lb-ri_lb))**2)
+            dub[i] = 1/2 * ri_ub/ub[i]
+            dlb[i] = - 1/2 * ri_lb/lb[i]
         else:
-            print('Vertex XXX did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
-            print(xy_span, thk)
+            print('Vertex did not belong to any Q. (x,y) = ({0},{1})'.format(xi, yi))
 
         if ((yi) > y1_lb and ((xi) > x1_lb or (xi) < x0_lb)) or ((yi) < y0_lb and ((xi) > x1_lb or (xi) < x0_lb)):
             lb[i] = - 1*t
 
-    return ub, lb
+    return dub, dlb  # ub, lb
 
 
 def _find_r_given_h_l(h, l):
@@ -362,8 +496,6 @@ def _sqrt(x):
             sqrt_x = 0.0
             print('Problems to sqrt: ', x)
     return sqrt_x
-
-
 
 
 def pointed_vault_heightfields_old(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], hc=8.0, he=None, hm=None, thk=None,  t=0.0, tol=0.00):
@@ -514,8 +646,6 @@ def pointed_vault_heightfields_old(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretis
 
     xyz = array([x1d, y1d, z1d]).transpose()
     middle = Mesh.from_vertices_and_faces(xyz, faces_i)
-
-
 
     # # avoid changes in major values of following ub-lb functions
     # if he:

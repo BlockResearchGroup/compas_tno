@@ -117,6 +117,8 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     rad_colors = {}
     tol_cracks = 10e-5
+    for key in form.vertices_where({'is_fixed': True}):
+        rad_colors[key] = '#aaaaaa'
     if cracks:
         for key in form.vertices():
             ub = form.vertex_attribute(key, 'ub')
@@ -129,8 +131,6 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             elif z - ub > 0 or lb - z > 0:
                 rad_colors[key] = '#000000'  # Black outside
 
-    for key in form.vertices_where({'is_fixed': True}):
-        rad_colors[key] = '#aaaaaa'
     for key in form.vertices_where({'rol_x': True}):
         rad_colors[key] = '#ffb733'
     for key in form.vertices_where({'rol_y': True}):
