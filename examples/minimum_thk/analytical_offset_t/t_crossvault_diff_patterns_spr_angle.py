@@ -131,7 +131,8 @@ for discretisation in discretisations:
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_deg=' + str(deg)
             save_form = os.path.join(folder, title)
 
-            # form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+            save_address = save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json'
+            form.to_json(save_address)
 
             # sols[str(discretisation)] = thk_min
             sols[str(deg)] = thk_min

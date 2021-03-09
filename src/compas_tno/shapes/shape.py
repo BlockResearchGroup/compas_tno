@@ -368,7 +368,7 @@ class Shape(object):
         middle : mesh (None)
             Mesh for middle.
         data : dict (None)
-            Dictionary with the data in required.
+            Dictionary with the data if required.
 
         Returns
         -------

@@ -3,6 +3,7 @@ from compas_viewers.multimeshviewer import MultiMeshViewer
 from compas_viewers.objectviewer import ObjectViewer
 from compas.datastructures import Mesh
 from compas.geometry import Line
+from compas_tno.shapes import Shape
 
 from compas.geometry import Point
 
@@ -120,15 +121,16 @@ def view_thrusts(forms, settings_form=None, cracks=True):
 
     return viewer
 
-def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=True, thickness=False, outside=True):
+def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cracks=True, thickness=False, outside=True):
     """ Viewer showing the thrust network together with intrados and extrados.
 
     Parameters
     ----------
     form : FormDiagram
         FormDiagram to plot
-    shape : Shape
+    shape : Shape, optional
         Shape to plot
+        If no Shape is given, the shape is constructed from the form's attributes ``UB`` and ``LB``.
 
     Returns
     ----------
@@ -136,6 +138,9 @@ def view_solution(form, shape, settings_form=None, settings_bounds=None, cracks=
         Viewer object.
 
     """
+
+    if not shape:
+        shape = Shape.from_formdiagram_and_attributes(form)
 
     intrados = shape.intrados
     extrados = shape.extrados

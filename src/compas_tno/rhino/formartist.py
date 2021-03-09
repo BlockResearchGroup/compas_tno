@@ -50,6 +50,7 @@ class FormArtist(DiagramArtist):
         self.color_faces = (0, 0, 0)
         self.scale_forces = 0.001
         self.tol_forces = 0.001
+        self.radius_sphere = 0.15
 
     def draw_edges(self, edges=None, color=None, displacement=None, layer='Thrust'):
         """Draw a selection of edges.
@@ -147,7 +148,7 @@ class FormArtist(DiagramArtist):
         vertices, faces = self.diagram.to_vertices_and_faces()
         return compas_rhino.draw_mesh(vertices, faces, name="Thrust", color=self.color_mesh_thrust, disjoint=True, layer="Thrust-Mesh")
 
-    def draw_cracks(self, vertices=None, displacement=None, tol_crack=10e-3, layer='Cracks'):
+    def draw_cracks(self, vertices=None, displacement=None, tol_crack=10e-3, layer='Cracks', spheres=False):
         """Draw the intersection of the thrust network with intrados and extrados.
 
         Parameters
@@ -177,18 +178,32 @@ class FormArtist(DiagramArtist):
                 y += displacement[1]
             lb = form.vertex_attribute(key, 'lb')
             ub = form.vertex_attribute(key, 'ub')
+            if isinstance(lb, list):
+                lb = lb[0]
+                ub = ub[0]
             if lb:
                 if abs(z - lb) < tol_crack:
-                    intra_vertices.append({
-                        'pos': [x, y, z],
-                        'name': "{}.vertex.{}".format("Intrados", key),
-                        'color': self.color_vertex_intrados})
+                    if spheres:
+                        sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
+                        rs.ObjectColor(sphere, self.color_vertex_intrados)
+                        rs.ObjectLayer(sphere, layer)
+                    else:
+                        intra_vertices.append({
+                            'pos': [x, y, z],
+                            'name': "{}.vertex.{}".format("Intrados", key),
+                            'color': self.color_vertex_intrados})
             if ub:
                 if abs(z - ub) < tol_crack:
-                    extra_vertices.append({
-                        'pos': [x, y, z],
-                        'name': "{}.vertex.{}".format("Extrados", key),
-                        'color': self.color_vertex_extrados})
+                    if spheres:
+                        sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
+                        rs.ObjectColor(sphere, self.color_vertex_extrados)
+                        rs.ObjectLayer(sphere, layer)
+                    else:
+                        extra_vertices.append({
+                            'pos': [x, y, z],
+                            'name': "{}.vertex.{}".format("Extrados", key),
+                            'color': self.color_vertex_extrados})
+
         compas_rhino.draw_points(intra_vertices, layer=layer, clear=False, redraw=False)
         compas_rhino.draw_points(extra_vertices, layer=layer, clear=False, redraw=False)
         return

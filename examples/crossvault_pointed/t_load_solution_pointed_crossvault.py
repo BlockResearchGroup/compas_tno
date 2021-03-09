@@ -32,22 +32,22 @@ limit_equal = 0.002
 span = 10.0  # square span for analysis
 k = 1
 n = 1  # Discretisation for Surfaces...
-Rs = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10]
-hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
+Rs = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0]
+# hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
 degs = [0, 10, 20, 30, 40]
 
 addresses_main = []
 minthk_list = []
 
-# R = [5.0]
-# hc_list = [5.0]
+degs = [0]
+# Rs = [6.5, 7.0]
 
 for j in range(len(degs)):
     addresses = []
 
     for i in range(len(Rs)):
         R = Rs[i]
-        hc = hc_list[i]
+        # hc = hc_list[i]
         deg = degs[j]
 
         he = None
@@ -56,7 +56,7 @@ for j in range(len(degs)):
         smooth = False
         type_structure = 'pointed_crossvault'
         discretisation = 14
-        type_formdiagram = 'fan_fd'
+        type_formdiagram = 'cross_fd'
 
         radius = R
         A = span/(2*radius*(math.cos(math.radians(deg)) - 1) + span)
@@ -66,7 +66,7 @@ for j in range(len(degs)):
         if he:
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'camb_h='+str(hc), 'min_thk')
         else:
-            folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'h='+str(hc), 'min_thk')
+            folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'R='+str(radius), 'min_thk')
         if deg:
             folder = os.path.join(folder, 'deg='+str(deg))
         title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
@@ -76,7 +76,7 @@ for j in range(len(degs)):
             title = title + 'smooth_'
         forms_address = os.path.join(folder, title)
 
-        print('**** Parameters [R, hc, deg]:', R, hc, deg)
+        print('**** Parameters [R, deg]:', R, deg)
         print('**** Folder:', folder)
 
         # data_shape = {

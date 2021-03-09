@@ -12,6 +12,8 @@ from compas_tno.viewers import view_shapes
 from compas_tno.plotters import diagram_of_thrust
 from compas_tno.plotters import save_csv
 from compas_tno.plotters import save_csv_row
+from compas_tno.plotters import lookup_folder
+from compas_tno.plotters import filter_min_thk
 from compas_tno.algorithms import constrained_smoothing
 from compas_tno.utilities import rectangular_smoothing_constraints
 
@@ -29,6 +31,9 @@ limit_equal = 0.002
 minimise_thickness = True
 discretisation = 14
 
+refine = True
+refine_limit = 0.0005
+
 span = 10.0  # square span for analysis
 k = 1
 n = 1  # Discretisation for Surfaces...
@@ -36,9 +41,16 @@ R = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10]
 hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
 degs = [0, 10, 20, 30, 40]
 
-degs = [30]
-R = [6.8692]
+degs = [40]
+R = [5.0, 6.0]
+# 10 - 7 to 8
+# 20 - 6 to 7
+# 30 - 5.5 to 6.5
+# 40 - 5 to 6
+min_thk = [0, 0]
 # hc_list = [5.0]
+
+golden = (math.sqrt(5) - 1)/2
 
 # i =8
 # R = [R[i]]
@@ -58,7 +70,7 @@ compute_diagram_of_thrust = False
 
 # Basic parameters
 
-for type_formdiagram in ['fan_fd']:
+for type_formdiagram in ['topology-mix']:
 
     sols[type_formdiagram] = {}
 
@@ -111,7 +123,7 @@ for type_formdiagram in ['fan_fd']:
         # optimiser.data['library'] = 'IPOPT'
         # optimiser.data['solver'] = 'IPOPT'
         optimiser.data['constraints'] = ['funicular', 'envelope']
-        optimiser.data['printout'] = True
+        optimiser.data['printout'] = False
         optimiser.data['plot'] = False
         optimiser.data['find_inds'] = True
         optimiser.data['qmax'] = 10e+10
@@ -124,103 +136,139 @@ for type_formdiagram in ['fan_fd']:
             optimiser.data['objective'] = 'bestfit'
             optimiser.data['variables'] = ['ind', 'zb']
 
-        for i in range(len(R)):
-
-            # hc = hc_list[i]
-            radius = R[i]
-            A = span/(2*radius*(math.cos(math.radians(deg)) - 1) + span)
-            xy_span_shape = [[-span/2*(A - 1), span*(1 + (A - 1)/2)], [-span/2*(A - 1), span*(1 + (A - 1)/2)]]
-            hc_shape = A*math.sqrt(radius**2 - (radius - span/2)**2)
-            if he:
-                he = [A*he[0], A*he[1], A*he[2], A*he[3]]
-
-            print('\n**** Starting Analysis for: radius={0} and thk={1} ****\n'.format(radius, thk))
-            if deg:
-                print('---- Considering deg ={0} ****\n'.format(deg))
-
-            # --------------------- Shape with initial THK ---------------------
-
-            data_shape = {
-                'type': type_structure,
-                'thk': thk,
-                'discretisation': discretisation,
-                'xy_span': xy_span_shape,
-                't': 0.0,
-                'hc': hc_shape,
-                'hm': None,
-                'he': he,
-            }
-
-            vault = Shape.from_library(data_shape)
-            # view_shapes(vault).show()
-
-            # ----------------------- Create Analysis loop on limit analysis --------------------------
-
-            if he:
-                folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'camb_h='+str(hc), 'min_thk')
+        j = 0
+        for radius in R:
+            folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'R='+str(radius), 'min_thk')
+            files = lookup_folder(folder)
+            if type_formdiagram == 'topology-mix':
+                filtered = filter_min_thk(files, filters={'smooth': smooth, 'sag': False})
             else:
-                folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'R='+str(radius), 'min_thk')
-            if deg:
-                folder = os.path.join(folder, 'deg='+str(deg))
-            os.makedirs(folder, exist_ok=True)
-            title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-            if sag:
-                title = title + 'sag_' + str(sag)
-            if smooth:
-                title = title + 'smooth_'
-            forms_address = os.path.join(folder, title)
+                filtered = filter_min_thk(files, filters={'discretisation': discretisation, 'smooth': smooth, 'sag': False})
+            limit_form_min = filtered[0]
+            print(filtered)
+            file_title = list(limit_form_min.keys())[0]
+            thk_min = list(limit_form_min.values())[0]['thk']/100
+            address = os.path.join(folder, file_title + '.json')
+            print('**** Address:', address)
+            print('**** Minimum thickness calculated:', thk_min, '\n')
+            form = FormDiagram.from_json(address)
+            min_thk[j] = thk_min
+            sols[type_formdiagram][deg][radius] = thk_min
+            j +=1
 
-            # --------------------- Create Initial point with TNA ---------------------
+        print(sols)
 
-            address_lp = forms_address + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
-            # address_shape = forms_address + '_' + 'shape' + '_thk_' + str(100*thk) + '.json'
+        fx1 = None
+        fx2 = None
+        x1 = R[0] + (R[1] - R[0]) * golden
+        x2 = R[1] - (R[1] - R[0]) * golden
+        i = 0
 
-            form.selfweight_from_shape(vault)
-            form.envelope_from_shape(vault)
-            # form.to_json(address_shape)
-            # print('\n', address_shape, '\n')
+        print('Begining process of this iteration / R / x1 / x2:', R, x1, x2)
+        print('Values on Beginning / min thk / fx1 / fx2:', min_thk, fx1, fx2)
 
-            try:
-                form = FormDiagram.from_json(address_lp)
-                print('Loaded LP form diagram')
-            except:
-                print('LP form diagram not found')
-                print(address_lp)
-                form.selfweight_from_shape(vault)
-                form.envelope_from_shape(vault)
-                # form = form.initialise_tna(plot=False)
-                form.initialise_loadpath()
-                # plot_form(form, show_q=False).show()
-                address_lp = forms_address + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
-                form.to_json(address_lp)
+        while refine:
 
-            # view_thrust(form).show()
-            # view_solution(form, vault).show()
+            print('\n\n---------------')
+            print('Iteration i:', i)
 
-            if compute_diagram_of_thrust:
-
-                # ---------------------- Analysis for the Diagram of Thrust -------------
-
-                analysis = Analysis.from_elements(vault, form, optimiser)
-                results = analysis.thk_minmax_GSF(thk, thk_step=thk_reduction, save_forms=forms_address, plot=False, printout=False)
-                thicknesses, solutions = results
-
-                # ----------------------- Save output data --------------------------
-
-                csv_file = os.path.join(folder, title + '_data.csv')
-                save_csv_row(thicknesses, solutions, path=csv_file, title=title)
-
-                img_graph = os.path.join(folder, title + '_diagram.pdf')
-                diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True)
-
-                xy_limits = [[0.60, 0.20], [120, 30]]
-                img_graph = os.path.join(folder, title + '_diagram_limits.pdf')
-                diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits)
-
-                thk_min = thicknesses[0][-1]
-                sols[type_formdiagram][deg][hc] = thk_min
-
+            if i == 0:
+                radius_to_check = [x1, x2]
             else:
+                if fx1 > fx2:   # vanish b | x1 become x2 | x2 calculated
+                    print('fx1 > fx2', fx1, fx2)
+                    print('x1, x2', x1, x2)
+                    R[1] = x1
+                    min_thk[1] = fx1
+                    x1 = x2
+                    fx1 = fx2
+                    x2 = R[1] - (R[1] - R[0]) * golden
+                    fx2 = None
+                    radius_to_check = [x2]
+                else:           # vanish a | x2 become x1 | x1 calculated
+                    print('fx1 < fx2', fx1, fx2)
+                    print('x1, x2', x1, x2)
+                    R[0] = x2
+                    min_thk[0] = fx2
+                    x2 = x1
+                    fx2 = fx1
+                    x1 = R[0] + (R[1] - R[0]) * golden
+                    fx1 = None
+                    radius_to_check = [x1]
+
+            print('Bounds of the Problem:', R)
+            print('Radius to Check:', radius_to_check)
+
+            if R[1] - R[0] < refine_limit:
+                print('Breaking due to limit', R, refine_limit)
+                refine = False
+                radius_to_check = [(R[0] + R[1] + x1 + x2)/4]
+
+            # if i > 20:
+            #     print('Breaking due maximum i:', R, i)
+            #     refine = False
+            #     radius_to_check = [(R[0] + R[1] + x1 + x2)/4]
+
+            for radius in radius_to_check:
+
+                A = span/(2*radius*(math.cos(math.radians(deg)) - 1) + span)
+                xy_span_shape = [[-span/2*(A - 1), span*(1 + (A - 1)/2)], [-span/2*(A - 1), span*(1 + (A - 1)/2)]]
+                hc_shape = A*math.sqrt(radius**2 - (radius - span/2)**2)
+                if he:
+                    he = [A*he[0], A*he[1], A*he[2], A*he[3]]
+
+                print('\n**** Starting Analysis for: radius={0} - thk={1} - deg={2} ****\n'.format(radius, thk, deg))
+
+                # --------------------- Shape with initial THK ---------------------
+
+                data_shape = {
+                    'type': type_structure,
+                    'thk': thk,
+                    'discretisation': discretisation,
+                    'xy_span': xy_span_shape,
+                    't': 0.0,
+                    'hc': hc_shape,
+                    'hm': None,
+                    'he': he,
+                }
+
+                vault = Shape.from_library(data_shape)
+                # view_shapes(vault).show()
+
+                # ----------------------- Create Analysis loop on limit analysis --------------------------
+
+                folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'refined', 'min_thk')
+                if deg:
+                    folder = os.path.join(folder, 'deg='+str(deg))
+                os.makedirs(folder, exist_ok=True)
+                title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_R=' + str(radius)
+                if sag:
+                    title = title + 'sag_' + str(sag)
+                if smooth:
+                    title = title + 'smooth_'
+                forms_address = os.path.join(folder, title)
+
+                # --------------------- Create Initial point with TNA ---------------------
+
+                if i == 0:
+                    address_lp = forms_address + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
+
+                    form.selfweight_from_shape(vault)
+                    form.envelope_from_shape(vault)
+
+                    try:
+                        form = FormDiagram.from_json(address_lp)
+                        print('Loaded LP form diagram')
+                    except:
+                        print('LP form diagram not found')
+                        print(address_lp)
+                        form.selfweight_from_shape(vault)
+                        form.envelope_from_shape(vault)
+                        # form = form.initialise_tna(plot=False)
+                        form.initialise_loadpath()
+                        # plot_form(form, show_q=False).show()
+                        address_lp = forms_address + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
+                        form.to_json(address_lp)
 
                 analysis = Analysis.from_elements(vault, form, optimiser)
                 analysis.apply_selfweight()
@@ -229,40 +277,46 @@ for type_formdiagram in ['fan_fd']:
                 analysis.set_up_optimiser()
                 analysis.run()
 
-                if minimise_thickness:
+                thk_min = form.attributes['thk']
+                data_shape['thk'] = thk_min
+                print('Minimum thickness calculated = ', thk_min)
+                vault = Shape.from_library(data_shape)
+                form.envelope_from_shape(vault)
 
-                    thk_min = form.attributes['thk']
-                    data_shape['thk'] = thk_min
-                    print('Minimum thickness calculated = ', thk_min)
-                    vault = Shape.from_library(data_shape)
-                    form.envelope_from_shape(vault)
+                address_min = forms_address + '_' + 'min' + '_thk_' + str(100*thk_min) + '.json'
+                # address_max = forms_address + '_' + 'max' + '_thk_' + str(100*thk_min) + '.json'
 
-                    address_min = forms_address + '_' + 'min' + '_thk_' + str(100*thk_min) + '.json'
-                    # address_max = forms_address + '_' + 'max' + '_thk_' + str(100*thk_min) + '.json'
-
-                    if optimiser.exitflag == 0:
-                        # form.to_json(address_max)
+                if optimiser.exitflag == 0:
+                    # form.to_json(address_max)
+                    if not refine:
                         form.to_json(address_min)
 
-                    sols[type_formdiagram][deg][radius] = thk_min
+                sols[type_formdiagram][deg][radius] = thk_min
 
-                    plot_form(form, simple=True, show_q=False, cracks=True, save=forms_address + '_' + 'min' + '_thk_' + str(100*thk_min) + '.pdf').show()
-                    # view_thrust(form).show()
-                    # view_solution(form, vault).show()
+                if not refine:
+                    plot_form(form, simple=True, show_q=False, cracks=True, save=forms_address + '_' + 'min' + '_thk_' + str(100*thk_min) + '.png').show()
+                # view_thrust(form).show()
+                # view_solution(form, vault).show()
 
+                if i == 0:
+                    if not fx1:
+                        fx1 = thk_min
+                    elif not fx2:
+                        fx2 = thk_min
+                    else:
+                        raise Exception
                 else:
+                    if not fx1:
+                        fx1 = thk_min
+                    if not fx2:
+                        fx2 = thk_min
 
-                    distance_target = optimiser.fopt  # form.attributes['fopt']
-                    print('Distance Squared = ', distance_target)
+            print('\nEnd of this iteration / R / x1 / x2:', R, x1, x2)
+            print('Values of this iteration / min thk / fx1 / fx2:', min_thk, fx1, fx2)
 
-                    address_bestfit = forms_address + '_' + 'bestfit' + '_thk_' + str(100*thk) + '.json'
+            i = i + 1
 
-                    if optimiser.exitflag == 0:
-                        form.to_json(address_bestfit)
-
-                    sols[type_formdiagram][deg][radius] = distance_target
-
-        print(sols)
+            print(sols)
 
 print('******** Resume of Solutions')
 for key in sols:

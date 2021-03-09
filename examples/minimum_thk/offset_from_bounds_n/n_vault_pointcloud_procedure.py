@@ -118,6 +118,7 @@ os.makedirs(folder, exist_ok=True)
 title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method'
 
 forms_address = os.path.join(folder, title)
+forms_address = None
 
 analysis = Analysis.from_elements(vault, form, optimiser)
 results = analysis.max_n_minmax_GSF(n_step=n_step, save_forms=forms_address, plot=False)
@@ -129,4 +130,5 @@ csv_file = os.path.join(folder, title + '_data.csv')
 save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
 
 img_graph = os.path.join(folder, title + '_diagram.pdf')
+img_graph = None
 diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False).show()

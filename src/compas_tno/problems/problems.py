@@ -14,9 +14,9 @@ from compas.numerical import normrow
 
 from compas.utilities import geometric_key
 
-from compas_tno.algorithms.independents import find_independents
-from compas_tno.algorithms.independents import check_independents
-from compas_tno.algorithms.independents import check_horizontal
+from compas_tno.algorithms import find_independents
+from compas_tno.algorithms import check_independents
+from compas_tno.algorithms import check_horizontal
 
 import time
 
@@ -59,7 +59,6 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     # Mapping
 
     k_i = form.key_index()
-    i_k = form.index_key()
     uv_i = form.uv_index()
 
     # Vertices and edges

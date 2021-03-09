@@ -25,7 +25,7 @@ __all__ = [
 
 
 def find_independents(E):
-    """ Find inndependent edges in a given equilibrium matrix.
+    """ Find independent edges in a given equilibrium matrix.
 
     Parameters
     ----------

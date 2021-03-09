@@ -28,7 +28,7 @@ k = 1.0
 n = 2
 type_structure = 'crossvault'
 type_formdiagram = 'fan_fd'
-discretisation = 10
+discretisation = 14
 gradients = True  # False
 
 # ----------------------- Point Cloud -----------------------
@@ -49,8 +49,19 @@ with open(pointcloud) as json_file:
     for key, pt in data['LB'].items():
         points_lb.append(pt)
 
-triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
+# triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
 # view_shapes_pointcloud(triangulated_shape).show()
+
+data_diagram_base = {
+    'type': 'cross_fd',
+    'xy_span': [[0, span_x], [0, span_y]],
+    'discretisation': discretisation*2,
+    'fix': 'corners',
+}
+form_base = FormDiagram.from_library(data_diagram_base)
+
+structured_shape = Shape.from_pointcloud_and_formdiagram(form_base, points_lb, points_ub)
+# view_shapes_pointcloud(structured_shape).show()
 
 # ----------------------- Form Diagram ---------------------------
 
@@ -71,7 +82,8 @@ print('Form Diagram Created!')
 # vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub)
 # more improved, considers the real middle
 vault = Shape.from_pointcloud_and_formdiagram(form, points_lb, points_ub, data={'type': 'general', 't': 0.0, 'thk': thk})
-vault.store_normals(plot=True)
+# vault = Shape.from_meshes_and_formdiagram(form, structured_shape.intrados, structured_shape.extrados, data={'type': 'general', 't': 0.0, 'thk': thk})
+vault.store_normals(plot=False)
 # view_shapes_pointcloud(vault).show()
 # view_normals(vault).show()
 
@@ -91,14 +103,14 @@ form.selfweight_from_shape(vault)
 
 # form = form.initialise_tna(plot=False)
 form.initialise_loadpath()
-plot_form(form).show()
+# plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope']
+optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
 optimiser.data['variables'] = ['ind', 'zb', 'n']
 optimiser.data['objective'] = 'n'
 optimiser.data['printout'] = True

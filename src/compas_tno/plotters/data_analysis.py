@@ -958,6 +958,8 @@ def filter_min_thk(files_dict, filters=None):
     limit_form_min = None
     limit_form_max = None
 
+    print(files_dict)
+
     for key, values in files_dict.items():
         proceed = True
         if filters:

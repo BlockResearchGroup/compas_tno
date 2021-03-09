@@ -14,6 +14,7 @@ from compas_tno.plotters import save_csv
 from compas_tno.plotters import save_csv_row
 from compas_tno.algorithms import constrained_smoothing
 from compas_tno.utilities import rectangular_smoothing_constraints
+os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 # ------------------------------------------------------------------------------------
 # ------ EXAMPLE OF INCREMENTAL MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
@@ -21,7 +22,7 @@ from compas_tno.utilities import rectangular_smoothing_constraints
 
 
 exitflag = 0  # means that optimisation found a solution
-t0 = thk = 0.50  # thickness on the start in meters
+t0 = thk = 0.5  # thickness on the start in meters
 # Initial Settings
 thk_reduction = 0.05  # in meters
 thk_refined = 0.0001
@@ -33,19 +34,30 @@ span = 10.0  # square span for analysis
 k = 1
 n = 1  # Discretisation for Surfaces...
 R = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10]
-hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
 degs = [0, 10, 20, 30, 40]
 
-degs = [30]
-R = [6.8692]
-# hc_list = [5.0]
+degs = [0]
+R = [8.529]
+
+# degs = [10]
+# R = [7.974]
+
+# degs = [20]
+# R = [7.047]
+
+# degs = [30]
+# R = [6.354]
+
+# degs = [40]
+# R = [5.878]
+
+# R = [8.529, 7.974, 7.047, 6.354, 5.878]
+
+# [8.529, 7.974, 7.047, 6.354, 5.878]
 
 # i =8
 # R = [R[i]]
-# hc_list = [hc_list[i]]
 # degs = [40]
-
-# hc_list = [6.71]
 he = None  # [5.0, 5.0, 5.0, 5.0]
 sols = {}
 # [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
@@ -58,7 +70,7 @@ compute_diagram_of_thrust = False
 
 # Basic parameters
 
-for type_formdiagram in ['fan_fd']:
+for type_formdiagram in ['topology-mix']:
 
     sols[type_formdiagram] = {}
 
@@ -101,7 +113,7 @@ for type_formdiagram in ['fan_fd']:
             cons = rectangular_smoothing_constraints(form, xy_span=[[0, span], [0, k*span]])
             constrained_smoothing(form, damping=0.5, kmax=100, constraints=cons, algorithm='centroid')
 
-        # plot_form(form, show_q=False, fix_width=10).show()
+        plot_form(form, show_q=False, fix_width=10).show()
 
         # --------------------- Create Optimiser ---------------------
 
@@ -126,7 +138,6 @@ for type_formdiagram in ['fan_fd']:
 
         for i in range(len(R)):
 
-            # hc = hc_list[i]
             radius = R[i]
             A = span/(2*radius*(math.cos(math.radians(deg)) - 1) + span)
             xy_span_shape = [[-span/2*(A - 1), span*(1 + (A - 1)/2)], [-span/2*(A - 1), span*(1 + (A - 1)/2)]]
@@ -218,7 +229,7 @@ for type_formdiagram in ['fan_fd']:
                 diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits)
 
                 thk_min = thicknesses[0][-1]
-                sols[type_formdiagram][deg][hc] = thk_min
+                sols[type_formdiagram][deg][radius] = thk_min
 
             else:
 
@@ -242,13 +253,13 @@ for type_formdiagram in ['fan_fd']:
 
                     if optimiser.exitflag == 0:
                         # form.to_json(address_max)
-                        form.to_json(address_min)
-
-                    sols[type_formdiagram][deg][radius] = thk_min
+                        # form.to_json(address_min)
+                        print('Salved form to:', address_min)
+                        sols[type_formdiagram][deg][radius] = thk_min
 
                     plot_form(form, simple=True, show_q=False, cracks=True, save=forms_address + '_' + 'min' + '_thk_' + str(100*thk_min) + '.pdf').show()
                     # view_thrust(form).show()
-                    # view_solution(form, vault).show()
+                    view_solution(form).show()
 
                 else:
 
