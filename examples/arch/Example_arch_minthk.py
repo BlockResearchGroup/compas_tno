@@ -88,8 +88,8 @@ thicknesses, size_parameters, solutions_min, solutions_max = results
 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
 title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
 
-img_graph = os.path.join(folder, title + '_diagram.pdf')
+img_graph = None #os.path.join(folder, title + '_diagram.pdf')
 diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()
 
-csv_file = os.path.join(folder, title + '_data.csv')
+csv_file = None #os.path.join(folder, title + '_data.csv')
 save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
