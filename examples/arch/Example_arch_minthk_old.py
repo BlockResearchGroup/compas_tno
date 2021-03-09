@@ -11,7 +11,7 @@ from compas_tno.viewers import view_shapes
 from copy import deepcopy
 import os
 
-# CONSTRUCT THISS AFTER
+# CONSTRUCT THIS!! WIP
 
 # ----------------------------------------------------------------------
 # ---- EXAMPLE OF MIN and MAX THRUST FOR ARCH WITH INCREMENTAL THK -----
@@ -71,7 +71,7 @@ optimiser.data['solver'] = 'slsqp'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb']
 optimiser.data['objective'] = 'min'  # Set the objective
-optimiser.data['printout'] = True
+optimiser.data['printout'] = False
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
 optimiser.data['qmax'] = 1e+10  # Check if this is limiting the solution
@@ -88,8 +88,8 @@ thicknesses, size_parameters, solutions_min, solutions_max = results
 folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
 title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
 
-img_graph = os.path.join(folder, title + '_diagram.pdf')
+img_graph = None  # os.path.join(folder, title + '_diagram.pdf')
 diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()
 
-csv_file = os.path.join(folder, title + '_data.csv')
+csv_file = None  # os.path.join(folder, title + '_data.csv')
 save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)

@@ -91,7 +91,7 @@ def run_optimisation_scipy(analysis):
 
     optimiser.exitflag = exitflag
     optimiser.time = elapsed_time
-    optimiser.fopt = fopt
+    optimiser.fopt = float(fopt)
     optimiser.xopt = xopt
     optimiser.niter = niter
     optimiser.message = message

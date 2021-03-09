@@ -4,6 +4,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form_xz
+from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers import view_shapes
 
@@ -13,20 +14,20 @@ from compas_tno.viewers import view_shapes
 
 # Basic parameters
 
-H = 0.5
-L = 1.0
-thk = 0.2
+hc = 5.0
+L = 10.0
+thk = 0.5
 discretisation = 20
 b = 0.5  # Out of plane dimension  of arch
 t = 1.0
-type_structure = 'arch'
-type_formdiagram = 'arch'
+type_structure = 'pointed_arch'
+type_formdiagram = 'pointed_arch'
 
 # ----------------------- 1. Create Arch shape ---------------------------
 
 data_shape = {
     'type': type_structure,
-    'H': H,
+    'hc': hc,
     'L': L,
     'thk': thk,
     'discretisation': discretisation,
@@ -49,7 +50,7 @@ gradients = True
 
 data_diagram = {
     'type': type_formdiagram,
-    'H': H,
+    'H': hc,
     'L': L,
     'total_nodes': discretisation,
     'x0': 0.0
@@ -57,6 +58,7 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
+plot_form(form).show()
 print(form)
 
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
@@ -64,7 +66,7 @@ print(form)
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope']#, 'reac_bounds']
+optimiser.data['constraints'] = ['funicular', 'envelope']  # 'reac_bounds'
 optimiser.data['variables'] = ['ind', 'zb', 't']
 optimiser.data['objective'] = 't'
 optimiser.data['printout'] = True

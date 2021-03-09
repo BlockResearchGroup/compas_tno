@@ -8,6 +8,7 @@ from compas_tno.shapes.dome import set_dome_heighfield
 from compas_tno.shapes.dome import set_dome_with_spr
 from compas_tno.shapes.dome import set_dome_polar_coord
 from compas_tno.shapes.circular_arch import arch_shape
+from compas_tno.shapes.pointed_arch import pointed_arch_shape
 from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
 from compas_tno.shapes.shells import domical_vault
 
@@ -134,6 +135,12 @@ class Shape(object):
             b = data['b']
             x0 = data['x0']
             intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
+        elif typevault == 'pointed_arch':
+            hc = data['hc']
+            L = data['L']
+            b = data['b']
+            x0 = data['x0']
+            intrados, extrados, middle = pointed_arch_shape(hc=hc, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
         elif typevault == 'pointed_crossvault':
             xy_span = data['xy_span']
             hc = data['hc']

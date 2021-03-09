@@ -3,6 +3,9 @@ from compas_tno.shapes.circular_arch import arch_b_update
 from compas_tno.shapes.circular_arch import arch_dub_dlb
 from compas_tno.shapes.circular_arch import arch_db
 
+from compas_tno.shapes.pointed_arch import pointed_arch_ub_lb_update
+from compas_tno.shapes.pointed_arch import pointed_arch_dub_dlb
+
 from compas_tno.shapes.dome import dome_ub_lb_update
 from compas_tno.shapes.dome import dome_b_update
 from compas_tno.shapes.dome import dome_dub_dlb
@@ -39,6 +42,8 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
     if shape.data['type'] == 'arch':
         return arch_ub_lb_update(x, y, thk, t, H=shape.data['H'], L=shape.data['L'], x0=shape.data['x0'])
+    if shape.data['type'] == 'pointed_arch':
+        return pointed_arch_ub_lb_update(x, y, thk, t, hc=shape.data['hc'], L=shape.data['L'], x0=shape.data['x0'])
     elif shape.data['type'] == 'dome':
         return dome_ub_lb_update(x, y, thk, t, center=shape.data['center'], radius=shape.data['radius'])
     elif shape.data['type'] == 'crossvault':
@@ -72,6 +77,8 @@ def dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
     if shape.data['type'] == 'arch':
         return arch_dub_dlb(x, y, thk, t, H=shape.data['H'], L=shape.data['L'], x0=shape.data['x0'])
+    if shape.data['type'] == 'pointed_arch':
+        return pointed_arch_dub_dlb(x, y, thk, t, hc=shape.data['hc'], L=shape.data['L'], x0=shape.data['x0'])
     elif shape.data['type'] == 'dome':
         return dome_dub_dlb(x, y, thk, t, center=shape.data['center'], radius=shape.data['radius'])
     elif shape.data['type'] == 'crossvault':

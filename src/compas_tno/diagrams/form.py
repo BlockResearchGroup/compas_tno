@@ -17,6 +17,7 @@ import math
 import matplotlib.pyplot as plt
 
 from compas_tno.diagrams.diagram_arch import create_arch
+from compas_tno.diagrams.diagram_arch import create_linear_form_diagram
 from compas_tno.diagrams.diagram_rectangular import create_cross_form
 from compas_tno.diagrams.diagram_rectangular import create_cross_diagonal
 from compas_tno.diagrams.diagram_rectangular import create_cross_with_diagonal
@@ -32,6 +33,9 @@ from compas_tno.shapes.crossvault import crossvault_middle_update
 from compas_tno.shapes.crossvault import crossvault_ub_lb_update
 from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 from compas_tno.shapes.pointed_crossvault import pointed_vault_ub_lb_update
+from compas_tno.shapes.circular_arch import arch_ub_lb_update
+from compas_tno.shapes.pointed_arch import pointed_arch_ub_lb_update
+# from compas_tno.shapes.circular_arch import arch_middle_update
 
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_force
@@ -125,6 +129,8 @@ class FormDiagram(FormDiagram):
 
         if form_type == 'arch':
             form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
+        if form_type == 'pointed_arch':
+            form = cls().create_pointed_arch(L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'cross_fd':
             form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'cross_diagonal':
@@ -171,6 +177,13 @@ class FormDiagram(FormDiagram):
         """
 
         form = create_arch(cls(), L=L, H=H, x0=x0, total_nodes=total_nodes)
+
+        return form
+
+    @classmethod
+    def create_pointed_arch(cls, L=2.00, x0=0.0, total_nodes=100):
+
+        form = create_linear_form_diagram(cls(), L=L, x0=x0, total_nodes=total_nodes)
 
         return form
 
@@ -778,6 +791,10 @@ class FormDiagram(FormDiagram):
             zub, zlb = crossvault_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], shape.data['xy_span'])
         elif shape.data['type'] == 'pointed_crossvault':
             zub, zlb = pointed_vault_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], shape.data['xy_span'], hc=shape.data['hc'], he=shape.data['he'], hm=shape.data['hm'])
+        elif shape.data['type'] == 'arch':
+            zub, zlb = arch_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], H=shape.data['H'], L=shape.data['L'], x0=shape.data['x0'])
+        elif shape.data['type'] == 'pointed_arch':
+            zub, zlb = pointed_arch_ub_lb_update(XY[:, 0], XY[:, 1], shape.data['thk'], shape.data['t'], hc=shape.data['hc'], L=shape.data['L'], x0=shape.data['x0'])
         elif shape.data['type'] == 'general':
             zub = shape.get_ub_pattern(XY)
             zlb = shape.get_lb_pattern(XY)
@@ -839,7 +856,7 @@ class FormDiagram(FormDiagram):
             self.vertex_attribute(key, 'pz', value=pz)
             pzt += pz
 
-        if shape.data['type'] == 'arch':
+        if shape.data['type'] == 'arch' or shape.data['type'] == 'pointed_arch':  # change this for pointed_arch!
             pzt = 0
             for key in self.vertices():
                 self.vertex_attribute(key, 'pz', value=1.0)

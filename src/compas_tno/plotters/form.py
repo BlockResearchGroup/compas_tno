@@ -311,7 +311,7 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
 
     """
 
-    q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
+    # q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     lines = []
 
     if shape.data['type'] == 'arch':
@@ -319,6 +319,11 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
         lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
         lines = lines + lines_arch + lines_form
+
+    if shape.data['type'] == 'pointed_arch':
+        # lines_pointed_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
+        lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
+        lines = lines_form
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     plotter.draw_lines(lines)
