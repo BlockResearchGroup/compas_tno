@@ -46,11 +46,10 @@ form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
 # plot_form(form, show_q=False, fix_width=False).show()
 
-
 # ----------------------- Point Cloud -----------------------
 
 # files = ['corners1', 'corners2', 'corners3']
-files = ['corners3']
+files = ['corners1']
 # files = ['continuous1', 'continuous2', 'continuous3']
 # files = ['continuous3']
 
@@ -148,6 +147,6 @@ for file_name in files:
         os.makedirs(folder_save, exist_ok=True)
         title = file_name + '_' + type_formdiagram + '_discr_' + str(discretisation)
         save_form = os.path.join(folder_save, title)
-        form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+        # form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
 
         view_solution(form, vault).show()

@@ -607,7 +607,7 @@ class Analysis(object):
         return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
 
 
-    def thk_minmax_GSF(self, thk_max, thk_step=0.05, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
+    def thk_minmax_GSF(self, thk_max, thk_step=0.05, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None, jump_minthk=False, swt_from_pattern=False):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -621,18 +621,22 @@ class Analysis(object):
 
         print('\n----- Starting the min thk optimisation for starting thk: {0:.4f}'.format(self.shape.data['thk']))
 
-        time0 = time.time()
-        self.optimiser.data['variables'] = ['ind', 'zb', 't']
-        self.optimiser.data['objective'] = 't'
-        self.apply_selfweight()
-        self.apply_envelope()
-        self.apply_reaction_bounds()
-        self.set_up_optimiser()
-        setup_time = time.time() - time0
-        self.run()
-        run_time = time.time() - time0 - setup_time
-
-        exitflag = self.optimiser.exitflag
+        if not jump_minthk:
+            time0 = time.time()
+            self.optimiser.data['variables'] = ['ind', 'zb', 't']
+            self.optimiser.data['objective'] = 't'
+            self.apply_selfweight()
+            self.apply_envelope()
+            self.apply_reaction_bounds()
+            self.set_up_optimiser()
+            setup_time = time.time() - time0
+            self.run()
+            run_time = time.time() - time0 - setup_time
+            exitflag = self.optimiser.exitflag
+        else:
+            exitflag = 0
+            setup_time = 0.0
+            run_time = 0.0
 
         # self.form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_14A=1.064177772475912_min_thk_t_0.2322171754922745.json')
 
@@ -699,6 +703,7 @@ class Analysis(object):
                 time0 = time.time()
                 self.shape = Shape.from_library(data_shape)
                 self.shape.ro = ro
+
                 swt = self.shape.compute_selfweight()
 
                 # pzt = 0
@@ -720,7 +725,13 @@ class Analysis(object):
                 elif rollers_absolute:
                     self.form.set_boundary_rollers(total_rx=[rollers_absolute[0]]*2, total_ry=[rollers_absolute[1]]*2)
 
-                self.apply_selfweight()
+                if not swt_from_pattern:
+                    self.apply_selfweight()
+                else:
+                    swt_from_pattern.selfweight_from_shape(self.shape)
+                    self.form.selfweight_from_pattern(swt_from_pattern)
+                    print('applied swt from pattern')
+
                 self.form.scale_form(swt/lumped_swt)
                 lumped_swt = self.form.lumped_swt()
 

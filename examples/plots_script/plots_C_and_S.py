@@ -242,31 +242,31 @@ size_legend = 10
 
 # ------------- plot of the diagrams of thrust
 
-xy_limits = [[0.50, 0.01], [210, 70]]
-GSF_ticks = [2.0, 3.0, 4.0, 5.0]
-legends = {'cross_fd': [r'orthogonal | $\beta=0$', r'orthogonal | $\beta=20$', r'orthogonal | $\beta=40$'], 'fan_fd': [r'fan-like | $\beta=0$', r'fan-like | $\beta=20$', r'fan-like | $\beta=40$']}
-colors = {'cross_fd': ['C0', 'C0', 'C0'], 'fan_fd': ['C1', 'C1', 'C1']}  # These are C0 and C1 in HEX.
-colors = {'cross_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
-colors = {'cross_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
+# xy_limits = [[0.50, 0.01], [210, 70]]
+# GSF_ticks = [2.0, 3.0, 4.0, 5.0]
+# legends = {'cross_fd': [r'orthogonal | $\beta=0$', r'orthogonal | $\beta=20$', r'orthogonal | $\beta=40$'], 'fan_fd': [r'fan-like | $\beta=0$', r'fan-like | $\beta=20$', r'fan-like | $\beta=40$']}
+# colors = {'cross_fd': ['C0', 'C0', 'C0'], 'fan_fd': ['C1', 'C1', 'C1']}  # These are C0 and C1 in HEX.
+# colors = {'cross_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
+# colors = {'cross_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
 
-type_structure = 'crossvault'
-discretisation = 14
-for type_formdiagram in ['cross_fd', 'fan_fd']:
-    thicknesses_all = []
-    solutions_all = []
-    for deg in [0, 20, 40]:
-        folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'deg='+str(deg))
-        os.makedirs(folder, exist_ok=True)
-        title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_deg=' + str(deg)
-        forms_address = os.path.join(folder, title)
-        csv_file = os.path.join(folder, title + '_data.csv')
-        thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
-        img_graph = None
-        # diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, limit_state=False).show()
-        thicknesses_all.append(thicknesses)
-        solutions_all.append(solutions)
-        print(type_formdiagram, deg, -solutions[1][0]/solutions[0][0])
-    folder_main = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
-    title_main = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-    img_graph = os.path.join(folder_main, title_main + '_diagram.pdf')
-    diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
+# type_structure = 'crossvault'
+# discretisation = 14
+# for type_formdiagram in ['cross_fd', 'fan_fd']:
+#     thicknesses_all = []
+#     solutions_all = []
+#     for deg in [0, 20, 40]:
+#         folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'deg='+str(deg))
+#         os.makedirs(folder, exist_ok=True)
+#         title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_deg=' + str(deg)
+#         forms_address = os.path.join(folder, title)
+#         csv_file = os.path.join(folder, title + '_data.csv')
+#         thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
+#         img_graph = None
+#         # diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, limit_state=False).show()
+#         thicknesses_all.append(thicknesses)
+#         solutions_all.append(solutions)
+#         print(type_formdiagram, deg, -solutions[1][0]/solutions[0][0])
+#     folder_main = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+#     title_main = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+#     img_graph = os.path.join(folder_main, title_main + '_diagram.pdf')
+#     diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()

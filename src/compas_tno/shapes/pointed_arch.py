@@ -34,16 +34,14 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
 
     """
 
-    # Add option for starting from Hi and Li for a given thk.
-
     radius = 1/L * (hc**2 + L**2/4)
     ri = radius - thk/2
     re = radius + thk/2
-    print('radius/ ri / re =', radius, ri, re)
+    # print('radius/ ri / re =', radius, ri, re)
     zc = 0.0
     xc1 = x0 + radius
     xc2 = x0 + L - radius
-    print('Centers x =', xc1, xc2)
+    # print('Centers x =', xc1, xc2)
 
     x = linspace(x0, x0 + L, num=total_nodes, endpoint=True)
     xs, ys, faces_i = rectangular_topology(x, [-b/2, 0, b/2])
@@ -55,12 +53,16 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
     zes = []
 
     for xi in x:
-        if xi <= L/2:
+        if xi <= x0 + L/2:
             dx = xi - xc1
         else:
             dx = xc2 - xi
 
-        zi = math.sqrt(radius**2 - dx**2) + zc
+        zi2 = radius**2 - dx**2
+        if zi2 > 0:
+            zi = math.sqrt(zi2) - zc
+        else:
+            zi = 0
         zei = math.sqrt(re**2 - dx**2) + zc
         zii2 = ri**2 - dx**2
         if zii2 > 0:
@@ -98,7 +100,7 @@ def pointed_arch_ub_lb_update(x, y, thk, t, hc, L, x0):
     lb = ones((len(x), 1)) * - t
 
     for i in range(len(x)):
-        if x[i] <= L/2:
+        if x[i] <= x0 + L/2:
             dx = x[i] - xc1
         else:
             dx = xc2 - x[i]
@@ -123,7 +125,7 @@ def pointed_arch_dub_dlb(x, y, thk, t, hc, L, x0):
     dlb = zeros((len(x), 1))
 
     for i in range(len(x)):
-        if x[i] <= L/2:
+        if x[i] <= x0 + L/2:
             dx = x[i] - xc1
         else:
             dx = xc2 - x[i]
@@ -137,29 +139,29 @@ def pointed_arch_dub_dlb(x, y, thk, t, hc, L, x0):
     return dub, dlb  # ub, lb
 
 
-def pointed_arch_b_update(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):
+# def pointed_arch_b_update(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):
 
-    radius = H / 2 + (L**2 / (8 * H))
-    re = radius + thk/2
-    zc = radius - H
-    b = zeros((len(fixed), 2))
-    x_lim = math.sqrt(re**2 - zc**2)
+#     radius = H / 2 + (L**2 / (8 * H))
+#     re = radius + thk/2
+#     zc = radius - H
+#     b = zeros((len(fixed), 2))
+#     x_lim = math.sqrt(re**2 - zc**2)
 
-    for i in range(len(fixed)):
-        b[i, :] = [x_lim - L/2, 0.0]
+#     for i in range(len(fixed)):
+#         b[i, :] = [x_lim - L/2, 0.0]
 
-    return b
+#     return b
 
 
-def pointed_arch_db(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):  # This does not work for spring angles
+# def pointed_arch_db(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):  # This does not work for spring angles
 
-    radius = H / 2 + (L**2 / (8 * H))
-    re = radius + thk/2
-    zc = radius - H
-    db = zeros((len(fixed), 2))
-    x_lim = math.sqrt(re**2 - zc**2)
+#     radius = H / 2 + (L**2 / (8 * H))
+#     re = radius + thk/2
+#     zc = radius - H
+#     db = zeros((len(fixed), 2))
+#     x_lim = math.sqrt(re**2 - zc**2)
 
-    for i in range(len(fixed)):
-        db[i, :] = [1/2 * re/x_lim, 0.0]
+#     for i in range(len(fixed)):
+#         db[i, :] = [1/2 * re/x_lim, 0.0]
 
-    return db
+#     return db

@@ -17,11 +17,11 @@ import os
 # ----------------------------------------------------------------------
 
 # To use the script check the discretisations, degs, type structure/formdiagram
-
+save = False
 
 disc = []
 discretisations = [14]
-degs = [20]
+degs = [0]
 # degs = [10]
 
 for discretisation in discretisations:
@@ -132,7 +132,8 @@ for discretisation in discretisations:
             save_form = os.path.join(folder, title)
 
             save_address = save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json'
-            form.to_json(save_address)
+            if save:
+                form.to_json(save_address)
 
             # sols[str(discretisation)] = thk_min
             sols[str(deg)] = thk_min

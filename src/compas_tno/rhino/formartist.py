@@ -148,7 +148,7 @@ class FormArtist(DiagramArtist):
         vertices, faces = self.diagram.to_vertices_and_faces()
         return compas_rhino.draw_mesh(vertices, faces, name="Thrust", color=self.color_mesh_thrust, disjoint=True, layer="Thrust-Mesh")
 
-    def draw_cracks(self, vertices=None, displacement=None, tol_crack=10e-3, layer='Cracks', spheres=False):
+    def draw_cracks(self, vertices=None, displacement=None, tol_cracks=10e-5, layer='Cracks', spheres=False):
         """Draw the intersection of the thrust network with intrados and extrados.
 
         Parameters
@@ -158,7 +158,7 @@ class FormArtist(DiagramArtist):
             The default is ``None``, in which case all vertices are drawn.
         displacement : list, optional
             A displacement to add mesh to the scene.
-        tol_crack : float, optional
+        tol_cracks : float, optional
             Acceptable error to find an intersection.
 
         Returns
@@ -182,7 +182,7 @@ class FormArtist(DiagramArtist):
                 lb = lb[0]
                 ub = ub[0]
             if lb:
-                if abs(z - lb) < tol_crack:
+                if abs(z - lb) < tol_cracks:
                     if spheres:
                         sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
                         rs.ObjectColor(sphere, self.color_vertex_intrados)
@@ -193,7 +193,7 @@ class FormArtist(DiagramArtist):
                             'name': "{}.vertex.{}".format("Intrados", key),
                             'color': self.color_vertex_intrados})
             if ub:
-                if abs(z - ub) < tol_crack:
+                if abs(z - ub) < tol_cracks:
                     if spheres:
                         sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
                         rs.ObjectColor(sphere, self.color_vertex_extrados)

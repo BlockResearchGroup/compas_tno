@@ -23,7 +23,7 @@ from compas_tno.utilities import rectangular_smoothing_constraints
 
 
 exitflag = 0  # means that optimisation found a solution
-t0 = thk = 0.50  # thickness on the start in meters
+t0 = thk = 0.20  # thickness on the start in meters
 # Initial Settings
 thk_reduction = 0.05  # in meters
 thk_refined = 0.0001
@@ -41,8 +41,21 @@ R = [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10]
 hc_list = [5.00, 5.48, 5.92, 6.32, 6.71, 7.07, 7.42, 7.75, 8.06, 8.37, 8.66]
 degs = [0, 10, 20, 30, 40]
 
-degs = [40]
-R = [5.0, 6.0]
+# degs = [0]
+# R = [6.5, 8.0]
+
+# degs = [10]
+# R = [6.0, 7.0]
+
+# degs = [20]
+# R = [5.5, 6.5]
+
+# degs = [30]
+# R = [5.0, 6.0]
+
+degs = [20]
+R = [6.0, 7.0]
+
 # 10 - 7 to 8
 # 20 - 6 to 7
 # 30 - 5.5 to 6.5
@@ -65,12 +78,13 @@ sag = False
 smooth = False
 
 compute_diagram_of_thrust = False
+type_formdiagram_pattern = 'topology-crosssmooth2'
 
 # [5.00, 5.92, 6.71, 7.42, 8.06, 8.66, 9.22, 9.75]
 
 # Basic parameters
 
-for type_formdiagram in ['topology-mix']:
+for type_formdiagram in ['topology-crossbraced']:  # THIS CAN ONLY WORK IF WE ADD THAT A DIFFERENT SWT MUST BE CONSIDERED ;)
 
     sols[type_formdiagram] = {}
 
@@ -82,14 +96,17 @@ for type_formdiagram in ['topology-mix']:
 
         sols[type_formdiagram][deg] = {}
 
-        if type_formdiagram == 'topology-mix':
-            type_topology = 'mix'  # 'mix' or None
+        if '-' in [char for char in type_formdiagram]:
+            type_topology = type_formdiagram.split('-')[-1]
         else:
-            type_topology = None
+            type_topology = False
+
+        if type_formdiagram == 'topology-mix':
+            smooth = True
+
         if type_topology:
             type_formdiagram = 'topology-' + type_topology
             fd_mesh = 'FormDiagram-' + type_topology
-            smooth = True
 
         # ----------------------- Create Form Diagram for analysis ---------------------------
 
@@ -118,12 +135,13 @@ for type_formdiagram in ['topology-mix']:
         # --------------------- Create Optimiser ---------------------
 
         optimiser = Optimiser()
-        optimiser.data['library'] = 'Scipy'
-        optimiser.data['solver'] = 'SLSQP'
-        # optimiser.data['library'] = 'IPOPT'
-        # optimiser.data['solver'] = 'IPOPT'
+        # optimiser.data['library'] = 'Scipy'
+        # optimiser.data['solver'] = 'SLSQP'
+        optimiser.data['library'] = 'IPOPT'
+        optimiser.data['solver'] = 'IPOPT'
+        optimiser.data['max_iter'] = 1000
         optimiser.data['constraints'] = ['funicular', 'envelope']
-        optimiser.data['printout'] = False
+        optimiser.data['printout'] = True
         optimiser.data['plot'] = False
         optimiser.data['find_inds'] = True
         optimiser.data['qmax'] = 10e+10
@@ -139,13 +157,15 @@ for type_formdiagram in ['topology-mix']:
         j = 0
         for radius in R:
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram, 'R='+str(radius), 'min_thk')
+            if deg:
+                folder = os.path.join(folder, 'deg='+str(deg))
+            print('------ Looking up folder:', folder)
             files = lookup_folder(folder)
             if type_formdiagram == 'topology-mix':
-                filtered = filter_min_thk(files, filters={'smooth': smooth, 'sag': False})
+                filtered = filter_min_thk(files, filters={'type_structure': 'pointed_crossvault', 'smooth': smooth, 'sag': False})
             else:
-                filtered = filter_min_thk(files, filters={'discretisation': discretisation, 'smooth': smooth, 'sag': False})
+                filtered = filter_min_thk(files, filters={'type_structure': 'pointed_crossvault', 'discretisation': discretisation, 'smooth': smooth, 'sag': False})
             limit_form_min = filtered[0]
-            print(filtered)
             file_title = list(limit_form_min.keys())[0]
             thk_min = list(limit_form_min.values())[0]['thk']/100
             address = os.path.join(folder, file_title + '.json')
@@ -154,7 +174,7 @@ for type_formdiagram in ['topology-mix']:
             form = FormDiagram.from_json(address)
             min_thk[j] = thk_min
             sols[type_formdiagram][deg][radius] = thk_min
-            j +=1
+            j += 1
 
         print(sols)
 
@@ -253,7 +273,13 @@ for type_formdiagram in ['topology-mix']:
                 if i == 0:
                     address_lp = forms_address + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
 
-                    form.selfweight_from_shape(vault)
+                    if type_formdiagram_pattern:
+                        file_pattern = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram_pattern, 'FormDiagram-' + type_formdiagram_pattern.split('-')[-1] + '.json')
+                        form_pattern = FormDiagram.from_json(file_pattern)
+                        form_pattern.selfweight_from_shape(vault)
+                        form.selfweight_from_pattern(form_pattern, plot=True)
+                    else:
+                        form.selfweight_from_shape(vault)
                     form.envelope_from_shape(vault)
 
                     try:
@@ -262,8 +288,8 @@ for type_formdiagram in ['topology-mix']:
                     except:
                         print('LP form diagram not found')
                         print(address_lp)
-                        form.selfweight_from_shape(vault)
-                        form.envelope_from_shape(vault)
+                        # form.selfweight_from_shape(vault)
+                        # form.envelope_from_shape(vault)
                         # form = form.initialise_tna(plot=False)
                         form.initialise_loadpath()
                         # plot_form(form, show_q=False).show()
@@ -271,7 +297,7 @@ for type_formdiagram in ['topology-mix']:
                         form.to_json(address_lp)
 
                 analysis = Analysis.from_elements(vault, form, optimiser)
-                analysis.apply_selfweight()
+                # analysis.apply_selfweight()
                 analysis.apply_envelope()
                 analysis.apply_reaction_bounds()
                 analysis.set_up_optimiser()

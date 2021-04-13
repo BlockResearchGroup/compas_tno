@@ -5,9 +5,11 @@ from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
-from compas_tno.viewers.thrust import view_thrusts
-from compas_tno.viewers.thrust import view_solution
+from compas_tno.viewers import view_thrusts
+from compas_tno.viewers import view_solution
+from compas_tno.viewers import view_shapes
 from copy import deepcopy
+import math
 
 # ----------------------------------------------------------------------
 # ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
@@ -19,13 +21,16 @@ thk = 0.5
 span = 10.0
 k = 1.0
 n = 1
-hc = 6.0  # 5.0*math.sqrt(2)
+R = 0.70 * span
+hc = math.sqrt(R**2 - (R - span/2)**2)
+print('Analysis with hc:', hc)
+# hc = 6.0  # 5.0*math.sqrt(2)
 type_structure = 'pointed_crossvault'
 type_formdiagram = 'fan_fd'
-discretisation = 10
+discretisation = 14
 gradients = True
 
-# ----------------------- 1. Create Dome shape ---------------------------
+# ----------------------- 1. Create Vault shape ---------------------------
 
 data_shape = {
     'type': type_structure,
@@ -35,13 +40,14 @@ data_shape = {
     't': 1.0,
     'hc': hc,
     'hm': None,
-    'he': [5.0, 5.0, 5.0, 5.0],
+    'he': None,  # [5.0, 5.0, 5.0, 5.0],
 }
 
 vault = Shape.from_library(data_shape)
 swt = vault.compute_selfweight()
 print('Selfweight computed:', swt)
 print('Vault geometry created!')
+# view_shapes(vault).show()
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -61,7 +67,30 @@ print(form)
 
 # form = form.initialise_tna(plot=False)
 form.selfweight_from_shape(vault)
-form = form.initialise_loadpath()
+
+keys_diagonal = [2, 61, 121, 181, 241, 301, 361, 392, 362, 302, 242, 182, 122, 62, 4]
+keys_open_edge = [2, 3, 65, 125, 185, 245, 305, 365, 306, 246, 186, 126, 66, 5, 4]
+
+pz_diagonal = []
+pz_open_edge = []
+
+for key in keys_diagonal:
+    pz = form.vertex_attribute(key, 'pz')
+    pz_diagonal.append(pz)
+for key in keys_open_edge:
+    pz = form.vertex_attribute(key, 'pz')
+    pz_open_edge.append(pz)
+
+print('-------- Loads ---------')
+print(pz_open_edge)
+
+
+save_lp = compas_tno.get('lp.json')
+try:
+    form.from_json(save_lp)
+except:
+    form = form.initialise_loadpath()
+    form.to_json(save_lp)
 # plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
@@ -69,7 +98,7 @@ form = form.initialise_loadpath()
 optimiser = Optimiser()
 optimiser.data['library'] = 'Scipy'
 optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
+optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb', 't']
 optimiser.data['objective'] = 't'
 optimiser.data['printout'] = True
@@ -94,8 +123,8 @@ data_shape['thk'] = thk_min
 print('Min THK = ', thk_min)
 vault = Shape.from_library(data_shape)
 form.envelope_from_shape(vault)
-# file_address = compas_tno.get('test.json')
-# form.to_json(file_address)
+file_address = compas_tno.get('test.json')
+form.to_json(file_address)
 
 plot_form(form, show_q=False, cracks=True).show()
 view_solution(form, vault).show()

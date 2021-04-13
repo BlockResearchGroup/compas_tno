@@ -845,7 +845,7 @@ class FormDiagram(FormDiagram):
 
         i = 0
         for key in form_.vertices():
-            z = zt[i]
+            z = float(zt[i])
             form_.vertex_attribute(key, 'z', value=z)
             self.vertex_attribute(key, 'target', value=z)
             i += 1

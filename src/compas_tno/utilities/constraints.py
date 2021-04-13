@@ -188,7 +188,7 @@ def null_edges(form, plot=False):
 
 def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
 
-    [[x0, x1],[y0, y1]] = xy_span
+    [[x0, x1], [y0, y1]] = xy_span
     cons = {key: None for key in form.vertices()}
     line_top = [[x0, y1, 0], [x1, y1, 0]]
     line_bottom = [[x0, y0, 0], [x1, y0, 0]]

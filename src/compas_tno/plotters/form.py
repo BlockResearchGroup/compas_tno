@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, cracks=False, save=None):
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, cracks=False, save=None, tol_cracks=10e-5):
     """ Extended plotting of a FormDiagram
 
     Parameters
@@ -116,7 +116,6 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         i = i + 1
 
     rad_colors = {}
-    tol_cracks = 10e-5
     for key in form.vertices_where({'is_fixed': True}):
         rad_colors[key] = '#aaaaaa'
     if cracks:
@@ -274,7 +273,7 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
     return plotter
 
 
-def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, stereotomy=False, save=False, hide_negative=False):
+def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, stereotomy=False, save=False, hide_negative=False, tol_cracks=10e-5):
     """ Plot a FormDiagram in axis xz
 
     Parameters
@@ -317,13 +316,13 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     if shape.data['type'] == 'arch':
 
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
-        lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
+        lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
         lines = lines + lines_arch + lines_form
 
     if shape.data['type'] == 'pointed_arch':
-        # lines_pointed_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
-        lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
-        lines = lines_form
+        lines_pointed_arch = _draw_lines_pointed_arch(shape)
+        lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
+        lines = lines_form + lines_pointed_arch
 
     plotter = MeshPlotter(form, figsize=(10, 10))
     plotter.draw_lines(lines)
@@ -336,7 +335,7 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     return plotter
 
 
-def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_width=10, plot_reactions=True, cracks=False, save=False, stereotomy=False, hide_cracks=False, hide_negative=False):
+def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_width=10, plot_reactions=True, cracks=False, save=False, stereotomy=False, hide_cracks=False, hide_negative=False, tol_cracks=10e-5):
     """ Plot multiple FormDiagrams in axis xz
 
     Parameters
@@ -376,7 +375,7 @@ def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_
     i = 0
     for form in forms:
         lines_form, vertices_form = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width,
-                                                               hide_negative=hide_negative, colour=colours[i], hide_cracks=hide_cracks)
+                                                               hide_negative=hide_negative, colour=colours[i], hide_cracks=hide_cracks, tol_cracks=tol_cracks)
         lines = lines + lines_form
         vertices = vertices + vertices_form
         i += 1
@@ -391,7 +390,7 @@ def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_
     return plotter
 
 
-def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=False, colour=None, hide_cracks=False):
+def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=False, colour=None, hide_cracks=False, tol_cracks = 10e-5):
     vertices = []
     lines = []
     xs = []
@@ -482,14 +481,14 @@ def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, 
                         'facecolor': 'aaaaaa',
                     })
             if not hide_cracks:
-                if abs(form.vertex_attribute(key, 'ub') - z) < 1e-3:
+                if abs(form.vertex_attribute(key, 'ub') - z) < tol_cracks:
                     vertices.append({
                         'pos': [x, z],
                         'radius': radius,
                         'edgecolor': '008000',
                         'facecolor': '008000',
                     })
-                if abs(form.vertex_attribute(key, 'lb') - z) < 1e-3:
+                if abs(form.vertex_attribute(key, 'lb') - z) < tol_cracks:
                     vertices.append({
                         'pos': [x, z],
                         'radius': radius,
@@ -685,6 +684,62 @@ def _draw_lines_arch(shape, stereotomy=False):
 
     return lines_arch
 
+
+def _draw_lines_pointed_arch(shape):
+
+    lines_arch = []
+    width_bounds = 0.8
+    if shape.data['type'] == 'pointed_arch':
+        discr = 101
+        hc = shape.data['hc']
+        L = shape.data['L']
+        x0 = shape.data['x0']
+        thk = shape.data['thk']
+        R = 1/L * (hc**2 + L**2/4)
+        re = R + thk/2
+        ri = R - thk/2
+        xc1 = x0 + R
+        xc2 = x0 + L - R
+        zc = 0.0
+        # x = linspace(x0, x0 + L, num=discr, endpoint=True)
+        x = linspace(0, 10, num=discr, endpoint=True)
+
+        for i in range(discr - 1):
+            xi = x[i]
+            xf = x[i + 1]
+            if xi <= x0 + L/2:
+                dxi = xi - xc1
+            else:
+                dxi = xc2 - xi
+            if xf <= x0 + L/2:
+                dxf = xf - xc1
+            else:
+                dxf = xc2 - xf
+
+            zei = math.sqrt(re**2 - dxi**2) + zc
+            zef = math.sqrt(re**2 - dxf**2) + zc
+
+            zii = ri**2 - dxi**2
+            zif = ri**2 - dxf**2
+
+            lines_arch.append({         # Dictionary with the shape of the structure
+                'start': [xi, zei],
+                'end':   [xf, zef],
+                'color': '000000',
+                'width': width_bounds,
+            })
+
+            if zii > 0 and zif > 0:
+                zii = math.sqrt(zii) + zc
+                zif = math.sqrt(zif) + zc
+                lines_arch.append({         # Dictionary with the shape of the structure
+                    'start': [xi, zii],
+                    'end':   [xf, zif],
+                    'color': '000000',
+                    'width': width_bounds,
+                })
+
+    return lines_arch
 
 def _find_extreme_lines(shape):
 

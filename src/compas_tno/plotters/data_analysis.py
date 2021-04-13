@@ -147,8 +147,8 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     ax1 = plt.axes()
     ax2 = ax1.twiny()
 
-    ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
-    ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
+    # ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
+    # ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
 
     ax1.set_xlabel('thickness', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
@@ -515,9 +515,12 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
 
     ax1 = plt.axes()
     ax2 = ax1.twiny()
+    print([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
+    print(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF])
+
     ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
-    ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
-    ax1.set_xlabel('thickness (m)', size=size_axis_label, weight='bold', labelpad=8)
+    ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF] + [''], size=size_axis_data)
+    ax1.set_xlabel('thickness/span', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
     ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
     ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
@@ -531,13 +534,16 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
     # plt.axvline(x=(x_ - max_x)/(min_x - max_x)*100, ls='--', color='black') # add    ymin=(max_y-y_)/(max_y-min_y)
 
     ax.grid(color='silver', linestyle='-', linewidth=0.5)
-    if show_legend == True:
-        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
-        box = ax.get_position()
-        ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
+    if show_legend is True:
+        ax.legend(fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+
+        # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+        # box = ax.get_position()
+        # ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
 
     if save:
         plt.savefig(save)
+        print('Diagram saved at:', save)
 
     return plt
 
@@ -957,8 +963,6 @@ def filter_min_thk(files_dict, filters=None):
     limit_thk_max = 100
     limit_form_min = None
     limit_form_max = None
-
-    print(files_dict)
 
     for key, values in files_dict.items():
         proceed = True

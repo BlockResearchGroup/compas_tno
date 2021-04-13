@@ -14,10 +14,10 @@ from compas_tno.viewers import view_shapes
 
 # Basic parameters
 
-hc = 5.0
+hc = 7.0
 L = 10.0
 thk = 0.5
-discretisation = 20
+discretisation = 14 + 1
 b = 0.5  # Out of plane dimension  of arch
 t = 1.0
 type_structure = 'pointed_arch'
@@ -58,7 +58,7 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 print('Form Diagram Created!')
-plot_form(form).show()
+# plot_form(form).show()
 print(form)
 
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
@@ -100,4 +100,5 @@ data_shape['thk'] = thk_min
 arch = Shape.from_library(data_shape)
 form.envelope_from_shape(arch)
 
-plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, cracks=False, hide_negative=True).show()
+plot_reactions = 'black'  # or 'simple'
+plot_form_xz(form, arch, show_q=False, fix_width=True, plot_reactions=plot_reactions, max_width=4, radius=0.09, stereotomy=blocks_on_plot, save=save_photo, cracks=False, hide_negative=True).show()

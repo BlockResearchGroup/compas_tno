@@ -315,5 +315,7 @@ def _nlp_options(nlp, optimiser):
         nlp.addOption('derivative_test', 'first-order')
         nlp.addOption('derivative_test_perturbation', 10e-8)
         # nlp.addOption('derivative_test_print_all', 'yes')
+    if optimiser.data.get('max_iter', None):
+        nlp.addOption('max_iter', optimiser.data['max_iter'])
 
     return nlp
