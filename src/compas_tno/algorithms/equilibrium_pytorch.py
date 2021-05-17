@@ -62,7 +62,7 @@ def reac_bound_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C,
     Q = diagflat(q)
     CfQC = mm(mm(Cf.t(), Q), C)
     R = mm(CfQC, xyz) - pfixed
-    length_x = mul(zfixed, abs(div(R[:, 0], R[:, 2])).reshape(-1, 1))  # Missing - s[0]
+    length_x = mul(zfixed, abs(div(R[:, 0], R[:, 2])).reshape(-1, 1))  # Missing - s[0] in case the "datum is not at z=0"
     length_y = mul(zfixed, abs(div(R[:, 1], R[:, 2])).reshape(-1, 1))
     length = cat([length_x, length_y])
     return length
@@ -117,6 +117,7 @@ def f_constraints_pytorch(variables, *args):
         lower = z[lb_ind] - tensor(lb)
         constraints = cat([constraints, upper, lower])
     if 'reac_bounds' in dict_constr:
+        xyz = cat((xyz[:, :2], z), 1)
         length = reac_bound_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep, C_th, Cf_th, pfixed, xyz)
         reac_bound = abs(cat([tensor(b[:, 0]), tensor(b[:, 1])]).reshape(-1, 1)) - length
         constraints = cat([constraints, reac_bound])

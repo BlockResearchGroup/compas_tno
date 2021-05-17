@@ -249,25 +249,37 @@ def sensitivities_wrapper(xopt, *args):
         dRxdq = Cf.transpose().dot(U).dot(dQ)
         dRydq = Cf.transpose().dot(V).dot(dQ)
         dRzdq = Cf.transpose().dot(Cz).dot(dQ)
+        dRzdzb = Cf.transpose().dot(Q).dot(C).dot(dz_zb)  # new
+        dRzdq_comp = Cf.transpose().dot(Q).dot(C).dot(dz[:, :len(ind)])  # new
         xyz = hstack([x, y, z])
         p_fixed = hstack([px, py, pz])[fixed]
         R = CfQC.dot(xyz) - p_fixed
         dslope_dz = zeros((2 * len(fixed), len(fixed)))
         dslope_dind = zeros((2 * len(fixed), len(ind)))
+        # print(fixed)
+        # print(R)
         for i in range(len(fixed)):
             i_ = len(fixed) + i
-            if R[i, 0]*R[i, 2] >= 0:
-                signe = - 1.0
-            else:
-                signe = + 1.0
-            dslope_dz[i, i] = -1 * abs(R[i, 0]/R[i, 2])
-            dslope_dind[i] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRxdq[i] + signe * abs(R[i, 0]) * dRzdq[i])
-            if R[i, 1]*R[i, 2] >= 0:
-                signe = - 1.0
-            else:
-                signe = + 1.0
-            dslope_dz[i_, i] = -1 * abs(R[i, 1]/R[i, 2])
-            dslope_dind[i_] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRydq[i] + signe * abs(R[i, 1]) * dRzdq[i])
+            zbi = z[fixed[i]]
+
+            signe_x = 1.0
+            signe_y = 1.0
+            if R[i, 0] < 0:
+                signe_x = -1.0
+            if R[i, 1] < 0:
+                signe_y = -1.0
+
+            dslope_dz[i, i] = - 1 * abs(R[i, 0]/R[i, 2])
+            dslope_dz[i] += - zbi * abs(R[i, 0])/R[i, 2]**2 * dRzdzb[:, i]  # new
+            # dslope_dz[i] += + zbi * R[i, 2] * abs(R[i, 0])/abs(R[i, 2])**3 * dRzdzb[:, i]  # new
+            # dslope_dind[i] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRxdq[i] + signe * abs(R[i, 0]) * (dRzdq[i] + dRzdq_comp[i]))
+            dslope_dind[i] = - z[fixed][i]/R[i, 2]**2 * (signe_x * abs(R[i, 2]) * dRxdq[i] + abs(R[i, 0]) * (dRzdq[i] + dRzdq_comp[i]))
+
+            dslope_dz[i_, i] = - 1 * abs(R[i, 1]/R[i, 2])
+            dslope_dz[i_] += - zbi * abs(R[i, 1])/R[i, 2]**2 * dRzdzb[:, i]  # new
+            # dslope_dz[i_] += + zbi * R[i, 2] * abs(R[i, 1])/abs(R[i, 2])**3 * dRzdzb[:, i]  # new
+            # dslope_dind[i_] = - signe * z[fixed][i]/R[i, 2]**2 * (abs(R[i, 2]) * dRydq[i] + signe * abs(R[i, 1]) * (dRzdq[i] + dRzdq_comp[i]))
+            dslope_dind[i_] = - z[fixed][i]/R[i, 2]**2 * (signe_y * abs(R[i, 2]) * dRydq[i] + abs(R[i, 1]) * (dRzdq[i] + dRzdq_comp[i]))
         dslope = hstack([dslope_dind, dslope_dz])
         if 't' in variables or 'n' in variables:
             db = db_update(x, y, thk, fixed, shape, b, variables)

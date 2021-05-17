@@ -196,7 +196,7 @@ def set_up_nonlinear_optimisation(analysis):
             print('Shape of Jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
-        print('Constraint Mapping: dep: 0-{0} | z: {0}-{1} | reac-bound: {1}-{2}'.format(len(dep), len(dep)+2*len(z), len(dep)+2*len(z)+len(fixed)))
+        print('Constraint Mapping: dep: 0-{0} | z: {1}-{2} | reac-bound: {3}-{4}'.format(len(dep)-1, len(dep), len(dep)+2*len(z)-1, len(dep)+2*len(z), len(dep)+2*len(z)+2*len(fixed)-1))
         violated = []
         for i in range(len(g0)):
             if g0[i] < 0:

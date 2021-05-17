@@ -20,9 +20,11 @@ import os
 save = False
 
 disc = []
-discretisations = [14]
+discretisations = [10, 12, 14, 16, 18, 20]
 degs = [0]
 # degs = [10]
+
+times = {}
 
 for discretisation in discretisations:
     sols = {}
@@ -91,7 +93,7 @@ for discretisation in discretisations:
         optimiser.data['objective'] = 't'
         optimiser.data['min_thk'] = 0.0
         optimiser.data['max_thk'] = thk*1.0
-        optimiser.data['printout'] = True
+        optimiser.data['printout'] = False
         optimiser.data['plot'] = False
         optimiser.data['find_inds'] = True
         optimiser.data['qmax'] = 1000.0
@@ -135,26 +137,31 @@ for discretisation in discretisations:
             if save:
                 form.to_json(save_address)
 
-            # sols[str(discretisation)] = thk_min
-            sols[str(deg)] = thk_min
+            sols[str(discretisation)] = thk_min
+            # sols[str(deg)] = thk_min
+            times[str(discretisation)] = optimiser.time
             # sols[str(A)] = thk_min
 
-            # print('Solved:', discretisation, thk_min)
-            print('Solved:', deg, thk_min)
+            print('Solved:', discretisation, thk_min)
+            print('Time:', discretisation, optimiser.time)
+            # print('Solved:', deg, thk_min)
 
         else:
 
             # print('Not Solved:', discretisation)
             print('Not Solved:', deg)
 
-        plot_form(form, show_q=False, simple=True, cracks=True).show()
-        view_solution(form, vault).show()
+        # plot_form(form, show_q=False, simple=True, cracks=True).show()
+        # view_solution(form, vault).show()
 
     print(discretisation)
     print(sols)
     disc.append(sols)
 
 print(disc)
+
+for tm in times:
+    print(tm, ',', times[tm])
 
 i = 0
 for sols in disc:

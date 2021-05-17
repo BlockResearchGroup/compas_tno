@@ -256,7 +256,34 @@ class FormArtist(DiagramArtist):
 
         return
 
-    def draw_reactions(self):
+    def draw_reactions(self, layer='Reactions', displacement=None, TextDot=False):
+
+        layer = layer or self.layer
+        # rs.CurrentLayer(layer)
+        for key in self.diagram.vertices_where({'is_fixed': True}):
+            xb, yb, zb = self.diagram.vertex_coordinates(key)
+            if displacement:
+                xb += displacement[0]
+                yb += displacement[1]
+            rx = self.diagram.vertex_attribute(key, '_rx')
+            ry = self.diagram.vertex_attribute(key, '_ry')
+            rz = self.diagram.vertex_attribute(key, '_rz')
+            norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
+            if rz < 0.0 and norm > 0.0:
+                sp = [xb, yb, zb]
+                dz = rz/norm
+                mult = zb/dz
+                dz *= mult
+                dx_ = mult * rx/norm
+                dy_ = mult * ry/norm
+                ep = [xb - dx_, yb - dy_, zb - dz]
+                id = compas_rhino.rs.AddLine(sp, ep)
+                compas_rhino.rs.ObjectName(id, str(norm))
+                compas_rhino.rs.ObjectLayer(id, layer)
+                # rs.CurrentLayer(reac_val)
+                if TextDot:
+                    rs.AddTextDot('({0:.1f};{1:.1f})'.format(rx, ry), sp, layer=layer)
+                # rs.CurrentLayer(reac_layer)
 
         return
 

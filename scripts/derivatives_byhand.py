@@ -2,8 +2,8 @@ import os
 from scipy.sparse import diags
 from numpy import hstack
 
-from compas_tno.algorithms import compute_jacobian
-from compas_tno.algorithms import compute_grad
+from compas_tno.algorithms import compute_autograd_jacobian
+from compas_tno.algorithms import compute_autograd
 from compas_tno.algorithms import f_objective_pytorch
 from compas_tno.algorithms import f_constraints_pytorch
 from torch import tensor
@@ -41,7 +41,9 @@ import matplotlib.pyplot as plt
 from compas_tno.algorithms import zlq_from_qid
 from compas_tno.algorithms import apply_sag
 from compas_tno.problems import sensitivities_wrapper
-from compas_tno.problems import constr_wrapper_ipopt
+# from compas_tno.problems import constr_wrapper_ipopt
+from compas_tno.problems import constr_wrapper
+from compas_tno.problems import constr_wrapper_inequalities
 from compas_tno.problems import gradient_fmin
 from compas.utilities import geometric_key
 
@@ -117,7 +119,7 @@ optimiser.data['library'] = 'IPOPT'
 optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']  # Note addition of constraint on rollers
 optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = False
+optimiser.data['printout'] = True
 optimiser.data['objective'] = objective
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = True
@@ -155,7 +157,7 @@ swt0 = vault.compute_selfweight()
 # form.set_boundary_rollers(total_rx=[rollers_ratio[0]*swt0]*2, total_ry=[rollers_ratio[1]*swt0]*2)
 
 print('Initial Selfweight:', swt0)
-plot_form(form).show()
+# plot_form(form).show()
 
 ### ---------- RUN
 
@@ -228,7 +230,8 @@ elif objective == 'max':
     fobj = f_max_thrust
 
 args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y,
-        b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym)
+        b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym,
+        variables, vault)
 
 fconstr = constr_wrapper
 
@@ -236,6 +239,8 @@ x0 = q[ind]
 zb_bounds = [[form.vertex_attribute(i_k[i], 'lb'), form.vertex_attribute(i_k[i], 'ub')] for i in fixed]
 bounds = [[-10e-6, qmax]] * k + zb_bounds
 x0 = append(x0, z[fixed]).reshape(-1, 1)
+
+print('Heights of supports:', max(z[fixed]), min(z[fixed]))
 
 # plotter = MeshPlotter(form, figsize=(8,8))
 # plotter.draw_edges(text={(u,v): uv_i[(u,v)] for u,v in form.edges()})
@@ -246,8 +251,6 @@ print('Number of Variables:', len(x0))
 f0 = fobj(x0, *args)
 g0 = fconstr(x0, *args)
 print('Number of Constraints:', len(g0))
-
-print(x0)
 
 print('Non Linear Optimisation - Initial Objective Value: {0}'.format(f0))
 print('Non Linear Optimisation - Initial Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
@@ -285,7 +288,7 @@ variables = tensor(x0, requires_grad=True)
 print('variables tensor shape', variables.shape)
 g0 = f_constraints_pytorch(variables, *args_constr)
 print('g0 shape', g0.shape)
-jac = compute_jacobian(variables, g0)
+jac = compute_autograd_jacobian(variables, g0)
 print('jacobian shape', jac.shape)
 
 # Restart Variables for Gradient
@@ -293,7 +296,7 @@ variables = tensor(x0, requires_grad=True)
 print('len free, ub and lb', len(free), len(ub_ind), len(lb_ind))
 f = f_objective_pytorch(variables, *args_obj)
 print('f0: ', f)
-grad = compute_grad(variables, f)
+grad = compute_autograd(variables, f)
 print('shape gradient', grad.shape)
 
 print('Jac Rx/Ry dq and dz')
@@ -301,10 +304,11 @@ start = len(dep)+len(ub_ind)+len(ub_ind)
 end = start + 2*len(fixed)
 print(start, end)
 A = jac[start:end]
+print('Shape of this slice of jacobian', A.shape)
 for i in range(A.shape[0]):
     max_ = max(A[i])
     min_ = min(A[i])
-    print(max_, min_)
+    # print(max_, min_)
 plt.matshow(A)
 plt.colorbar()
 plt.show()
@@ -340,26 +344,26 @@ xopt = x0
 jac_hand = sensitivities_wrapper(x0, *args)
 print('Jacobian Hand', jac_hand.shape)
 
-print('Some Jacs')
-i = 452
-j = 43
-print(i, j)
-print(jac_hand[i, j])
-print(jac[i, j])
+# print('Some Jacs')
+# i = 452
+# j = 43
+# print(i, j)
+# print(jac_hand[i, j])
+# print(jac[i, j])
 
-print('Some Jacs')
-i = 576
-j = 44
-print(i, j)
-print(jac_hand[i, j])
-print(jac[i, j])
+# print('Some Jacs')
+# i = 576
+# j = 44
+# print(i, j)
+# print(jac_hand[i, j])
+# print(jac[i, j])
 
-print('Some Jacs')
-i = 596
-j = 44
-print(i, j)
-print(jac_hand[i, j])
-print(jac[i, j])
+# print('Some Jacs')
+# i = 596
+# j = 44
+# print(i, j)
+# print(jac_hand[i, j])
+# print(jac[i, j])
 
 
 # * jac_g [  573,   44] =  0.0000000000000000e+00 v  ~  3.6770149597719078e-02  [ 3.677e-02]
@@ -371,13 +375,18 @@ print(jac[i, j])
 
 
 A_ = jac_hand[start:end]
+print('Shape of the same slice of jacobian by-hand', A_.shape)
 # B_ = jac_hand[startB:endB]
 
-constr = constr_wrapper_ipopt(x0, *args)
+constr = constr_wrapper(x0, *args)
 print('Constraints Hand', constr.shape)
 
 grad_comp = set(set(range(len(jac))) - set(ind))
 jac_equivalent = jac  # [list(grad_comp)]
+
+print(x0)
+
+## -------- verifying dRz/dzb
 
 # plt.matshow(jac_hand)
 # plt.colorbar()
@@ -414,6 +423,11 @@ jac_equivalent = jac  # [list(grad_comp)]
 print('Jac Rx/Ry dz')
 A2 = A[:, len(ind):]
 A2_ = A_[:, len(ind):]
+print('**********')
+print(A2)
+print('**********')
+print(A2_)
+
 error = 0.0
 for i in range(A2.shape[0]):
     max_ = max(A2[i])
@@ -422,9 +436,10 @@ for i in range(A2.shape[0]):
     min__ = min(A2_[i])
     norm_i = norm(A2[i] - A2_[i])
     error += norm_i
-    # print('diff here:', norm_i)
-    # print('max/min jac:', float(max_), float(min_), 'max/min jac_hand:', max__, min__)
+    print('diff here:', i, norm_i)
+    print('max/min jac:', i, float(max_), float(min_), 'max/min jac_hand:', max__, min__)
 print('Error Jac Rx/Ry dz is:', error)
+print('Shape of each stack of current plot:', A2.shape)
 plt.matshow(hstack([A2, A2_]))
 plt.colorbar()
 plt.show()
@@ -441,9 +456,10 @@ for i in range(A1.shape[0]):
     norm_i = norm(A1[i] - A1_[i])
     error += norm_i
     # print('diff here:', norm_i)
-    print('ratio', float(max__/max_), float(min__/min_))
+    # print('ratio', float(max__/max_), float(min__/min_))
     # print('max/min jac:', float(max_), float(min_), 'max/min jac_hand:', max__, min__)
-print('Error Jac Rx/Ry dz is:', error)
+print('Error Jac Rx/Ry dq is:', error)
+print('Shape of each stack of current plot:', A1.shape)
 plt.matshow(hstack([A1, A1_]))
 plt.colorbar()
 plt.show()
@@ -498,20 +514,20 @@ print('---> Error TOTAL in JACOBIAN is:', error)
 A = jac_equivalent[len(dep):(len(dep)+len(lb_ind)), :len(ind)]
 B = jac_hand[len(dep):(len(dep)+len(lb_ind)), :len(ind)]
 print('Shape of A, B', A.shape, B.shape, form.number_of_edges())
-for matrix in [A]:
-    for j in range(matrix.shape[1]):
-        jac_dict = {}
-        for i in range(matrix.shape[0]):
-            aij = matrix[i, j]
-            jac_dict[k_i[free[i]]] = float(aij)
-        max_, min_ = max(jac_dict.values()), min(jac_dict.values())
-        print(min_, max_)
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_edges(keys=[i_uv[ind[j]]], color='FF0000', width=4)
-        plotter.draw_vertices(text={key: '{0:.1f}'.format((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})},
-                              facecolor={key: i_to_red((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})})
-        plotter.show()
+# for matrix in [A]:
+#     for j in range(matrix.shape[1]):
+#         jac_dict = {}
+#         for i in range(matrix.shape[0]):
+#             aij = matrix[i, j]
+#             jac_dict[k_i[free[i]]] = float(aij)
+#         max_, min_ = max(jac_dict.values()), min(jac_dict.values())
+#         print(min_, max_)
+#         plotter = MeshPlotter(form, figsize=(10, 10))
+#         plotter.draw_edges()
+#         plotter.draw_edges(keys=[i_uv[ind[j]]], color='FF0000', width=4)
+#         plotter.draw_vertices(text={key: '{0:.1f}'.format((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})},
+#                               facecolor={key: i_to_red((jac_dict[key]-min_)/(max_ - min_)) for key in form.vertices_where({'is_fixed': False})})
+#         plotter.show()
 error = 0.0
 for i in range(A.shape[0]):
     norm_i = norm(A[i]-B[i])
@@ -532,17 +548,17 @@ plt.show()
 A = jac_equivalent
 B = jac_hand
 print('Shape of A, B', A.shape, B.shape, form.number_of_vertices())
-for matrix in [A, B]:
-    for j in range(matrix.shape[1]):
-        jac_dict = {}
-        for i in range(matrix.shape[0]):
-            aij = matrix[i, j]
-            jac_dict[k_i[free[i]]] = round(float(aij), 2)
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: str(jac_dict[key]) for key in form.vertices_where({'is_fixed': False})}, facecolor={
-                              key: i_to_red(abs(jac_dict[key])) for key in form.vertices_where({'is_fixed': False})})
-        plotter.show()
+# for matrix in [A, B]:
+#     for j in range(matrix.shape[1]):
+#         jac_dict = {}
+#         for i in range(matrix.shape[0]):
+#             aij = matrix[i, j]
+#             jac_dict[k_i[free[i]]] = round(float(aij), 2)
+#         plotter = MeshPlotter(form, figsize=(10, 10))
+#         plotter.draw_edges()
+#         plotter.draw_vertices(text={key: str(jac_dict[key]) for key in form.vertices_where({'is_fixed': False})}, facecolor={
+#                               key: i_to_red(abs(jac_dict[key])) for key in form.vertices_where({'is_fixed': False})})
+#         plotter.show()
 error = 0.0
 for i in range(A.shape[0]):
     norm_i = norm(A[i]-B[i])

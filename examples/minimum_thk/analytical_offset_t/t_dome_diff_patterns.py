@@ -19,8 +19,9 @@ import os
 # Basic parameters
 
 sols = {}
-for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
-    for y_discr in [20]:  # Less sensible  #[12, 16, 20, 24]
+times = {}
+for x_discr in [20, 24]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
+    for y_discr in [12]:  # Less sensible  #[12, 16, 20, 24] # nm = 16
         discretisation = [x_discr, y_discr]
 
         thk = 0.5
@@ -77,8 +78,9 @@ for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
 
         # form_ = FormDiagram.from_library(data_diagram)
 
-        # plot_form(form, show_q=False, fix_width=False).show()
+        plot_form(form, show_q=False, fix_width=False).show()
         # plot_form(form_, show_q=False, fix_width=False).show()
+        pass
 
         # --------------------- 3. Create Starting point with TNA ---------------------
 
@@ -89,6 +91,8 @@ for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
         form.initialise_loadpath()
         # form = form.initialise_tna(plot=False)
         # plot_form(form).show()
+
+        print('number edges', form.number_of_edges())
 
         # --------------------- 4. Create Minimisation Optimiser ---------------------
 
@@ -101,7 +105,7 @@ for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
         optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
         optimiser.data['variables'] = ['ind', 'zb', 't']
         optimiser.data['objective'] = 't'
-        optimiser.data['printout'] = True
+        optimiser.data['printout'] = False
         optimiser.data['plot'] = False
         optimiser.data['find_inds'] = True
         optimiser.data['qmax'] = 1000.0
@@ -127,20 +131,35 @@ for x_discr in [16]:  # More sensible  #[8, 12, 16, 20, 24]
 
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-            # save_form = os.path.join(folder, title)
+            save_form = os.path.join(folder, title)
 
-            # form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+            address = save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json'
+            print(address)
+
+            # form.to_json(address)
 
             sols[str(discretisation)] = thk_min
+            times[str(discretisation)] = optimiser.time
 
             print('Solved:', discretisation, thk_min)
+            print('Time:', discretisation, optimiser.time)
+
+            # view_solution(form).show()
 
         else:
 
             print('Not Solved:', discretisation)
 
 print(sols)
+print(times)
 
+print('\nPlot Times')
+for tm in times:
+    n_par = int(tm.split(',')[0].replace('[', ''))
+    n_mer = int(tm.split(',')[1].replace(']', ''))
+    print('{0}, {1}, {2}'.format(n_par, n_mer, times[tm]))
+
+print('\nPlot Solutions')
 for sol in sols:
     n_par = int(sol.split(',')[0].replace('[', ''))
     n_mer = int(sol.split(',')[1].replace(']', ''))

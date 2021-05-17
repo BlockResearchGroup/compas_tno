@@ -69,14 +69,16 @@ print(form)
 form.envelope_from_shape(dome)
 form.selfweight_from_shape(dome)
 form.initialise_loadpath()
+form.overview_forces()
+
 # form = form.initialise_tna(plot=False)
 # plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
 optimiser.data['variables'] = ['ind', 'zb', 't']
 optimiser.data['objective'] = 't'
@@ -88,7 +90,23 @@ optimiser.data['gradient'] = gradients
 optimiser.data['jacobian'] = gradients
 print(optimiser.data)
 
-# --------------------- 5. Set up and run analysis ---------------------
+# --------------------- 5.1 Set up and run analysis for GSF ---------------------
+
+# folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'min_max')
+# os.makedirs(folder, exist_ok=True)
+# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+
+# forms_address = os.path.join(folder, title)
+
+# thk_max = 0.50
+# thk_step = 0.05
+
+# analysis = Analysis.from_elements(dome, form, optimiser)
+# results = analysis.thk_minmax_GSF(thk_max, thk_step=thk_step, save_forms=forms_address, plot=False)
+# thicknesses, solutions = results
+
+
+# --------------------- 5.2 Set up and run sole analysis ---------------------
 
 folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'min_max')
 os.makedirs(folder, exist_ok=True)
@@ -96,17 +114,41 @@ title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation
 
 forms_address = os.path.join(folder, title)
 
-thk_max = 0.50
-thk_step = 0.05
+optimiser.data['printout'] = True
+# optimiser.data['qmax'] = 5.0
+optimiser.data['variables'] = ['ind', 'zb']
+optimiser.data['derivative_test'] = True
+optimiser.data['objective'] = 'min'
+
+# form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/min_max/dome_radial_fd_discr_[20, 16]qmax=5.json')
 
 analysis = Analysis.from_elements(dome, form, optimiser)
-results = analysis.thk_minmax_GSF(thk_max, thk_step=thk_step, save_forms=forms_address, plot=False)
-thicknesses, solutions = results
+analysis.apply_selfweight()
+analysis.apply_envelope()
+analysis.apply_reaction_bounds()
+analysis.set_up_optimiser()
+analysis.run()
+
+print('lumped swt:', form.lumped_swt())
+
+form.overview_forces()
+
+from compas_plotters import MeshPlotter
+plotter = MeshPlotter(form)
+plotter.draw_edges()
+plotter.draw_vertices(text={key: i for key, i in enumerate(form.vertices())})
+plotter.show()
+
+forms_address = os.path.join(folder, title)
+form_save = forms_address + 'qmax=5' + '.json'
+print(form_save)
+form.to_json(form_save)
+view_solution(form).show()
 
 # ----------------------- Save output data --------------------------
 
-csv_file = os.path.join(folder, title + '_data.csv')
-save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
+# csv_file = os.path.join(folder, title + '_data.csv')
+# save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
 
-img_graph = os.path.join(folder, title + '_diagram.pdf')
-diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False).show()
+# img_graph = os.path.join(folder, title + '_diagram.pdf')
+# diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False).show()

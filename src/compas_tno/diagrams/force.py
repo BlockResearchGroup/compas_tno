@@ -28,6 +28,57 @@ class ForceDiagram(ForceDiagram):
     def __init__(self):
         super(ForceDiagram, self).__init__()
 
+    # --------------------------------------------------------------------------
+    # Convenience functions for retrieving attributes of the force diagram.
+    # --------------------------------------------------------------------------
+
+    def xy(self):
+        """The XY coordinates of the vertices.
+
+        Returns
+        -------
+        list
+        """
+        return self.vertices_attributes('xy')
+
+    def fixed(self):
+        """The identifiers of the fixed vertices.
+
+        Returns
+        -------
+        list
+        """
+        return list(self.vertices_where({'is_fixed': True}))
+
+
+    def fixed_x(self):
+        """The identifiers of the vertices fixed in ``x`` only.
+
+        Returns
+        -------
+        list
+        """
+        return list(self.vertices_where({'is_fixed_x': True, 'is_fixed': False}))
+
+    def fixed_y(self):
+        """The identifiers of the vertices fixed in ``y`` only.
+
+        Returns
+        -------
+        list
+        """
+        return list(self.vertices_where({'is_fixed_y': True, 'is_fixed': False}))
+
+
+    def anchor(self):
+        """Get an anchor to the force diagram.
+
+        Returns
+        -------
+        int
+        """
+        return next(self.vertices())
+
 
 # def update_forcediagram(form,force):
 

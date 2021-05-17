@@ -99,9 +99,12 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
 
     # print('\n', xmin_, xmax_, fmin_, fmax_)
 
-    size_axis_label = 14
+    # size_axis_label = 14
+    # size_axis_data = 12
+    # size_legend = 14
+    size_axis_label = 12
     size_axis_data = 12
-    size_legend = 14
+    size_legend = 12
 
     interval_x = abs(dimension[0] - dimension[1])
     interval_y = 10
@@ -161,10 +164,11 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     ax1.set_yticks(arange(min_y, max_y + interval_y, interval_y))
     ax1.tick_params(axis='both', which='major', labelsize=size_axis_data)
 
-    box = ax.get_position()
-    ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
+    # box = ax.get_position()
+    # ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
     ax.grid(color='silver', linestyle='-', linewidth=0.5)
-    ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+    # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
+    ax.legend(fontsize=size_legend)  # , bbox_to_anchor(0.1, 0.1), ncol=1)
 
     if save:
         plt.savefig(save)

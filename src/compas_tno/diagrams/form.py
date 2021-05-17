@@ -48,9 +48,15 @@ from compas.datastructures import mesh_bounding_box_xy
 from compas.geometry import distance_point_point_xy
 from compas.geometry import distance_point_line_xy
 
+from compas_tno.algorithms import force_update_from_form
+
+# from other packages
+
 from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
 from compas_tna.equilibrium import vertical_from_zmax
+
+from compas_ags.ags import force_update_from_form
 
 from compas.geometry import distance_point_point_xy
 
@@ -1213,6 +1219,28 @@ class FormDiagram(FormDiagram):
 
         return form_
 
+    # --------------------------------------------------------------------------
+    # Convenience functions for retrieving the attributes of the formdiagram.
+    # --------------------------------------------------------------------------
+
+    def q(self):
+        return [self.edge_attribute(edge, 'q') for edge in self.edges_where({'_is_edge': True})]
+
+    def xy(self):
+        return self.vertices_attributes('xy')
+
+    def fixed(self):
+        return list(self.vertices_where({'is_fixed': True}))
+
+    def fixed_x(self):
+        return list(self.vertices_where({'is_fixed_x': True, 'is_fixed': False}))
+
+    def fixed_y(self):
+        return list(self.vertices_where({'is_fixed_y': True, 'is_fixed': False}))
+
+    def ind(self):
+        return list(self.edges_where({'is_ind': True}))
+
     def evaluate_scale(self, function, bounds, n=100, plot=True):
         """ Evaluate a given objective function by scaling the form-diagram in the bounds specified.
 
@@ -1419,7 +1447,7 @@ class FormDiagram(FormDiagram):
 
         return self
 
-    def reciprocal_from_form(self, zmax=5.0, method='nodal', plot=False, alpha=100.0, kmax=500, remove_feet=True, display=False):
+    def reciprocal_from_form(self, zmax=5.0, method='algebraic', plot=False, alpha=100.0, kmax=500, remove_feet=True, display=False):
 
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attribute('is_anchor', True, keys=corners)
@@ -1433,7 +1461,7 @@ class FormDiagram(FormDiagram):
                 leaves = True
                 break
         if leaves is False:
-            self.update_boundaries(feet=2)
+            self.update_boundaries()
 
         for u, v in self.edges():
             if self.edge_attribute((u, v), '_is_external') is False:
@@ -1459,17 +1487,17 @@ class FormDiagram(FormDiagram):
         if plot:
             print('Plot of Primal')
             plotter = MeshPlotter(self, figsize=(10, 10))
-            plotter.draw_edges(keys=[key for key in self.edges_where({'_is_edge': True})])
+            plotter.draw_edges()
             plotter.draw_vertices(radius=0.05)
             plotter.draw_vertices(keys=[key for key in self.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
             plotter.show()
             print('Plot of Dual')
             force.plot()
 
-        if method == 'nodal':
-            horizontal_nodal(self, force, alpha=alpha, kmax=kmax, display=False)
+        if method == 'algebraic':
+            force_update_from_form(force, self)
         else:
-            horizontal(self, force, alpha=alpha, kmax=kmax, display=False)
+            horizontal_nodal(self, force, alpha=alpha, kmax=kmax)
 
         # Vertical Equilibrium with no updated loads
 

@@ -2,6 +2,8 @@
 import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes.shape import Shape
+from compas_tno.problems import initialise_form
+from compas_tno.problems import initialise_problem
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
@@ -19,8 +21,8 @@ import os
 # Basic parameters
 
 sols = {}
-for x_discr in [4, 8, 12, 16, 20, 24]:  # More sensible  #[8, 12, 16, 20, 24]
-    for y_discr in [12, 16, 20, 24]:  # Less sensible  #[12, 16, 20, 24]
+for x_discr in [20]:  # More sensible  #[8, 12, 16, 20, 24] number parallel
+    for y_discr in [16]:  # Less sensible  #[12, 16, 20, 24] number meridian
         discretisation = [x_discr, y_discr]
 
         thk = 0.5
@@ -65,6 +67,8 @@ for x_discr in [4, 8, 12, 16, 20, 24]:  # More sensible  #[8, 12, 16, 20, 24]
 
         form = FormDiagram.from_library(data_diagram)
 
+        initialise_form(form, printout=True)
+
         # plot_form(form, simple=True, max_width=1, show_q=False).show()
 
         folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'discretisations')
@@ -74,5 +78,16 @@ for x_discr in [4, 8, 12, 16, 20, 24]:  # More sensible  #[8, 12, 16, 20, 24]
         plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
         plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
         plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='000000')
+        # plotter.save(save_img)
+        plotter.show()
+
+        title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_ind.pdf'
+        save_img = os.path.join(folder, title)
+        print(save_img)
+
+        plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
+        plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})], color={key: '0000FF' for key in form.edges_where({'is_ind': True})}, width={key: 2.5 for key in form.edges_where({'is_ind': True})})
+        plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='FF0000')
+        # plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': False})], radius=0.025, facecolor='000000')
         plotter.save(save_img)
         plotter.show()

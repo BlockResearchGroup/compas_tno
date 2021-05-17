@@ -9,6 +9,7 @@ from scipy.sparse import diags
 from scipy.sparse.linalg import factorized
 from compas.numerical import normrow
 from compas.numerical import normalizerow
+from compas.numerical import spsolve_with_known
 from compas_tna.utilities import apply_bounds
 from compas_tna.utilities import parallelise_sparse
 from compas.numerical import fd_numpy
@@ -41,6 +42,7 @@ __all__ = [
     'z_update',
     'z_from_form',
     'update_tna',
+    'force_update_from_form',
     'update_form',
     'paralelise_form',
     'reactions',
@@ -340,6 +342,60 @@ def update_tna(form, delete_face=True, plots=False, save=False):
 
     return form, force
 
+
+def force_update_from_form(force, form):
+    """Update the force diagram after modifying the (force densities of) the form diagram.
+
+    Parameters
+    ----------
+    force : :class:`ForceDiagram`
+        The force diagram on which the update is based.
+    form : :class:`FormDiagram`
+        The form diagram to update.
+
+    Reference
+    -------
+
+    See ``compas_tna`` package.
+
+    Returns
+    -------
+    None
+        The form and force diagram are updated in-place.
+    """
+    # --------------------------------------------------------------------------
+    # form diagram
+    # --------------------------------------------------------------------------
+    vertex_index = form.vertex_index()
+
+    xy = array(form.xy(), dtype=float64)
+    edges = [[vertex_index[u], vertex_index[v]] for u, v in form.edges_where({'_is_edge': True})]
+    C = connectivity_matrix(edges, 'csr')
+    Q = diags([form.q()], [0])
+    uv = C.dot(xy)
+    # --------------------------------------------------------------------------
+    # force diagram
+    # --------------------------------------------------------------------------
+    _vertex_index = force.vertex_index()
+
+    _known = [_vertex_index[force.anchor()]]
+    _xy = array(force.xy(), dtype=float64)
+    _edges = force.ordered_edges(form)
+    _edges[:] = [(_vertex_index[u], _vertex_index[v]) for u, v in _edges]
+    _C = connectivity_matrix(_edges, 'csr')
+    _Ct = _C.transpose()
+    print(C.shape, _C.shape, Q.shape, uv.shape)
+    # --------------------------------------------------------------------------
+    # compute reciprocal for given q
+    # --------------------------------------------------------------------------
+    _xy = spsolve_with_known(_Ct.dot(_C), _Ct.dot(Q).dot(uv), _xy, _known)
+    # --------------------------------------------------------------------------
+    # update force diagram
+    # --------------------------------------------------------------------------
+    for vertex, attr in force.vertices(True):
+        index = _vertex_index[vertex]
+        attr['x'] = _xy[index, 0]
+        attr['y'] = _xy[index, 1]
 
 def update_form(form, q):
 

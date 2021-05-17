@@ -1,7 +1,9 @@
 
 import compas_tno
 from compas_tno.diagrams import FormDiagram
-from compas_tno.shapes.shape import Shape
+from compas_tno.shapes import Shape
+from compas_tno.problems import initialise_form
+from compas_tno.problems import initialise_problem
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
@@ -18,11 +20,21 @@ import os
 
 # Basic parameters
 
-# sols = {}
-# for discretisation in [10, 12, 14, 16, 18, 20]:
+discretisation = 14
+span = 10.0
+type_structure = 'crossvault'
+thk = 0.50
+data_shape = {
+    'type': type_structure,
+    'thk': thk,
+    'discretisation': discretisation,
+    'xy_span': [[0, span], [0, span]],
+    't': 0.0,
+}
 
-#     thk = 0.5
-#     span = 10.0
+sols = {}
+# for discretisation in [14]:
+
 #     k = 1.0
 #     n = 1
 #     type_structure = 'crossvault'
@@ -51,9 +63,30 @@ import os
 #     plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
 #     plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
 #     plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='000000')
+#     # plotter.save(save_img)
+#     plotter.show()
+
+#     # If required to find independent edges:
+
+#     shape = Shape.from_library(data_shape)
+
+#     form.selfweight_from_shape(shape)
+
+#     initialise_form(form, printout=True)
+
+#     title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_ind.pdf'
+#     save_img = os.path.join(folder, title)
+#     print(save_img)
+
+#     plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
+#     plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})], color={key: '0000FF' for key in form.edges_where({'is_ind': True})}, width={key: 2.5 for key in form.edges_where({'is_ind': True})})
+#     plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.1, facecolor='FF0000')
+#     # plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': False})], radius=0.025, facecolor='000000')
 #     plotter.save(save_img)
 #     plotter.show()
 
+
+### --------- amiens FORM DIAGRAM
 
 sols = {}
 for discretisation in [14]:
@@ -86,9 +119,31 @@ for discretisation in [14]:
     title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method' + '.pdf'
     save_img = os.path.join(folder, title)
 
+    # plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
+    # plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
+    # plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='000000')
+    # plotter.save(save_img)
+    # plotter.show()
+
+
+    # If required to find independent edges:
+
+    type_structure = 'crossvault'
+    thk = 0.50
+    data_shape['xy_span'] = [[0, span_y], [0, span_y]]
+
+    shape = Shape.from_library(data_shape)
+    form.selfweight_from_shape(shape)
+    initialise_form(form, printout=True)
+
+    title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_ind.pdf'
+    save_img = os.path.join(folder, title)
+    print(save_img)
+
     plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
-    plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
-    plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='000000')
+    plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})], color={key: '0000FF' for key in form.edges_where({'is_ind': True})}, width={key: 2.5 for key in form.edges_where({'is_ind': True})})
+    plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='FF0000')
+    # plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': False})], radius=0.025, facecolor='000000')
     plotter.save(save_img)
     plotter.show()
 
