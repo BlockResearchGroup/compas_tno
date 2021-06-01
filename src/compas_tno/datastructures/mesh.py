@@ -184,7 +184,7 @@ class MeshDos(Mesh):
         for i, key in enumerate(mesh.vertices()):
             mesh.vertex_attribute(key, 'z', float(z[i]))
 
-        print('count normals {0} and faces {1}'.format(count_vertex_normals, count_face_normals))
+        # print('count normals {0} and faces {1}'.format(count_vertex_normals, count_face_normals))
 
         return mesh
 

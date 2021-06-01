@@ -108,8 +108,8 @@ form.initialise_loadpath()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
 optimiser.data['variables'] = ['ind', 'zb', 'n']
 optimiser.data['objective'] = 'n'

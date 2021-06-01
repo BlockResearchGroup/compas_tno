@@ -1,6 +1,7 @@
 from numpy import array
 from numpy import zeros
 from numpy import vstack
+from numpy import hstack
 from numpy import newaxis
 from numpy.linalg import pinv
 from numpy.linalg import matrix_rank
@@ -28,12 +29,65 @@ __email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
+    'Problem',
     'initialise_problem',
     'initialise_form'
 ]
 
+class Problem():
 
-def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.001):
+    def __init__(self):
+        pass
+
+    @classmethod
+    def from_formdiagram(cls, form, indset=None, printout=False, find_inds=False):
+        problem = cls()
+        args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
+        q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, xlimits, ylimits = args
+        problem.q = q
+        problem.m = q.shape[0]
+        problem.n = form.number_of_vertices()
+        problem.ind = ind
+        problem.dep = dep
+        problem.E = E
+        problem.Edinv = Edinv
+        problem.Ei = Ei
+        problem.C = C
+        problem.Ct = Ct
+        problem.Ci = Ci
+        problem.Cit = Cit
+        problem.Cf = Cf
+        problem.U = U
+        problem.V = V
+        problem.p = p
+        problem.P = hstack([px, py, pz])
+        problem.free = free
+        problem.fixed = fixed
+        problem.lh = lh
+        problem.sym = sym
+        problem.k = k
+        problem.lb = lb
+        problem.ub = ub
+        problem.lb_ind = lb_ind
+        problem.ub_ind = ub_ind
+        problem.s = s
+        problem.Wfree = Wfree
+        problem.X = hstack([x, y, z])
+        problem.free_x = free_x
+        problem.free_y = free_y
+        problem.rol_x = rol_x
+        problem.rol_y = rol_y
+        problem.Citx = Citx
+        problem.City = City
+        problem.Cftx = Cftx
+        problem.Cfty = Cfty
+        problem.xlimits = xlimits
+        problem.ylimits = ylimits
+
+        return problem
+
+
+def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.001, c=0.5):
     """ Initialise the problem for a given Form-Diagram and return the set of matrices and vectors to optimise.
 
     Parameters
@@ -102,6 +156,8 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     pz = zeros((n, 1))
     s = zeros((n, 1))
     w = zeros((n, 1))
+    xlimits = zeros((n, 2))
+    ylimits = zeros((n, 2))
 
     for key, vertex in form.vertex.items():
         i = k_i[key]
@@ -114,6 +170,10 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
         pz[i] = vertex.get('pz', 0)
         s[i] = vertex.get('target', 0)
         w[i] = vertex.get('weight', 1.0)  # weight used in case of fiting...
+        xlimits[i, 0] = vertex.get('xmin')
+        xlimits[i, 1] = vertex.get('xmax')
+        ylimits[i, 0] = vertex.get('ymin')
+        ylimits[i, 1] = vertex.get('ymax')
     Wfree = diags(w[free].flatten())
     xy = xyz[:, :2]
 
@@ -201,7 +261,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
                 print('Horizontal Loads are not suitable for this FD!')
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k,
-            lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty)
+            lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, xlimits, ylimits)
     args_inds = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Citx, City, Cf, U, V, p, px, py, pz, z, free_x, free_y, fixed, lh, sym, k)
     if find_inds is True:
         checked = check_independents(args_inds, tol=tol)

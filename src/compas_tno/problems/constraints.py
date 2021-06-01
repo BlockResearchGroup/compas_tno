@@ -11,50 +11,14 @@ from scipy.sparse import diags
 from compas_tno.problems.bounds_update import ub_lb_update
 from compas_tno.problems.bounds_update import b_update
 
+from compas_tno.algorithms import xyz_from_q
+
 
 __all__ = [
     'constr_wrapper',
     'constr_wrapper_inequalities',
+    'constr_wrapper_general',
 ]
-
-
-# def constr_wrapper(xopt, *args):
-
-#     q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym = args
-
-#     if len(xopt) > k:
-#         qid, z[fixed] = xopt[:k], xopt[k:].reshape(-1, 1)
-#         args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
-#         z, q = zq_from_qid(qid, args)
-#     else:
-#         z, q = zq_from_qid(qid, args)
-
-#     constraints = zeros([0, 1])
-
-#     if 'funicular' in dict_constr:
-#         constraints = vstack([constraints, (q[dep] - qmin).reshape(-1, 1)])  # >= 0
-#     if 'envelope' in dict_constr:
-#         constraints = vstack([constraints, ub - z[ub_ind], z[lb_ind] - lb])  # >= 0
-#     if 'reac_bounds' in dict_constr:
-#         CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
-#         xyz = hstack([x, y, z])
-#         p_fixed = hstack([px, py, pz])[fixed]
-#         R = CfQC.dot(xyz) - p_fixed
-#         Rx = abs(b[:, 0].reshape(-1, 1)) - multiply(z[fixed] - s[fixed], abs(divide(R[:, 0], R[:, 2]).reshape(-1, 1)))  # >= 0 absoluute numpy
-#         Ry = abs(b[:, 1].reshape(-1, 1)) - multiply(z[fixed] - s[fixed], abs(divide(R[:, 1], R[:, 2]).reshape(-1, 1)))  # >= 0
-#         constraints = vstack([constraints, Rx, Ry])
-#     if 'cracks' in dict_constr:
-#         crack_tol = 10e-4
-#         constraints = vstack([constraints, (lb[cracks_lb] - z[cracks_lb]) + crack_tol, (z[cracks_ub] - ub[cracks_ub]) + crack_tol])
-#     if 'rollers' in dict_constr:
-#         rx_check = max_rol_rx - abs(Cftx.dot(U.dot(q)) - px[rol_x])
-#         ry_check = max_rol_ry - abs(Cfty.dot(V.dot(q)) - py[rol_y])
-#         constraints = vstack([constraints, rx_check, ry_check])
-#     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
-#         A_q = Asym.dot(vstack([q[ind], z[fixed]]))
-#         constraints = vstack([constraints, A_q, -1 * A_q])
-
-#     return transpose(constraints)[0]  # .reshape(-1, 1)
 
 
 def constr_wrapper(xopt, *args):
@@ -102,6 +66,41 @@ def constr_wrapper(xopt, *args):
         constraints = vstack([constraints, A_q])
 
     return transpose(constraints)[0]  # .reshape(-1, 1)  # Check if this transpose will be a problem for IPOPT
+
+
+def constr_wrapper_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    m = M.m
+
+    if len(variables) > m:
+        M.q = variables[:m]
+        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
+    else:
+        M.q = variables
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
+
+    constraints = zeros([0, 1])
+
+    # constraints in x
+    xmin = (M.X[:, 0] - M.xlimits[:, 0]).reshape(-1, 1)
+    xmax = (M.xlimits[:, 1] - M.X[:, 0]).reshape(-1, 1)
+    constraints = vstack([constraints, xmin, xmax])
+
+    # constraints in y
+    ymin = (M.X[:, 1] - M.ylimits[:, 0]).reshape(-1, 1)
+    ymax = (M.ylimits[:, 1] - M.X[:, 1]).reshape(-1, 1)
+    constraints = vstack([constraints, ymin, ymax])
+
+    # constraints in z
+    zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)
+    zmax = (M.ub.flatten() - M.X[:, 2]).reshape(-1, 1)
+    constraints = vstack([constraints, zmin, zmax])
+
+    return constraints.flatten()
 
 
 def constr_wrapper_inequalities(xopt, *args):  # This considers a equality in Asym.

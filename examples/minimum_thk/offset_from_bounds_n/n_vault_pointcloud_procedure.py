@@ -28,7 +28,7 @@ span_y = 11.2  # 9.85 - 12.31 - 11.2
 k = 1.0
 n = 2
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 discretisation = 14
 gradients = True  # False
 n_step = 0.01
@@ -99,8 +99,8 @@ form.initialise_loadpath()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
+optimiser.data['library'] = 'IPOPT'
+optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 optimiser.data['variables'] = ['ind', 'zb', 'n']
 optimiser.data['objective'] = 'n'
@@ -127,7 +127,7 @@ thicknesses, solutions = results
 # ----------------------- Save output data --------------------------
 
 csv_file = os.path.join(folder, title + '_data.csv')
-save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
+# save_csv_row(thicknesses, solutions, path=csv_file, title=title, limit_state=False)
 
 img_graph = os.path.join(folder, title + '_diagram.pdf')
 img_graph = None

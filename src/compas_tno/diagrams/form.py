@@ -47,6 +47,7 @@ from compas.datastructures import Mesh
 from compas.datastructures import mesh_bounding_box_xy
 from compas.geometry import distance_point_point_xy
 from compas.geometry import distance_point_line_xy
+from compas.geometry import closest_point_on_line_xy
 
 from compas_tno.algorithms import force_update_from_form
 
@@ -833,6 +834,16 @@ class FormDiagram(FormDiagram):
 
         return
 
+    def envelope_on_x_y(self, c=0.5):
+
+        for key, vertex in self.vertex.items():
+            self.vertex_attribute(key, 'xmin', vertex.get('x') - c)
+            self.vertex_attribute(key, 'xmax', vertex.get('x') + c)
+            self.vertex_attribute(key, 'ymin', vertex.get('y') - c)
+            self.vertex_attribute(key, 'ymax', vertex.get('y') + c)
+
+        return
+
     def selfweight_from_shape(self, shape):
         """Apply selfweight to the nodes of the form diagram based on the shape"""
 
@@ -920,7 +931,7 @@ class FormDiagram(FormDiagram):
 
         return
 
-    def apply_symmetry(self, center=[5.0, 5.0, 0.0], horizontal_only=False, vertical_only=False):
+    def apply_symmetry_on_independent(self, center=[5.0, 5.0, 0.0], horizontal_only=False, vertical_only=False):
 
         self.edges_attribute('sym_key', None)
         self.vertices_attribute('sym_key', None)
@@ -993,6 +1004,74 @@ class FormDiagram(FormDiagram):
 
         return
 
+    def apply_symmetry(self, center=[5.0, 5.0, 0.0], axis_symmetry=None):
+
+        self.edges_attribute('sym_key', None)
+        self.vertices_attribute('sym_key', None)
+        dist_checked = []
+        dist_dict = {}
+
+        # Symmetry on the independent edges
+
+        if not axis_symmetry:
+            for u, v in self.edges():
+                midpoint = self.edge_midpoint(u, v)
+                dist = round(distance_point_point_xy(center, midpoint), 10)
+                dist_dict[(u, v)] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        else:
+            for u, v in self.edges():
+                midpoint = self.edge_midpoint(u, v)
+                dist_line = round(distance_point_line_xy(midpoint, axis_symmetry), 10)
+                closest_pt = geometric_key(closest_point_on_line_xy(midpoint, axis_symmetry))
+                dist = [closest_pt, dist_line]
+                dist_dict[(u, v)] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        i = 0
+        for dist in dist_checked:
+            for u, v in dist_dict:
+                if dist_dict[(u, v)] == dist:
+                    self.edge_attribute((u, v), 'sym_key', i)
+            i += 1
+
+        print('dist_checked')
+        print(dist_checked)
+
+        # Symmetry on the Support's position
+
+        dist_checked = []
+        dist_dict = {}
+
+        if not axis_symmetry:
+            for key in self.vertices_where({'is_fixed': True}):
+                point = self.vertex_coordinates(key)
+                dist = round(distance_point_point_xy(center, point), 10)
+                dist_dict[key] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        else:
+            for key in self.vertices_where({'is_fixed': True}):
+                point = self.vertex_coordinates(key)
+                dist_line = round(distance_point_line_xy(point, axis_symmetry), 10)
+                closest_pt = geometric_key(closest_point_on_line_xy(point, axis_symmetry))
+                dist = [closest_pt, dist_line]
+                dist_dict[key] = dist
+                if dist not in dist_checked:
+                    dist_checked.append(dist)
+        i = 0
+        for dist in dist_checked:
+            for key in dist_dict:
+                if dist_dict[key] == dist:
+                    self.vertex_attribute(key, 'sym_key', i)
+            i += 1
+
+        print('dist_checked2')
+        print(dist_checked)
+
+        return
+
     def number_of_independents(self, printout=False):
 
         total = 0
@@ -1036,6 +1115,23 @@ class FormDiagram(FormDiagram):
 
         return i_sym_max
 
+    def number_of_sym_edges(self, printout=False):
+
+        i_sym_max = 0
+        for u, v in self.edges():
+            try:
+                i_sym = self.edge_attribute((u, v), 'sym_key')
+            except:
+                print('Warning, no symmetry relation found!')
+            if i_sym > i_sym_max:
+                i_sym_max = i_sym
+        i_sym_max += 1
+
+        if printout:
+            print('Form has {0} unique sym edges'.format(i_sym_max))
+
+        return i_sym_max
+
     def number_of_sym_supports(self, printout=False):
 
         i_sym_max = 0
@@ -1053,7 +1149,7 @@ class FormDiagram(FormDiagram):
 
         return i_sym_max
 
-    def build_symmetry_matrix(self, printout=False):
+    def build_symmetry_matrix_independents(self, printout=False):
 
         n = self.number_of_independents(printout=printout)
         k_unique = self.number_of_sym_independents(printout=printout)
@@ -1084,6 +1180,61 @@ class FormDiagram(FormDiagram):
 
         return Asym
 
+    def build_symmetry_matrix(self, printout=False):
+        """
+        Build a symmetry matrix such as Asym * q = 0, with Asym shape (m - k; m)
+        """
+
+        m = self.number_of_edges()
+        k_unique = self.number_of_sym_edges(printout=printout)
+        Asym = zeros((m - k_unique, m))
+        uv_i = self.uv_index()
+
+        line = 0
+        for id_sym in range(k_unique):
+            i = 0
+            for u, v in self.edges():
+                if self.edge_attribute((u, v), 'sym_key') == id_sym:
+                    index = uv_i[(u, v)]
+                    if i == 0:
+                        index0 = index
+                    else:
+                        Asym[line, index0] = 1
+                        Asym[line, index] = -1
+                        line += 1
+                    i += 1
+        if printout:
+            plt.matshow(Asym)
+            plt.colorbar()
+            plt.show()
+
+        return Asym
+
+    def build_symmetry_transformation(self, printout=False):
+        """
+        Build a symmetry matrix such as q = Esym * qsym, with Esym shape (m, k)
+        """
+
+        m = self.number_of_edges()
+        k_unique = self.number_of_sym_edges(printout=printout)
+        Esym = zeros((m, k_unique))
+        uv_i = self.uv_index()
+
+        for id_sym in range(k_unique):
+            Ei = zeros((m, 1))
+            for u, v in self.edges():
+                if self.edge_attribute((u, v), 'sym_key') == id_sym:
+                    index = uv_i[(u, v)]
+                    Ei[index] = 1.0
+            Esym[:, id_sym] = Ei.flatten()
+
+        if printout:
+            plt.matshow(Esym)
+            plt.colorbar()
+            plt.show()
+
+        return Esym
+
     def build_symmetry_matrix_supports(self, printout=False):
 
         n = self.number_of_supports()
@@ -1111,11 +1262,12 @@ class FormDiagram(FormDiagram):
                     i += 1
         if printout:
             plt.matshow(Asym)
+            plt.colorbar()
             plt.show()
 
         return Asym
 
-    def assemble_symmetry_matrix(self, independents=True, supports=True, printout=False):
+    def assemble_symmetry_matrix_independents(self, independents=True, supports=True, printout=False):
         """ Assemble Symmetry Matrix.
 
         Parameters
@@ -1140,6 +1292,37 @@ class FormDiagram(FormDiagram):
         Ab0 = zeros((Ab_i, Aind_j))
 
         A1 = hstack([Aind, Aind0])
+        A2 = hstack([Ab0, Ab])
+        A = vstack([A1, A2])
+        # A = vstack([hstack([Aind, Aind0]), hstack([Ab0, Ab])])
+
+        if printout:
+            plt.matshow(A)
+            plt.show()
+
+        return A
+
+    def assemble_symmetry_matrix(self, edges=True, supports=True, printout=False):
+        """ Assemble Symmetry Matrix.
+
+        Parameters
+        ----------
+        printout : bool (False)
+            If Matrix will be visualised
+        """
+
+        if edges:
+            Aedges = self.build_symmetry_matrix(printout=printout)
+        if supports:
+            Ab = self.build_symmetry_matrix_supports(printout=printout)
+
+        Aedges_i, Aedges_j = Aedges.shape
+        Ab_i, Ab_j = Ab.shape
+
+        Aedges0 = zeros((Aedges_i, Ab_j))
+        Ab0 = zeros((Ab_i, Aedges_j))
+
+        A1 = hstack([Aedges, Aedges0])
         A2 = hstack([Ab0, Ab])
         A = vstack([A1, A2])
         # A = vstack([hstack([Aind, Aind0]), hstack([Ab0, Ab])])

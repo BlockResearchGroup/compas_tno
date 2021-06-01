@@ -11,6 +11,7 @@ from copy import deepcopy
 
 from compas_tno.problems import set_up_nonlinear_optimisation
 from compas_tno.problems import set_up_convex_optimisation
+from compas_tno.problems import set_up_general_optimisation
 
 from compas_tno.solvers import run_optimisation_scipy
 from compas_tno.solvers import run_optimisation_MATLAB
@@ -441,8 +442,10 @@ class Analysis(object):
 
         if self.optimiser.data['library'] == 'MATLAB':
             self = set_up_convex_optimisation(self)
-        else:
+        elif 'ind' in self.optimiser.data['variables']:
             self = set_up_nonlinear_optimisation(self)
+        else:
+            self = set_up_general_optimisation(self)
 
         return
 
@@ -882,6 +885,10 @@ class Analysis(object):
             print('from here we ewill use this n:', n0)
             n_reduction = n_step
 
+            print('Changing solver to IPOPT')
+            self.optimiser.data['library'] == 'IPOPT'
+            self.optimiser.data['solver'] == 'IPOPT'
+
         else:
             print('Error: Minimum THK Optimisation did not find a solution: Try entering a different geometry')
             return
@@ -896,7 +903,7 @@ class Analysis(object):
             exitflag = 0
             n = n0
             thk = thk0 - 2 * n
-            print('resulting in this start thickness', thk)
+            # print('resulting in this start thickness', thk)
             count = 0
             first_fail = True
 
@@ -923,7 +930,7 @@ class Analysis(object):
 
                 self.apply_selfweight()
                 self.form.scale_form(swt/lumped_swt)
-                print('scale on forces', swt/lumped_swt)
+                # print('scale on forces', swt/lumped_swt)
 
                 # pzt = 0
                 # z = []

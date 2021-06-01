@@ -17,6 +17,7 @@ import os
 
 __all__ = [
     'plot_form',
+    'plot_superimposed_diagrams',
     'plot_distance_target',
     'plot_form_xz',
     'plot_forms_xz',
@@ -27,7 +28,7 @@ __all__ = [
 ]
 
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, cracks=False, save=None, tol_cracks=10e-5):
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='f', heights=False, show_edgeuv=False, cracks=False, save=None, tol_cracks=10e-5):
     """ Extended plotting of a FormDiagram
 
     Parameters
@@ -64,7 +65,6 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     """
 
-    uv_i = form.uv_index()
     q = [form.edge_attribute((u, v), thick) for u, v in form.edges_where({'_is_edge': True})]
     qmax = max(abs(array(q)))
     lines = []
@@ -72,8 +72,6 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     for u, v in form.edges_where({'_is_edge': True}):
         qi = form.edge_attribute((u, v), thick)
-        l = form.edge_length(u, v)
-        uv_i = form.uv_index
 
         if simple:
             if qi > 0:
@@ -142,6 +140,76 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             plotter.draw_vertices(keys=[i for i in form.vertices_where({'is_fixed': True})], facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
                                   radius=radius, text={i: [round(form.vertex_attribute(i, 'lb'), 3), round(form.vertex_attribute(i, 'ub'), 3), round(form.vertex_attribute(i, 'z'), 3)] for i in form.vertices()})  # form.vertex_attribute(i, 'z')
 
+    plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+
+def plot_superimposed_diagrams(form, form_base, show_q=True, thick='f', radius=0.05, max_width=10, fix_width=False, cracks=True, save=None, tol_cracks=10e-5):
+
+    f = [form.edge_attribute((u, v), thick) for u, v in form.edges_where({'_is_edge': True})]
+    fmax = max(abs(array(f)))
+    base_width = max_width/10
+    lines = []
+    lines_base = []
+
+    i = 0
+    for u, v in form.edges_where({'_is_edge': True}):
+        fi = f[i]
+
+        colour = ['ff', '00', '00']
+
+        width = max_width if fix_width else (fi / fmax) * max_width
+
+        lines.append({
+            'start': form.vertex_coordinates(u),
+            'end':   form.vertex_coordinates(v),
+            'color': ''.join(colour),
+            'width': width,
+        })
+
+        i = i + 1
+
+    i = 0
+    for u, v in form_base.edges_where({'_is_edge': True}):
+        colour = ['C1', 'C1', 'C1']
+
+        lines_base.append({
+            'start': form_base.vertex_coordinates(u),
+            'end':   form_base.vertex_coordinates(v),
+            'color': ''.join(colour),
+            'width': base_width,
+        })
+
+        i = i + 1
+
+    rad_colors = {}
+    for key in form.vertices_where({'is_fixed': True}):
+        rad_colors[key] = '#aaaaaa'
+    if cracks:
+        for key in form.vertices():
+            ub = form.vertex_attribute(key, 'ub')
+            lb = form.vertex_attribute(key, 'lb')
+            z = form.vertex_attribute(key, 'z')
+            if abs(z - ub) < tol_cracks:
+                rad_colors[key] = '#008000'  # Green extrados
+            elif abs(z - lb) < tol_cracks:
+                rad_colors[key] = '#0000FF'  # Blue intrados
+            elif z - ub > 0 or lb - z > 0:
+                rad_colors[key] = '#000000'  # Black outside
+
+    for key in form.vertices_where({'rol_x': True}):
+        rad_colors[key] = '#ffb733'
+    for key in form.vertices_where({'rol_y': True}):
+        rad_colors[key] = '#ffb733'
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    if radius:
+        plotter.draw_vertices(keys=rad_colors.keys(), facecolor=rad_colors, radius=radius)
+
+    plotter.draw_lines(lines_base)
     plotter.draw_lines(lines)
     if save:
         plotter.save(save)
@@ -1217,7 +1285,7 @@ def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     i = 0
 
     i_sym_max = 0
-    for u, v in form.edges_where({'is_ind': True}):
+    for u, v in form.edges_where({'_is_edge': True}):
         i_sym = form.edge_attribute((u, v), 'sym_key')
         if i_sym > i_sym_max:
             i_sym_max = i_sym
@@ -1229,11 +1297,10 @@ def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     for u, v in form.edges_where({'_is_edge': True}):
         colour = '666666'
         txt = ''
-        if form.edge_attribute((u, v), 'is_ind'):
-            i_sym = form.edge_attribute((u, v), 'sym_key')
-            colour = colors[i_sym]
-            if print_sym:
-                txt = str(i_sym)
+        i_sym = form.edge_attribute((u, v), 'sym_key')
+        colour = colors[i_sym]
+        if print_sym:
+            txt = str(i_sym)
 
         lines.append({
             'start': form.vertex_coordinates(u),

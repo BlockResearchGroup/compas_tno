@@ -3,8 +3,10 @@ from numpy import array
 from numpy import float64
 from numpy import newaxis
 from numpy import zeros
+from numpy import hstack
 
 from scipy.sparse.linalg import spsolve
+from scipy.sparse.linalg import splu
 from scipy.sparse import diags
 from scipy.sparse.linalg import factorized
 from compas.numerical import normrow
@@ -40,6 +42,7 @@ __all__ = [
     'zq_from_qid',
     'q_from_qid',
     'z_update',
+    'xyz_from_q',
     'z_from_form',
     'update_tna',
     'force_update_from_form',
@@ -212,44 +215,37 @@ def zlq_from_q(q, args):
     return z, l2, q, q_
 
 
-def update_qid(file, value, ind_i=0):
+def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
+    """ Calculate coordinates's xyz the q's.
 
-    from compas_tno.algorithms.ind_based import initialize_problem
+    Parameters
+    ----------
+    q : array (m)
+        Force densities of all edges.
+    Pi : array (ni x 3)
+        External forces applied to the free vertices.
+    Xb : array (nb x 3)
+        Position of the fixed vertices.
+    Ci : array (m x ni)
+        Connectivity matrix on the free vertices
+    Cit : array (ni x m)
+        Transpose of connectivity matrix on the free vertices
+    Cb : array (m x nb)
+        Connectivity matrix on the fixed vertices
 
-    form = FormDiagram.from_json(file)
-    args = initialize_problem(form, indset=form.attributes['indset'])
+    Returns
+    -------
+    Xfree : array (ni)
+        x, y, z coordinates of the nodes
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
-    k_i = form.key_index()
-    i_uv = form.index_uv()
-    ind = args[1]
+    """
 
-    print(ind)
+    CiQCb = Cit.dot(diags(q.flatten())).dot(Cb)
+    CiQCi = Cit.dot(diags(q.flatten())).dot(Ci)
+    SPLU_D = splu(CiQCi)
+    Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
 
-    q0 = []
-    for i in ind:
-        key = i_uv[i]
-        q0.append(form.edge_attribute(key, 'q'))
-
-    print(q0)
-
-    # Modify via Sliding
-    q0[ind_i] = value
-
-    print(q0)
-
-    q[ind, 0] = q0
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    q[sym] *= 0
-    z[free] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free])
-
-    for key, attr in form.vertices(True):
-        index = k_i[key]
-        attr['z'] = z[index]
-
-    form.to_json(file)
-
-    return form
+    return Xfree
 
 
 def z_update(form):

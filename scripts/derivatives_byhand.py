@@ -101,6 +101,7 @@ title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation
 path = os.path.join(folder, title)
 address_load = path + '_' + objective + '_thk_' + str(100*thk) + '.json'
 form = FormDiagram.from_json(address_load)
+print('load:', address_load)
 
 # path = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.24_discr_[8, 20]_min.json'
 # path = compas_tno.get('test-min.json')

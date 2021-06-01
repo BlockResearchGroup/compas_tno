@@ -136,21 +136,28 @@ def run_optimisation_ipopt(analysis):
     objective = optimiser.data['objective']
     printout = optimiser.data.get('printout', False)
     gradients = optimiser.data.get('gradient', False)
+    variables = optimiser.data['variables']
 
     bounds = optimiser.bounds
     x0 = optimiser.x0
     g0 = optimiser.g0
-    args = optimiser.args
+    if 'ind' in variables:
+        args = optimiser.args
+    else:
+        args = [optimiser.M]
+        optimiser.args = args
+
+    print(args)
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
-        :48]
-
     # Tensor modification
 
     if not gradients:
+
+        q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
+        :48]
 
         EdinvEi = Edinv*Ei
         Edinv_p = Edinv.dot(p)
@@ -191,7 +198,7 @@ def run_optimisation_ipopt(analysis):
         problem_obj.fobj = optimiser.fobj
         problem_obj.fconstr = optimiser.fconstr
         problem_obj.fjac = optimiser.fjac
-        problem_obj.args = optimiser.args
+        problem_obj.args = args
         problem_obj.fgrad = optimiser.fgrad
         problem_obj.bounds = bounds
         problem_obj.x0 = x0
@@ -239,7 +246,7 @@ def run_optimisation_ipopt(analysis):
     optimiser.time = elapsed_time
     optimiser.fopt = fopt
     optimiser.xopt = xopt
-    optimiser.niter = None  # Did not find a way to display number of iteratinos
+    optimiser.niter = None  # Did not find a way to display number of iterations
     optimiser.message = info['status_msg']
 
     post_process_analysis(analysis)

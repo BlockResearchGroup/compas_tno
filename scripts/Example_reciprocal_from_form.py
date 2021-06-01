@@ -19,9 +19,15 @@ objective = 'min'
 file_address = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/topology-crossbraced/R=6.4843/min_thk/deg=20/pointed_crossvault_topology-crossbraced_discr_14_min_thk_15.207373123795708.json'
 
 file_address = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/topology-crossbraced/R=6.1147/min_thk/deg=20/pointed_crossvault_topology-crossbraced_discr_14_min_thk_17.723600813371625.json'
+
+file_address = '/Users/mricardo/compas_dev/compas_tno/data/dome/Dome_Px=0.24_discr_[8, 20]_min.json'
+# file_address = '/Users/mricardo/compas_dev/me/shape_comparison/dome/radial_spaced_fd/dome_radial_spaced_fd_discr_[8, 20]_min_thk_50.0.json'
+# file_address = '/Users/mricardo/compas_dev/me/shape_comparison/dome/radial_spaced_fd/dome_radial_spaced_fd_discr_[8, 20]_max_thk_45.0.json'
+
 form = FormDiagram.from_json(file_address)
 
 plot_form(form).show()
+plot_form(form, show_q=False, cracks=True).show()
 print(form)
 form.overview_forces()
 

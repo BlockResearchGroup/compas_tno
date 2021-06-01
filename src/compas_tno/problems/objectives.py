@@ -4,8 +4,9 @@ from numpy import isnan
 from numpy import hstack
 from numpy import array
 
-from compas_tno.algorithms.equilibrium import zlq_from_qid
-from compas_tno.algorithms.equilibrium import zq_from_qid
+from compas_tno.algorithms import zlq_from_qid
+from compas_tno.algorithms import zq_from_qid
+from compas_tno.algorithms import xyz_from_q
 from compas.numerical import normrow
 
 from scipy.sparse import diags
@@ -23,6 +24,10 @@ __all__ = [
     'f_max_thrust',
     'f_target',
     'f_constant',
+    'f_tight_crosssection',
+    'f_reduce_thk',
+    'f_min_thrust_general',
+    'f_max_thrust_general',
 ]
 
 
@@ -74,6 +79,35 @@ def f_max_thrust(xopt, *args):
         return 10**10
 
     return f
+
+
+def f_min_thrust_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    m = M.m
+
+    if len(variables) > m:
+        M.q = variables[:m]
+        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
+    else:
+        M.q = variables
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
+    xy = M.X[:, :2]
+    P_xy_fixed = M.P[M.fixed][:, :2]
+
+    CfQC = M.Cf.transpose().dot(diags(M.q.flatten())).dot(M.C)
+    Rh = CfQC.dot(xy) - P_xy_fixed
+    f = sum(normrow(Rh))
+
+    return f
+
+
+def f_max_thrust_general(variables, M):
+
+    return -1 * f_min_thrust_general(variables, M)
 
 
 def f_target(xopt, *args):
