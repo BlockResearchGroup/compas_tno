@@ -24,6 +24,7 @@ from compas_tno.problems import f_min_thrust
 from compas_tno.problems import f_max_thrust
 
 from .post_process import post_process_analysis
+from .post_process import post_process_general
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -141,13 +142,7 @@ def run_optimisation_ipopt(analysis):
     bounds = optimiser.bounds
     x0 = optimiser.x0
     g0 = optimiser.g0
-    if 'ind' in variables:
-        args = optimiser.args
-    else:
-        args = [optimiser.M]
-        optimiser.args = args
-
-    print(args)
+    args = [optimiser.M]
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
@@ -249,7 +244,7 @@ def run_optimisation_ipopt(analysis):
     optimiser.niter = None  # Did not find a way to display number of iterations
     optimiser.message = info['status_msg']
 
-    post_process_analysis(analysis)
+    post_process_general(analysis)
 
     # g_final = fconstr(xopt, *args)
     # args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)

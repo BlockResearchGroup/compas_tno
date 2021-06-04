@@ -249,65 +249,84 @@ def sensitivities_wrapper_general(variables, M):
         M = M[0]
 
     # variables
-    m = M.m  # number of edges
+    k = M.k  # number of force variables
     n = M.n  # number of vertices
-    nb = len(M.fixed) # number of fixed vertices
-    Xb_variable = False
+    nb = len(M.fixed)  # number of fixed vertices
+    nbz = 0
+    nbxy = 0
 
-    if len(variables) > m:
-        M.q = variables[:m]
-        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
-        Xb_variable = True
-    else:
-        M.q = variables
+    qid = variables[:k]
+    check = k
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[check:check + 2*nb]
+        check = check + 2*nb
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        nbxy = nb
+    if 'zb' in M.variables:
+        zb = variables[check: check + nb]
+        check = check + nb
+        M.X[M.fixed, [2]] = zb.flatten()
+        nbz = nb
+    if 't' in M.variables:
+        thk = variables[check: check + 1]
+        check = check + 1
+        t = M.shape.data['t']
 
     q = M.q
     Xfixed = M.X[M.fixed]
 
     # update geometry
-    M.X[M.free] = xyz_from_q(q, M.P[M.free], Xfixed, M.Ci, M.Cit, M.Cf)
+    M.X[M.free] = xyz_from_q(q, M.P[M.free], Xfixed, M.Ci, M.Cit, M.Cb)
 
     M.U = diags(M.C.dot(M.X[:, 0]))  # U = diag(Cx)
     M.V = diags(M.C.dot(M.X[:, 1]))  # V = diag(Cy)
     M.W = diags(M.C.dot(M.X[:, 2]))  # W = diag(Cz)
 
     # initialize jac matrix
-    deriv = zeros([0, len(variables)])  # modify to len(variables)
+    deriv = zeros([0, M.k])
 
     Q = diags(q.ravel())
     CitQCi = M.Cit.dot(Q).dot(M.Ci)
     SPLU_D = splu(CitQCi)
 
-    if Xb_variable:
+    if nbxy or nbz:
         Anull = zeros((n, nb))
         A = zeros((n, nb))
-        CitQCf = M.Cit.dot(Q).dot(M.Cf).toarray()
+        CitQCf = M.Cit.dot(Q).dot(M.Cb).toarray()
         A[M.free] = SPLU_D.solve(-CitQCf)
         A[M.fixed] = identity(nb)
 
     # jacobian of in constraints on x
-    dxidq = SPLU_D.solve(-M.Cit.dot(M.U).toarray())
-    dxdq = zeros((n, m))
+    dxidq = SPLU_D.solve(-M.Cit.dot(M.U).toarray()).dot(M.B)
+    dxdq = zeros((n, k))
     dxdq[M.free] = dxidq
-    if Xb_variable:
-        dxdq = hstack([dxdq, A, Anull, Anull])
     deriv = vstack([deriv, dxdq, - dxdq])
 
     # jacobian of in constraints on y
-    dyidq = SPLU_D.solve(-M.Cit.dot(M.V).toarray())
-    dydq = zeros((n, m))
+    dyidq = SPLU_D.solve(-M.Cit.dot(M.V).toarray()).dot(M.B)
+    dydq = zeros((n, k))
     dydq[M.free] = dyidq
-    if Xb_variable:
-        dydq = hstack([dydq, Anull, A, Anull])
     deriv = vstack([deriv, dydq, - dydq])
 
     # jacobian of in constraints on z
-    dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray())
-    dzdq = zeros((n, m))
+    dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
+    dzdq = zeros((n, k))
     dzdq[M.free] = dzidq
-    if Xb_variable:
-        dzdq = hstack([dzdq, Anull, Anull, A])
     deriv = vstack([deriv, dzdq, - dzdq])
+
+    if nbxy:
+        deriv = hstack([deriv, vstack([A, -A, Anull, -Anull, Anull, -Anull])])
+        deriv = hstack([deriv, vstack([Anull, -Anull, A, -A, Anull, -Anull])])
+    if nbz:
+        deriv = hstack([deriv, vstack([Anull, -Anull, Anull, -Anull, A, -A])])
+    if 't' in M.variables:
+        dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, None, None, M.s, M.variables)
+        dxmaxdt = dxmindt = zeros((n, 1))
+        dymaxdt = dymindt = zeros((n, 1))
+        dXdt = vstack([-dxmindt, +dxmaxdt, -dymindt, +dymaxdt, -dzmindt, +dzmaxdt])
+        deriv = hstack([deriv, dXdt])
 
     return deriv
 
@@ -467,19 +486,28 @@ def gradient_fmin_general(variables, M):
     if isinstance(M, list):
         M = M[0]
 
-    m = M.m
     n = M.n
-    Xb_variable = False
+    k = M.k
+    is_xyb_var = False
+    is_zb_var = False
 
-    if len(variables) > m:
-        M.q = variables[:m]
-        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
-        Xb_variable = True
-    else:
-        M.q = variables[:m]
+    k = M.k
+    nb = len(M.fixed)
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        is_xyb_var = True
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+        is_zb_var = True
 
     # update geometry
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
     M.U = diags(M.C.dot(M.X[:, 0]))  # U = diag(Cx)
     M.V = diags(M.C.dot(M.X[:, 1]))  # V = diag(Cy)
@@ -489,18 +517,18 @@ def gradient_fmin_general(variables, M):
     CitQCi = M.Cit.dot(Q).dot(M.Ci)
     SPLU_D = splu(CitQCi)
 
-    dxidq = SPLU_D.solve((-M.Cit.dot(M.U)).toarray())
-    dxdq = zeros((n, m))
+    dxidq = SPLU_D.solve((-M.Cit.dot(M.U)).toarray()).dot(M.B)
+    dxdq = zeros((n, k))
     dxdq[M.free] = dxidq
 
-    dyidq = SPLU_D.solve((-M.Cit.dot(M.V)).toarray())
-    dydq = zeros((n, m))
+    dyidq = SPLU_D.solve((-M.Cit.dot(M.V)).toarray()).dot(M.B)
+    dydq = zeros((n, k))
     dydq[M.free] = dyidq
 
-    CfU = M.Cf.transpose().dot(M.U)
-    CfV = M.Cf.transpose().dot(M.V)
-    dRxdq = CfU + M.Cf.transpose().dot(Q).dot(M.C).dot(dxdq)
-    dRydq = CfV + M.Cf.transpose().dot(Q).dot(M.C).dot(dydq)
+    CfU = M.Cb.transpose().dot(M.U)
+    CfV = M.Cb.transpose().dot(M.V)
+    dRxdq = CfU.dot(M.B) + M.Cb.transpose().dot(Q).dot(M.C).dot(dxdq)
+    dRydq = CfV.dot(M.B) + M.Cb.transpose().dot(Q).dot(M.C).dot(dydq)
 
     # print(dRxdq.shape, dRydq.shape)
 
@@ -512,19 +540,19 @@ def gradient_fmin_general(variables, M):
 
     gradient = (Rx_over_R.transpose().dot(dRxdq) + Ry_over_R.transpose().dot(dRydq)).transpose()
 
-    if Xb_variable:
-        nb = len(M.fixed)
+    if is_xyb_var:
         dxdxb = zeros((n, nb))
-        CitQCf = M.Cit.dot(Q).dot(M.Cf).toarray()
+        CitQCf = M.Cit.dot(Q).dot(M.Cb).toarray()
         dxdxb[M.free] = SPLU_D.solve(-CitQCf)
         dxdxb[M.fixed] = identity(nb)
         dydyb = dxdxb
-        dRxdx = M.Cf.transpose().dot(Q).dot(M.C).dot(dxdxb)
-        dRydy = M.Cf.transpose().dot(Q).dot(M.C).dot(dydyb)
+        dRxdx = M.Cb.transpose().dot(Q).dot(M.C).dot(dxdxb)
+        dRydy = M.Cb.transpose().dot(Q).dot(M.C).dot(dydyb)
         gradient_xb = (Rx_over_R.transpose().dot(dRxdx)).transpose()
         gradient_yb = (Ry_over_R.transpose().dot(dRydy)).transpose()
-        # print(gradient_xb.shape, gradient_yb.shape, gradient.shape)
-        gradient = vstack([gradient, gradient_xb, gradient_yb, zeros((nb, 1))])
+        gradient = vstack([gradient, gradient_xb, gradient_yb])
+    if is_zb_var:
+        gradient = vstack([gradient, zeros((nb, 1))])
 
     return array(gradient).flatten()
 

@@ -73,17 +73,27 @@ def constr_wrapper_general(variables, M):
     if isinstance(M, list):
         M = M[0]
 
-    m = M.m
+    k = M.k
+    nb = M.nb
+    qid = variables[:k]
+    check = k
+    M.q = M.B.dot(qid)
 
-    if len(variables) > m:
-        M.q = variables[:m]
-        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
-    else:
-        M.q = variables
+    if 'xyb' in M.variables:
+        xyb = variables[check:check + 2*nb]
+        check = check + 2*nb
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[check: check + nb]
+        check = check + nb
+        M.X[M.fixed, [2]] = zb.flatten()
+    if 't' in M.variables:
+        thk = variables[check: check + 1]
+        t = M.shape.data['t']
 
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
-    constraints = zeros([0, 1])
+    constraints = zeros([0, 1])  # missing compression only constraint
 
     # constraints in x
     xmin = (M.X[:, 0] - M.xlimits[:, 0]).reshape(-1, 1)
@@ -96,8 +106,11 @@ def constr_wrapper_general(variables, M):
     constraints = vstack([constraints, ymin, ymax])
 
     # constraints in z
+    if 't' in M.variables:
+        M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, t, M.shape, None, None, M.s, M.variables)
     zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)
     zmax = (M.ub.flatten() - M.X[:, 2]).reshape(-1, 1)
+
     constraints = vstack([constraints, zmin, zmax])
 
     return constraints.flatten()

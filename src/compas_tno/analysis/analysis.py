@@ -442,8 +442,8 @@ class Analysis(object):
 
         if self.optimiser.data['library'] == 'MATLAB':
             self = set_up_convex_optimisation(self)
-        elif 'ind' in self.optimiser.data['variables']:
-            self = set_up_nonlinear_optimisation(self)
+        # elif 'ind' in self.optimiser.data['variables']:
+        #     self = set_up_nonlinear_optimisation(self)
         else:
             self = set_up_general_optimisation(self)
 
@@ -507,16 +507,8 @@ class Analysis(object):
                 print('THK  |   Solved  |   Opt.Val |   Opt/W   |   THK red.  |   Setup time  |   Run time')
 
                 while exitflag == 0 and thk > 0:
-                    # if self.optimiser.data['objective'] == 'max':
-                    #     if count < len(thicknesses_min):
-                    #         thk = thicknesses_min[count]
-                    #     else:
-                    #         break
-                    # try:
-                    #     address_load = save_forms + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
-                    #     self.form = FormDiagram.from_json(address_load)
-                    # except:
-                    #     pass
+
+                    # self.form = form0  # added for general case
                     data_shape['thk'] = thk
                     time0 = time.time()
                     self.shape = Shape.from_library(data_shape)
@@ -554,7 +546,6 @@ class Analysis(object):
                             solutions_max.append(fopt_over_weight)
                             thicknesses_max.append(thk)
                             last_max = abs(fopt_over_weight)
-                            last_thk_max = thk
                         if save_forms:
                             address = save_forms + '_' + self.optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
                         else:

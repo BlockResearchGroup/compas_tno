@@ -3,36 +3,25 @@ from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import view_solution
-from compas_tno.problems import initialise_problem
-from compas_tno.algorithms import zlq_from_q
-from compas_tno.algorithms import xyz_from_q
-from compas_tno.problems import f_min_thrust_general
-from compas_tno.problems import constr_wrapper_general
-from compas_tno.problems import sensitivities_wrapper_general
-from compas_tno.problems import gradient_fmin_general
-
-from compas_plotters import MeshPlotter
-
-from compas_tno.algorithms import apply_sag
 
 from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
-
-from numpy import zeros
-from numpy import ones
-
-from numpy import hstack
-from numpy import vstack
-
+import os
+from compas_tno.plotters import save_csv
+from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
 discretisation = 10
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
-thk = 0.15
+thk = 0.50
 discretisation_shape = 4 * discretisation
+
+c = 0.5
+
+thk = 0.50
+thk_reduction = 0.05
 
 # Create form diagram
 
@@ -72,13 +61,13 @@ vault = Shape.from_library(data_shape)
 form.envelope_from_shape(vault)
 form.selfweight_from_shape(vault)
 
-form.envelope_on_x_y(c=0.50)
+form.envelope_on_x_y(c=c)
 
 form_base = form.copy()
 
-apply_sag(form)
+# apply_sag(form)
 
-# form.initialise_loadpath()
+form.initialise_loadpath()
 
 # ------------------------------------------------------------
 # ------------------- Proper Implementation ------------------
@@ -91,9 +80,8 @@ optimiser.data['solver'] = 'SLSQP'
 # optimiser.data['solver'] = 'IPOPT'
 optimiser.data['constraints'] = ['funicular', 'envelope']
 # optimiser.data['variables'] = ['q', 'sym']
-optimiser.data['variables'] = ['q', 'sym', 'zb']
+optimiser.data['variables'] = ['ind', 'sym', 'zb']
 optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
 optimiser.data['plot'] = False
 optimiser.data['find_inds'] = False
 optimiser.data['qmax'] = 1000.0
@@ -117,12 +105,33 @@ for key in form.vertices():
 thrust = abs(optimiser.fopt)
 print('Ratio Thrust/Weight:', thrust/weight)
 
-# print(max(zfree), min(zfree))
+# # print(max(zfree), min(zfree))
 
-for key in form.vertices_where({'is_fixed': True}):
-    print(form.vertex_coordinates(key))
+# for key in form.vertices_where({'is_fixed': True}):
+#     print(form.vertex_coordinates(key))
 
 # Viewing
-plot_superimposed_diagrams(form, form_base).show()
-plot_form(form, show_q=False, cracks=True).show()
-view_solution(form).show()
+# plot_superimposed_diagrams(form, form_base).show()
+# plot_form(form, show_q=False, cracks=True).show()
+# view_solution(form).show()
+
+optimiser.data['printout'] = False
+
+# ----------------------- 5. Create Analysis loop on limit analysis --------------------------
+
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'mov_c_' + str(c))
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+save_form = os.path.join(folder, title)
+
+analysis = Analysis.from_elements(vault, form, optimiser)
+results = analysis.limit_analysis_GSF(thk, thk_reduction, span, save_forms=save_form)
+thicknesses, size_parameters, solutions_min, solutions_max = results
+
+# ----------------------- 6. Save output data --------------------------
+
+
+csv_file = os.path.join(folder, title + '_data.csv')
+save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
+
+img_graph = os.path.join(folder, title + '_diagram.pdf')
+diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()

@@ -129,14 +129,14 @@ def post_process_general(analysis):
 
     form = analysis.form
     optimiser = analysis.optimiser
-    # shape = analysis.shape
+    shape = analysis.shape
 
     M = optimiser.M
     plot = optimiser.data.get('plot', False)
     summary = optimiser.data.get('summary', False)
     printout = optimiser.data.get('printout', True)
     variables = optimiser.data['variables']
-    # thickness_type = optimiser.data.get('thickness_type', 'constant')
+    thickness_type = optimiser.data.get('thickness_type', 'constant')
 
     fconstr = optimiser.fconstr
     # args = optimiser.args
@@ -147,24 +147,24 @@ def post_process_general(analysis):
     i_uv = form.index_uv()
     # i_k = form.index_key()
 
-    M.q = xopt[:len(M.q)].reshape(-1, 1)
+    M.q = M.B.dot(xopt[:M.k])
+    check = M.k
 
-    if 'Xb' in variables:
-        M.X[M.fixed] = xopt[M.m:].reshape(-1, 3, order='F')
-
-    # if 't' in variables:
-    #     thk = xopt[-1]
+    if 'xyb' in variables:
+        xyb = xopt[check:check + 2*M.nb]
+        check = check + 2*M.nb
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in variables:
+        zb = xopt[check: check + M.nb]
+        check = check + M.nb
+        M.X[M.fixed, [2]] = zb.flatten()
+    if 't' in variables:
+        thk = xopt[-1]
     # if 's' in variables:
     #     s = xopt[-1]
 
     g_final = fconstr(xopt, M)
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
-
-    # gkeys = []
-    # for i in ind:
-    #     u, v = i_uv[i]
-    #     gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-    # form.attributes['indset'] = gkeys
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
     i = 0
     for key in form.vertices():
@@ -182,34 +182,39 @@ def post_process_general(analysis):
     form.attributes['loadpath'] = form.loadpath()
     reactions(form, plot=plot)
 
-    # if 't' in variables:
-    #     if shape.data['type'] == 'general':
-    #         if thickness_type == 'constant':
-    #             form.attributes['thk'] = thk
-    #             shape.data['thk'] = thk
-    #             shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
-    #             shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
-    #             form.envelope_from_shape(shape)
-    #         elif thickness_type == 'variable':
-    #             t0 = shape.data['thk']
-    #             thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
-    #             form.attributes['thk'] = thk
-    #             shape.data['thk'] = thk
-    #             if printout:
-    #                 print('Optimum Value corresponds to a thickness of:', thk)
-    #             shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
-    #             form.envelope_from_shape(shape)
-    #         elif thickness_type == 'intrados':
-    #             form.attributes['thk'] = thk
-    #             shape.data['thk'] = thk
-    #             shape.middle = shape.intrados.offset_mesh(n=thk/2, direction='up')
-    #             shape.extrados = shape.intrados.offset_mesh(n=thk, direction='up')
-    #             form.envelope_from_shape(shape)
-    #     else:
-    #         form.attributes['thk'] = thk
-    #         shape.data['thk'] = thk
-    #         shape = Shape.from_library(shape.data)
-    #         form.envelope_from_shape(shape)
+    if 't' in variables:
+        if shape.data['type'] == 'general':
+            if thickness_type == 'constant':
+                form.attributes['thk'] = thk
+                shape.data['thk'] = thk
+                shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
+                shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
+                form.envelope_from_shape(shape)
+            elif thickness_type == 'variable':
+                t0 = shape.data['thk']
+                thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
+                form.attributes['thk'] = thk
+                shape.data['thk'] = thk
+                if printout:
+                    print('Optimum Value corresponds to a thickness of:', thk)
+                shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
+                form.envelope_from_shape(shape)
+            elif thickness_type == 'intrados':
+                form.attributes['thk'] = thk
+                shape.data['thk'] = thk
+                shape.middle = shape.intrados.offset_mesh(n=thk/2, direction='up')
+                shape.extrados = shape.intrados.offset_mesh(n=thk, direction='up')
+                form.envelope_from_shape(shape)
+        else:
+            form.attributes['thk'] = thk
+            shape.data['thk'] = thk
+            shape = Shape.from_library(shape.data)
+            form.envelope_from_shape(shape)  # Check if this is ok for adapted pattern
+            i = 0
+            for key in form.vertices():
+                form.vertex_attribute(key, 'ub', float(M.ub[i]))
+                form.vertex_attribute(key, 'lb', float(M.lb[i]))
+                i += 1
 
     # if 's' in variables:
     #     s = -1 * fopt
@@ -231,11 +236,8 @@ def post_process_general(analysis):
     if printout or summary:
         print('\n' + '-' * 50)
         print('Solution  :', message)
-        # try:
-        #     print('q range : {0:.3f} : {1:.3f}'.format(min(M.q), max(M.q)))
-        # except:
-        #     pass
-        # print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
+        print('q range : {0:.3f} : {1:.3f}'.format(min(M.q), max(M.q)))
+        print('zb range  : {0:.3f} : {1:.3f}'.format(min(M.X[M.fixed, [2]]), max(M.X[M.fixed, [2]])))
         print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
         print('fopt      : {0:.3f}'.format(fopt))
         print('-' * 50 + '\n')

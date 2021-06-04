@@ -1036,9 +1036,6 @@ class FormDiagram(FormDiagram):
                     self.edge_attribute((u, v), 'sym_key', i)
             i += 1
 
-        print('dist_checked')
-        print(dist_checked)
-
         # Symmetry on the Support's position
 
         dist_checked = []
@@ -1066,9 +1063,6 @@ class FormDiagram(FormDiagram):
                 if dist_dict[key] == dist:
                     self.vertex_attribute(key, 'sym_key', i)
             i += 1
-
-        print('dist_checked2')
-        print(dist_checked)
 
         return
 
@@ -1211,8 +1205,8 @@ class FormDiagram(FormDiagram):
         return Asym
 
     def build_symmetry_transformation(self, printout=False):
-        """
-        Build a symmetry matrix such as q = Esym * qsym, with Esym shape (m, k)
+        r"""
+        Build a symmetry matrix Esym (m, k) such as q = Esym * qsym.
         """
 
         m = self.number_of_edges()
@@ -1234,6 +1228,30 @@ class FormDiagram(FormDiagram):
             plt.show()
 
         return Esym
+
+    def build_symmetry_map(self):
+        r"""
+        Build the dictionary mapsym (i ->j) that associate one edge j per group of symmetry i.
+        """
+
+        mapsym = {}
+
+        i = 0
+        while True:
+            j = 0
+            has_i_sym = False
+            for u, v in self.edges():
+                i_sym = self.edge_attribute((u, v), 'sym_key')
+                if i_sym == i:
+                    mapsym[i] = j
+                    has_i_sym = True
+                    break
+                j += 1
+            if has_i_sym == False:
+                break
+            i += 1
+
+        return mapsym
 
     def build_symmetry_matrix_supports(self, printout=False):
 

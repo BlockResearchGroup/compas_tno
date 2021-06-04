@@ -43,10 +43,7 @@ def run_optimisation_scipy(analysis):
     fconstr = optimiser.fconstr
     fgrad = optimiser.fgrad
     fjac = optimiser.fjac
-    if 'ind' in variables:
-        args = optimiser.args
-    else:
-        args = [optimiser.M]
+    args = [optimiser.M]
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym, variables, shape_data = args[:50]
     bounds = optimiser.bounds
     x0 = optimiser.x0
@@ -100,10 +97,10 @@ def run_optimisation_scipy(analysis):
     optimiser.niter = niter
     optimiser.message = message
 
-    if 'ind' in variables:
-        post_process_analysis(analysis)
-    else:
-        post_process_general(analysis)
+    # if 'ind' in variables:
+    #     post_process_analysis(analysis)
+    # else:
+    post_process_general(analysis)
 
     return analysis
 

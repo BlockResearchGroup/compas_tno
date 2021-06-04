@@ -86,19 +86,24 @@ def f_min_thrust_general(variables, M):
     if isinstance(M, list):
         M = M[0]
 
-    m = M.m
+    k = M.k
+    nb = len(M.fixed)
 
-    if len(variables) > m:
-        M.q = variables[:m]
-        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
-    else:
-        M.q = variables
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
 
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
     xy = M.X[:, :2]
     P_xy_fixed = M.P[M.fixed][:, :2]
 
-    CfQC = M.Cf.transpose().dot(diags(M.q.flatten())).dot(M.C)
+    CfQC = M.Cb.transpose().dot(diags(M.q.flatten())).dot(M.C)
     Rh = CfQC.dot(xy) - P_xy_fixed
     f = sum(normrow(Rh))
 
