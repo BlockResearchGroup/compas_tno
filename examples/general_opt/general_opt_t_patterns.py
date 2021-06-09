@@ -15,7 +15,7 @@ from compas_tno.plotters import diagram_of_thrust
 span = 10.0
 k = 1.0
 discretisation = 10
-type_formdiagram = 'fan_fd'
+type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
 discretisation_shape = 4 * discretisation
@@ -24,39 +24,20 @@ c = 0.1
 
 thk = 0.50
 thk_reduction = 0.05
-
+save = True
 solutions = {}
-sag = False
-start_from_form = True
-
-adress = None
-
-address_solved = '/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/fan_fd/mov_c_0.5/crossvault_fan_fd_discr_10_t_thk_17.63944480658616.json'
-
-address_solved = '/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/fan_fd/mov_c_0.5/crossvault_fan_fd_discr_10_t_thk_13.340323711187377.json'
-
-# address_solved = '/Users/mricardo/compas_dev/me/general_opt/crossvault/fan_fd/mov_c_0.5/crossvault_fan_fd_discr_10_min_thk_15.0.json'
 
 
-for c in [0.50]:
+# for c in [0.1, 0.25, 0.50]:
+for c in [0.1]:
     solutions[c] = {}
 
-    for obj in ['max']:
+    for obj in ['t']:
         solutions[c][obj] = {}
 
-        for thk in [0.40, 0.45, 0.50]:
-
-            # Create form diagram
-
-            data_diagram = {
-                'type': type_formdiagram,
-                'xy_span': [[0, span], [0, k*span]],
-                'discretisation': discretisation,
-                'fix': 'corners'
-            }
-
-            form = FormDiagram.from_library(data_diagram)
-            # plot_form(form, show_q=False).show()
+        # for thk in [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1]:
+        # for type_ in ['B2', 'D3', 'D2', 'D4']:
+        for type_ in ['D4']:
 
             # Create shape
 
@@ -75,13 +56,27 @@ for c in [0.50]:
 
             vault = Shape.from_library(data_shape)
 
+            # Create form diagram
+
+            thk = 0.50
+
+            pattern_fd = '/Users/mricardo/compas_dev/me/loadpath/corner/topology/' + type_ + '.json'
+
+            # data_diagram = {
+            #     'type': type_formdiagram,
+            #     'xy_span': [[0, span], [0, k*span]],
+            #     'discretisation': discretisation,
+            #     'fix': 'corners'
+            # }
+
+            form = FormDiagram.from_json(pattern_fd)
+            plot_form(form, show_q=False).show()
+
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
             # ------------------------------------------------------------
 
             # Apply Selfweight and Envelope
-
-            # form_solved = FormDiagram.from_json('/Users/mricardo/compas_dev/me/general_opt/crossvault/fan_fd/fixed/crossvault_fan_fd_discr_10_max_thk_50.0.json')
 
             form.envelope_from_shape(vault)
             form.selfweight_from_shape(vault)
@@ -90,24 +85,32 @@ for c in [0.50]:
 
             form_base = form.copy()
 
-            if sag:
-                apply_sag(form)
-            elif start_from_form:
-                if adress:
-                    form_solved = FormDiagram.from_json(adress)
-                else:
-                    form_solved = FormDiagram.from_json(address_solved)
-                form.mirror_forces_from(form_solved)
+            # apply_sag(form)
 
-                weight = 0
-                for key in form.vertices():
-                    weight += form.vertex_attribute(key, 'pz')
-                thrust = form_solved.thrust()
-                print('Initial Ratio Thrust/Weight:', thrust/weight)
+            # folder_lp = os.path.join('/Users/mricardo/compas_dev/me', 'loadpath', type_structure, type_formdiagram)
+            # os.makedirs(folder_lp, exist_ok=True)
+            # title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+            # save_lp = os.path.join(folder_lp, title)
+            # address_lp = save_lp + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
+            # try:
+            #     form = FormDiagram.from_json(save_lp)
+            #     form.envelope_from_shape(vault)
+            #     form.selfweight_from_shape(vault)
+            #     form.envelope_on_x_y(c=c)
+            # except:
+            #     form.initialise_loadpath()
+            #     form.to_json(address_lp)
 
-                # plot_superimposed_diagrams(form, form_base).show()
-            else:
-                form.initialise_loadpath()
+            folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_, 'mov_c_' + str(c))
+            title = type_structure + '_' + type_ + '_discr_' + str(discretisation)
+            # save_form = os.path.join(folder, title)
+            # address_load = save_form + '_' + 'min' + '_thk_' + str(100*thk) + '.json'
+            # form = FormDiagram.from_json(address_load)
+
+            # form.envelope_on_x_y(c=c)
+
+            # plot_form(form, show_q=False, cracks=True).show()
+            # view_solution(form).show()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -119,12 +122,12 @@ for c in [0.50]:
             optimiser.data['library'] = 'IPOPT'
             optimiser.data['solver'] = 'IPOPT'
             optimiser.data['constraints'] = ['funicular', 'envelope']
-            # optimiser.data['variables'] = ['ind', 'zb']
-            optimiser.data['variables'] = ['sym', 'zb']
-            # optimiser.data['variables'] = ['q', 'zb']
+            optimiser.data['variables'] = ['sym', 'zb', 't']
+            # optimiser.data['variables'] = ['ind', 'zb', 't']
             optimiser.data['objective'] = obj
             optimiser.data['plot'] = False
             optimiser.data['find_inds'] = False
+            optimiser.data['max_iter'] = 1000
             optimiser.data['qmax'] = 1000.0
             optimiser.data['gradient'] = True
             optimiser.data['printout'] = True
@@ -141,45 +144,45 @@ for c in [0.50]:
             analysis.set_up_optimiser()
             analysis.run()
 
+            form.overview_forces()
+            thk = form.attributes['thk']
+
             weight = 0
             for key in form.vertices():
                 weight += form.vertex_attribute(key, 'pz')
 
-            form.overview_forces()
-            thrust = abs(optimiser.fopt)
+            thrust = form.thrust()
             print('Ratio Thrust/Weight:', thrust/weight)
 
-            # plot_form(form).show()
-            # view_solution(form).show()
-
-            if sag:
-                folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'sag_mov_c_' + str(c))
-            if 'ind' in optimiser.data['variables']:
-                folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'fixed')
-            else:
-                folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'mov_c_' + str(c))
-            os.makedirs(folder, exist_ok=True)
-            title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+            # folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', 'min_thk', type_structure, type_formdiagram, 'mov_c_' + str(c))
+            # os.makedirs(folder, exist_ok=True)
+            title = type_structure + '_' + type_
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            if optimiser.exitflag == 0 or optimiser.data['library'] == 'IPOPT':
+            # plot_superimposed_diagrams(form, form_base).show()
+            # view_solution(form).show()
+
+            if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
-                form.to_json(address)
-                print('Form saved to:', address)
                 img_file = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.png'
-                plot_superimposed_diagrams(form, form_base, save=img_file).show()
+                if save:
+                    form.to_json(address)
+                    print('Saved to: ', address)
+                    plot_superimposed_diagrams(form, form_base, save=img_file).show()
+                    view_solution(form).show()
             else:
-                plot_superimposed_diagrams(form, form_base)
-                pass
+                break
+
+    plot_superimposed_diagrams(form, form_base).show()
+    view_solution(form).show()
 
 print(solutions)
 print('\n')
 
 for key in solutions:
     for key2 in solutions[key]:
-        for key3 in solutions[key][key2]:
-            print(key, key2, key3, solutions[key][key2][key3])
+        print(key, key2, solutions[key][key2])
 
 # # # ----------------------- 5. Create Analysis loop on limit analysis --------------------------
 

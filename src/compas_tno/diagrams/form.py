@@ -103,6 +103,7 @@ class FormDiagram(FormDiagram):
         })
         self.update_default_edge_attributes({
             'q': 1.0,
+            'f': 1.0,
             'is_symmetry': False,
             'is_ind': False,
         })
@@ -697,6 +698,20 @@ class FormDiagram(FormDiagram):
 
         return
 
+    def mirror_forces_from(self, form_mirror):
+
+        for key in self.vertices_where({'is_fixed': True}):
+            zb = form_mirror.vertex_attribute(key, 'z')
+            self.vertex_attribute(key, 'z', zb)
+
+        for u, v in self.edges():
+            q = form_mirror.edge_attribute((u, v), 'q')
+            f = form_mirror.edge_attribute((u, v), 'f')
+            self.edge_attribute((u, v), 'q', q)
+            self.edge_attribute((u, v), 'f', f)
+
+        return
+
     def residual(self, plot=False):
         """ Compute residual forces.
         """
@@ -814,6 +829,7 @@ class FormDiagram(FormDiagram):
         for key in self.vertices():
             ub_ = float(zub[i])
             lb_ = float(zlb[i])
+            x, y, _ = self.vertex_coordinates(key)
             # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' ub:', ub_)
             # print('(x,y): ({0:.3f}, {1:.3f})'.format(x, y), ' lb:', lb_)
             # if math.isnan(lb_):  # This check seems deprecated because the get_from_pattern seems to never return NaN...
@@ -1004,7 +1020,7 @@ class FormDiagram(FormDiagram):
 
         return
 
-    def apply_symmetry(self, center=[5.0, 5.0, 0.0], axis_symmetry=None):
+    def apply_symmetry(self, center=[5.0, 5.0, 0.0], axis_symmetry=None, correct_loads=True):
 
         self.edges_attribute('sym_key', None)
         self.vertices_attribute('sym_key', None)
@@ -1034,6 +1050,7 @@ class FormDiagram(FormDiagram):
             for u, v in dist_dict:
                 if dist_dict[(u, v)] == dist:
                     self.edge_attribute((u, v), 'sym_key', i)
+
             i += 1
 
         # Symmetry on the Support's position
@@ -1042,14 +1059,14 @@ class FormDiagram(FormDiagram):
         dist_dict = {}
 
         if not axis_symmetry:
-            for key in self.vertices_where({'is_fixed': True}):
+            for key in self.vertices():
                 point = self.vertex_coordinates(key)
                 dist = round(distance_point_point_xy(center, point), 10)
                 dist_dict[key] = dist
                 if dist not in dist_checked:
                     dist_checked.append(dist)
         else:
-            for key in self.vertices_where({'is_fixed': True}):
+            for key in self.vertices():
                 point = self.vertex_coordinates(key)
                 dist_line = round(distance_point_line_xy(point, axis_symmetry), 10)
                 closest_pt = geometric_key(closest_point_on_line_xy(point, axis_symmetry))
@@ -1059,9 +1076,23 @@ class FormDiagram(FormDiagram):
                     dist_checked.append(dist)
         i = 0
         for dist in dist_checked:
+            pass_first = False
+            pz = None
+            ub = None
+            lb = None
             for key in dist_dict:
                 if dist_dict[key] == dist:
                     self.vertex_attribute(key, 'sym_key', i)
+                    if correct_loads:
+                        if not pass_first:
+                            pass_first = True
+                            pz = self.vertex_attribute(key, 'pz')
+                            ub = self.vertex_attribute(key, 'ub')
+                            lb = self.vertex_attribute(key, 'lb')
+                        self.vertex_attribute(key, 'pz', pz)
+                        self.vertex_attribute(key, 'ub', ub)
+                        self.vertex_attribute(key, 'lb', lb)
+                        # print(pz, ub, lb)
             i += 1
 
         return

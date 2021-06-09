@@ -24,7 +24,8 @@ __all__ = [
     'plot_independents',
     'plot_gif_forms_xz',
     'plot_gif_forms_and_shapes_xz',
-    'plot_sym_inds',
+    'plot_symmetry',
+    'plot_symmetry_vertices',
 ]
 
 
@@ -1256,7 +1257,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     return plotter
 
 
-def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, save=False):
+def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, save=False):
     """ Extended plotting of a FormDiagram focusing on showing the symmetric relations among independent edges
 
     Parameters
@@ -1287,6 +1288,8 @@ def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     i_sym_max = 0
     for u, v in form.edges_where({'_is_edge': True}):
         i_sym = form.edge_attribute((u, v), 'sym_key')
+        if i_sym is None:
+            raise NameError('Check if symmetry is applied to to the problem formulation.')
         if i_sym > i_sym_max:
             i_sym_max = i_sym
 
@@ -1325,6 +1328,63 @@ def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     # plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
 
     plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+def plot_symmetry_vertices(form, radius=0.1, print_sym=True, fix_width=True, width=10, save=False):
+    """ Extended plotting of a FormDiagram showing the symmetric relations in vertices.
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    width : bool
+        Width of the lines in the plot.
+    max_width : float
+        Maximum edge width.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    lines = []
+    i = 0
+
+    i_sym_max = 0
+    for key in form.vertices():
+        i_sym = form.vertex_attribute(key, 'sym_key')
+        if i_sym > i_sym_max:
+            i_sym_max = i_sym
+
+    from compas.utilities import rgb_to_hex
+    colormap = plt.cm.hsv  # gist_ncar nipy_spectral, Set1, Paired coolwarm
+    colors = [rgb_to_hex(colormap(i)[:3]) for i in linspace(0, 1.0, i_sym_max + 1)]
+    rad_colors = {}
+    texts = {}
+    for key in form.vertices():
+        colour = '666666'
+        txt = ''
+        i_sym = form.vertex_attribute(key, 'sym_key')
+        colour = colors[i_sym]
+        if print_sym:
+            txt = str(i_sym)
+        texts[key] = txt
+        rad_colors[key] = colour
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    plotter.draw_edges()
+    plotter.draw_vertices(facecolor=rad_colors, radius=radius, text=texts)
     if save:
         plotter.save(save)
 

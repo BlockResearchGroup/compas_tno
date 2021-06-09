@@ -31,13 +31,15 @@ from compas_tno.problems import sensitivities_wrapper
 from compas_tno.problems import sensitivities_wrapper_inequalities
 from compas_tno.problems import sensitivities_wrapper_general
 
-from compas_tno.plotters import plot_sym_inds
-
 from compas_tno.problems import constr_wrapper
 from compas_tno.problems import constr_wrapper_inequalities
 from compas_tno.problems import constr_wrapper_general
 
 from compas.datastructures import mesh_bounding_box_xy
+
+from compas_tno.plotters import plot_symmetry
+from compas_tno.plotters import plot_symmetry_vertices
+from compas_tno.plotters import plot_independents
 
 from numpy import append
 from numpy import array
@@ -274,6 +276,9 @@ def set_up_general_optimisation(analysis):
     M.constraints = constraints
     M.shape = shape
 
+    from compas_tno.algorithms import apply_sag
+    apply_sag(form)
+
     if 'ind' in variables and 'sym' in variables:
         # print('\n-------- Initialisation with fixed and sym form --------')
         adapt_problem_to_sym_and_fixed_diagram(M, form, axis_symmetry=axis_symmetry, printout=printout)
@@ -420,6 +425,10 @@ def set_up_general_optimisation(analysis):
         if violated:
             print('Constraints Violated #:', violated)
 
+    plot_symmetry(form).show()
+    plot_independents(form).show()
+    plot_symmetry_vertices(form).show()
+
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr
     optimiser.fgrad = fgrad
@@ -507,7 +516,7 @@ def set_symmetry_constraint(form, constraints, printout, plot=False):
         print('Resulted in Asym Matrix Shape:', Asym.shape)
         print('Unique independents:', form.number_of_sym_independents())
     if plot:
-        plot_sym_inds(form).show()
+        plot_symmetry(form).show()
 
     return Asym
 

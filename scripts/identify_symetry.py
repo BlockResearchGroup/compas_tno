@@ -12,7 +12,7 @@ from compas_tno.viewers import view_thrust
 from compas_tno.viewers import view_solution
 from compas_tno.plotters import diagram_of_thrust
 from compas_tno.plotters import save_csv
-from compas_tno.plotters import plot_sym_inds
+from compas_tno.plotters import plot_symmetry
 
 # ------------------------------------------------------------------------------------
 # ------------------------------ MAKE THE FROM DIAGRAM -------------------------------
@@ -102,7 +102,7 @@ form = FormDiagram.from_json(json_path)
 form.apply_symmetry(center=[5.0, 5.0, 0.0], horizontal_only=True)
 Asym_total = form.assemble_symmetry_matrix(printout=True)
 plot_independents(form, show_symmetry=True).show()
-plot_sym_inds(form).show()
+plot_symmetry(form).show()
 
 # import matplotlib.pyplot as plt
 
@@ -110,7 +110,7 @@ plot_sym_inds(form).show()
 # plt.matshow(Asym)
 # plt.show()
 
-# plot_sym_inds(form).show()
+# plot_symmetry(form).show()
 # plot_independents(form, show_symmetry=True).show()
 # form.build_symmetry_matrix(printout=True)
 # form.build_symmetry_matrix_supports(printout=True)

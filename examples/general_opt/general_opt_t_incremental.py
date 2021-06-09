@@ -28,6 +28,7 @@ save = True
 solutions = {}
 
 
+# for c in [0.1, 0.25, 0.50]:
 for c in [0.50]:
     solutions[c] = {}
 
@@ -82,6 +83,7 @@ for c in [0.50]:
             # apply_sag(form)
 
             folder_lp = os.path.join('/Users/mricardo/compas_dev/me', 'loadpath', type_structure, type_formdiagram)
+            os.makedirs(folder_lp, exist_ok=True)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_lp = os.path.join(folder_lp, title)
             address_lp = save_lp + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
@@ -94,8 +96,8 @@ for c in [0.50]:
                 form.initialise_loadpath()
                 form.to_json(address_lp)
 
-            form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/cross_fd/mov_c_0.1/crossvault_cross_fd_discr_10_t_thk_50.0.json')
-            thk = form.attributes['thk']
+            # form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/fan_fd/mov_c_0.1/crossvault_fan_fd_discr_10_t_thk_50.0.json')
+            # thk = form.attributes['thk']
 
             form.envelope_on_x_y(c=c)
 
@@ -107,13 +109,13 @@ for c in [0.50]:
             # ------------------------------------------------------------
 
             optimiser = Optimiser()
-            optimiser.data['library'] = 'SLSQP'
-            optimiser.data['solver'] = 'SLSQP'
-            # optimiser.data['library'] = 'IPOPT'
-            # optimiser.data['solver'] = 'IPOPT'
+            # optimiser.data['library'] = 'SLSQP'
+            # optimiser.data['solver'] = 'SLSQP'
+            optimiser.data['library'] = 'IPOPT'
+            optimiser.data['solver'] = 'IPOPT'
             optimiser.data['constraints'] = ['funicular', 'envelope']
-            # optimiser.data['variables'] = ['q', 'sym']
-            optimiser.data['variables'] = ['q', 'zb', 't']
+            optimiser.data['variables'] = ['ind', 'sym', 'zb', 't']
+            # optimiser.data['variables'] = ['ind', 'zb', 't']
             optimiser.data['objective'] = obj
             optimiser.data['plot'] = False
             optimiser.data['find_inds'] = False
@@ -122,7 +124,7 @@ for c in [0.50]:
             optimiser.data['gradient'] = True
             optimiser.data['printout'] = True
             optimiser.data['jacobian'] = True
-            optimiser.data['derivative_test'] = True
+            optimiser.data['derivative_test'] = False
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -134,6 +136,7 @@ for c in [0.50]:
             analysis.run()
 
             form.overview_forces()
+            thk = form.attributes['thk']
 
             weight = 0
             for key in form.vertices():

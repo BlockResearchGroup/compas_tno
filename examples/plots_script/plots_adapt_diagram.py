@@ -232,10 +232,23 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
         xmin = array(thks[0])
         xmax = array(thks[1])
 
-        fmin = 100.0*array(sols[0])
-        fmax = -100.0*array(sols[1])
+        print(i)
+        print(xmin)
+        print(xmax)
+
+        mult = 100
+        sign = -1
+        if sols[0][0] > 5.0:
+            mult = 1
+        if sols[1][0] > 0.0:
+            sign = +1
+
+        fmin = mult*array(sols[0])
+        fmax = mult*sign*array(sols[1])
         n = len(xmin)
         m = len(xmax)
+        print(fmin)
+        print(fmax)
 
         if simplified is True:
             ax.plot(xmin, fmin, markers[i], ls='-', markersize=6, color=colors[i], label=legends[i])
@@ -309,284 +322,112 @@ size_axis_label = 12
 size_axis_data = 12
 size_legend = 12
 
-# Plot for graph of curves and discretisations
-series = []
-x = []
-y = []
-styles = []
-colours = []
+# ------------CROSS DIAGRAM------------
+# ------------CROSS DIAGRAM------------
+# ------------- plot of the diagrams of thrust
 
-radius = 5.0
-bench = 0.042
-discr = [4, 8, 12, 16, 20, 24]
-
-# # meridians = 12
-# series.append(r'$n_\mathrm{M} = 12$')
-# y.append(np.array([0.06670, 0.17474, 0.19103, 0.19473, 0.20282, 0.20311])/radius)
-
-# # meridians = 16
-# series.append(r'$n_\mathrm{M} = 16$')
-# y.append(np.array([0.06922, 0.17687, 0.19266, 0.19669, 0.20455, 0.20464])/radius)
-
-# # meridians = 20
-# series.append(r'$n_\mathrm{M} = 20$')
-# y.append(np.array([0.07037, 0.17786, 0.19341, 0.19759, 0.20534, 0.20534])/radius)
-
-# # meridians = 24
-# series.append(r'$n_\mathrm{M} = 24$')
-# y.append(np.array([0.07100, 0.17839, 0.19382, 0.19808, 0.20577, 0.20572])/radius)
-
-# # theoretical
-# series.append('benchmark')
-# bench_x = [4, 24]
-# y.append([bench, bench])
-
-# # for i in range(len(series)):
-# #     plt.plot(x[i], y[i], 'o-', label=series[i])
-
-
-# fig = plt.figure(figsize=size_plots)  # try 12, 4
-# # ax = plt.subplot(111)
-# ax = plt.axes()
-# ax.plot(discr, y[0], 'o-', label=series[0])
-# ax.plot(discr, y[1], 'o-', label=series[1])
-# ax.plot(discr, y[2], 'o-', label=series[2])
-# ax.plot(discr, y[3], 'o-', label=series[3])
-# ax.plot(bench_x, y[4], color='black', linestyle='dashed', label=series[4])
-# ax.legend(fontsize=size_legend)
-# ax.set_xlabel(r'number of parallels $(n_\mathrm{P})$', size=size_axis_label)
-# ax.set_ylabel(r'thickness-over-radius $(t/r)$', size=size_axis_label)
-# ax.annotate(r'benchmark $(t/r) = 0.042$', (sum(bench_x)/2, 0.042 + 0.001), textcoords="offset points", xytext=(sum(bench_x)/2, 0.042), ha='center')  # size =
-# ax.tick_params(labelsize=size_axis_data)
-# ax.set_xlim(4-1, 24+1)
-# ax.set_ylim(0, 0.05)
-# ax.set_xticks([4, 8, 12, 16, 20, 24])
-
-# box = ax.get_position()
-# ax.set_position(box_limits(box))
-
-# plt.show()
-
-# ------------------- Plot of Dome
-
-# type_structure = 'dome'
-# type_formdiagram = 'radial_fd'
-# discretisation = [20, 16]
-
-# folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'min_max')
-# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-
-# csv_file = os.path.join(folder, title + '_data.csv')
-# thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
-# print(thicknesses)
-# thickness_over_radius = [[],[]]
-# for el in thicknesses[0]:
-#     thickness_over_radius[0].append(el/radius)
-#     thickness_over_radius[1].append(el/radius)
-
-# img_graph = os.path.join(folder, title + '_diagram.pdf')
-# diagram_of_thrust(thickness_over_radius, solutions, save=img_graph, fill=True, limit_state=False, x_label=r'thickness-over-radius ($t/r$)', GSF_ticks=[1.5, 2.0, 2.5, 3.0]).show()
-
-# # ------------------- Plot of Amiens solution
+# xy_limits = [[0.50, 0.01], [160, 40]]
+# GSF_ticks = [2.0, 3.0, 4.0, 5.0]
+# legends = {'cross_fd': [r'orthogonal | $c=0$', r'orthogonal | $c=0.1$', r'orthogonal | $c=0.25$', r'orthogonal | $c=0.50$']}
+# colors = {'cross_fd': ['C0', 'C1', 'C2', 'C3']}  # These are C0 and C1 in HEX.
+# # colors = {'cross_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
+# # colors = {'cross_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
 
 # type_structure = 'crossvault'
-# type_formdiagram = 'fan_fd'
 # discretisation = 14
-# file_name = 'amiens_internet'
+# span = 10.0
 
-# folder = os.path.join('/Users/mricardo/compas_dev/me', 'max_n', file_name, type_structure, type_formdiagram, 'min_max')
-# os.makedirs(folder, exist_ok=True)
-# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method'
+# thicknesses_cross = {0: [], 0.5: [], 0.25: [], 0.10: []}
+# solutions_cross = {0: [], 0.5: [], 0.25: [], 0.10: []}
 
-# csv_file = os.path.join(folder, title + '_data.csv')
-# thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
-# print(thicknesses)
+# thicknesses_cross[0] = [[0.5, 0.45, 0.4, 0.35, 0.312962187], [0.5, 0.45, 0.4, 0.35, 0.312962187]]
+# thicknesses_cross[0.1] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.258], [0.5, 0.45, 0.4, 0.35, 0.3, 0.258]]
+# thicknesses_cross[0.25] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.184], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.184]]
+# thicknesses_cross[0.50] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.08, 0.068], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.08, 0.068]]
 
-# img_graph = os.path.join(folder, title + '_diagram.pdf')
-# diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False, GSF_ticks=[1.2, 1.4, 1.6]).show()
+# solutions_cross[0] = [[74.77527759, 76.80560202, 78.93177332, 81.16145847, 83.02732332], [101.4369571, 96.63002935, 91.66880597, 86.9492763, 83.02732332]]
+# solutions_cross[0.1] = [[69.06129278, 71.08742835, 73.2219834, 75.47448344, 77.85555839, 82.99613507],
+#                         [106.3914928, 102.2550684, 97.49670923, 92.52823744, 87.77523638, 82.99613507]]
+# solutions_cross[0.25] = [[61.8501194, 63.6646636, 65.57630256, 67.59356665, 69.89140462, 72.72468194, 75.82010424, 83.02422223],
+#                          [112.4785537, 108.7157143, 105.0077231, 100.7879474, 95.71380702, 90.75967139, 85.85373385, 83.02422223]]
+# solutions_cross[0.50] = [[57.7043236, 58.76389089, 59.90347996, 61.08585247, 62.31355437, 63.58933168, 65.04157446, 68.78910449, 75.36704346, 78.36179929,
+#                           80.76587164], [122.3514873, 118.2583604, 114.2776598, 110.385518, 106.5543606, 102.7497656, 97.83152217, 92.45423153, 86.52378904, 83.07284839, 80.76587164]]
 
-# ------------------- Plot of Crossvault graph
+# for type_formdiagram in ['cross_fd']:
+#     thicknesses_all = []
+#     solutions_all = []
+#     for deg in [0, 0.1, 0.25, 0.50]:
+#         thicknesses = thicknesses_cross[deg]
+#         solutions = solutions_cross[deg]
+#         img_graph = None
+#         # diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, limit_state=False).show()
+#         thicknesses_all.append(thicknesses)
+#         solutions_all.append(solutions)
+#         print(type_formdiagram, deg, -solutions[1][0]/solutions[0][0])
+#     folder_main = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+#     title_main = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+#     img_graph = os.path.join(folder_main, title_main + '_diagram.pdf')
+#     img_graph = None
+#     print(thicknesses_all)
+#     print(solutions_all)
+#     # thickness_over_span = [[[], []], [[], []], [[], []]]
+#     # for i in range(len(thicknesses_all)):
+#     #     for el in thicknesses_all[i][0]:
+#     #         print(el)
+#     #         thickness_over_span[i][0].append(el/span)
+#     #         thickness_over_span[i][1].append(el/span)
 
-# path = '/Users/mricardo/compas_dev/me/min_thk/crossvault/study_crossvault_minthk.csv'
+#     for series in solutions_all:
+#         print(len(series[0]), len(series[1]))
+#         for i in range(len(series[0])):
+#             series[0][i] = series[0][i]/100
+#             series[1][i] = series[1][i]/100
+#     for series in thicknesses_all:
+#         print(len(series[0]), len(series[1]))
 
-# discr = []
-# cross_fd = [[], [], []]
-# fan_fd = [[], [], []]
-# radius = 10.0  #actually span
-# # series = ['Analytical min thickness', 'Offset min thickness', 'Correction on normals']
-# series = ['Orthogonal Form Diagram', 'Fan-like Form Diagram']
+#     print(thicknesses_all)
+#     print(solutions_all)
 
-# with open(path) as csv_file:
-#     csv_reader = csv.reader(csv_file, delimiter=',')
-#     line = 0
-#     for row in csv_reader:
-#         if line > 0:
-#             discr.append(int(row[0]))
-#             for i in range(3):
-#                 cross_fd[i].append(float(row[1 + 2*i])/radius)
-#                 fan_fd[i].append(float(row[2 + 2*i])/radius)
-#         line += 1
-
-# print(cross_fd)
-# print(fan_fd)
-# lines = []
-# fig = plt.figure(figsize=size_plots)  # try 12, 4
-# ax = plt.subplot(111)
-# lines += ax.plot(discr, cross_fd[0], 'o-', label=series[0])#, color='royalblue')
-# # lines += ax.plot(discr, cross_fd[1], 's--', label=series[1])#, color='royalblue')
-# # lines += ax.plot(discr, cross_fd[2], 'x--', label=series[2])#, color='royalblue')
-
-# lines += ax.plot(discr, fan_fd[0], 'o-', label=series[1])#, color='mediumpurple')
-# # lines += ax.plot(discr, fan_fd[1], 's--', label=series[1])#, color='mediumpurple')
-# # lines += ax.plot(discr, fan_fd[2], 'x--', label=series[2])#, color='mediumpurple')
-
-# # plt.plot(bench_x, y[4], color='black', linestyle='dashed', label=series[4])
-# # ax.legend(lines[:2], ['line A', 'line B'],
-# #           loc='upper right', frameon=False)
-
-
-# from matplotlib.legend import Legend
-
-# # ax = plt.axes()
-
-# ax.legend(fontsize=size_legend)
-# ax.tick_params(labelsize=size_axis_data)
-
-# # ax.legend(lines[:3], series, loc='upper right', fontsize=size_legend, title='Orthogonal Diagram:', bbox_to_anchor=(1.35, 0.8))
-
-# # leg = Legend(ax, lines[3:], series, frameon=False, loc='lower right', fontsize=size_legend, title='Fan-like Diagram:', bbox_to_anchor=(1.35, 0.25))
-# # ax.add_artist(leg)
-
-# box = ax.get_position()
-# ax.set_position(box_limits(box))
-
-# # leg = Legend(ax, lines[2:], ['line C', 'line D'],
-# #              loc='lower right', frameon=False)
-
-# ax.set_xlabel(r'discretisation $(n)$', size=size_axis_label, labelpad=8)
-# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-# # ax.annotate(r'benchmark $(t/R) = 0.042$', (sum(bench_x)/2, 0.042 + 0.001), textcoords="offset points", xytext=(sum(bench_x)/2, 0.042), ha='center')  # size =
-# ax.set_xlim(discr[0]-1, discr[-1]+1)
-# ax.set_ylim(0, 0.05)
-# ax.set_xticks(discr)
-# plt.show()
-
-# # --------------------------   Plot spring angle in terms of deg (discretisation n=14)
-
-# can plot in terms of A reading the file study_crossvault_A
-# path = '/Users/mricardo/compas_dev/me/min_thk/crossvault/study_crossvault_deg_D=14_minthk.csv'
-
-# A = []
-# cross_fd = [[], [], [], []]
-# fan_fd = [[], [], [], []]
-# radius = 10.0
-# series = ['analytical', 'strategy A', 'strategy B']
-
-# with open(path) as csv_file:
-#     csv_reader = csv.reader(csv_file, delimiter=',')
-#     line = 0
-#     for row in csv_reader:
-#         if line > 0:
-#             A.append(float(row[0]))
-#             for i in range(4):
-#                 cross_fd[i].append(float(row[1 + 2*i])/radius)
-#                 fan_fd[i].append(float(row[2 + 2*i])/radius)
-#         line += 1
-
-# lines = []
-# fig = plt.figure(figsize=size_plots)
-# ax = plt.subplot(111)
-# lines += ax.plot(A, cross_fd[0], 'o-', label='Orthogonal Form Diagram', color='C0')
-# lines += ax.plot(A, fan_fd[0], 'o-', label='Fan-like Form Diagram', color='C1')
-
-# ax.legend(fontsize=size_legend)
-# ax.tick_params(labelsize=size_axis_data)
-# box = ax.get_position()
-# ax.set_position(box_limits(box))
-
-# ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
-# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-# ax.set_xlim(A[0]-1, A[-1]+1)
-# ax.set_ylim(0, 0.05)
-# ax.set_xticks(A)
-# plt.show()
-
-# lines = []
-# fig = plt.figure(figsize=size_plots)  # try 12, 4
-# ax = plt.subplot(111)
-# lines += ax.plot(A, cross_fd[0], 'o-', label=series[0], color='C0')
-# lines += ax.plot(A, cross_fd[1], 's--', label=series[1], color='C2')
-# lines += ax.plot(A, cross_fd[2], 'x--', label=series[2], color='C3')
-# # lines += ax.plot(A[-6:], cross_fd[3][-6:], '.--', label=series[3], color='C4')
-
-# ax.legend(fontsize=size_legend)
-# ax.tick_params(labelsize=size_axis_data)
-# box = ax.get_position()
-# ax.set_position(box_limits(box))
-
-# ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
-# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-# ax.set_xlim(A[0]-1, A[-1]+1)
-# ax.set_ylim(0, 0.10)
-# ax.set_xticks(A)
-# plt.show()
+#     diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph,
+#                                fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
+#     # diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
 
 
-# lines = []
-# fig = plt.figure(figsize=size_plots)  # try 12, 4
-# ax = plt.subplot(111)
-# lines += ax.plot(A, fan_fd[0], 'o-', label=series[0], color='C1')
-# lines += ax.plot(A, fan_fd[1], 's--', label=series[1], color='C2')
-# lines += ax.plot(A, fan_fd[2], 'x--', label=series[2], color='C3')
-# # lines += ax.plot(A[-6:], fan_fd[3][-6:], '.--', label=series[3], color='C4')
 
-# ax.legend(fontsize=size_legend)
-# ax.tick_params(labelsize=size_axis_data)
-# box = ax.get_position()
-# ax.set_position(box_limits(box))
-
-# ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
-# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-# ax.set_xlim(A[0]-1, A[-1]+1)
-# ax.set_ylim(0, 0.10)
-# ax.set_xticks(A)
-# plt.show()
-
+# ------------FAN DIAGRAM------------
+# ------------FAN DIAGRAM------------
 # ------------- plot of the diagrams of thrust
 
 xy_limits = [[0.50, 0.01], [160, 40]]
 GSF_ticks = [2.0, 3.0, 4.0, 5.0]
-legends = {'cross_fd': [r'orthogonal | $c=0$', r'orthogonal | $c=0.1$', r'orthogonal | $c=0.25$', r'orthogonal | $c=0.50$']}
-colors = {'cross_fd': ['C0', 'C1', 'C2', 'C3']}  # These are C0 and C1 in HEX.
-# colors = {'cross_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
-# colors = {'cross_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
+legends = {'fan_fd': [r'fan-like | $c=0$', r'fan-like | $c=0.1$', r'fan-like | $c=0.25$', r'fan-like | $c=0.50$']}
+colors = {'fan_fd': ['C0', 'C1', 'C2', 'C3']}  # These are C0 and C1 in HEX.
+# colors = {'fan_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
+# colors = {'fan_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
 
 type_structure = 'crossvault'
 discretisation = 14
 span = 10.0
 
-thicknesses_cross = {0: [], 0.5: [], 0.25: [], 0.10: []}
-solutions_cross = {0: [], 0.5: [], 0.25: [], 0.10: []}
+thicknesses_fan = {0: [], 0.5: [], 0.25: [], 0.10: []}
+solutions_fan = {0: [], 0.5: [], 0.25: [], 0.10: []}
 
-thicknesses_cross[0] = [[0.5, 0.45, 0.4, 0.35, 0.312962187], [0.5, 0.45, 0.4, 0.35, 0.312962187]]
-thicknesses_cross[0.1] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.258], [0.5, 0.45, 0.4, 0.35, 0.3, 0.258]]
-thicknesses_cross[0.25] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.184], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.184]]
-thicknesses_cross[0.50] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.08, 0.068], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.08, 0.068]]
+thicknesses_fan[0] = [[0.5, 0.462], [0.5, 0.462]]
+thicknesses_fan[0.1] = [[0.5, 0.45, 0.4, 0.381], [0.5, 0.45, 0.4, 0.381]]
+thicknesses_fan[0.25] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.284], [0.5, 0.45, 0.4, 0.35, 0.3, 0.284]]
+thicknesses_fan[0.50] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.133], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.133]]
 
-solutions_cross[0] = [[74.77527759, 76.80560202, 78.93177332, 81.16145847, 83.02732332], [101.4369571, 96.63002935, 91.66880597, 86.9492763, 83.02732332]]
-solutions_cross[0.1] = [[69.06129278, 71.08742835, 73.2219834, 75.47448344, 77.85555839, 82.99613507],
-                        [106.3914928, 102.2550684, 97.49670923, 92.52823744, 87.77523638, 82.99613507]]
-solutions_cross[0.25] = [[61.8501194, 63.6646636, 65.57630256, 67.59356665, 69.89140462, 72.72468194, 75.82010424, 83.02422223],
-                         [112.4785537, 108.7157143, 105.0077231, 100.7879474, 95.71380702, 90.75967139, 85.85373385, 83.02422223]]
-solutions_cross[0.50] = [[57.7043236, 58.76389089, 59.90347996, 61.08585247, 62.31355437, 63.58933168, 65.04157446, 68.78910449, 75.36704346, 78.36179929, 83.07284839,
-                          80.76587164], [122.3514873, 118.2583604, 114.2776598, 110.385518, 106.5543606, 102.7497656, 97.83152217, 92.45423153, 86.52378904, 83.07284839, 80.76587164]]
+solutions_fan[0] = [[85.39414706, 87.84789785], [91.58440479, 87.84789785]]
+solutions_fan[0.1] = [[77.38786732, 79.82182979, 82.92104332, 85.87888901], [98.61784773, 96.65808853, 91.82967859, 85.87888901]]
+solutions_fan[0.25] = [[69.30562706, 71.5898352, 74.01799122, 76.63720002, 79.43758131, 81.79817597], [108.6253247, 103.3151941, 98.18929977, 93.89348244, 88.71289272, 81.79817597]]
+solutions_fan[0.50] = [[58.32042403, 60.26863607, 62.34047242, 64.54856747, 65.92274897, 68.40896737, 72.20575127, 79.29859657], [121.5, 114.673246, 110.7220752, 105.7359792, 100.3871226, 95.27980421, 90.68620846, 79.29859657]]
 
-for type_formdiagram in ['cross_fd']:
+for type_formdiagram in ['fan_fd']:
     thicknesses_all = []
     solutions_all = []
-    for deg in [0, 0.1, 0.25, 0.50]:
-        thicknesses = thicknesses_cross[deg]
-        solutions = solutions_cross[deg]
+    for deg in [0, 0.1, 0.25, 0.5]:
+        thicknesses = thicknesses_fan[deg]
+        solutions = solutions_fan[deg]
         img_graph = None
         # diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, limit_state=False).show()
         thicknesses_all.append(thicknesses)
@@ -604,6 +445,17 @@ for type_formdiagram in ['cross_fd']:
     #         print(el)
     #         thickness_over_span[i][0].append(el/span)
     #         thickness_over_span[i][1].append(el/span)
+
+    for series in solutions_all:
+        print(len(series[0]), len(series[1]))
+        for i in range(len(series[0])):
+            series[0][i] = series[0][i]/100
+            series[1][i] = series[1][i]/100
+    for series in thicknesses_all:
+        print(len(series[0]), len(series[1]))
+
+    print(thicknesses_all)
+    print(solutions_all)
 
     diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph,
                                fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
