@@ -144,14 +144,6 @@ def constr_wrapper_general(variables, M):
         Rx = abs(M.b[:, [0]].reshape(-1, 1)) - multiply(M.X[:, [2]][M.fixed] - M.s[M.fixed], abs(divide(R[:, [0]], R[:, [2]]).reshape(-1, 1)))  # >= 0
         Ry = abs(M.b[:, [1]].reshape(-1, 1)) - multiply(M.X[:, [2]][M.fixed] - M.s[M.fixed], abs(divide(R[:, [1]], R[:, [2]]).reshape(-1, 1)))  # >= 0
 
-        # print('s', max(M.s[M.fixed]), min(M.s[M.fixed]))
-        # print('zb', max(M.X[:, [2]][M.fixed]), min(M.X[:, [2]][M.fixed]))
-        # print('Rx cons', max(Rx), min(Rx))
-        # print('Ry cons', max(Ry), min(Ry))
-        # print('Rx', max(R[:, [0]]), min(R[:, [0]]))
-        # print('Ry', max(R[:, [1]]), min(R[:, [1]]))
-        # print('Rz', max(R[:, [2]]), min(R[:, [2]]))
-
         constraints = vstack([constraints, Rx, Ry])
 
     return constraints.flatten()

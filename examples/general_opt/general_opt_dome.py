@@ -15,7 +15,7 @@ k = 1.0
 # discretisation = 10
 type_formdiagram = 'radial_fd'
 type_structure = 'dome'
-thk = 0.40
+thk = 0.50
 radius = 5.0
 span = radius * 2
 n = 2
@@ -33,9 +33,9 @@ solutions = {}
 
 objective = ['t']
 solver = 'IPOPT'
-constraints = ['funicular', 'envelope', 'reac_bounds']
+constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
-features = ['fixed', 'sym']
+features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -59,7 +59,6 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             data_diagram = {
                 'type': type_formdiagram,
-                'xy_span': [[0, span], [0, k*span]],
                 'discretisation': discretisation,
                 'center': [5.0, 5.0],
                 'diagonal': False,
@@ -79,6 +78,7 @@ for c in [0.1]:  # set the distance that the nodes can move
                 't': 1.0,
             }
             vault = Shape.from_library(data_shape)
+            # vault.ro = 10.0
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
@@ -91,10 +91,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             if 'lambd' in variables:
                 form.apply_horizontal_multiplier(lambd=lambd)
 
-            # for key in form.vertices_where({'is_fixed': True}):
-            #     form.vertex_attribute(key, 'z', 0.2)
-
-            form.envelope_on_x_y(c=c)
+            # form.envelope_on_x_y(c=c)
             form.bounds_on_q(qmax=0.0)
 
             # address = '/Users/mricardo/compas_dev/me/general_opt/dome/radial_fd/mov_c_0.1/dome_radial_fd_discr_[20, 16]_t_thk_10.77604794596367.json'
@@ -120,7 +117,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.data['max_iter'] = 2000
             optimiser.data['gradient'] = True
             optimiser.data['jacobian'] = True
-            optimiser.data['derivative_test'] = True
+            optimiser.data['derivative_test'] = False
 
             optimiser.data['starting_point'] = starting_point
 
@@ -183,7 +180,7 @@ for c in [0.1]:  # set the distance that the nodes can move
     print('Saved to: ', address)
     from compas_tno.plotters.form import plot_form_semicirculararch_xz
     from compas_tno.algorithms import reactions
-    reactions(form, plot=True)
+    reactions(form)
     tol = 10e-3
     form.attributes['Re'] = radius + thk/2
     form.attributes['Ri'] = radius - thk/2

@@ -12,8 +12,8 @@ from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
-discretisation = 10
-type_formdiagram = 'fan_fd'
+discretisation = 14
+type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
 discretisation_shape = 10 * discretisation
@@ -25,14 +25,24 @@ c = 0.1
 save = False
 solutions = {}
 
-constraints = ['funicular', 'envelope', 'envelopexy']
+objective = ['t']
+solver = 'IPOPT'
+constraints = ['funicular', 'envelope']
 variables = ['q', 'zb', 't']
-features = ['sym', 'fixed']
+features = ['fixed']
+axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
+# qmax = 10e+6
+starting_point = 'loadpath'
+
+if objective == ['t']:
+    variables.append(objective[0])
+if objective == ['lambd']:
+    variables.append(objective[0])
 
 for c in [0.1]:  # set the distance that the nodes can move
     solutions[c] = {}
 
-    for obj in ['t']:  # set the objective
+    for obj in objective:  # set the objective
         solutions[c][obj] = {}
 
         for thk in [0.50]:  # thickness of the problem
@@ -84,12 +94,9 @@ for c in [0.1]:  # set the distance that the nodes can move
             # ------------------------------------------------------------
 
             optimiser = Optimiser()
-            # optimiser.data['library'] = 'SLSQP'
-            # optimiser.data['solver'] = 'SLSQP'
-            optimiser.data['library'] = 'IPOPT'
-            optimiser.data['solver'] = 'IPOPT'
+            optimiser.data['library'] = solver
+            optimiser.data['solver'] = solver
             optimiser.data['constraints'] = constraints
-            # optimiser.data['variables'] = ['ind', 'zb', 't']
             optimiser.data['variables'] = variables
             optimiser.data['features'] = features
             optimiser.data['objective'] = obj
@@ -103,7 +110,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.data['jacobian'] = True
             optimiser.data['derivative_test'] = True
 
-            optimiser.data['starting_point'] = 'loadpath'
+            optimiser.data['starting_point'] = starting_point
 
             # --------------------- 5. Set up and run analysis ---------------------
 

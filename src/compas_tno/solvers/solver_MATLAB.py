@@ -89,18 +89,20 @@ def run_loadpath_from_form_MATLAB(form, problem=None, printout=False):
     """
 
     # Initiate Matlab Engine
-    start_time1 = time.time()
+    # start_time1 = time.time()
 
     future = matlab.engine.start_matlab(background=True)
     eng = future.result()
 
     if not problem:
         problem = initialise_problem_general(form)
+    # else:
+    #     adapt_problem_to_fixed_diagram(problem, form)
 
     call_and_output_CVX_MATLAB(form, problem, eng)
 
-    elapsed_time1 = time.time() - start_time1
-    print('Elapsed time considering loading:', elapsed_time1)
+    # elapsed_time1 = time.time() - start_time1
+    # print('Elapsed time considering loading:', elapsed_time1)
 
     return form
 
@@ -124,8 +126,8 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
 
     i = 0
     for key in form.vertices():
-        form.vertex_attribute(key, 'x', problem.X[i, 0])
-        form.vertex_attribute(key, 'y', problem.X[i, 1])
+        # form.vertex_attribute(key, 'x', problem.X[i, 0])
+        # form.vertex_attribute(key, 'y', problem.X[i, 1])
         form.vertex_attribute(key, 'z', problem.X[i, 2])
         i = i + 1
 

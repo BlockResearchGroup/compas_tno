@@ -1,5 +1,4 @@
 import ipopt
-from torch import tensor
 
 from compas_tno.algorithms import f_constraints_pytorch
 from compas_tno.algorithms import f_objective_pytorch
@@ -156,6 +155,8 @@ def run_optimisation_ipopt(analysis):
 
         EdinvEi = Edinv*Ei
         Edinv_p = Edinv.dot(p)
+
+        from torch import tensor
 
         EdinvEi_th = tensor(EdinvEi)
         Edinv_p_th = tensor(Edinv_p)

@@ -276,7 +276,7 @@ def sensitivities_wrapper_general(variables, M):
     if 't' in M.variables:
         thk = variables[check: check + 1]
         check = check + 1
-    if 'lambd' in M.variables:
+    elif 'lambd' in M.variables:
         lambd = variables[check: check + 1]
         M.P[:, [0]] = lambd * M.px0
         M.P[:, [1]] = lambd * M.py0
@@ -371,7 +371,7 @@ def sensitivities_wrapper_general(variables, M):
                 signe_y = -1.0
             if R[i, 2] < 0:
                 signe_z = -1.0
-                print('neg rz')
+                # print('neg rz')
 
             dslope_dzb[i, i] = - 1 * abs(R[i, 0]/R[i, 2])
             dslope_dzb[i] += signe_z * zbi * abs(R[i, 0])/R[i, 2]**2 * dRzdzb[:, i]

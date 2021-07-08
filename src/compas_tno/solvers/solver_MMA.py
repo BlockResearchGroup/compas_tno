@@ -1,5 +1,4 @@
 from compas_tno.solvers import mma_numpy
-from torch import tensor
 from numpy import hstack
 from numpy import array
 from numpy import zeros
@@ -106,6 +105,8 @@ def run_optimisation_MMA(analysis):
 
         q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
         :48]
+
+        from torch import tensor
 
         args_MMA = list(args)
         args_MMA.append([fobj, fconstr])

@@ -902,7 +902,7 @@ class FormDiagram(FormDiagram):
 
         for key in self.vertices():
             pz = self.vertex_attribute(key, 'pz')
-            self.vertex_attribute(key, arg, -1 *pz * lambd)  # considers that pz downwards is negative
+            self.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
 
         return
 
@@ -935,7 +935,7 @@ class FormDiagram(FormDiagram):
             self.vertex_attribute(key, 'pz', value=pz)
             pzt += pz
 
-        if shape.data['type'] == 'arch' or shape.data['type'] == 'pointed_arch':  # change this for pointed_arch!
+        if shape.data['type'] == 'arch' or shape.data['type'] == 'pointed_arch':
             pzt = 0
             for key in self.vertices():
                 self.vertex_attribute(key, 'pz', value=1.0)

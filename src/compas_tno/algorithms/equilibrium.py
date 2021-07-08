@@ -642,10 +642,6 @@ def reactions(form, plot=False):
 
     # Horizontal checks
 
-    Rx0 = C.transpose().dot(U * q.ravel())
-    Ry0 = C.transpose().dot(V * q.ravel())
-    Rz0 = C.transpose().dot(W * q.ravel())
-
     Rx = C.transpose().dot(U * q.ravel()) - px.ravel()
     Ry = C.transpose().dot(V * q.ravel()) - py.ravel()
     Rz = C.transpose().dot(W * q.ravel()) - pz.ravel()
@@ -661,8 +657,6 @@ def reactions(form, plot=False):
         if plot:
             print('Reactions in key: {0} are:'.format(key))
             print(Rx[i], Ry[i], Rz[i])
-            print(Rx0[i], Ry0[i], Rz0[i])
-            print(pz)
 
     for key in form.vertices_where({'rol_x': True}):
         i = k_i[key]
