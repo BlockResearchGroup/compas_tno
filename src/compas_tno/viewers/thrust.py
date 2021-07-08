@@ -11,6 +11,7 @@ __all__ = [
     'view_thrust',
     'view_thrusts',
     'view_solution',
+    'view_thrust_as_lines'
 ]
 
 def view_thrust(form, settings_form=None, cracks=True):
@@ -63,6 +64,48 @@ def view_thrust(form, settings_form=None, cracks=True):
             }
 
     viewer.add(form, name="FormDiagram", settings=settings_form)
+
+    return viewer
+
+def view_thrust_as_lines(form, settings_form=None, cracks=True, viewer=None):
+    """ Viewer showing the thrust network.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        FormDiagram to plot
+    settings_form : dict (None)
+        Settings to modify the plot
+    cracks : bool (True)
+        Option to show the cracks as points
+
+    Returns
+    ----------
+    obj
+        Viewer object.
+
+    """
+
+    if not viewer:
+        viewer = ObjectViewer()
+
+    f = [abs(form.edge_attribute((u, v), 'q') * form.edge_length(u, v)) for u, v in form.edges_where({'_is_edge': True})]
+    fmax = max(f)
+    max_width = 0.5
+    tol = 10e-4
+
+    i = 0
+    for u, v in form.edges_where({'_is_edge': True}):
+        fi = f[i]
+        if fi > tol:
+            width = (fi / fmax) * max_width
+            start, end = form.edge_coordinates(u, v)
+            line = Line(start, end)
+            viewer.add(line, name="i - f ({0} - {1:.2f})".format(i, fi), settings={'color': '#FF0000', 'width': width})
+
+        i += 1
+
+    # add reactions
 
     return viewer
 
@@ -121,7 +164,7 @@ def view_thrusts(forms, settings_form=None, cracks=True):
 
     return viewer
 
-def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cracks=True, thickness=False, outside=True):
+def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cracks=True, reactions=True, thickness=False, outside=True):
     """ Viewer showing the thrust network together with intrados and extrados.
 
     Parameters

@@ -18,28 +18,37 @@ n = 50
 #     't': 0.0,
 # }
 
-data = {
-    'type': 'pointed_crossvault',
-    'thk': 0.5,
-    'discretisation': [n, n],
-    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-    't': 1.0,
-    'hc': 8.0,
-    'hm': None,
-    'he': None,
-}
-
-
 # data = {
 #     'type': 'pointed_crossvault',
 #     'thk': 0.5,
 #     'discretisation': [n, n],
-#     'xy_span': [[0.0, 10.0], [0.0, 6.0]],
-#     't': 0.0,
+#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     't': 1.0,
 #     'hc': 8.0,
-#     'hm': [6, 6, 6, 6],
-#     'he': [6, 6, 6, 6],
+#     'hm': None,
+#     'he': None,
 # }
+
+
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 6.0], [0.0, 10.0]],
+    't': 0.0,
+    'hc': 6.0,
+    'hm': None,
+    'he': [5, 5, 5, 5],
+}
+
+data = {
+    'type': 'parabolic_shell',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0,
+    'hc': 6.0,
+}
 
 # data = {
 #     'type': 'pavillionvault',

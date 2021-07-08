@@ -93,6 +93,7 @@ class Problem():
         return problem
 
 
+#old function
 def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.001, c=0.5):
     """ Initialise the problem for a given Form-Diagram and return the set of matrices and vectors to optimise.
 
@@ -430,7 +431,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
     uvw = C.dot(xyz)
     U = diags(uvw[:, 0].flatten())
     V = diags(uvw[:, 1].flatten())
-    E = svstack((Citx.dot(U), City.dot(V))).toarray()
+    E = svstack((Citx.dot(U), City.dot(V)), dtype='csr').toarray()
     print('Equilibrium Matrix Shape: ', E.shape)
 
     start_time = time.time()
@@ -536,7 +537,9 @@ def initialise_problem_general(form, printout=None, tol=0.001):
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     free = list(set(range(n)) - set(fixed))
 
-    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)  # review need of 'is_edge': True
+    qmax = array([form.edge_attribute((u, v), 'qmax') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    qmin = array([form.edge_attribute((u, v), 'qmin') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
 
     # Co-ordinates, loads and constraints
 
@@ -641,6 +644,8 @@ def initialise_problem_general(form, printout=None, tol=0.001):
     problem.Cbty = Cbty
     problem.xlimits = xlimits
     problem.ylimits = ylimits
+    problem.qmin = qmin
+    problem.qmax = qmax
     problem.k_i = k_i
     problem.uv_i = uv_i
     problem.i_uv = i_uv
@@ -666,7 +671,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
             if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in form.attributes['indset']:
                 ind.append(problem.uv_i[(u, v)])
     else:
-        ind = find_independents(problem.E)
+        ind = find_independents(problem.E)  # see if it can be improved with crs matrix
 
     k = len(ind)
     dep = list(set(range(problem.m)) - set(ind))
@@ -677,19 +682,27 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
         print('Reduced problem to {0} force variables'.format(k))
         print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
+    gkeys = []
     for u, v in form.edges_where({'_is_edge': True}):
-        form.edge_attribute((u, v), 'is_ind', True if problem.uv_i[(u, v)] in ind else False)
+        if problem.uv_i[(u, v)] in ind:
+            form.edge_attribute((u, v), 'is_ind', True)
+            gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
+        else:
+            form.edge_attribute((u, v), 'is_ind', False)
+    form.attributes['indset'] = gkeys
 
     Edinv = -csr_matrix(pinv(problem.E[:, dep]))
-    Ei = problem.E[:, ind]
+    Ei = csr_matrix(problem.E[:, ind])
     B = zeros((problem.m, k))
-    B[dep] = Edinv.dot(Ei)
+    B[dep] = Edinv.dot(Ei).toarray()
     B[ind] = identity(k)
 
     problem.ind = ind
     problem.k = k
     problem.dep = dep
     problem.B = B
+    problem.Edinv = Edinv
+    problem.Ei = Ei
 
     return
 

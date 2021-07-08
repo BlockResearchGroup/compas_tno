@@ -402,17 +402,25 @@ def dome_dub_dlb(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
     re = radius + thk/2
     dub = zeros((len(x), 1))
     dlb = zeros((len(x), 1))
+    dubdx = zeros((len(x), len(x)))
+    dubdy = zeros((len(x), len(x)))
+    dlbdx = zeros((len(x), len(x)))
+    dlbdy = zeros((len(x), len(x)))
 
     for i in range(len(x)):
         zi2 = ri**2 - (x[i] - xc)**2 - (y[i] - yc)**2
         ze2 = re**2 - (x[i] - xc)**2 - (y[i] - yc)**2
         ze = math.sqrt(ze2)
         dub[i] = 1/2 * re/ze
+        dubdx[i, i] = 1/2/ze * -2 * (x[i] - xc)
+        dubdy[i, i] = 1/2/ze * -2 * (y[i] - yc)
         if zi2 > 0.0:
             zi = math.sqrt(zi2)
             dlb[i] = -1/2 * ri/zi
+            dlbdx[i, i] = 1/2/zi * -2 * (x[i] - xc)
+            dlbdy[i, i] = 1/2/zi * -2 * (y[i] - yc)
 
-    return dub, dlb
+    return dub, dlb, dubdx, dubdy, dlbdx, dlbdy
 
 
 def dome_b_update(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):

@@ -100,7 +100,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             text = str(u) + ',' + str(v)
             # text = str(i)
         elif show_q:
-            text = round(qi, 2)
+            text = round(form.edge_attribute((u, v), 'q'), 2)
         else:
             text = ''
 
@@ -1014,8 +1014,10 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
                 rz = abs(form.vertex_attribute(key, '_rz'))
+                signe_rz = rz/abs(rz)
                 rx = form.vertex_attribute(key, '_rx')
-                reac_line = [x, z, x + z * rx / rz, 0.0]
+                print(x, z, rx, rz)
+                reac_line = [x, z, x - z * rx / rz, 0.0]
                 reac_lines.append(reac_line)
 
     for u, v in edges_considered:

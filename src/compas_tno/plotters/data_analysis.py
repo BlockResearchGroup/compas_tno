@@ -70,7 +70,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     xmin = thicknesses_min
     xmax = thicknesses_max
     fmin = 100.0 * array(min_sol)
-    fmax = -100.0 * array(max_sol)
+    fmax = 100.0 * array(max_sol)  # add minus signe
     # print('\n', xmin, xmax, fmin, fmax)
     n = len(xmin)
     m = len(xmax)
@@ -150,10 +150,10 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     ax1 = plt.axes()
     ax2 = ax1.twiny()
 
-    # ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
-    # ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
+    ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x])
+    ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
 
-    ax1.set_xlabel('thickness', size=size_axis_label, weight='bold', labelpad=8)
+    ax1.set_xlabel('thickness/radius', size=size_axis_label, weight='bold', labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, weight='bold', labelpad=8)
     ax1.set_ylabel('thrust/weight [%]', size=size_axis_label, weight='bold', labelpad=8)
     # ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))  # Check if this is necessary

@@ -16,7 +16,7 @@ from compas_tno.viewers.thrust import view_solution
 
 thk = 0.5
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'cross_with_diagonal'
 discretisation = 10
 
 # ----------------------- 1. Create CrossVault shape ---------------------------
@@ -42,7 +42,6 @@ data_diagram = {
     'xy_span': [[0, 10], [0, 10]],
     'discretisation': discretisation,
     'fix': 'corners',
-    'partial_bracing_modules': 4,
 }
 
 form = FormDiagram.from_library(data_diagram)

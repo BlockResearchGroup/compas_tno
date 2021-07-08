@@ -11,6 +11,7 @@ from compas_tno.shapes.circular_arch import arch_shape
 from compas_tno.shapes.pointed_arch import pointed_arch_shape
 from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
 from compas_tno.shapes.shells import domical_vault
+from compas_tno.shapes.shells import parabolic_shell_highfields
 
 from copy import deepcopy
 from compas.geometry import subtract_vectors
@@ -129,6 +130,9 @@ class Shape(object):
             radius = data['radius']
             theta = data['theta']
             intrados, extrados, middle = set_dome_with_spr(center, radius=radius, thk=thk, theta=theta, discretisation=discretisation, t=t)
+        elif typevault == 'parabolic_shell':
+            xy_span = data['xy_span']
+            intrados, extrados, middle = parabolic_shell_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
         elif typevault == 'arch':
             H = data['H']
             L = data['L']

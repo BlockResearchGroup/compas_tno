@@ -72,7 +72,7 @@ optimiser.data['qmax'] = 5000.0  # Check if this is limiting the solution
 while exitflag == 0:
 
     t_over_R = thk/R
-    print('\n----- The' , type_formdiagram, 'problem for thk/R:', t_over_R, 'and Px=', hor_mult, '\n')
+    print('\n----- The', type_formdiagram, 'problem for thk/R:', t_over_R, 'and Px=', hor_mult, '\n')
 
     # ----------------------- 1. Create Arch shape for thk ---------------------------
 

@@ -19,6 +19,8 @@ from compas_tno.problems import f_constant
 from compas_tno.problems import f_reduce_thk
 from compas_tno.problems import f_tight_crosssection
 
+from compas_tno.algorithms import apply_sag
+
 from compas_tno.problems import gradient_fmin
 from compas_tno.problems import gradient_fmax
 from compas_tno.problems import gradient_feasibility
@@ -255,15 +257,15 @@ def set_up_general_optimisation(analysis):
     optimiser = analysis.optimiser
     shape = analysis.shape
 
-    # find_inds = optimiser.data.get('find_inds', False)
     printout = optimiser.data.get('printout', True)
-    qmax = optimiser.data.get('qmax', 1e+6)  # CHANGE THIS to by edge limit
-    qmin = optimiser.data.get('qmin', 0.0)  # This qmin sometimes is 1e-6...
-    # plot = optimiser.data.get('plot', False)
+    plot = optimiser.data.get('plot', False)
     thickness_type = optimiser.data.get('thickness_type', 'constant')
     axis_symmetry = optimiser.data.get('axis_symmetry', None)
     fjac = optimiser.data.get('jacobian', False)
+    starting_point = optimiser.data.get('starting_point', 'current')
+    thk = optimiser.data.get('thk', shape.data['thk'])
     # solver = optimiser.data.get('solver', 'SLSQP')
+    features = optimiser.data.get('features', [])
 
     objective = optimiser.data['objective']
     variables = optimiser.data['variables']
@@ -274,30 +276,43 @@ def set_up_general_optimisation(analysis):
     M = initialise_problem_general(form)
     M.variables = variables
     M.constraints = constraints
+    M.features = features
     M.shape = shape
+    M.thk = thk
 
-    from compas_tno.algorithms import apply_sag
-    apply_sag(form)
+    if starting_point == 'current':
+        pass
+    elif starting_point == 'sag':
+        apply_sag(form)
+        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    elif starting_point == 'loadpath':
+        form.initialise_loadpath(problem=M)
+        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    else:
+        print('Warning: define starting point')
 
-    if 'ind' in variables and 'sym' in variables:
+    if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
         adapt_problem_to_sym_and_fixed_diagram(M, form, axis_symmetry=axis_symmetry, printout=printout)
-    elif 'sym' in variables:
+    elif 'sym' in features:
         # print('\n-------- Initialisation with sym form --------')
         adapt_problem_to_sym_diagram(M, form, axis_symmetry=axis_symmetry, printout=printout)
-    elif 'ind' in variables:
+    elif 'fixed' in features:
         # print('\n-------- Initialisation with fixed form --------')
         adapt_problem_to_fixed_diagram(M, form, printout=printout)
     else:
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
 
+    # from compas_tno.algorithms import reactions
+    # reactions(form, plot=True)
+
     # Set specific constraints
 
-    # if 'reac_bounds' in constraints:
-    #     b = set_b_constraint(form, printout)
-    # else:
-    #     b = None
+    if 'reac_bounds' in constraints:
+        M.b = set_b_constraint(form, printout)
+    else:
+        M.b = None
 
     # if 'cracks' in constraints:
     #     cracks_lb, cracks_ub = set_cracks_constraint(form, printout)
@@ -310,10 +325,6 @@ def set_up_general_optimisation(analysis):
     #     max_rol_rx, max_rol_ry = None, None
 
     shape.data['thickness_type'] = thickness_type  # thhis argument is useful if minimising thickness
-
-    # args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind,
-    #         ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin,
-    #         constraints,  max_rol_rx, max_rol_ry, Asym, variables, shape)
 
     # Select Objetive and Gradient
 
@@ -341,23 +352,25 @@ def set_up_general_optimisation(analysis):
     elif objective == 'n':  # vector n offset the surfaces -> larger the better (higher GSF)
         fobj = f_tight_crosssection
         fgrad = gradient_tight_crosssection
+    elif objective == 'lambd':  # vector lambda as hor multiplier larger the better (higher GSF)
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
     else:
-        print('Please, provide an objective for the optimisation')
+        print('Please, provide a valid objective for the optimisation')
         raise NotImplementedError
 
-    # Select Constraints and Jacobian (w/ equalities in IPOPT and only Inequalities in SLSQP)
+    # Select Inequality Constraints and Jacobian
 
-    # if solver == 'slsqp' or solver == 'SLSQP':
     fconstr = constr_wrapper_general
     if fjac:
         fjac = sensitivities_wrapper_general
-    # else:  # Some differences appy to IPOPT / MATLAB
-    #     fconstr = constr_wrapper
-    #     if fjac:
-    #         fjac = sensitivities_wrapper
+
+    # Select starting point (x0) and max/min for variables
 
     x0 = M.q[M.ind]
-    bounds = [[qmin, qmax]] * M.k
+    bounds = [[qmin.item(), qmax.item()] for i, (qmin, qmax) in enumerate(zip(M.qmin, M.qmax)) if i in M.ind]
+
+    # bounds = [[qmin, qmax]] * M.k
 
     if 'xyb' in variables:
         xyb0 = M.X[M.fixed, :2].flatten('F').reshape((-1, 1))
@@ -379,10 +392,20 @@ def set_up_general_optimisation(analysis):
 
     if 't' in variables:
         min_thk = optimiser.data.get('min_thk', 0.001)
-        thk = optimiser.data.get('thk', shape.data['thk'])
         max_thk = optimiser.data.get('max_thk', thk)
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, max_thk]]
+
+    if 'lambd' in variables:
+        lambd0 = optimiser.data.get('lambd', 1.0)
+        direction = optimiser.data.get('lambd-direction', 'x')
+        M.px0 = array(form.vertices_attribute('px')).reshape(-1, 1)
+        M.py0 = array(form.vertices_attribute('py')).reshape(-1, 1)
+        form.apply_horizontal_multiplier(lambd=1.0, direction=direction)
+        max_lambd = optimiser.data.get('max_lambd', lambd0 * 10)
+        min_lambd = 0.0
+        x0 = append(x0, lambd0).reshape(-1, 1)
+        bounds = bounds + [[min_lambd, max_lambd]]
 
     # if 's' in variables:
     #     x0 = append(x0, 0.0).reshape(-1, 1)
@@ -408,13 +431,13 @@ def set_up_general_optimisation(analysis):
     if printout:
         print('-'*20)
         print('NPL (Non Linear Problem) Data:')
-        print('Total of Force-var:', len(M.ind))
-        print('Number of Variables:', len(x0))
-        print('Number of Constraints:', len(g0))
+        print('Number of force variables:', len(M.ind))
+        print('Number of variables:', len(x0))
+        print('Number of constraints:', len(g0))
         if fgrad:
-            print('Shape of Gradient:', grad.shape)
+            print('Shape of gradient:', grad.shape)
         if fjac:
-            print('Shape of Jacobian:', jac.shape)
+            print('Shape of jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         # print('Constraint Mapping: dep: 0-{0} | z: {1}-{2} | reac-bound: {3}-{4}'.format(len(dep)-1, len(dep), len(dep)+2*len(z)-1, len(dep)+2*len(z), len(dep)+2*len(z)+2*len(fixed)-1))
@@ -425,9 +448,11 @@ def set_up_general_optimisation(analysis):
         if violated:
             print('Constraints Violated #:', violated)
 
-    plot_symmetry(form).show()
-    plot_independents(form).show()
-    plot_symmetry_vertices(form).show()
+    if plot:
+        plot_independents(form).show()
+        if 'sym' in features:
+            plot_symmetry(form).show()
+            plot_symmetry_vertices(form).show()
 
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr

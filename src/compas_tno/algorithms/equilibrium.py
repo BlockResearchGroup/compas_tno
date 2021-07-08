@@ -642,6 +642,10 @@ def reactions(form, plot=False):
 
     # Horizontal checks
 
+    Rx0 = C.transpose().dot(U * q.ravel())
+    Ry0 = C.transpose().dot(V * q.ravel())
+    Rz0 = C.transpose().dot(W * q.ravel())
+
     Rx = C.transpose().dot(U * q.ravel()) - px.ravel()
     Ry = C.transpose().dot(V * q.ravel()) - py.ravel()
     Rz = C.transpose().dot(W * q.ravel()) - pz.ravel()
@@ -653,9 +657,12 @@ def reactions(form, plot=False):
         form.vertex_attribute(key, '_rx', value=Rx[i])
         form.vertex_attribute(key, '_ry', value=Ry[i])
         form.vertex_attribute(key, '_rz', value=Rz[i])
+        pz = form.vertex_attribute(key, 'pz')
         if plot:
             print('Reactions in key: {0} are:'.format(key))
             print(Rx[i], Ry[i], Rz[i])
+            print(Rx0[i], Ry0[i], Rz0[i])
+            print(pz)
 
     for key in form.vertices_where({'rol_x': True}):
         i = k_i[key]
@@ -682,13 +689,13 @@ def reactions(form, plot=False):
     return
 
 
-def apply_sag(form, boundary_force=10.0):
+def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):
 
     for u, v in form.edges():
-        form.edge_attribute((u, v), 'q', 1.0)
+        form.edge_attribute((u, v), 'q', signe_compression*1.0)
 
     for u, v in form.edges_on_boundary():
-        form.edge_attribute((u, v), 'q', boundary_force)
+        form.edge_attribute((u, v), 'q', signe_compression*boundary_force)
 
     z_from_form(form)
 

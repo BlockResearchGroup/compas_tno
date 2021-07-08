@@ -642,10 +642,39 @@ class FormDiagram(FormDiagram):
         for u, v in self.edges_on_boundary():
             self.edge_attribute((u, v), '_is_edge', False)
 
+        from compas_plotters import MeshPlotter
+        plotter = MeshPlotter(self, figsize=(10, 10), tight=True)
+        plotter.draw_edges(keys=[key for key in self.edges()])
+        plotter.draw_vertices(text={key: key for key in self.vertices()})
+        # plotter.save(save_img)
+        plotter.show()
+
         if delete_corner_vertex:
             corners = [key for key in self.corners()]
+            print('corners')
+            print(corners)
             for key in corners:
+                neighbors = self.vertex_neighbors(key)
+                print(neighbors)
+                n1 = self.vertex_neighbors(neighbors[0])
+                n2 = self.vertex_neighbors(neighbors[1])
+                intersection_vertex = list(set.intersection(set(n1), set(n2)))
+                sum_vertices = neighbors + intersection_vertex
+                new_face = []
+                for key_ in sum_vertices:
+                    if key_ != key:
+                        new_face.append(key_)
+                print(new_face)
                 self.delete_vertex(key)
+                self.add_face(new_face)
+                self.edge_attribute((neighbors[0], neighbors[1]), '_is_edge', False)
+
+        from compas_plotters import MeshPlotter
+        plotter = MeshPlotter(self, figsize=(10, 10), tight=True)
+        plotter.draw_edges(keys=[key for key in self.edges()])
+        plotter.draw_vertices(text={key: key for key in self.vertices()})
+        # plotter.save(save_img)
+        plotter.show()
 
         return self
 
@@ -789,19 +818,13 @@ class FormDiagram(FormDiagram):
 
         return a_max
 
-    def optimise_loadpath(self, find_inds=True, qmax=3000, printout=False):
+    def initialise_loadpath(self, problem=None):
 
         from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
 
-        self = run_loadpath_from_form_MATLAB(self, find_inds=find_inds, qmax=qmax, printout=printout)
+        run_loadpath_from_form_MATLAB(self, problem=problem)
 
-        return self
-
-    def initialise_loadpath(self, find_inds=True, qmax=10000, printout=False):
-
-        self = self.optimise_loadpath(find_inds=find_inds, qmax=qmax, printout=printout)
-
-        return self
+        return
 
     def envelope_from_shape(self, shape):
 
@@ -860,7 +883,30 @@ class FormDiagram(FormDiagram):
 
         return
 
-    def selfweight_from_shape(self, shape):
+    def bounds_on_q(self, qmin=-1e+4, qmax=1e-8):  # Convention compression negative
+
+        if isinstance(qmin, list):
+            for i, (u, v) in enumerate(self.edges_where({'_is_edge': True})):
+                self.edge_attribute((u, v), 'qmin', qmin[i])
+                self.edge_attribute((u, v), 'qmax', qmax[i])
+        else:
+            for u, v in self.edges_where({'_is_edge': True}):
+                self.edge_attribute((u, v), 'qmin', qmin)
+                self.edge_attribute((u, v), 'qmax', qmax)
+
+        return
+
+    def apply_horizontal_multiplier(self, lambd=0.1, direction='x'):
+
+        arg = 'p' + direction
+
+        for key in self.vertices():
+            pz = self.vertex_attribute(key, 'pz')
+            self.vertex_attribute(key, arg, -1 *pz * lambd)  # considers that pz downwards is negative
+
+        return
+
+    def selfweight_from_shape(self, shape, pz_negative=True):
         """Apply selfweight to the nodes of the form diagram based on the shape"""
 
         form_ = self.copy()
@@ -901,12 +947,14 @@ class FormDiagram(FormDiagram):
 
         for key in self.vertices():
             pzi = factor * self.vertex_attribute(key, 'pz')
+            if pz_negative:
+                pzi *= -1  # make loads negative
             self.vertex_attribute(key, 'pz', value=pzi)
 
         return
 
 
-    def selfweight_from_pattern(self, pattern, plot=False, tol=10e-4):
+    def selfweight_from_pattern(self, pattern, plot=False, pz_negative=True, tol=10e-4):
         """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
 
         form_ = pattern
@@ -925,6 +973,8 @@ class FormDiagram(FormDiagram):
         pzt = 0
         for key in key_real_to_key:
             pz = form_.vertex_attribute(key_real_to_key[key], 'pz')
+            if pz_negative:
+                pz *= -1  # make loads negative
             self.vertex_attribute(key, 'pz', value=pz)
             pzt += pz
         print('total load applied:', pzt)
@@ -995,7 +1045,7 @@ class FormDiagram(FormDiagram):
         dist_checked = []
         dist_dict = {}
 
-        if horizontal_only == False and vertical_only == False:
+        if horizontal_only is False and vertical_only is False:
             for key in self.vertices_where({'is_fixed': True}):
                 point = self.vertex_coordinates(key)
                 dist = round(distance_point_point_xy(center, point), 10)
@@ -1030,14 +1080,14 @@ class FormDiagram(FormDiagram):
         # Symmetry on the independent edges
 
         if not axis_symmetry:
-            for u, v in self.edges():
+            for u, v in self.edges_where({'_is_edge': True}):
                 midpoint = self.edge_midpoint(u, v)
                 dist = round(distance_point_point_xy(center, midpoint), 10)
                 dist_dict[(u, v)] = dist
                 if dist not in dist_checked:
                     dist_checked.append(dist)
         else:
-            for u, v in self.edges():
+            for u, v in self.edges_where({'_is_edge': True}):
                 midpoint = self.edge_midpoint(u, v)
                 dist_line = round(distance_point_line_xy(midpoint, axis_symmetry), 10)
                 closest_pt = geometric_key(closest_point_on_line_xy(midpoint, axis_symmetry))
@@ -1089,10 +1139,12 @@ class FormDiagram(FormDiagram):
                             pz = self.vertex_attribute(key, 'pz')
                             ub = self.vertex_attribute(key, 'ub')
                             lb = self.vertex_attribute(key, 'lb')
+                            s = self.vertex_attribute(key, 'target')
                         self.vertex_attribute(key, 'pz', pz)
                         self.vertex_attribute(key, 'ub', ub)
                         self.vertex_attribute(key, 'lb', lb)
-                        # print(pz, ub, lb)
+                        self.vertex_attribute(key, 'target', s)
+                        # print(pz, ub, lb, s)
             i += 1
 
         return
@@ -1143,7 +1195,7 @@ class FormDiagram(FormDiagram):
     def number_of_sym_edges(self, printout=False):
 
         i_sym_max = 0
-        for u, v in self.edges():
+        for u, v in self.edges_where({'_is_edge': True}):
             try:
                 i_sym = self.edge_attribute((u, v), 'sym_key')
             except:
@@ -1154,6 +1206,23 @@ class FormDiagram(FormDiagram):
 
         if printout:
             print('Form has {0} unique sym edges'.format(i_sym_max))
+
+        return i_sym_max
+
+    def number_of_sym_vertices(self, printout=False):
+
+        i_sym_max = 0
+        for key in self.vertices():
+            try:
+                i_sym = self.vertex_attribute(key, 'sym_key')
+            except:
+                print('Warning, no symmetry relation found!')
+            if i_sym > i_sym_max:
+                i_sym_max = i_sym
+        i_sym_max += 1
+
+        if printout:
+            print('Form has {0} sym vertices'.format(i_sym_max))
 
         return i_sym_max
 
@@ -1210,7 +1279,7 @@ class FormDiagram(FormDiagram):
         Build a symmetry matrix such as Asym * q = 0, with Asym shape (m - k; m)
         """
 
-        m = self.number_of_edges()
+        m = len(list(self.edges_where({'_is_edge': True})))
         k_unique = self.number_of_sym_edges(printout=printout)
         Asym = zeros((m - k_unique, m))
         uv_i = self.uv_index()
@@ -1240,7 +1309,7 @@ class FormDiagram(FormDiagram):
         Build a symmetry matrix Esym (m, k) such as q = Esym * qsym.
         """
 
-        m = self.number_of_edges()
+        m = len(list(self.edges_where({'_is_edge': True})))
         k_unique = self.number_of_sym_edges(printout=printout)
         Esym = zeros((m, k_unique))
         uv_i = self.uv_index()
@@ -1259,6 +1328,31 @@ class FormDiagram(FormDiagram):
             plt.show()
 
         return Esym
+
+    def build_vertex_symmetry_transformation(self, printout=False):
+        r"""
+        Build a symmetry matrix Evsym (n, k) such as z = Evsym * z_.
+        """
+
+        n = self.number_of_edges()
+        k_unique = self.number_of_sym_vertices(printout=printout)
+        Evsym = zeros((n, k_unique))
+        k_i = self.key_index()
+
+        for id_sym in range(k_unique):
+            Ei = zeros((n, 1))
+            for key in self.vertices():
+                if self.vertex_attribute(key, 'sym_key') == id_sym:
+                    index = k_i[key]
+                    Ei[index] = 1.0
+            Evsym[:, id_sym] = Ei.flatten()
+
+        if printout:
+            plt.matshow(Evsym)
+            plt.colorbar()
+            plt.show()
+
+        return Evsym
 
     def build_symmetry_map(self):
         r"""
@@ -1790,116 +1884,3 @@ class FormDiagram(FormDiagram):
                 area += length_vector(cross_vectors(v1, v3))
 
         return 0.25 * area
-
-    # def adapt_objective(form, zrange=[3.0, 8.0], objective='loadpath', method='nodal', discr=100, plot=False,
-    #                     delete_face=False, alpha=100.0, kmax=100, display=False, amax=2.0, rmax=0.01):
-
-    #     form = add_feet(form, delete_face=delete_face, plot=plot)
-    #     force = ForceDiagram.from_formdiagram(form)
-
-    #     plot_force(force, form).show()
-
-    #     if method == 'nodal':
-    #         horizontal_nodal(form, force, alpha=alpha, kmax=kmax, display=False)
-    #     else:
-    #         horizontal(form, force, alpha=alpha, kmax=kmax, display=False)
-
-    #     plot_force(force, form).show()
-
-    #     a = evaluate_a(form, plot=plot)
-    #     if a > amax:
-    #         print('High Angle deviations!')
-
-    #     # Vertical Equilibrium with no updated loads
-
-    #     if objective == 'loadpath':
-    #         f = loadpath
-    #     if objective == 'target':
-    #         f = energy
-
-    #     scale = []
-    #     form0 = scale_form(form, 1.0)
-    #     z = [form0.vertex_attribute(key, 'z') for key in form0.vertices()]
-    #     z_ = max(z)
-    #     scale.append(z_ / zrange[1])
-    #     scale.append(z_ / zrange[0])
-    #     print(scale)
-
-    #     best_scl = evaluate_scale(form0, f, scale, n=discr, plot=plot)
-
-    #     print('Best Scale is: {0}'.format(best_scl))
-    #     form = scale_form(form0, best_scl)
-
-    #     r = residual(form, plot=plot)
-    #     if r > rmax:
-    #         print('High residual forces!')
-
-    #     if plot:
-    #         plot_form(form).show()
-    #         plot_force(force, form).show()
-
-    #     return form
-
-    # def sym_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], exc_length=1.0):
-
-    #     gkey_key = form.gkey_key()
-
-    #     y1 = xy_span[1][1]
-    #     y0 = xy_span[1][0]
-    #     x1 = xy_span[0][1]
-    #     x0 = xy_span[0][0]
-
-    #     bndr = form.vertices_on_boundary()
-    #     lines = [form.edge_coordinates(u, v) for u, v in form.edges()]
-
-    #     for key in bndr:
-    #         if form.vertex_attribute(key, 'is_fixed') == False:
-    #             x, y, _ = form.vertex_coordinates(key)
-    #             if x == x1:
-    #                 lines.append([[x, y, 0.0], [x + exc_length, y, 0.0]])
-    #             if x == x0:
-    #                 lines.append([[x, y, 0.0], [x - exc_length, y, 0.0]])
-    #             if y == y1:
-    #                 lines.append([[x, y, 0.0], [x, y + exc_length, 0.0]])
-    #             if y == y0:
-    #                 lines.append([[x, y, 0.0], [x, y - exc_length, 0.0]])
-
-    #     form_ = FormDiagram.from_lines(lines, delete_boundary_face=False)
-    #     # form.delete_face(0)
-
-    #     form_.update_default_vertex_attributes({'is_roller': False})
-    #     form_.update_default_vertex_attributes({'is_fixed': False})
-    #     form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False})
-    #     form_.attributes['loadpath'] = 0
-    #     form_.attributes['indset'] = []
-
-    #     for key_ in form_.vertices():
-    #         coord_ = form_.vertex_coordinates(key_)
-    #         try:
-    #             key = gkey_key[geometric_key(coord_)]
-    #             pz = form.vertex_attribute(key, 'pz')
-    #             px = form.vertex_attribute(key, 'px')
-    #             py = form.vertex_attribute(key, 'py')
-    #             fixed = form.vertex_attribute(key, 'is_fixed')
-    #             lb = form.vertex_attribute(key, 'lb')
-    #             ub = form.vertex_attribute(key, 'ub')
-    #             target = form.vertex_attribute(key, 'target')
-    #             form_.vertex_attribute(key_, 'pz', value=pz)
-    #             form_.vertex_attribute(key_, 'px', value=px)
-    #             form_.vertex_attribute(key_, 'py', value=py)
-    #             form_.vertex_attribute(key_, 'is_fixed', value=fixed)
-    #             form_.vertex_attribute(key_, 'lb', value=lb)
-    #             form_.vertex_attribute(key_, 'ub', value=ub)
-    #             form_.vertex_attribute(key_, 'target', value=target)
-    #         except:
-    #             form_.vertex_attribute(key_, 'is_fixed', value=True)
-    #             form_.vertex_attribute(key_, 'pz', value=0.0)
-    #             form_.vertex_attribute(key_, 'px', value=0.0)
-    #             form_.vertex_attribute(key_, 'py', value=0.0)
-    #             form_.vertex_attribute(key_, 'lb', value=0.0)
-    #             form_.vertex_attribute(key_, 'ub', value=0.0)
-    #             form_.vertex_attribute(key_, 'target', value=0.0)
-    #             ngb = form_.vertex_neighbors(key_)[0]
-    #             form_.edge_attribute((key_, ngb), 'is_symmetry', True)
-
-    #     return form_

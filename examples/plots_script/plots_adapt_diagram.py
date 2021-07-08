@@ -158,7 +158,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     return plt
 
 
-def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, GSF_ticks=False, fill=False, show_legend=True, save=None, markers=None):
+def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True, limit_state=True, colors=None, xy_limits=None, GSF_ticks=False, fill=False, show_legend=True, save=None, markers=None, addpt=None, legendaddpt=None):
     """ Plot a diagram of Thrusts based on the collected data on (m) problems each with (n) points.
 
     Parameters
@@ -279,6 +279,11 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
             # ax.fill_between(xmin, fmin, fmax, color=colors[i], alpha=0.2)
             # ax.fill_between(extrapolation_minx, extrapolation_miny, extrapolation_maxy, color=colors[i], alpha=0.2)
 
+    if addpt:
+        print('addpt')
+        for i, (xi, yi) in enumerate(addpt):
+            ax.plot(xi, yi, 'X', ls=' ', label=legendaddpt[i])
+
     ax1 = plt.axes()
     ax2 = ax1.twiny()
     print([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
@@ -398,10 +403,79 @@ size_legend = 12
 # ------------FAN DIAGRAM------------
 # ------------- plot of the diagrams of thrust
 
+# xy_limits = [[0.50, 0.01], [160, 40]]
+# GSF_ticks = [2.0, 3.0, 4.0, 5.0]
+# legends = {'fan_fd': [r'fan-like | $c=0$', r'fan-like | $c=0.1$', r'fan-like | $c=0.25$', r'fan-like | $c=0.50$']}
+# colors = {'fan_fd': ['C0', 'C1', 'C2', 'C3']}  # These are C0 and C1 in HEX.
+# # colors = {'fan_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
+# # colors = {'fan_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
+
+# type_structure = 'crossvault'
+# discretisation = 14
+# span = 10.0
+
+# thicknesses_fan = {0: [], 0.5: [], 0.25: [], 0.10: []}
+# solutions_fan = {0: [], 0.5: [], 0.25: [], 0.10: []}
+
+# thicknesses_fan[0] = [[0.5, 0.462], [0.5, 0.462]]
+# thicknesses_fan[0.1] = [[0.5, 0.45, 0.4, 0.381], [0.5, 0.45, 0.4, 0.381]]
+# thicknesses_fan[0.25] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.284], [0.5, 0.45, 0.4, 0.35, 0.3, 0.284]]
+# thicknesses_fan[0.50] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.133], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.133]]
+
+# solutions_fan[0] = [[85.39414706, 87.84789785], [91.58440479, 87.84789785]]
+# solutions_fan[0.1] = [[77.38786732, 79.82182979, 82.92104332, 85.87888901], [98.61784773, 96.65808853, 91.82967859, 85.87888901]]
+# solutions_fan[0.25] = [[69.30562706, 71.5898352, 74.01799122, 76.63720002, 79.43758131, 81.79817597], [108.6253247, 103.3151941, 98.18929977, 93.89348244, 88.71289272, 81.79817597]]
+# solutions_fan[0.50] = [[58.32042403, 60.26863607, 62.34047242, 64.54856747, 65.92274897, 68.40896737, 72.20575127, 79.29859657], [121.5, 114.673246, 110.7220752, 105.7359792, 100.3871226, 95.27980421, 90.68620846, 79.29859657]]
+
+# for type_formdiagram in ['fan_fd']:
+#     thicknesses_all = []
+#     solutions_all = []
+#     for deg in [0, 0.1, 0.25, 0.5]:
+#         thicknesses = thicknesses_fan[deg]
+#         solutions = solutions_fan[deg]
+#         img_graph = None
+#         # diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, limit_state=False).show()
+#         thicknesses_all.append(thicknesses)
+#         solutions_all.append(solutions)
+#         print(type_formdiagram, deg, -solutions[1][0]/solutions[0][0])
+#     folder_main = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
+#     title_main = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+#     img_graph = os.path.join(folder_main, title_main + '_diagram.pdf')
+#     img_graph = None
+#     print(thicknesses_all)
+#     print(solutions_all)
+#     # thickness_over_span = [[[], []], [[], []], [[], []]]
+#     # for i in range(len(thicknesses_all)):
+#     #     for el in thicknesses_all[i][0]:
+#     #         print(el)
+#     #         thickness_over_span[i][0].append(el/span)
+#     #         thickness_over_span[i][1].append(el/span)
+
+#     for series in solutions_all:
+#         print(len(series[0]), len(series[1]))
+#         for i in range(len(series[0])):
+#             series[0][i] = series[0][i]/100
+#             series[1][i] = series[1][i]/100
+#     for series in thicknesses_all:
+#         print(len(series[0]), len(series[1]))
+
+#     print(thicknesses_all)
+#     print(solutions_all)
+
+#     diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph,
+#                                fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
+#     # diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
+
+
+# ------------------------------------------
+# ------------ CROSS-FD ------------
+# ------------- plot of the diagrams of thrust DOUBLE CURVATURE
+
 xy_limits = [[0.50, 0.01], [160, 40]]
 GSF_ticks = [2.0, 3.0, 4.0, 5.0]
-legends = {'fan_fd': [r'fan-like | $c=0$', r'fan-like | $c=0.1$', r'fan-like | $c=0.25$', r'fan-like | $c=0.50$']}
-colors = {'fan_fd': ['C0', 'C1', 'C2', 'C3']}  # These are C0 and C1 in HEX.
+legends = {'fan_fd': [r'fan-like | $c=0$', r'fan-like | $c=0.1$'], 'cross_fd': [r'orthogonal | $c=0$', r'orthogonal | $c=0.1$']}
+colors = {'fan_fd': ['C0', 'C1'], 'cross_fd': ['C2', 'C3']}  # These are C0 and C1 in HEX.
+legend_all = []
 # colors = {'fan_fd': ['#419EDE', '#1F77B4', '#144C73'], 'fan_fd': ['#FFA85B', '#FF7F0E', '#C15A00']}  # These are C0 and C1 in HEX.
 # colors = {'fan_fd': ['#1FB4A7', '#1F77B4', '#1F2DB4'], 'fan_fd': ['#FFA85B', '#DA6600', '#FF0E16']}  # These are C0 and C1 in HEX.
 
@@ -409,30 +483,40 @@ type_structure = 'crossvault'
 discretisation = 14
 span = 10.0
 
-thicknesses_fan = {0: [], 0.5: [], 0.25: [], 0.10: []}
-solutions_fan = {0: [], 0.5: [], 0.25: [], 0.10: []}
+thicknesses = {'cross_fd': {0: [], 0.10: []}, 'fan_fd': {0: [], 0.10: []}}
+solutions = {'cross_fd': {0: [], 0.10: []}, 'fan_fd': {0: [], 0.10: []}}
 
-thicknesses_fan[0] = [[0.5, 0.462], [0.5, 0.462]]
-thicknesses_fan[0.1] = [[0.5, 0.45, 0.4, 0.381], [0.5, 0.45, 0.4, 0.381]]
-thicknesses_fan[0.25] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.284], [0.5, 0.45, 0.4, 0.35, 0.3, 0.284]]
-thicknesses_fan[0.50] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.133], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.133]]
+thicknesses['fan_fd'][0] = [[0.5, 0.469], [0.5, 0.469]]
+thicknesses['fan_fd'][0.1] = [[0.5, 0.45, 0.4, 0.367], [0.5, 0.45, 0.4, 0.367]]
 
-solutions_fan[0] = [[85.39414706, 87.84789785], [91.58440479, 87.84789785]]
-solutions_fan[0.1] = [[77.38786732, 79.82182979, 82.92104332, 85.87888901], [98.61784773, 96.65808853, 91.82967859, 85.87888901]]
-solutions_fan[0.25] = [[69.30562706, 71.5898352, 74.01799122, 76.63720002, 79.43758131, 81.79817597], [108.6253247, 103.3151941, 98.18929977, 93.89348244, 88.71289272, 81.79817597]]
-solutions_fan[0.50] = [[58.32042403, 60.26863607, 62.34047242, 64.54856747, 65.92274897, 68.40896737, 72.20575127, 79.29859657], [121.5, 114.673246, 110.7220752, 105.7359792, 100.3871226, 95.27980421, 90.68620846, 79.29859657]]
+thicknesses['cross_fd'][0] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.285], [0.5, 0.45, 0.4, 0.35, 0.3, 0.285]]
+thicknesses['cross_fd'][0.1] = [[0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.218], [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.218]]
 
-for type_formdiagram in ['fan_fd']:
-    thicknesses_all = []
-    solutions_all = []
-    for deg in [0, 0.1, 0.25, 0.5]:
-        thicknesses = thicknesses_fan[deg]
-        solutions = solutions_fan[deg]
+
+solutions['fan_fd'][0] = [[85.39414706, 87.84789785], [91.58440479, 87.84789785]]
+solutions['fan_fd'][0.1] = [[77.38786732, 79.82182979, 82.92104332, 85.87888901], [98.61784773, 96.65808853, 91.82967859, 85.87888901]]
+
+solutions['cross_fd'][0] = [[64.34443, 65.93296, 67.58872, 69.32432, 71.14970, 73.17908], [86.061436, 83.551783, 81.000579, 78.263841, 75.350514, 73.179083]]
+solutions['cross_fd'][0.1] = [[58.92723779, 60.40426829, 61.9776272, 63.63727805, 65.40329015, 67.31489417, 71.79642535], [89.4634744, 86.9090431, 84.34693797, 81.7439412, 79.10048825, 76.07661758, 71.79642535]]
+
+thicknesses_all = []
+solutions_all = []
+colors_all = []
+# print(thicknesses)
+for type_formdiagram in ['fan_fd', 'cross_fd']:
+    i = 1
+    for deg in [0.1]:
+        thicknesses_i = thicknesses[type_formdiagram][deg]
+        solutions_i = solutions[type_formdiagram][deg]
+        color = colors[type_formdiagram]
+        legend_all.append(legends[type_formdiagram][i])
         img_graph = None
         # diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, limit_state=False).show()
-        thicknesses_all.append(thicknesses)
-        solutions_all.append(solutions)
-        print(type_formdiagram, deg, -solutions[1][0]/solutions[0][0])
+        thicknesses_all.append(thicknesses_i)
+        solutions_all.append(solutions_i)
+        colors_all.append(color[i])
+        print(type_formdiagram, deg, -solutions_i[1][0]/solutions_i[0][0])
+        i += 1
     folder_main = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', type_structure, type_formdiagram)
     title_main = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
     img_graph = os.path.join(folder_main, title_main + '_diagram.pdf')
@@ -446,17 +530,19 @@ for type_formdiagram in ['fan_fd']:
     #         thickness_over_span[i][0].append(el/span)
     #         thickness_over_span[i][1].append(el/span)
 
-    for series in solutions_all:
-        print(len(series[0]), len(series[1]))
-        for i in range(len(series[0])):
-            series[0][i] = series[0][i]/100
-            series[1][i] = series[1][i]/100
-    for series in thicknesses_all:
-        print(len(series[0]), len(series[1]))
+    # for series in solutions_all:
+    #     print(len(series[0]), len(series[1]))
+    #     for i in range(len(series[0])):
+    #         series[0][i] = series[0][i]/100
+    #         series[1][i] = series[1][i]/100
+    # for series in thicknesses_all:
+    #     print(len(series[0]), len(series[1]))
 
-    print(thicknesses_all)
-    print(solutions_all)
+    x_y_add = [[0.372, 75.0], [0.296, 70.6], [0.325, 73.9], [0.267, 69.8]]
 
-    diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph,
-                               fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
+    legendaddpt = ['B1', 'B2', 'D3', 'D4']
+
+    diagram_of_multiple_thrust(thicknesses_all, solutions_all, legend_all, save=img_graph,
+                               fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors_all, addpt=x_y_add, legendaddpt=legendaddpt).show()
     # diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
+

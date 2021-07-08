@@ -121,7 +121,7 @@ class FormArtist(DiagramArtist):
             else:
                 continue
             edges.append(edge)
-            color = color_compression if force > 0 else color_tension
+            color = color_compression
             pipes.append({'points': [vertex_xyz[edge[0]], vertex_xyz[edge[1]]],
                           'color': color,
                           'radius': radius,

@@ -137,12 +137,14 @@ def post_process_general(analysis):
     printout = optimiser.data.get('printout', True)
     variables = optimiser.data['variables']
     thickness_type = optimiser.data.get('thickness_type', 'constant')
+    features = optimiser.data.get('features', [])
 
     fconstr = optimiser.fconstr
     # args = optimiser.args
     xopt = optimiser.xopt
     fopt = optimiser.fopt
     message = optimiser.message
+    thk = M.thk
 
     i_uv = form.index_uv()
     # i_k = form.index_key()
@@ -180,7 +182,7 @@ def post_process_general(analysis):
         form.edge_attribute((u, v), 'f', float(qi*li))
 
     form.attributes['loadpath'] = form.loadpath()
-    reactions(form, plot=plot)
+    reactions(form)
 
     if 't' in variables:
         if shape.data['type'] == 'general':
@@ -211,10 +213,17 @@ def post_process_general(analysis):
             shape = Shape.from_library(shape.data)
             form.envelope_from_shape(shape)  # Check if this is ok for adapted pattern
             i = 0
-            for key in form.vertices():
+            for key in form.vertices():  # this resolver the problem due to the adapted pattern
                 form.vertex_attribute(key, 'ub', float(M.ub[i]))
                 form.vertex_attribute(key, 'lb', float(M.lb[i]))
                 i += 1
+
+    if 'adapted-envelope' in features:
+        form.attributes['thk'] = thk
+        shape.data['thk'] = thk
+        shape = Shape.from_library(shape.data)
+        form.envelope_from_shape(shape)
+
 
     # if 's' in variables:
     #     s = -1 * fopt

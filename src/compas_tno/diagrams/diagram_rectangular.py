@@ -532,6 +532,8 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
             elif j == division_y and i < division_x:
                 lines.append([[xi, yi, 0.0], [xi + dx, yi, 0.0]])
 
+    #add edges closing
+
     mesh = Mesh.from_lines(lines, delete_boundary_face=True)
     form = cls.from_mesh(mesh)
     gkey_key = form.gkey_key()

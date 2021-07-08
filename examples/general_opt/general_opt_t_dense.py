@@ -4,21 +4,28 @@ from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import view_solution
 
-from compas_tno.algorithms import apply_sag
-
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
 from compas_tno.plotters import save_csv
 from compas_tno.plotters import diagram_of_thrust
 
+from numpy import array
+
 span = 10.0
 k = 1.0
-discretisation = 10
-type_formdiagram = 'cross_fd'
+discretisation = 20
+type_formdiagram = 'cross_with_diagonal'
 type_structure = 'crossvault'
 thk = 0.50
-discretisation_shape = 4 * discretisation
+discretisation_shape = 10 * discretisation
+he = None
+hc = None
+
+
+# type_structure = 'pointed_crossvault'
+# hc = 6.0
+# he = 5.0
 
 c = 0.1
 
@@ -29,14 +36,14 @@ solutions = {}
 
 
 # for c in [0.1, 0.25, 0.50]:
-for c in [0.50]:
+for c in [0.1]:
     solutions[c] = {}
 
     for obj in ['t']:
         solutions[c][obj] = {}
 
         # for thk in [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1]:
-        for thk in [0.5]:
+        for thk in [0.50]:
 
             # Create form diagram
 
@@ -57,9 +64,9 @@ for c in [0.50]:
                 'thk': thk,
                 'discretisation': discretisation_shape,
                 'xy_span': [[0, span], [0, k*span]],
-                # 'hc': hc,
-                # 'hm': None,
-                # 'he': None,
+                'hc': hc,
+                'hm': None,
+                'he': [he, he, he, he],
                 'center': [5.0, 5.0],
                 'radius': span/2,
                 't': 0.0,
@@ -71,38 +78,12 @@ for c in [0.50]:
             # -----------------------  INITIALISE   ----------------------
             # ------------------------------------------------------------
 
-            # Apply Selfweight and Envelope
-
             form.envelope_from_shape(vault)
             form.selfweight_from_shape(vault)
 
             form.envelope_on_x_y(c=c)
 
             form_base = form.copy()
-
-            # apply_sag(form)
-
-            folder_lp = os.path.join('/Users/mricardo/compas_dev/me', 'loadpath', type_structure, type_formdiagram)
-            os.makedirs(folder_lp, exist_ok=True)
-            title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-            save_lp = os.path.join(folder_lp, title)
-            address_lp = save_lp + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
-            try:
-                form = FormDiagram.from_json(save_lp)
-                form.envelope_from_shape(vault)
-                form.selfweight_from_shape(vault)
-                form.envelope_on_x_y(c=c)
-            except:
-                form.initialise_loadpath()
-                form.to_json(address_lp)
-
-            # form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/fan_fd/mov_c_0.1/crossvault_fan_fd_discr_10_t_thk_50.0.json')
-            # thk = form.attributes['thk']
-
-            form.envelope_on_x_y(c=c)
-
-            # plot_form(form, show_q=False, cracks=True).show()
-            # view_solution(form).show()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -114,65 +95,112 @@ for c in [0.50]:
             optimiser.data['library'] = 'IPOPT'
             optimiser.data['solver'] = 'IPOPT'
             optimiser.data['constraints'] = ['funicular', 'envelope']
-            optimiser.data['variables'] = ['ind', 'sym', 'zb', 't']
             # optimiser.data['variables'] = ['ind', 'zb', 't']
+            optimiser.data['variables'] = ['sym', 'zb', 't']
             optimiser.data['objective'] = obj
-            optimiser.data['plot'] = False
+            optimiser.data['plot'] = True
             optimiser.data['find_inds'] = False
-            optimiser.data['max_iter'] = 1000
+            optimiser.data['max_iter'] = 1500
             optimiser.data['qmax'] = 1000.0
             optimiser.data['gradient'] = True
             optimiser.data['printout'] = True
             optimiser.data['jacobian'] = True
             optimiser.data['derivative_test'] = False
 
+            optimiser.data['starting_point'] = 'sag'
+
             # --------------------- 5. Set up and run analysis ---------------------
 
             analysis = Analysis.from_elements(vault, form, optimiser)
-            # analysis.apply_selfweight()
-            # analysis.apply_envelope()
-            # analysis.apply_reaction_bounds()
-            analysis.set_up_optimiser()
-            analysis.run()
 
-            form.overview_forces()
-            thk = form.attributes['thk']
+            min_thks = []
+            errors = []
+            entropies = []
 
-            weight = 0
-            for key in form.vertices():
-                weight += form.vertex_attribute(key, 'pz')
+            entropy = 1.0
 
-            thrust = form.thrust()
-            print('Ratio Thrust/Weight:', thrust/weight)
+            # while entropy > 10e-4:
+            for i in range(1):
 
-            folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', 'min_thk', type_structure, type_formdiagram, 'mov_c_' + str(c))
-            os.makedirs(folder, exist_ok=True)
-            title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-            save_form = os.path.join(folder, title)
-            address = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+                analysis.set_up_optimiser()
+                analysis.run()
 
-            # plot_superimposed_diagrams(form, form_base).show()
-            # view_solution(form).show()
+                form.overview_forces()
+                thk = form.attributes['thk']
 
-            if optimiser.exitflag == 0:
+                weight = 0
+                for key in form.vertices():
+                    weight += form.vertex_attribute(key, 'pz')
+
+                thrust = form.thrust()
+                print('Ratio Thrust/Weight:', thrust/weight)
+
+                folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', 'min_thk', type_structure, type_formdiagram)
+                if 'ind' in optimiser.data['variables']:
+                    folder = os.path.join(folder, 'fixed')
+                else:
+                    folder = os.path.join(folder, 'mov_c_' + str(c))
+                if he:
+                    folder = os.path.join(folder, 'hc_' + str(hc) + '_he_' + str(he))
+
+                os.makedirs(folder, exist_ok=True)
+                title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+                save_form = os.path.join(folder, title)
+                address = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+
+
                 solutions[c][obj][thk] = thrust/weight * 100
                 img_file = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.png'
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)
                     plot_superimposed_diagrams(form, form_base, save=img_file)
-            else:
-                break
 
-    plot_superimposed_diagrams(form, form_base).show()
-    view_solution(form).show()
+                plot_superimposed_diagrams(form, form_base).show()
+                plot_form(form, show_q=False, cracks=True).show()
+                view_solution(form).show()
+
+                vault.data['thk'] = thk
+                form.envelope_from_shape(vault)
+
+                x = array(form.vertices_attribute('x')).reshape(-1, 1)
+                y = array(form.vertices_attribute('y')).reshape(-1, 1)
+
+                diff_xy = (x - optimiser.M.x0) ** 2 + (y - optimiser.M.y0) ** 2
+                entropy = float(sum(diff_xy))
+
+                optimiser.M.x0 = array(form.vertices_attribute('x')).reshape(-1, 1)
+                optimiser.M.y0 = array(form.vertices_attribute('y')).reshape(-1, 1)
+                optimiser.x0 = optimiser.xopt
+                gfinal = optimiser.fconstr(optimiser.x0, optimiser.M)
+                print('Max / Min g final:', max(gfinal), min(gfinal))
+                print('Entropy XY:', entropy)
+                entropies.append(entropy)
+                constr_error = 0.0
+                for el in gfinal:
+                    if el < 0:
+                        constr_error += el**2
+                print('Min thk:', thk)
+                print('Error observed:', constr_error)
+                min_thks.append(thk)
+                errors.append(constr_error)
+                # plot_form(form, show_q=False, cracks=True).show()
+
+                optimiser.data['starting_point'] = 'current'
+                optimiser.data['max_thk'] = 0.50
 
 print(solutions)
 print('\n')
 
+print(min_thks)
+print(entropies)
+print(errors)
+
 for key in solutions:
     for key2 in solutions[key]:
         print(key, key2, solutions[key][key2])
+
+view_solution(form).show()
 
 # # # ----------------------- 5. Create Analysis loop on limit analysis --------------------------
 
