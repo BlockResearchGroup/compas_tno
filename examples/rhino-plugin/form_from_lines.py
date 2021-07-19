@@ -10,6 +10,8 @@ guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
 lines = compas_rhino.get_line_coordinates(guids)
 graph = FormGraph.from_lines(lines)
 
+print(FormDiagram)
+
 form = FormDiagram.from_lines(lines)
 print(form.number_of_edges())
 print(form.number_of_vertices())

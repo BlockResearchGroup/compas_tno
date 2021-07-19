@@ -14,7 +14,7 @@ __all__ = ["SettingsForm", "Settings_Tab"]
 
 
 def get_scene():
-    return sc.sticky['AGS']['scene']
+    return sc.sticky['TNO']['scene']
 
 
 class Settings_Tab(forms.TabPage):

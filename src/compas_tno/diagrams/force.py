@@ -6,8 +6,10 @@ __all__ = ['ForceDiagram']
 
 
 class ForceDiagram(ForceDiagram):
-    """Mesh-based data structure for force diagrams in AGS.
+    """Mesh-based data structure for force diagrams in TNO.
     """
+
+    # __module__ = 'compas_tno.diagrams'
 
     def __init__(self):
         super(ForceDiagram, self).__init__()

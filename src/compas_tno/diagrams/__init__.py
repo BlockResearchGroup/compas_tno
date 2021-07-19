@@ -11,6 +11,7 @@ compas_tno.diagrams
 
     FormDiagram
     ForceDiagram
+    FormGraph
 
 """
 from __future__ import absolute_import

@@ -19,9 +19,17 @@
 
         "commands":
         [
-            {"name": "TNO__init",                   "menu_text": "Initialise TNO",              "tooltip": "Initialise TNO"}
-            {"name": "TNO_form_from_lines",         "menu_text": "Form from Lines",             "tooltip": "Create Form from Lines"}
-            {"name": "TNO_form_from_library",       "menu_text": "Form from Library",           "tooltip": "Create Form from Lines"}
+            {"name": "TNO__init",                   "menu_text": "Initialise TNO",              "tooltip": "Initialise TNO"},
+            {"name": "TNO_form_from_lines",         "menu_text": "Form from Lines",             "tooltip": "Create Form from Lines"},
+            {"name": "TNO_form_from_library",       "menu_text": "Form from Library",           "tooltip": "Create Form from Lines"},
+            {"name": "TNO_apply_envelope",          "menu_text": "Apply Envelope to Shape",     "tooltip": "Apply Envelope to Shape"},
+            {"name": "TNO_apply_selfweight",        "menu_text": "Apply Selfweight",            "tooltip": "Apply Selfweight from Shape"},
+            {"name": "TNO_optimization_settings",   "menu_text": "Optimisation Settings",       "tooltip": "Optimisation Settings"},
+            {"name": "TNO_run_optimisation",        "menu_text": "Run Optimisation",            "tooltip": "Run Optimisation"},
+            {"name": "TNO_shape_from_library",      "menu_text": "Shape from Library",          "tooltip": "Create Shape from Library"},
+            {"name": "TNO_shape_from_meshes",       "menu_text": "Shape from Meshes",           "tooltip": "Create Shape from Meshes"},
+            {"name": "TNO_startubg_point",          "menu_text": "Find Starting Point",         "tooltip": "Find Starting Point"},
+            {"name": "TNO__restart",                "menu_text": "Restart the Session",         "tooltip": "Restart the Session"}
 
         ],
 

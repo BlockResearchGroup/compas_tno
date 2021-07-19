@@ -49,7 +49,7 @@ class FormDiagram(FormDiagram):
 
     """
 
-    __module__ = 'compas_tna.diagrams'
+    # __module__ = 'compas_tno.diagrams'
 
     def __init__(self):
         super(FormDiagram, self).__init__()

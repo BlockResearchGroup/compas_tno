@@ -12,10 +12,10 @@ import compas
 import compas_rhino
 
 from compas.rpc import Proxy
-from compas_ags.rhino import Scene
-from compas_ags.rhino import Browser
-from compas_ags.activate import check
-from compas_ags.activate import activate
+from compas_tno.rhino import Scene
+# from compas_tno.rhino import Browser  # From compas_ags, check if needed to do forms
+from compas_tno.activate import check
+from compas_tno.activate import activate
 
 
 __commandname__ = "TNO__init"
@@ -66,7 +66,7 @@ def RunCommand(is_interactive):
         'system': {
             "session.dirname": CWD,
             "session.filename": None,
-            "session.extension": 'ags'
+            "session.extension": 'tno'
         },
         'scene': scene,
     }
@@ -75,7 +75,7 @@ def RunCommand(is_interactive):
 
     # would be useful to add a notification about the cloud: new / reconnect
     # compas_rhino.display_message("AGS has started.")
-    Browser()
+    # Browser()  # working on a Browser
 
 
 # ==============================================================================

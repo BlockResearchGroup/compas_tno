@@ -21,7 +21,7 @@ def RunCommand(is_interactive):
     #     compas_rhino.display_message('TNO has not been initialised yet.')
     #     return
 
-    # scene = sc.sticky['AGS']['scene']
+    # scene = sc.sticky['TNO']['scene']
 
     # guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
     # if not guids:

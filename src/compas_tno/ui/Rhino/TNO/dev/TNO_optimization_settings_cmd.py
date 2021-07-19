@@ -10,7 +10,7 @@ from compas_tno.diagrams import FormGraph
 from compas_tno.diagrams import FormDiagram
 
 
-__commandname__ = "TNO_apply_selfweight"
+__commandname__ = "TNO_optimization_settings"
 
 
 def RunCommand(is_interactive):
@@ -21,7 +21,7 @@ def RunCommand(is_interactive):
     #     compas_rhino.display_message('TNO has not been initialised yet.')
     #     return
 
-    # scene = sc.sticky['AGS']['scene']
+    # scene = sc.sticky['TNO']['scene']
 
     # guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
     # if not guids:
