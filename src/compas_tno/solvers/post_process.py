@@ -2,11 +2,14 @@ from compas_tno.algorithms import reactions
 from compas_tno.algorithms import zq_from_qid
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape
+from compas_tno.diagrams import ForceDiagram
+import compas_tno
 
 from compas.utilities import geometric_key
 
 __all__ = [
-    'post_process_analysis'
+    'post_process_analysis',
+    'post_process_general'
 ]
 
 
@@ -162,6 +165,10 @@ def post_process_general(analysis):
         M.X[M.fixed, [2]] = zb.flatten()
     if 't' in variables:
         thk = xopt[-1]
+    if 'lambd' in variables:
+        lambd = xopt[-1]
+        M.P[:, [0]] = lambd * M.px0
+        M.P[:, [1]] = lambd * M.py0
     # if 's' in variables:
     #     s = xopt[-1]
 
@@ -173,6 +180,9 @@ def post_process_general(analysis):
         form.vertex_attribute(key, 'x', M.X[i, 0])
         form.vertex_attribute(key, 'y', M.X[i, 1])
         form.vertex_attribute(key, 'z', M.X[i, 2])
+        form.vertex_attribute(key, 'px', M.P[i, 0])
+        form.vertex_attribute(key, 'py', M.P[i, 1])
+        form.vertex_attribute(key, 'pz', M.P[i, 2])
         i = i + 1
 
     for c, qi in enumerate(list(M.q.ravel())):
@@ -252,3 +262,32 @@ def post_process_general(analysis):
         print('-' * 50 + '\n')
 
     return analysis
+
+
+def save_geometry_at_iterations(analysis):
+
+    form = analysis.form
+    optimiser = analysis.optimiser
+    shape = analysis.shape
+
+    M = optimiser.M
+
+    file_qs = compas_tno.get('output.json')
+
+    force = ForceDiagram.from_formdiagram(form)
+    key_index = form.key_index()
+    _key_index = force.key_index()
+
+    form, force = form.reciprocal_from_form(plot=False)
+
+    with open(file_qs, mode='r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    Xform = {}
+    Xforce = {}
+
+    iterations = len(data['iterations'])
+
+
+
+    return

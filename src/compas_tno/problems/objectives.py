@@ -3,6 +3,7 @@ from numpy import dot
 from numpy import isnan
 from numpy import hstack
 from numpy import array
+from numpy import sum as npsum
 
 from compas_tno.algorithms import zlq_from_qid
 from compas_tno.algorithms import zq_from_qid
@@ -28,6 +29,9 @@ __all__ = [
     'f_reduce_thk',
     'f_min_thrust_general',
     'f_max_thrust_general',
+    'f_bestfit_general',
+    'f_horprojection_general',
+    'f_loadpath_general'
 ]
 
 
@@ -127,6 +131,85 @@ def f_target(xopt, *args):
         z, q = zq_from_qid(xopt, args)
 
     f = sum((z - s)**2)
+
+    return f
+
+
+def f_bestfit_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    k = M.k
+    nb = len(M.fixed)
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    f = sum((M.X[:, [2]] - M.s)**2)
+
+    return f
+
+
+def f_horprojection_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    k = M.k
+    nb = len(M.fixed)
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    f = sum((M.X[:, [0]] - M.x0)**2) + sum((M.X[:, [1]] - M.y0)**2)
+
+    return f
+
+
+def f_loadpath_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    k = M.k
+    nb = len(M.fixed)
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    uvw = M.C.dot(M.X)
+
+    l2 = npsum(uvw**2, axis=1).reshape(-1, 1)
+
+    f = (abs(M.q.transpose()).dot(l2)).item()
 
     return f
 

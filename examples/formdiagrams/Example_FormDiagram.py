@@ -18,6 +18,8 @@ print(form)
 form.overview_forces()
 plot_form(form, show_q=False).show()
 
+print(form.vertices_attribute('x'))
+
 # ------------------------------------------------
 # --------- CREATING ORTHO FORM DIAGRAM ----------
 # ------------------------------------------------
@@ -81,9 +83,25 @@ form = FormDiagram.from_library(data)
 print(form)
 plot_form(form, show_q=False).show()
 
-
 # ------------------------------------------------
 # --------- CREATING RADIAL FORM DIAGRAM ---------
+# ------------------------------------------------
+
+data = {
+    'type': 'radial_fd',
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+    'discretisation': [8, 20],
+}
+
+form = FormDiagram.from_library(data)
+print(form)
+form.overview_forces()
+plot_form(form, show_q=False).show()
+
+
+# ------------------------------------------------
+# --- CREATING RADIAL FORM DIAGRAM W DIAGONALS ---
 # ------------------------------------------------
 
 data = {

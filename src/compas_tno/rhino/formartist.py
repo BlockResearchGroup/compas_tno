@@ -22,7 +22,7 @@ class FormArtist(DiagramArtist):
 
     Parameters
     ----------
-    form: compas_ags.diagrams.FormDiagram
+    form: compas_tno.diagrams.FormDiagram
         The form diagram to draw.
 
     Attributes

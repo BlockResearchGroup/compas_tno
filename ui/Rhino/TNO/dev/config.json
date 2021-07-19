@@ -1,0 +1,52 @@
+{
+    "plugin":
+    {
+        "id": "{949ca7a4-7ddf-4939-8a5b-d945d5ac0bc8}",
+        "version": "0.1.0",
+        "title": "TNO"
+    },
+    "ui":
+    {
+        "commands":
+        [
+            {"name": "TNOinit",         "menu_text": "Initialise TNO",          "tooltip": "Initialise TNO"}
+
+        ],
+
+        "menus":
+        [
+            {
+                "name" : "Thrust Network Optimisation",
+                "items":
+                [
+                    {"command": "TNOinit"}
+                ]
+            }
+        ],
+        "toolbars":
+        [
+            {
+                "name": "TNO",
+                "items":
+                [
+                    {"left": "TNOinit"}
+
+                ]
+            }
+        ],
+        "toolbargroups":
+        [
+            {
+                "name": "TNO",
+                "toolbars":
+                [
+                    "TNO"
+                ]
+            }
+        ]
+    },
+    "settings":
+    {
+
+    }
+}

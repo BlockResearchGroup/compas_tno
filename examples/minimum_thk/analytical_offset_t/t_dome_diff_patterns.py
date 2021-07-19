@@ -20,8 +20,8 @@ import os
 
 sols = {}
 times = {}
-for x_discr in [20, 24]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
-    for y_discr in [12]:  # Less sensible  #[12, 16, 20, 24] # nm = 16
+for x_discr in [20]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
+    for y_discr in [16]:  # Less sensible  #[12, 16, 20, 24] # nm = 16
         discretisation = [x_discr, y_discr]
 
         thk = 0.5
@@ -78,9 +78,9 @@ for x_discr in [20, 24]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
 
         # form_ = FormDiagram.from_library(data_diagram)
 
-        plot_form(form, show_q=False, fix_width=False).show()
+        # plot_form(form, show_q=False, fix_width=False).show()
         # plot_form(form_, show_q=False, fix_width=False).show()
-        pass
+        # pass
 
         # --------------------- 3. Create Starting point with TNA ---------------------
 
@@ -90,7 +90,7 @@ for x_discr in [20, 24]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
         form.selfweight_from_shape(dome)
         form.initialise_loadpath()
         # form = form.initialise_tna(plot=False)
-        # plot_form(form).show()
+        plot_form(form).show()
 
         print('number edges', form.number_of_edges())
 

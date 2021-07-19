@@ -2,8 +2,10 @@ from numpy import zeros
 from numpy import identity
 from numpy import hstack
 from numpy import vstack
-
+from numpy import sign
 from numpy import divide
+from numpy import sum as npsum
+from numpy import multiply
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import splu
@@ -38,7 +40,10 @@ __all__ = [
     'gradient_loadpath',
     'gradient_tight_crosssection',
     'gradient_fmin_general',
-    'gradient_fmax_general'
+    'gradient_fmax_general',
+    'gradient_bestfit_general',
+    'gradient_horprojection_general',
+    'gradient_loadpath_general',
 ]
 
 
@@ -311,6 +316,7 @@ def sensitivities_wrapper_general(variables, M):
     dxdq = zeros((n, k))
     dydq = zeros((n, k))
     dzdq = zeros((n, k))
+    db_column = zeros((nlin_reacbounds, 1))
 
     if 'funicular' in M.constraints:
         deriv = vstack([deriv, M.B, - M.B])
@@ -357,10 +363,13 @@ def sensitivities_wrapper_general(variables, M):
 
         dslope_dind = zeros((2 * len(M.fixed), len(M.ind)))
         dslope_dzb = zeros((2 * len(M.fixed), len(M.fixed)))
+        dslope_dlambd = zeros((2 * len(M.fixed), 1))
 
         for i in range(len(M.fixed)):
             i_ = len(M.fixed) + i
             zbi = M.X[M.fixed, 2][i]
+            px0i = M.P[M.fixed, 0][i]
+            py0i = M.P[M.fixed, 1][i]
 
             signe_x = 1.0
             signe_y = 1.0
@@ -371,64 +380,69 @@ def sensitivities_wrapper_general(variables, M):
                 signe_y = -1.0
             if R[i, 2] < 0:
                 signe_z = -1.0
-                # print('neg rz')
 
             dslope_dzb[i, i] = - 1 * abs(R[i, 0]/R[i, 2])
             dslope_dzb[i] += signe_z * zbi * abs(R[i, 0])/R[i, 2]**2 * dRzdzb[:, i]
+
+            # dslope_dlambd[i] = - zbi / abs(R[i, 2]) * signe_x * (- px0i)
 
             dslope_dind[i] = zbi * signe_x * (-R[i, 2] * dRxdq[i] + R[i, 0] * dRzdq[i]) / R[i, 2]**2 / signe_z
 
             dslope_dzb[i_, i] = - 1 * abs(R[i, 1]/R[i, 2])
             dslope_dzb[i_] += signe_z * zbi * abs(R[i, 1])/R[i, 2]**2 * dRzdzb[:, i]
 
+            # dslope_dlambd[i_] = - zbi / abs(R[i, 2]) * signe_y * (- py0i)
+
             dslope_dind[i_] = zbi * signe_y * (-R[i, 2] * dRydq[i] + R[i, 1] * dRzdq[i]) / R[i, 2]**2 / signe_z
 
         deriv = vstack([deriv, dslope_dind])
 
+        db = db_update(M.x0, M.y0, thk, M.fixed, M.shape, M.b, M.variables)
+        db_column = vstack([db[:, 0].reshape(-1, 1), db[:, 1].reshape(-1, 1)])
+
         nlin_reacbounds = 2 * nb
 
-    if nbxy or nbz:
+    if nbxy or nbz:  # add a column to the derivatives to count the variables zb or xyb
         Anull = zeros((n, nb))
         if nbxy:
             deriv = hstack([deriv, vstack([zeros((nlin_fun, nb)), A, -A, Anull, -Anull, Anull, -Anull, zeros((nlin_reacbounds, nb))])])
             deriv = hstack([deriv, vstack([zeros((nlin_fun, nb)), Anull, -Anull, A, -A, Anull, -Anull, zeros((nlin_reacbounds, nb))])])
         if nbz:
+            addcolumn = zeros((nlin_fun + nlin_limitxy, nb))
+            if 'envelope' in M.constraints:
+                addcolumn = vstack([addcolumn, A, -A])
             if 'reac_bounds' in M.constraints:
-                deriv = hstack([deriv, vstack([zeros((nlin_fun + nlin_limitxy, nb)), A, -A, dslope_dzb])])
-            else:
-                deriv = hstack([deriv, vstack([zeros((nlin_fun + nlin_limitxy, nb)), A, -A])])
+                addcolumn = vstack([addcolumn, dslope_dzb])
+            deriv = hstack([deriv, addcolumn])
 
-    if 't' in M.variables:  # add a column to the derivatives
+    if 't' in M.variables:  # add a column to the derivatives to count the variable t (thickness)
         if 'adapted-envelope' in M.features:
             pass
         else:
             dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, None, None, M.s, M.variables)[:2]
 
-        db_column = zeros((nlin_reacbounds, 1))
-
-        if 'reac_bounds' in M.constraints:
-            db = db_update(M.x0, M.y0, thk, M.fixed, M.shape, M.b, M.variables)
-            db_column = vstack([db[:, 0].reshape(-1, 1), db[:, 1].reshape(-1, 1)])
-
         dXdt = vstack([zeros((nlin_fun + nlin_limitxy, 1)), -dzmindt, +dzmaxdt, db_column])
         deriv = hstack([deriv, dXdt])
 
-    if 'lambd' in M.variables:  # add a column to the derivatives
+    if 'lambd' in M.variables:  # add a column to the derivatives to count the variable lambd (hor-multiplier)
         if 'fixed' in M.features:
             raise NotImplementedError
-        if 'reac_bounds' in M.features:
-            raise NotImplementedError  # Figure this out
+
+        dxdlambd = zeros((n, 1))
+        dydlambd = zeros((n, 1))
+        dxdlambd[M.free] = SPLU_D.solve(M.px0[M.free]).reshape(-1, 1)
+        dydlambd[M.free] = SPLU_D.solve(M.py0[M.free]).reshape(-1, 1)
+
+        if 'adapted-envelope' in M.features:
+            dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
+            dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
+            dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd])
         else:
-            dxdlambd = zeros((n, 1))
-            dydlambd = zeros((n, 1))
-            dxdlambd[M.free] = SPLU_D.solve(M.px0[M.free]).reshape(-1, 1)
-            dydlambd[M.free] = SPLU_D.solve(M.py0[M.free]).reshape(-1, 1)
-            if 'adapted-envelope' in M.features:
-                dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
-                dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
-                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd, zeros((nlin_reacbounds, 1))])
-            else:
-                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, zeros((nlin_env, 1)), zeros((nlin_reacbounds, 1))])
+            dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, zeros((nlin_env, 1))])
+
+        if 'reac_bounds' in M.constraints:
+            dXdlambd = vstack([dXdlambd, dslope_dlambd])
+
         deriv = hstack([deriv, dXdlambd])
 
     return deriv
@@ -663,3 +677,200 @@ def gradient_fmin_general(variables, M):
 def gradient_fmax_general(variables, M):
 
     return -1 * gradient_fmin_general(variables, M)
+
+
+def gradient_bestfit_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    n = M.n
+    k = M.k
+
+    k = M.k
+    nb = len(M.fixed)
+    n = M.n
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    M.W = diags(M.C.dot(M.X[:, 2]))  # W = diag(Cz)
+
+    f = 2*(M.X[:, [2]] - M.s)
+
+    Q = diags(M.q.ravel())
+    CitQCi = M.Cit.dot(Q).dot(M.Ci)
+    SPLU_D = splu(CitQCi)
+
+    dzdq = zeros((n, k))
+    dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
+    dzdq[M.free] = dzidq
+
+    gradient = (f.transpose().dot(dzdq)).transpose()
+
+    if 'zb' in M.variables:
+        dz_dzb = zeros((n, nb))
+        CitQCf = M.Cit.dot(Q).dot(M.Cb).toarray()
+        dz_dzb[M.free] = SPLU_D.solve(-CitQCf)
+        dz_dzb[M.fixed] = identity(nb)
+
+        gradient_zb = (f.transpose().dot(dz_dzb)).transpose()
+        gradient = vstack([gradient, gradient_zb])
+
+    return gradient
+
+
+def gradient_horprojection_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    n = M.n
+    k = M.k
+
+    k = M.k
+    nb = len(M.fixed)
+    n = M.n
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    M.U = diags(M.C.dot(M.X[:, 0]))  # U = diag(Cx)
+    M.V = diags(M.C.dot(M.X[:, 1]))  # V = diag(Cy)
+    # M.W = diags(M.C.dot(M.X[:, 2]))  # W = diag(Cz)
+
+    fx = 2*(M.X[:, [0]] - M.x0)
+    fy = 2*(M.X[:, [1]] - M.y0)
+
+    Q = diags(M.q.ravel())
+    CitQCi = M.Cit.dot(Q).dot(M.Ci)
+    SPLU_D = splu(CitQCi)
+
+    dxdq = zeros((n, k))
+    dxidq = SPLU_D.solve(-M.Cit.dot(M.U).toarray()).dot(M.B)
+    dxdq[M.free] = dxidq
+
+    dydq = zeros((n, k))
+    dyidq = SPLU_D.solve(-M.Cit.dot(M.V).toarray()).dot(M.B)
+    dydq[M.free] = dyidq
+
+    # dzdq = zeros((n, k))
+    # dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
+    # dzdq[M.free] = dzidq
+
+    gradient_x = (fx.transpose().dot(dxdq)).transpose()
+    gradient_y = (fy.transpose().dot(dydq)).transpose()
+
+    gradient = gradient_x + gradient_y
+
+    if 'zb' in M.variables:
+        gradient_zb = zeros((nb, 1))
+        gradient = vstack([gradient, gradient_zb])
+
+    return gradient
+
+
+def gradient_loadpath_general(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    n = M.n
+    k = M.k
+
+    k = M.k
+    nb = len(M.fixed)
+    n = M.n
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    uvw = M.C.dot(M.X)
+    l2 = npsum(uvw**2, axis=1).reshape(-1, 1)
+
+    M.U = diags(uvw[:, 0])  # U = diag(Cx)
+    M.V = diags(uvw[:, 1])  # V = diag(Cy)
+    M.W = diags(uvw[:, 2])  # W = diag(Cz)
+
+    Q = diags(M.q.ravel())
+    CitQCi = M.Cit.dot(Q).dot(M.Ci)
+    SPLU_D = splu(CitQCi)
+
+    dxdq = zeros((n, k))
+    dydq = zeros((n, k))
+    dzdq = zeros((n, k))
+
+    dxidq = SPLU_D.solve(-M.Cit.dot(M.U).toarray()).dot(M.B)  # not needed if fixed
+    dxdq[M.free] = dxidq
+
+    dyidq = SPLU_D.solve(-M.Cit.dot(M.V).toarray()).dot(M.B)  # not needed if fixed
+    dydq[M.free] = dyidq
+
+    dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
+    dzdq[M.free] = dzidq
+
+    # print(multiply(sign(M.q), l2).transpose().shape)
+    # print(multiply(sign(M.q), l2).transpose().dot(M.B).shape)
+    # print(M.U.dot(M.C.dot(dxdq)).shape)
+    # print(M.V.dot(M.C.dot(dydq)).shape)
+    # print(M.W.dot(M.C.dot(dzdq)).shape)
+    # print(M.q.transpose().shape)
+    # print(abs(M.q.transpose()) * (M.U.dot(M.C.dot(dxdq)) + M.V.dot(M.C.dot(dydq)) + M.W.dot(M.C.dot(dzdq))).shape)
+    # print(M.C.dot(dzdq).shape)
+
+    dudq = M.C.dot(dxdq)
+    dvdq = M.C.dot(dydq)
+    dwdq = M.C.dot(dzdq)
+
+    dldq_1 = (multiply(sign(M.q).reshape(-1, 1), l2).transpose().dot(M.B)).flatten()
+    # print(sign(M.q).shape)
+    # print(l2.shape)
+    # print(multiply(sign(M.q), l2).transpose().shape)
+    # print(M.B.shape)
+    # print(dldq_1.shape)
+
+    # gradient = (multiply(sign(M.q), l2).transpose().dot(M.B) + 2*abs(M.q.transpose()).dot(M.U.dot(M.C.dot(dxdq)) + M.V.dot(M.C.dot(dydq)) + M.W.dot(M.C.dot(dzdq)))).transpose()
+    gradient = zeros((k, 1))
+
+    for i in range(k):
+        dlidqi = multiply(uvw[:, [0]], dudq[:, [i]]) + multiply(uvw[:, [1]], dvdq[:, [i]]) + multiply(uvw[:, [2]], dwdq[:, [i]])
+        # gradient[i] = sign(M.q[i]) * l2[i] + 2 * abs(M.q.transpose()).dot(dlidqi)
+        gradient[i] = dldq_1[i] + 2*abs(M.q.transpose()).dot(dlidqi)
+
+    if 'zb' in M.variables:
+        dz_dzb = zeros((n, nb))
+        CitQCf = M.Cit.dot(Q).dot(M.Cb).toarray()
+        dz_dzb[M.free] = SPLU_D.solve(-CitQCf)
+        dz_dzb[M.fixed] = identity(nb)
+
+        gradient_zb = 2*abs(M.q.transpose()) * (M.W.dot(M.C.dot(dz_dzb)))
+        gradient = vstack([gradient, gradient_zb])
+
+    return gradient

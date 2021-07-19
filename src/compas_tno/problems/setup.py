@@ -7,9 +7,15 @@ from compas_tno.problems import adapt_problem_to_sym_and_fixed_diagram
 
 from compas_tno.problems import f_min_thrust_general
 from compas_tno.problems import f_max_thrust_general
+from compas_tno.problems import f_bestfit_general
+from compas_tno.problems import f_horprojection_general
+from compas_tno.problems import f_loadpath_general
 
 from compas_tno.problems import gradient_fmin_general
 from compas_tno.problems import gradient_fmax_general
+from compas_tno.problems import gradient_bestfit_general
+from compas_tno.problems import gradient_horprojection_general
+from compas_tno.problems import gradient_loadpath_general
 
 from compas_tno.problems import f_min_loadpath
 from compas_tno.problems import f_min_thrust
@@ -19,7 +25,14 @@ from compas_tno.problems import f_constant
 from compas_tno.problems import f_reduce_thk
 from compas_tno.problems import f_tight_crosssection
 
+from compas_tno.problems import callback_save_json
+from compas_tno.problems import callback_create_json
+
+from compas_tno.problems import initialize_loadpath
+from compas_tno.problems import initialize_tna
+
 from compas_tno.algorithms import apply_sag
+from compas_tno.algorithms import z_from_form
 
 from compas_tno.problems import gradient_fmin
 from compas_tno.problems import gradient_fmax
@@ -42,6 +55,7 @@ from compas.datastructures import mesh_bounding_box_xy
 from compas_tno.plotters import plot_symmetry
 from compas_tno.plotters import plot_symmetry_vertices
 from compas_tno.plotters import plot_independents
+from compas_tno.plotters import plot_form
 
 from numpy import append
 from numpy import array
@@ -259,13 +273,18 @@ def set_up_general_optimisation(analysis):
 
     printout = optimiser.data.get('printout', True)
     plot = optimiser.data.get('plot', False)
-    thickness_type = optimiser.data.get('thickness_type', 'constant')
+    # thickness_type = optimiser.data.get('thickness_type', 'constant')
     axis_symmetry = optimiser.data.get('axis_symmetry', None)
     fjac = optimiser.data.get('jacobian', False)
     starting_point = optimiser.data.get('starting_point', 'current')
-    thk = optimiser.data.get('thk', shape.data['thk'])
     # solver = optimiser.data.get('solver', 'SLSQP')
     features = optimiser.data.get('features', [])
+    save_iterations = optimiser.data.get('save_iterations', False)
+
+    if shape:
+        thk = optimiser.data.get('thk', shape.data['thk'])
+    else:
+        thk = 0.20
 
     objective = optimiser.data['objective']
     variables = optimiser.data['variables']
@@ -286,8 +305,13 @@ def set_up_general_optimisation(analysis):
         apply_sag(form)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'loadpath':
-        form.initialise_loadpath(problem=M)
+        initialize_loadpath(form, problem=M)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    elif starting_point == 'relax':
+        z_from_form(form)
+        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    elif starting_point == 'tna':
+        print('WIP')
     else:
         print('Warning: define starting point')
 
@@ -304,8 +328,9 @@ def set_up_general_optimisation(analysis):
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
 
-    # from compas_tno.algorithms import reactions
-    # reactions(form, plot=True)
+    if save_iterations:
+        callback_create_json()
+        optimiser.data['callback'] = callback_save_json
 
     # Set specific constraints
 
@@ -324,16 +349,20 @@ def set_up_general_optimisation(analysis):
     # else:
     #     max_rol_rx, max_rol_ry = None, None
 
-    shape.data['thickness_type'] = thickness_type  # thhis argument is useful if minimising thickness
+    # shape.data['thickness_type'] = thickness_type  # this argument is useful if minimising thickness
+
+    if plot:
+        print('Plot of starting point')
+        plot_form(form, show_q=False).show()
 
     # Select Objetive and Gradient
 
     if objective == 'loadpath':
-        fobj = f_min_loadpath
-        fgrad = gradient_loadpath
+        fobj = f_loadpath_general
+        fgrad = gradient_loadpath_general
     elif objective == 'target' or objective == 'bestfit':
-        fobj = f_target
-        fgrad = gradient_bestfit
+        fobj = f_bestfit_general
+        fgrad = gradient_bestfit_general
     elif objective == 'min':
         fobj = f_min_thrust_general
         fgrad = gradient_fmin_general
@@ -343,6 +372,9 @@ def set_up_general_optimisation(analysis):
     elif objective == 'feasibility':
         fobj = f_constant
         fgrad = gradient_feasibility
+    elif objective == 'hor_projection':
+        fobj = f_horprojection_general
+        fgrad = gradient_horprojection_general
     elif objective == 't':  # analytical reduce thickness
         fobj = f_reduce_thk
         fgrad = gradient_reduce_thk
@@ -519,31 +551,6 @@ def set_rollers_constraint(form, printout):
     if printout:
         print('Constraints on rollers activated in {0} in x and {1} in y.'.format(len(max_rol_rx), len(max_rol_ry)))
     return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
-
-
-def set_symmetry_constraint(form, constraints, printout, plot=False):
-
-    horizontal_only = False
-    vertical_only = False
-    corners = mesh_bounding_box_xy(form)
-    xs = [point[0] for point in corners]
-    ys = [point[1] for point in corners]
-    xc = (max(xs) - min(xs))/2
-    yc = (max(ys) - min(ys))/2
-    if 'symmetry-horizontal' in constraints:
-        horizontal_only = True
-    if 'symmetry-vertical' in constraints:
-        vertical_only = True
-    form.apply_symmetry(center=[xc, yc, 0.0], horizontal_only=horizontal_only, vertical_only=vertical_only)
-    Asym = form.assemble_symmetry_matrix()
-    if printout:
-        print('Calculated and found symmetry from point:', xc, yc)
-        print('Resulted in Asym Matrix Shape:', Asym.shape)
-        print('Unique independents:', form.number_of_sym_independents())
-    if plot:
-        plot_symmetry(form).show()
-
-    return Asym
 
 
 def set_up_convex_optimisation(analysis):

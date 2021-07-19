@@ -1,4 +1,4 @@
-import ipopt
+import cyipopt
 
 from compas_tno.algorithms import f_constraints_pytorch
 from compas_tno.algorithms import f_objective_pytorch
@@ -209,7 +209,7 @@ def run_optimisation_ipopt(analysis):
         cu[-nsym:] = [0.0]*nsym
         cl[-nsym:] = [0.0]*nsym
 
-    nlp = ipopt.problem(
+    nlp = cyipopt.problem(
         n=len(x0),
         m=len(g0),
         problem_obj=problem_obj,

@@ -18,7 +18,7 @@ class DiagramArtist(MeshArtist):
 
     Attributes
     ----------
-    diagram : :class:`compas_ags.diagrams.Diagram`
+    diagram : :class:`compas_tno.diagrams.Diagram`
         The diagram associated with the artist.
 
     """

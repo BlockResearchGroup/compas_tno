@@ -21,6 +21,7 @@ from compas_tno.problems import adapt_problem_to_fixed_diagram
 
 __all__ = [
     'run_optimisation_MATLAB',
+    'run_loadpath_from_form_MATLAB'
 ]
 
 
@@ -96,6 +97,9 @@ def run_loadpath_from_form_MATLAB(form, problem=None, printout=False):
 
     if not problem:
         problem = initialise_problem_general(form)
+        # adapt_problem_to_fixed_diagram(problem, form, printout=True)
+        # from compas_tno.plotters import plot_independents
+        # plot_independents(form).show()
     # else:
     #     adapt_problem_to_fixed_diagram(problem, form)
 

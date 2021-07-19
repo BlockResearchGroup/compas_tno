@@ -20,6 +20,9 @@ from compas_tno.algorithms import find_independents
 from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import check_horizontal
 
+from compas_tno.utilities import apply_symmetry
+from compas_tno.utilities import build_symmetry_transformation
+
 import time
 
 
@@ -709,9 +712,9 @@ def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, printout=Fal
 
     start_time = time.time()
 
-    form.apply_symmetry(axis_symmetry=axis_symmetry)
+    apply_symmetry(form, axis_symmetry=axis_symmetry)
 
-    Esym = form.build_symmetry_transformation(printout=False)
+    Esym = build_symmetry_transformation(form, printout=False)
     mapsym = form.build_symmetry_map()
     ind = sorted(list(mapsym.values()))
 
@@ -742,7 +745,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, axis_symmetry=None, pr
 
     adapt_problem_to_fixed_diagram(problem, form, printout=False)
 
-    form.apply_symmetry(axis_symmetry=axis_symmetry)
+    apply_symmetry(form, axis_symmetry=axis_symmetry)
 
     ind = problem.ind
     k = problem.k

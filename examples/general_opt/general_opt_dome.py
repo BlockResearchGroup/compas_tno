@@ -7,8 +7,6 @@ from compas_tno.viewers import view_solution
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
-from compas_tno.plotters import save_csv
-from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
@@ -20,25 +18,26 @@ radius = 5.0
 span = radius * 2
 n = 2
 
-discretisation = [20, 16]
+discretisation = [8, 12]
 
 hc = None
 he = None
 lambd = 0.10
 
-c = 0.1
+c = 0.05
 
 save = False
 solutions = {}
 
-objective = ['t']
+objective = ['min']
 solver = 'IPOPT'
-constraints = ['funicular', 'envelope']
+constraints = ['funicular', 'envelope', 'envelopexy', 'reac_bounds']
 variables = ['q', 'zb']
 features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
+gradients = True
 
 if objective == ['t']:
     variables.append(objective[0])
@@ -47,7 +46,7 @@ if objective == ['lambd']:
 
 print(variables)
 
-for c in [0.1]:  # set the distance that the nodes can move
+for c in [c]:  # set the distance that the nodes can move
     solutions[c] = {}
 
     for obj in objective:  # set the objective
@@ -61,7 +60,7 @@ for c in [0.1]:  # set the distance that the nodes can move
                 'type': type_formdiagram,
                 'discretisation': discretisation,
                 'center': [5.0, 5.0],
-                'diagonal': False,
+                # 'diagonal': True,
                 # 'partial_diagonal': 'right',
                 'radius': radius,
             }
@@ -78,7 +77,7 @@ for c in [0.1]:  # set the distance that the nodes can move
                 't': 1.0,
             }
             vault = Shape.from_library(data_shape)
-            # vault.ro = 10.0
+            vault.ro = 100.0
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
@@ -86,16 +85,20 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             # Apply Selfweight and Envelope
 
-            form.envelope_from_shape(vault)
-            form.selfweight_from_shape(vault)
+            from compas_tno.utilities import apply_envelope_from_shape
+            from compas_tno.utilities import apply_selfweight_from_shape
+            from compas_tno.utilities import apply_envelope_on_xy
+            from compas_tno.utilities import apply_horizontal_multiplier
+            from compas_tno.utilities import apply_bounds_on_q
+
+            apply_envelope_from_shape(form, vault)
+            apply_selfweight_from_shape(form, vault)
             if 'lambd' in variables:
-                form.apply_horizontal_multiplier(lambd=lambd)
+                apply_horizontal_multiplier(form, lambd=lambd)
 
-            # form.envelope_on_x_y(c=c)
-            form.bounds_on_q(qmax=0.0)
-
-            # address = '/Users/mricardo/compas_dev/me/general_opt/dome/radial_fd/mov_c_0.1/dome_radial_fd_discr_[20, 16]_t_thk_10.77604794596367.json'
-            # form = FormDiagram.from_json(address)
+            if 'envelopexy' in constraints:
+                apply_envelope_on_xy(form, c=c)
+            apply_bounds_on_q(form, qmax=0.0)
 
             form_base = form.copy()
 
@@ -111,12 +114,12 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.data['features'] = features
             optimiser.data['axis_symmetry'] = axis_sym
             optimiser.data['objective'] = obj
-            optimiser.data['plot'] = False
+            optimiser.data['plot'] = True
             optimiser.data['find_inds'] = False
             optimiser.data['printout'] = True
             optimiser.data['max_iter'] = 2000
-            optimiser.data['gradient'] = True
-            optimiser.data['jacobian'] = True
+            optimiser.data['gradient'] = gradients
+            optimiser.data['jacobian'] = gradients
             optimiser.data['derivative_test'] = False
 
             optimiser.data['starting_point'] = starting_point
@@ -176,18 +179,18 @@ for c in [0.1]:  # set the distance that the nodes can move
                 view_solution(form).show()
                 break
 
-    form.to_json(address)
-    print('Saved to: ', address)
-    from compas_tno.plotters.form import plot_form_semicirculararch_xz
-    from compas_tno.algorithms import reactions
-    reactions(form)
-    tol = 10e-3
-    form.attributes['Re'] = radius + thk/2
-    form.attributes['Ri'] = radius - thk/2
-    address_plot_section = os.path.join(folder, title) + '_' + obj + '_thk_' + str(thk) + '_plot_' + 'section' + '.pdf'
-    plot_form_semicirculararch_xz(form, radius=0.06, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True, yrange=[radius-tol, radius+tol], save=address_plot_section).show()
+# form.to_json(address)
+# print('Saved to: ', address)
+from compas_tno.plotters.form import plot_form_semicirculararch_xz
+from compas_tno.algorithms import reactions
+reactions(form)
+tol = 10e-3
+form.attributes['Re'] = radius + thk/2
+form.attributes['Ri'] = radius - thk/2
+address_plot_section = os.path.join(folder, title) + '_' + obj + '_thk_' + str(thk) + '_plot_' + 'section' + '.pdf'
+plot_form_semicirculararch_xz(form, radius=0.06, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True, yrange=[radius-tol, radius+tol], save=address_plot_section).show()
 
-    view_solution(form).show()
+view_solution(form).show()
 
 print(solutions)
 print('\n')

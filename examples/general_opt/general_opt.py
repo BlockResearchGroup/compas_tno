@@ -97,24 +97,22 @@ vault = Shape.from_library(data_shape)
 
 # Apply Selfweight and Envelope
 
-form.envelope_from_shape(vault)
-form.selfweight_from_shape(vault)
+from compas_tno.utilities import apply_envelope_from_shape
+from compas_tno.utilities import apply_selfweight_from_shape
+from compas_tno.utilities import apply_envelope_on_xy
+from compas_tno.utilities import apply_horizontal_multiplier
+from compas_tno.utilities import apply_bounds_on_q
 
-form.envelope_on_x_y(c=c)
+apply_envelope_from_shape(form, vault)
+apply_selfweight_from_shape(form, vault)
+if 'lambd' in variables:
+    apply_horizontal_multiplier(form, lambd=lambd)
+
+if 'envelopexy' in constraints:
+    apply_envelope_on_xy(form, c=c)
+apply_bounds_on_q(form, qmax=0.0)
 
 form_base = form.copy()
-
-apply_sag(form)
-
-# plotter = MeshPlotter(form, fig_size=(6, 6))
-# plotter.draw_edges()
-# plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'lb'), 2) for key in form.vertices()})
-# plotter.show()
-
-# plot_form(form, show_q=True).show()
-# view_solution(form).show()
-
-# form.initialise_loadpath()
 
 # ------------------------------------------------------------
 # ------------------- Proper Implementation ------------------

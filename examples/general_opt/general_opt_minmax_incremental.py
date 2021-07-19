@@ -82,34 +82,22 @@ for c in [0.1]:
 
             # Apply Selfweight and Envelope
 
-            # form_solved = FormDiagram.from_json('/Users/mricardo/compas_dev/me/general_opt/crossvault/fan_fd/fixed/crossvault_fan_fd_discr_10_max_thk_50.0.json')
+            from compas_tno.utilities import apply_envelope_from_shape
+            from compas_tno.utilities import apply_selfweight_from_shape
+            from compas_tno.utilities import apply_envelope_on_xy
+            from compas_tno.utilities import apply_horizontal_multiplier
+            from compas_tno.utilities import apply_bounds_on_q
 
-            form.envelope_from_shape(vault)
-            form.selfweight_from_shape(vault)
+            apply_envelope_from_shape(form, vault)
+            apply_selfweight_from_shape(form, vault)
+            if 'lambd' in variables:
+                apply_horizontal_multiplier(form, lambd=lambd)
 
-            form.envelope_on_x_y(c=c)
+            if 'envelopexy' in constraints:
+                apply_envelope_on_xy(form, c=c)
+            apply_bounds_on_q(form, qmax=0.0)
 
             form_base = form.copy()
-
-            # if sag:
-            #     apply_sag(form)
-            # elif start_from_form:
-            #     if adress:
-            #         form_solved = FormDiagram.from_json(adress)
-            #     else:
-            #         form_solved = FormDiagram.from_json(address_solved)
-            #     form.mirror_forces_from(form_solved)
-
-            #     weight = 0
-            #     for key in form.vertices():
-            #         weight += form.vertex_attribute(key, 'pz')
-            #     thrust = form_solved.thrust()
-            #     print('Initial Ratio Thrust/Weight:', thrust/weight)
-
-            #     # plot_superimposed_diagrams(form, form_base).show()
-            # else:
-
-            form.initialise_loadpath()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------

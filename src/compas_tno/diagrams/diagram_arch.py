@@ -1,7 +1,5 @@
 from compas.datastructures import Mesh
 from compas.utilities import geometric_key
-from compas_tno.datastructures import MeshDos
-from numpy import linspace
 import math
 
 
@@ -81,7 +79,7 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
 
     """
 
-    x = linspace(x0, x0 + L, num=total_nodes, endpoint=True)  # Continue this
+    x = linspace(x0, x0 + L, total_nodes)  # Continue this
     lines = []
     gkey_fix = []
 
@@ -94,7 +92,7 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
         elif i == total_nodes - 2:
             gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
 
-    mesh = MeshDos.from_lines(lines)
+    mesh = Mesh.from_lines(lines)
     form = cls.from_mesh(mesh)
     gkey_key = form.gkey_key(precision=6)
 
@@ -102,3 +100,12 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
     form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
 
     return form
+
+
+def linspace(start, stop, n):
+    if n == 1:
+        yield stop
+        return
+    h = (stop - start) / (n - 1)
+    for i in range(n):
+        yield start + h * i

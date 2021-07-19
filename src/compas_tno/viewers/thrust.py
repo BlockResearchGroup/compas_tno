@@ -11,7 +11,8 @@ __all__ = [
     'view_thrust',
     'view_thrusts',
     'view_solution',
-    'view_thrust_as_lines'
+    'view_thrust_as_lines',
+    'view_bestfit_solution'
 ]
 
 def view_thrust(form, settings_form=None, cracks=True):
@@ -246,5 +247,64 @@ def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cr
         for u, v in form.edges_where({'_is_edge': True}):
             return
             # Figure out how to make this plot.
+
+    return viewer
+
+
+def view_bestfit_solution(form, shape=None, settings_form=None, settings_bounds=None, reactions=True, thickness=False, outside=True):
+    """ Viewer showing the thrust network together with intrados and extrados.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        FormDiagram to plot
+    shape : Shape, optional
+        Shape to plot
+        If no Shape is given, the shape is constructed from the form's attributes ``UB`` and ``LB``.
+
+    Returns
+    ----------
+    obj
+        Viewer object.
+
+    """
+
+    if not shape:
+        shape = Shape.from_formdiagram_and_attributes(form)
+
+    middle = shape.middle
+
+    viewer = ObjectViewer()
+
+    # for key in form.vertices():
+    #     lb = form.vertex_attribute(key, 'lb')
+    #     ub = form.vertex_attribute(key, 'ub')
+    #     x, y, z = form.vertex_coordinates(key)
+
+    if not settings_form:
+        settings_form = {
+            'color': '#FF0000',
+            'edges.color': '#FF0000',
+            'edges.width': 2,
+            'opacity': 0.8,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': True,
+            'faces.on': False,
+            }
+
+    if not settings_bounds:
+        settings_bounds = {
+            'color': '#999999',
+            'edges.width': 3,
+            'opacity': 0.5,
+            'vertices.size': 0,
+            'vertices.on': False,
+            'edges.on': False,
+            'faces.on': True,
+            }
+
+    viewer.add(middle, name="Target", settings=settings_bounds)
+    viewer.add(form, name="FormDiagram", settings=settings_form)
 
     return viewer

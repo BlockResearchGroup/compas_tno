@@ -4,8 +4,6 @@ from compas.utilities import geometric_key
 from compas.geometry import mirror_points_line
 from compas.geometry import rotate_points_xy
 from compas.datastructures import Mesh
-from compas.datastructures import mesh_delete_duplicate_vertices
-
 
 
 def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):

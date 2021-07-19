@@ -75,28 +75,22 @@ for c in [0.1]:
 
             # Apply Selfweight and Envelope
 
-            form.envelope_from_shape(vault)
-            form.selfweight_from_shape(vault)
+            from compas_tno.utilities import apply_envelope_from_shape
+            from compas_tno.utilities import apply_selfweight_from_shape
+            from compas_tno.utilities import apply_envelope_on_xy
+            from compas_tno.utilities import apply_horizontal_multiplier
+            from compas_tno.utilities import apply_bounds_on_q
 
-            form.envelope_on_x_y(c=c)
+            apply_envelope_from_shape(form, vault)
+            apply_selfweight_from_shape(form, vault)
+            if 'lambd' in variables:
+                apply_horizontal_multiplier(form, lambd=lambd)
+
+            if 'envelopexy' in constraints:
+                apply_envelope_on_xy(form, c=c)
+            apply_bounds_on_q(form, qmax=0.0)
 
             form_base = form.copy()
-
-            # apply_sag(form)
-
-            # folder_lp = os.path.join('/Users/mricardo/compas_dev/me', 'loadpath', type_structure, type_formdiagram)
-            # os.makedirs(folder_lp, exist_ok=True)
-            # title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-            # save_lp = os.path.join(folder_lp, title)
-            # address_lp = save_lp + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'
-            # try:
-            #     form = FormDiagram.from_json(save_lp)
-            #     form.envelope_from_shape(vault)
-            #     form.selfweight_from_shape(vault)
-            #     form.envelope_on_x_y(c=c)
-            # except:
-            #     form.initialise_loadpath()
-            #     form.to_json(address_lp)
 
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_, 'mov_c_' + str(c), 'hc_' + str(hc) + '_he_' + str(he))
             os.makedirs(folder, exist_ok=True)

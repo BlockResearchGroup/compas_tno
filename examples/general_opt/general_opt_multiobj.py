@@ -81,11 +81,20 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             # Apply Selfweight and Envelope
 
-            form.envelope_from_shape(vault)
-            form.selfweight_from_shape(vault)
+            from compas_tno.utilities import apply_envelope_from_shape
+            from compas_tno.utilities import apply_selfweight_from_shape
+            from compas_tno.utilities import apply_envelope_on_xy
+            from compas_tno.utilities import apply_horizontal_multiplier
+            from compas_tno.utilities import apply_bounds_on_q
 
-            form.envelope_on_x_y(c=c)
-            form.bounds_on_q()
+            apply_envelope_from_shape(form, vault)
+            apply_selfweight_from_shape(form, vault)
+            if 'lambd' in variables:
+                apply_horizontal_multiplier(form, lambd=lambd)
+
+            if 'envelopexy' in constraints:
+                apply_envelope_on_xy(form, c=c)
+            apply_bounds_on_q(form, qmax=0.0)
 
             form_base = form.copy()
 
