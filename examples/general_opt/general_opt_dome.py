@@ -8,6 +8,12 @@ from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
 
+from compas_tno.utilities import apply_envelope_from_shape
+from compas_tno.utilities import apply_selfweight_from_shape
+from compas_tno.utilities import apply_envelope_on_xy
+from compas_tno.utilities import apply_horizontal_multiplier
+from compas_tno.utilities import apply_bounds_on_q
+
 span = 10.0
 k = 1.0
 # discretisation = 10
@@ -84,12 +90,6 @@ for c in [c]:  # set the distance that the nodes can move
             # ------------------------------------------------------------
 
             # Apply Selfweight and Envelope
-
-            from compas_tno.utilities import apply_envelope_from_shape
-            from compas_tno.utilities import apply_selfweight_from_shape
-            from compas_tno.utilities import apply_envelope_on_xy
-            from compas_tno.utilities import apply_horizontal_multiplier
-            from compas_tno.utilities import apply_bounds_on_q
 
             apply_envelope_from_shape(form, vault)
             apply_selfweight_from_shape(form, vault)

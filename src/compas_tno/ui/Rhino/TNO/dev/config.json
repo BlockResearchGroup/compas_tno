@@ -1,15 +1,27 @@
 {
     "plugin":
     {
-        "id": "{949ca7a4-7ddf-4939-8a5b-d945d5ac0bc8}",
+        "id": "{7dfe0ab6-2352-405b-a19b-a6017f92b6b4}",
         "version": "0.1.0",
         "title": "TNO"
     },
     "ui":
     {
+
+        "icons":
+        {
+            "bitmap": "grid.png",
+            "images":
+            [
+                "0_init"
+            ]
+        },
+
         "commands":
         [
-            {"name": "TNOinit",         "menu_text": "Initialise TNO",          "tooltip": "Initialise TNO"}
+            {"name": "TNO__init",                   "menu_text": "Initialise TNO",              "tooltip": "Initialise TNO"}
+            {"name": "TNO_form_from_lines",         "menu_text": "Form from Lines",             "tooltip": "Create Form from Lines"}
+            {"name": "TNO_form_from_library",       "menu_text": "Form from Library",           "tooltip": "Create Form from Lines"}
 
         ],
 
@@ -23,6 +35,7 @@
                 ]
             }
         ],
+
         "toolbars":
         [
             {
