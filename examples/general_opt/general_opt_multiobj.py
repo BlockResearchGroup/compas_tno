@@ -74,6 +74,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             }
 
             vault = Shape.from_library(data_shape)
+            vault.ro = 100.0
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------

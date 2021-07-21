@@ -1,10 +1,12 @@
+import compas_tno
+
 from compas_tno.algorithms import reactions
 from compas_tno.algorithms import zq_from_qid
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape
 from compas_tno.diagrams import ForceDiagram
-import compas_tno
 
+from compas_tno.utilities import apply_envelope_from_shape
 from compas.utilities import geometric_key
 
 __all__ = [
@@ -201,7 +203,7 @@ def post_process_general(analysis):
                 shape.data['thk'] = thk
                 shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
                 shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
-                form.envelope_from_shape(shape)
+                apply_envelope_from_shape(form, shape)
             elif thickness_type == 'variable':
                 t0 = shape.data['thk']
                 thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
@@ -210,7 +212,7 @@ def post_process_general(analysis):
                 if printout:
                     print('Optimum Value corresponds to a thickness of:', thk)
                 shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
-                form.envelope_from_shape(shape)
+                apply_envelope_from_shape(form, shape)
             elif thickness_type == 'intrados':
                 form.attributes['thk'] = thk
                 shape.data['thk'] = thk
@@ -221,7 +223,7 @@ def post_process_general(analysis):
             form.attributes['thk'] = thk
             shape.data['thk'] = thk
             shape = Shape.from_library(shape.data)
-            form.envelope_from_shape(shape)  # Check if this is ok for adapted pattern
+            apply_envelope_from_shape(form, shape)  # Check if this is ok for adapted pattern
             i = 0
             for key in form.vertices():  # this resolver the problem due to the adapted pattern
                 form.vertex_attribute(key, 'ub', float(M.ub[i]))
@@ -232,7 +234,7 @@ def post_process_general(analysis):
         form.attributes['thk'] = thk
         shape.data['thk'] = thk
         shape = Shape.from_library(shape.data)
-        form.envelope_from_shape(shape)
+        apply_envelope_from_shape(form, shape)
 
 
     # if 's' in variables:

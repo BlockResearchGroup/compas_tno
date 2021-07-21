@@ -14,26 +14,26 @@ class FormObject(DiagramObject):
     """
 
     SETTINGS = {
-        'show.vertices': True,
+        'show.vertices': False,
+        'show.supports': True,
         'show.edges': True,
         'show.vertexlabels': False,
         'show.edgelabels': False,
-        'show.forcecolors': True,
-        'show.forcelabels': True,
+        'show.forcecolors': False,
+        'show.forcelabels': False,
         'show.forcepipes': False,
 
         'color.vertices': (0, 0, 0),
         'color.vertexlabels': (255, 255, 255),
-        'color.vertices:is_fixed': (0, 255, 255),
+        'color.vertices:is_fixed': (255, 0, 0),
         'color.edges': (0, 0, 0),
         'color.edges:is_ind': (0, 255, 255),
         'color.edges:is_external': (0, 255, 0),
         'color.edges:is_reaction': (0, 255, 0),
         'color.edges:is_load': (0, 255, 0),
         'color.faces': (210, 210, 210),
-        'color.compression': (0, 0, 255),
-        'color.tension': (255, 0, 0),
-
+        'color.compression': (255, 0, 0),
+        'color.tension': (0, 0, 255),
         'scale.forces': None,
 
         'tol.edges': 1e-3,
@@ -93,7 +93,7 @@ class FormObject(DiagramObject):
 
         self.artist.vertex_xyz = self.vertex_xyz
 
-        # vertices
+        # vertices (including supports)
         if self.settings['show.vertices']:
             vertices = list(self.diagram.vertices())
             color = {}
@@ -111,9 +111,17 @@ class FormObject(DiagramObject):
                 guids = self.artist.draw_vertexlabels(text=text, color=color)
                 self.guid_vertexlabel = zip(guids, vertices)
 
+        # supports only
+        elif self.settings['show.supports']:
+            vertices = list(self.diagram.vertices_where({'is_fixed': True}))
+            color = {}
+            color.update({vertex: self.settings['color.vertices:is_fixed'] for vertex in self.diagram.vertices_where({'is_fixed': True})})
+            guids = self.artist.draw_vertices(vertices=vertices, color=color)
+            self.guid_vertex = zip(guids, vertices)
+
         # edges
         if self.settings['show.edges']:
-            edges = list(self.diagram.edges())
+            edges = list(self.diagram.edges_where({'_is_edge': True}))
             color = {}
             color.update({edge: self.settings['color.edges'] for edge in edges})
             color.update({edge: self.settings['color.edges:is_external'] for edge in self.diagram.edges_where({'is_external': True})})
@@ -170,15 +178,6 @@ class FormObject(DiagramObject):
                 color.update({edge: self.settings['color.edges:is_load'] for edge in self.diagram.edges_where({'is_load': True})})
                 color.update({edge: self.settings['color.edges:is_reaction'] for edge in self.diagram.edges_where({'is_reaction': True})})
                 color.update({edge: self.settings['color.edges:is_ind'] for edge in self.diagram.edges_where({'is_ind': True})})
-
-                # # force colors
-                # if self.settings['show.forcecolors']:
-                #     tol = self.settings['tol.forces']
-                #     for edge in self.diagram.edges_where({'is_external': False}):
-                #         if self.diagram.edge_attribute(edge, 'f') > + tol:
-                #             color[edge] = self.settings['color.tension']
-                #         elif self.diagram.edge_attribute(edge, 'f') < - tol:
-                #             color[edge] = self.settings['color.compression']
 
                 guids = self.artist.draw_edgelabels(text=text, color=color)
                 guid_edgelabel += zip(guids, edges)

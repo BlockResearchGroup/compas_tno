@@ -52,39 +52,39 @@ class FormArtist(DiagramArtist):
         self.tol_forces = 0.001
         self.radius_sphere = 0.15
 
-    def draw_edges(self, edges=None, color=None, displacement=None, layer='Thrust'):
-        """Draw a selection of edges.
+    # def draw_edges(self, edges=None, color=None, displacement=None, layer='Thrust'):
+    #     """Draw a selection of edges.
 
-        Parameters
-        ----------
-        edges : list, optional
-            A selection of edges to draw.
-            The default is ``None``, in which case all edges are drawn.
-        color : tuple or dict of tuple, optional
-            The color specififcation for the edges.
-            The default color is black, ``(0, 0, 0)``.
+    #     Parameters
+    #     ----------
+    #     edges : list, optional
+    #         A selection of edges to draw.
+    #         The default is ``None``, in which case all edges are drawn.
+    #     color : tuple or dict of tuple, optional
+    #         The color specififcation for the edges.
+    #         The default color is black, ``(0, 0, 0)``.
 
-        Returns
-        -------
-        list
-            The GUIDs of the created Rhino objects.
+    #     Returns
+    #     -------
+    #     list
+    #         The GUIDs of the created Rhino objects.
 
-        """
-        edges = edges or list(self.diagram.edges())
-        vertex_xyz = self.vertex_xyz
-        if displacement:
-            for key in vertex_xyz:
-                vertex_xyz[key][0] += displacement[0]
-                vertex_xyz[key][1] += displacement[1]
-        edge_color = colordict(color, edges, default=self.color_edges)
-        lines = []
-        for edge in edges:
-            lines.append({
-                'start': vertex_xyz[edge[0]],
-                'end': vertex_xyz[edge[1]],
-                'color': edge_color[edge],
-                'name': "{}.edge.{}-{}".format(self.diagram.name, *edge)})
-        return compas_rhino.draw_lines(lines, layer=layer, clear=False, redraw=False)
+    #     """
+    #     edges = edges or list(self.diagram.edges_where({'_is_edge': True}))
+    #     vertex_xyz = self.vertex_xyz
+    #     if displacement:
+    #         for key in vertex_xyz:
+    #             vertex_xyz[key][0] += displacement[0]
+    #             vertex_xyz[key][1] += displacement[1]
+    #     edge_color = colordict(color, edges, default=self.color_edges)
+    #     lines = []
+    #     for edge in edges:
+    #         lines.append({
+    #             'start': vertex_xyz[edge[0]],
+    #             'end': vertex_xyz[edge[1]],
+    #             'color': edge_color[edge],
+    #             'name': "{}.edge.{}-{}".format(self.diagram.name, *edge)})
+    #     return compas_rhino.draw_lines(lines, layer=layer, clear=False, redraw=False)
 
     def draw_forcepipes(self, color_compression=None, color_tension=None, scale=None, tol=None, displacement=None, layer='Pipes'):
         """Draw the forces in the internal edges as pipes with color and thickness matching the force value.

@@ -26,7 +26,7 @@ print(form.vertices_attribute('x'))
 
 data = {
     'type': 'ortho',
-    'xy_span': [[0,10],[0,10]],
+    'xy_span': [[0, 10], [0, 10]],
     'discretisation': 10,
     'fix': 'all',
 }
@@ -42,7 +42,7 @@ plot_form(form, show_q=False).show()
 
 data = {
     'type': 'cross_fd',
-    'xy_span': [[0,10],[0,10]],
+    'xy_span': [[0, 10], [0, 10]],
     'discretisation': 10,
     'fix': 'all',
 }
@@ -58,7 +58,7 @@ plot_form(form, show_q=False).show()
 
 data = {
     'type': 'fan_fd',
-    'xy_span': [[0,10],[0,10]],
+    'xy_span': [[0, 10], [0, 10]],
     'discretisation': [10, 10],
     'fix': 'all',
 }

@@ -19,7 +19,7 @@ from numpy import array
 span = 10.0
 k = 1.0
 discretisation = 10
-type_formdiagram = 'fan_fd'
+type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk0 = 0.50
 discretisation_shape = 10 * discretisation
@@ -28,7 +28,8 @@ discretisation_shape = 10 * discretisation
 hc = None
 he = None
 plot_comparison = True
-update_loads = False
+update_loads = True
+lambd = None
 
 c = 0.1
 
@@ -37,9 +38,10 @@ save = False
 solutions = {}
 
 solver = 'IPOPT'
-constraints = ['funicular', 'envelope', 'envelopexy']
+constraints = ['envelope', 'envelopexy']
 variables = ['q', 'zb', 't']
-features = ['sym']
+features = ['sym', 'fixed']
+starting_point = 'loadpath'
 
 t0 = time.time()
 
@@ -81,6 +83,7 @@ for c in [0.1]:
             }
 
             vault = Shape.from_library(data_shape)
+            # vault.ro = 20.0
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
@@ -101,7 +104,8 @@ for c in [0.1]:
 
             if 'envelopexy' in constraints:
                 apply_envelope_on_xy(form, c=c)
-            apply_bounds_on_q(form, qmax=0.0)
+            # apply_bounds_on_q(form, qmax=0.0)
+            apply_bounds_on_q(form)
 
             form_base = form.copy()
 
@@ -118,13 +122,12 @@ for c in [0.1]:
             optimiser.data['objective'] = obj
             optimiser.data['plot'] = False
             optimiser.data['find_inds'] = False
-            optimiser.data['max_iter'] = 1500
+            optimiser.data['max_iter'] = 1000
             optimiser.data['gradient'] = True
             optimiser.data['printout'] = True
             optimiser.data['jacobian'] = True
             optimiser.data['derivative_test'] = False
-
-            optimiser.data['starting_point'] = 'sag'
+            optimiser.data['starting_point'] = starting_point
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -138,7 +141,11 @@ for c in [0.1]:
             entropy = 1.0
             entropypz = 0.0
 
-            while entropy > 10e-4:
+            pz0 = array(form.vertices_attribute('pz')).reshape(-1, 1)
+
+            i = 0
+
+            while entropy > 10e-4 or i < 2:
 
                 analysis.set_up_optimiser()
                 analysis.run()
@@ -175,9 +182,9 @@ for c in [0.1]:
 
                 vault.data['thk'] = thk
 
-                form.envelope_from_shape(vault)
+                apply_envelope_from_shape(form, vault)
                 if update_loads:  # Update bounds and SWT
-                    form.selfweight_from_shape(vault)
+                    apply_selfweight_from_shape(form, vault)
 
                 x = array(form.vertices_attribute('x')).reshape(-1, 1)
                 y = array(form.vertices_attribute('y')).reshape(-1, 1)
@@ -209,12 +216,15 @@ for c in [0.1]:
                 errors.append(constr_error)
                 # plot_form(form, show_q=False, cracks=True).show()
 
-                # plot_superimposed_diagrams(form, form_base).show()
+                plot_superimposed_diagrams(form, form_base).show()
                 # plot_form(form, show_q=False, cracks=True).show()
                 # view_solution(form).show()
 
                 optimiser.data['starting_point'] = 'current'
                 optimiser.data['max_thk'] = min(thk*1.25, 0.5)
+                apply_bounds_on_q(form, qmax=0.0)
+                optimiser.data['features'] = ['sym', 'adapted-envelope']
+                i += 1
 
 print(solutions)
 print('\n')
@@ -257,21 +267,3 @@ elapsed_time = time.time() - t0
 print('Tipe elapsed in Script:', time)
 
 view_solution(form).show()
-
-# # # ----------------------- 5. Create Analysis loop on limit analysis --------------------------
-
-# folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'mov_c_' + str(c))
-# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-# save_form = os.path.join(folder, title)
-
-# analysis = Analysis.from_elements(vault, form, optimiser)
-# results = analysis.limit_analysis_GSF(thk, thk_reduction, span, save_forms=save_form)
-# thicknesses, size_parameters, solutions_min, solutions_max = results
-
-# # ----------------------- 6. Save output data --------------------------
-
-# csv_file = os.path.join(folder, title + '_data.csv')
-# save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
-
-# img_graph = os.path.join(folder, title + '_diagram.pdf')
-# diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()

@@ -121,6 +121,7 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         fopt, qopt, exitflag, niter, status, sol_time = call_cvx(problem, eng, printout=printout)
 
     problem.q = qopt
+    print('Max-Min qopt:', max(qopt), min(qopt))
     Xfinal = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
     problem.X[problem.free, 2] = Xfinal[:, 2]
 
