@@ -107,7 +107,7 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
         for key in form.faces():
             centroid = form.face_centroid(key)
             if centroid[0] == xc and centroid[1] == yc:
-                form.set_face_attribute(key, '_is_loaded', False)
+                form.face_attribute(key, '_is_loaded', False)
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:

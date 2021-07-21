@@ -106,13 +106,12 @@ plot_form(form, show_q=False).show()
 
 data = {
     'type': 'radial_fd',
-    'D': 3.0,
     'center': [5.0, 5.0],
     'radius': 5.0,
-    'discretisation': [8, 20],
-    'r_oculus': 0.0,
+    'discretisation': [8, 12],
+    'r_oculus': 1.25,
     'diagonal': True,
-    'partial_diagonal': False,
+    'partial_diagonal': 'right',
 }
 
 form = FormDiagram.from_library(data)

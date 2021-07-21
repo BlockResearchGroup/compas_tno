@@ -24,6 +24,8 @@ def RunCommand(is_interactive):
     if not guids:
         return
 
+    compas_rhino.rs.HideObjects(guids)
+
     lines = compas_rhino.get_line_coordinates(guids)
     form = FormDiagram.from_lines(lines)
 

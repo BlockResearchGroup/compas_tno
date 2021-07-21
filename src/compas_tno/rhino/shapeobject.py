@@ -6,16 +6,15 @@ import compas_rhino
 from compas_tno.rhino.diagramobject import DiagramObject
 
 
-__all__ = ['FormObject']
+__all__ = ['ShapeObject']
 
 
-class FormObject(DiagramObject):
-    """A form object represents a form diagram in the Rhino model space.
+class ShapeObject(DiagramObject):
+    """A form object represents a Shape in the Rhino model space.
     """
 
     SETTINGS = {
-        'show.vertices': False,
-        'show.supports': True,
+        'show.vertices': True,
         'show.edges': True,
         'show.vertexlabels': False,
         'show.edgelabels': False,
@@ -25,7 +24,7 @@ class FormObject(DiagramObject):
 
         'color.vertices': (0, 0, 0),
         'color.vertexlabels': (255, 255, 255),
-        'color.vertices:is_fixed': (255, 0, 0),
+        'color.vertices:is_fixed': (0, 255, 255),
         'color.edges': (0, 0, 0),
         'color.edges:is_ind': (0, 255, 255),
         'color.edges:is_external': (0, 255, 0),
@@ -41,8 +40,8 @@ class FormObject(DiagramObject):
     }
 
     def __init__(self, diagram, *args, **kwargs):
-        super(FormObject, self).__init__(diagram, *args, **kwargs)
-        self.settings.update(FormObject.SETTINGS)
+        super(ShapeObject, self).__init__(diagram, *args, **kwargs)
+        self.settings.update(ShapeObject.SETTINGS)
         settings = kwargs.get('settings') or {}
         if settings:
             self.settings.update(settings)
@@ -50,7 +49,7 @@ class FormObject(DiagramObject):
 
     @property
     def guids(self):
-        guids = super(FormObject, self).guids
+        guids = super(ShapeObject, self).guids
         guids += list(self.guid_force.keys())
         return guids
 
@@ -64,12 +63,12 @@ class FormObject(DiagramObject):
         self._guid_force = dict(values)
 
     def clear(self):
-        super(FormObject, self).clear()
+        super(ShapeObject, self).clear()
         compas_rhino.delete_objects(self.guids, purge=True)
         self._guid_force = {}
 
     def draw(self):
-        """Draw the form diagram.
+        """Draw the shape object.
 
         The visible components, display properties and visual style of the form diagram
         drawn by this method can be fully customised using the configuration items
@@ -93,7 +92,7 @@ class FormObject(DiagramObject):
 
         self.artist.vertex_xyz = self.vertex_xyz
 
-        # vertices (including supports)
+        # vertices
         if self.settings['show.vertices']:
             vertices = list(self.diagram.vertices())
             color = {}
@@ -110,14 +109,6 @@ class FormObject(DiagramObject):
                 color.update({vertex: self.settings['color.vertices:is_fixed'] for vertex in self.diagram.vertices_where({'is_fixed': True})})
                 guids = self.artist.draw_vertexlabels(text=text, color=color)
                 self.guid_vertexlabel = zip(guids, vertices)
-
-        # supports only
-        elif self.settings['show.supports']:
-            vertices = list(self.diagram.vertices_where({'is_fixed': True}))
-            color = {}
-            color.update({vertex: self.settings['color.vertices:is_fixed'] for vertex in self.diagram.vertices_where({'is_fixed': True})})
-            guids = self.artist.draw_vertices(vertices=vertices, color=color)
-            self.guid_vertex = zip(guids, vertices)
 
         # edges
         if self.settings['show.edges']:
@@ -138,7 +129,7 @@ class FormObject(DiagramObject):
                     elif self.diagram.edge_attribute(edge, 'f') < - tol:
                         color[edge] = self.settings['color.compression']
 
-            guids = self.artist.draw_edges(edges=edges, color=color)
+            guids = self.artist.draw_edges(color=color)
             self.guid_edge = zip(guids, edges)
 
             guid_edgelabel = []
