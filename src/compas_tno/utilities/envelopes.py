@@ -4,6 +4,10 @@ from compas_tno.shapes.pointed_crossvault import pointed_vault_ub_lb_update
 from compas_tno.shapes.circular_arch import arch_ub_lb_update
 from compas_tno.shapes.pointed_arch import pointed_arch_ub_lb_update
 
+from compas_tno.utilities import get_shape_ub_pattern
+from compas_tno.utilities import get_shape_lb_pattern
+
+
 
 __all__ = [
     'apply_envelope_from_shape',
@@ -29,8 +33,8 @@ def apply_envelope_from_shape(form, shape):
         zub, zlb = pointed_arch_ub_lb_update(x, y, shape.data['thk'], shape.data['t'], hc=shape.data['hc'], L=shape.data['L'], x0=shape.data['x0'])
     elif shape.data['type'] == 'general':
         XY = form.vertices_attributes('xy')
-        zub = shape.get_ub_pattern(XY)
-        zlb = shape.get_lb_pattern(XY)
+        zub = get_shape_ub_pattern(shape, XY)
+        zlb = get_shape_lb_pattern(shape, XY)
     else:
         raise Exception
 

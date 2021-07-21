@@ -20,10 +20,17 @@ from compas_tno.solvers import run_optimisation_ipopt
 from compas_tno.diagrams import FormDiagram
 
 from compas_tno.plotters import plot_form
-from compas_tno.plotters import plot_independents
 
 from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_selfweight_from_pattern
+from compas_tno.utilities import get_shape_ub
+from compas_tno.utilities import get_shape_lb
+
+from compas_tno.utilities import apply_symmetry
+from compas_tno.utilities import apply_fill_load
+from compas_tno.utilities import apply_pointed_load
+from compas_tno.utilities import apply_horizontal_multiplier
+from compas_tno.utilities import apply_envelope_from_shape
 
 from numpy import array
 from scipy import interpolate
@@ -176,8 +183,8 @@ class Analysis(object):
 
         for key in form.vertices():
             x, y, _ = form.vertex_coordinates(key)
-            ub_ = shape.get_ub(x, y)
-            lb_ = shape.get_lb(x, y)
+            ub_ = get_shape_ub(shape, x, y)
+            lb_ = get_shape_lb(shape, x, y)
             lb_damage = float(interpolate.griddata(intrados_damage[:, :2], intrados_damage[:, 2], [x, y]))
             ub_damage = float(interpolate.griddata(extrados_damage[:, :2], extrados_damage[:, 2], [x, y]))
             if math.isnan(lb_damage) or math.isnan(lb_):

@@ -1,10 +1,19 @@
 from numpy import arange
-import math
-from compas.datastructures import Mesh
 from numpy import array
 from numpy import linspace
-from compas_tno.datastructures import MeshDos
-from compas_tno.shapes.pointed_crossvault import rectangular_topology
+
+from compas_tno.shapes import MeshDos
+from compas_tno.shapes import rectangular_topology
+
+import math
+
+
+__all__ = [
+    'domical_vault',
+    'parabolic_shell_highfields',
+    'parabolic_shell_middle_update',
+    'parabolic_shell_ub_lb_update'
+]
 
 
 def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, center=None, tol=10e-6, t=0.0, discretisation=[100, 100]):
@@ -116,13 +125,13 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
         faces_i.append(face_i)
 
     xyz = array([x1d, y1d, z1d]).transpose()
-    middle = Mesh.from_vertices_and_faces(xyz, faces_i)
+    middle = MeshDos.from_vertices_and_faces(xyz, faces_i)
 
     xyz = array([x1d, y1d, zi1d]).transpose()
-    intrados = Mesh.from_vertices_and_faces(xyz, faces_i)
+    intrados = MeshDos.from_vertices_and_faces(xyz, faces_i)
 
     xyz = array([x1d, y1d, ze1d]).transpose()
-    extrados = Mesh.from_vertices_and_faces(xyz, faces_i)
+    extrados = MeshDos.from_vertices_and_faces(xyz, faces_i)
 
     return intrados, extrados, middle
 

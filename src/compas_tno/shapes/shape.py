@@ -2,28 +2,14 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 
-from compas_tno.shapes.crossvault import cross_vault_highfields
-from compas_tno.shapes.pavillionvault import pavillion_vault_highfields
-from compas_tno.shapes.dome import set_dome_heighfield
-from compas_tno.shapes.dome import set_dome_with_spr
-from compas_tno.shapes.dome import set_dome_polar_coord
-from compas_tno.shapes.circular_arch import arch_shape
-from compas_tno.shapes.pointed_arch import pointed_arch_shape
-from compas_tno.shapes.pointed_crossvault import pointed_vault_heightfields
-from compas_tno.shapes.shells import domical_vault
-from compas_tno.shapes.shells import parabolic_shell_highfields
-
 from copy import deepcopy
 from compas.geometry import subtract_vectors
 from compas.geometry import length_vector
 from compas.geometry import cross_vectors
 from compas.geometry import normalize_vector
 
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 
-from numpy import array
-
-from scipy import interpolate
 
 __all__ = ['Shape']
 
@@ -103,6 +89,18 @@ class Shape(object):
             A Shape object.
 
         """
+
+        from compas_tno.shapes import cross_vault_highfields
+        from compas_tno.shapes import pavillion_vault_highfields
+        from compas_tno.shapes import set_dome_heighfield
+        from compas_tno.shapes import set_dome_with_spr
+        from compas_tno.shapes import set_dome_polar_coord
+        from compas_tno.shapes import arch_shape
+        from compas_tno.shapes import pointed_arch_shape
+        from compas_tno.shapes import pointed_vault_heightfields
+        from compas_tno.shapes import domical_vault
+        from compas_tno.shapes import parabolic_shell_highfields
+
         shape = cls()
 
         typevault = data['type']
@@ -169,6 +167,24 @@ class Shape(object):
         return shape
 
     @classmethod
+    def from_library_proxy(cls, data):
+        """Construct a Shape from a library using a proxy implementation (compatible with Rhinoceros).
+
+        Parameters
+        ----------
+        data : dictionary
+            Dictionary with the options to create the vault.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+
+        return
+
+    @classmethod
     def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data=None):
         """Construct a Shape from meshes for intrados, extrados, and middle.
 
@@ -191,10 +207,10 @@ class Shape(object):
         """
         shape = cls()
 
-        shape.intrados = intrados  # MeshDos.from_mesh(intrados)
-        shape.extrados = extrados  # MeshDos.from_mesh(extrados)
+        shape.intrados = MeshDos.from_mesh(intrados)
+        shape.extrados = MeshDos.from_mesh(extrados)
         if middle:
-            shape.middle = middle  # MeshDos.from_mesh(middle)
+            shape.middle = MeshDos.from_mesh(middle)
         else:
             shape.interpolate_middle_from_ub_lb()
             shape.middle = MeshDos.from_mesh(shape.intrados.copy())
@@ -208,41 +224,41 @@ class Shape(object):
 
         return shape
 
-    @classmethod
-    def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
-        """Construct a Shape from a pointcloud.
+    # @classmethod
+    # def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+    #     """Construct a Shape from a pointcloud.
 
-        Parameters
-        ----------
-        intrados_pts : list
-            List of points collected in the intrados.
-        extrados : mesh
-            List of points collected in the extrados.
-        middle : mesh (None)
-            Mesh for middle.
-        data : dict (None)
-            Dictionary with the data in required.
+    #     Parameters
+    #     ----------
+    #     intrados_pts : list
+    #         List of points collected in the intrados.
+    #     extrados : mesh
+    #         List of points collected in the extrados.
+    #     middle : mesh (None)
+    #         Mesh for middle.
+    #     data : dict (None)
+    #         Dictionary with the data in required.
 
-        Returns
-        -------
-        Shape
-            A Shape object.
+    #     Returns
+    #     -------
+    #     Shape
+    #         A Shape object.
 
-        """
+    #     """
 
-        intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
-        extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
-        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+    #     intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
+    #     extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
+    #     shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
-        return shape
+    #     return shape
 
     @classmethod
     def from_middle(cls, middle, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
-        """Construct a Shape from a pointcloud.
+        """Construct a Shape from a middle mesh and a thickness (offset happening to both sides).
 
         Parameters
         ----------
-        middle : mesh
+        middle : Mesh
             Mesh with middle. Topology will be considered.
         data : dict (None)
             Dictionary with the data in required.
@@ -253,7 +269,7 @@ class Shape(object):
             A Shape object.
 
         """
-
+        middle = MeshDos.from_mesh(middle)
         if treat_creases:
             middle.identify_creases_at_diagonals(xy_span=data['xy_span'])
             middle.store_normals(correct_creases=True)
@@ -265,7 +281,6 @@ class Shape(object):
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
         return shape
-
 
     @classmethod
     def from_middle_pointcloud(cls, middle_pts, topology=None, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
@@ -362,7 +377,6 @@ class Shape(object):
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
         return shape
-
 
     @classmethod
     def from_formdiagram_and_attributes(cls, form, data=None):
@@ -511,154 +525,6 @@ class Shape(object):
 
         return
 
-    def get_ub(self, x, y):
-        """Get the height of the extrados in the point.
-
-        Parameters
-        ----------
-        x : float
-            x-coordinate of the point to evaluate.
-        y : float
-            y-coordinate of the point to evaluate.
-        Returns
-        -------
-        z : float
-            The extrados evaluated in the point.
-        """
-
-        vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y], method='linear'))
-
-        return z
-
-    def get_ub_pattern(self, XY):
-        """Get the height of the extrados in a list of points.
-
-        Parameters
-        ----------
-        XY : list or array
-            list of the x-coordinate and y-coordinate of the points to evaluate.
-        Returns
-        -------
-        z : float
-            The extrados evaluated in the point.
-        """
-        method = self.data.get('interpolation', 'linear')
-        vertices = array(self.extrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
-
-        return z
-
-    def get_ub_fill(self, x, y):
-        """Get the height of the fill in the point.
-
-        Parameters
-        ----------
-        x : float
-            x-coordinate of the point to evaluate.
-        y : float
-            y-coordinate of the point to evaluate.
-        Returns
-        -------
-        z : float
-            The extrados evaluated in the point.
-        """
-
-        vertices = array(self.extrados_fill.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y]))
-
-        return z
-
-    def get_lb(self, x, y):
-        """Get the height of the intrados in the point.
-
-        Parameters
-        ----------
-        x : float
-            x-coordinate of the point to evaluate.
-        y : float
-            y-coordinate of the point to evaluate.
-        Returns
-        -------
-        z : float
-            The intrados evaluated in the point.
-        """
-
-        vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y], method='linear'))
-
-        return z
-
-    def get_lb_pattern(self, XY):
-        """Get the height of the intrados in a list of points.
-
-        Parameters
-        ----------
-        XY : list or array
-            list of the x-coordinate and y-coordinate of the points to evaluate.
-        Returns
-        -------
-        z : float
-            The extrados evaluated in the point.
-        """
-        method = self.data.get('interpolation', 'linear')
-        vertices = array(self.intrados.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
-
-        return z
-
-    def get_middle(self, x, y):
-        """Get the height of the target/middle surface in the point.
-
-        Parameters
-        ----------
-        x : float
-            x-coordinate of the point to evaluate.
-        y : float
-            y-coordinate of the point to evaluate.
-        Returns
-        -------
-        z : float
-            The middle surface evaluated in the point.
-        """
-
-        vertices = array(self.middle.vertices_attributes('xyz'))
-        z = float(interpolate.griddata(vertices[:, :2], vertices[:, 2], [x, y], method='linear'))
-
-        return z
-
-    def get_middle_pattern(self, XY):
-        """Get the height of the target/middle surface in a list of points.
-
-        Parameters
-        ----------
-        XY : list or array
-            list of the x-coordinate and y-coordinate of the points to evaluate.
-        Returns
-        -------
-        z : float
-            The extrados evaluated in the point.
-        """
-        method = self.data.get('interpolation', 'linear')
-        vertices = array(self.middle.vertices_attributes('xyz'))
-        z = interpolate.griddata(vertices[:, :2], vertices[:, 2], XY, method=method)
-
-        return z
-
-    def get_target(self, x, y):
-        """Get the height of the target/middle surface in the point."""
-
-        z = self.get_middle(x, y)
-
-        return z
-
-    def get_target_pattern(self, XY):
-        """Get the height of the target/middle surface in the point."""
-
-        z = self.get_middle_pattern(XY)
-
-        return z
-
     def compute_selfweight(self):
         """Compute and returns the total selfweight of the structure based on the area and thickness in the data.
 
@@ -754,7 +620,6 @@ class Shape(object):
         return
 
     def compute_fill_weight(self):
-
         return self.fill_volume * self.fill_ro
 
     def add_fill_with_angle(self, angle):

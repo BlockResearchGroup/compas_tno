@@ -49,8 +49,10 @@ for i in range(n * discretisation + 1):
     for j in range(n * discretisation + 1):
         xy.append([i * span / (n * discretisation), j * span / (n * discretisation)])
 
-z_ub = analytical_shape.get_ub_pattern(xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
-z_lb = analytical_shape.get_lb_pattern(xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
+from compas_tno.utilities import get_shape_ub_pattern
+from compas_tno.utilities import get_shape_lb_pattern
+z_ub = get_shape_ub_pattern(analytical_shape, xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
+z_lb = get_shape_lb_pattern(analytical_shape, xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
 
 for i in range(len(xy)):
     points_lb.append([xy[i][0], xy[i][1], float(z_lb[i])])

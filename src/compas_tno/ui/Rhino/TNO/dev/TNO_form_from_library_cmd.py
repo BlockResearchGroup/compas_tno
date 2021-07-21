@@ -98,8 +98,6 @@ def RunCommand(is_interactive):
             return
         data['fix'] = fix
 
-    print(data)
-
     form = FormDiagram.from_library(data)
 
     scene.purge()

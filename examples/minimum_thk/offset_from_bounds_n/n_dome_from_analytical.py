@@ -11,7 +11,7 @@ from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
 from compas_tno.viewers import view_normals
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 import math
 from scipy import rand
 

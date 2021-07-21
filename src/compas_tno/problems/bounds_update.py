@@ -1,41 +1,41 @@
-from compas_tno.shapes.circular_arch import arch_ub_lb_update
-from compas_tno.shapes.circular_arch import arch_b_update
-from compas_tno.shapes.circular_arch import arch_dub_dlb
-from compas_tno.shapes.circular_arch import arch_db
+from compas_tno.shapes import arch_ub_lb_update
+from compas_tno.shapes import arch_b_update
+from compas_tno.shapes import arch_dub_dlb
+from compas_tno.shapes import arch_db
 
-from compas_tno.shapes.pointed_arch import pointed_arch_ub_lb_update
-from compas_tno.shapes.pointed_arch import pointed_arch_dub_dlb
+from compas_tno.shapes import pointed_arch_ub_lb_update
+from compas_tno.shapes import pointed_arch_dub_dlb
 
-from compas_tno.shapes.dome import dome_ub_lb_update
-from compas_tno.shapes.dome import dome_b_update
-from compas_tno.shapes.dome import dome_dub_dlb
-from compas_tno.shapes.dome import dome_db
-from compas_tno.shapes.dome import dome_b_update_with_n
-from compas_tno.shapes.dome import dome_db_with_n
+from compas_tno.shapes import dome_ub_lb_update
+from compas_tno.shapes import dome_b_update
+from compas_tno.shapes import dome_dub_dlb
+from compas_tno.shapes import dome_db
+from compas_tno.shapes import dome_b_update_with_n
+from compas_tno.shapes import dome_db_with_n
 
-from compas_tno.shapes.pavillionvault import pavillionvault_ub_lb_update
-from compas_tno.shapes.pavillionvault import pavillionvault_b_update
-from compas_tno.shapes.pavillionvault import pavillionvault_dub_dlb
-from compas_tno.shapes.pavillionvault import pavillionvault_db
+from compas_tno.shapes import pavillionvault_ub_lb_update
+from compas_tno.shapes import pavillionvault_b_update
+from compas_tno.shapes import pavillionvault_dub_dlb
+from compas_tno.shapes import pavillionvault_db
 
-from compas_tno.shapes.crossvault import crossvault_ub_lb_update
-from compas_tno.shapes.crossvault import crossvault_dub_dlb
+from compas_tno.shapes import crossvault_ub_lb_update
+from compas_tno.shapes import crossvault_dub_dlb
 
-from compas_tno.shapes.pointed_crossvault import pointed_vault_ub_lb_update
-from compas_tno.shapes.pointed_crossvault import pointed_vault_dub_dlb
+from compas_tno.shapes import pointed_vault_ub_lb_update
+from compas_tno.shapes import pointed_vault_dub_dlb
 
-from compas_tno.shapes.general import general_ub_lb_update_with_s
-from compas_tno.shapes.general import general_dub_dlb_with_s
-from compas_tno.shapes.general import general_ub_lb_update_with_n
-from compas_tno.shapes.general import general_dub_dlb_with_n
-from compas_tno.shapes.general import general_b_update_with_n
-from compas_tno.shapes.general import general_db_with_n
-from compas_tno.shapes.general import general_ub_lb_update_with_t_middle_constant
-from compas_tno.shapes.general import general_db_with_t_middle_constant
-from compas_tno.shapes.general import general_ub_lb_update_with_t_middle_variable
-from compas_tno.shapes.general import general_db_with_t_middle_variable
-from compas_tno.shapes.general import general_ub_lb_update_with_t_intrados
-from compas_tno.shapes.general import general_db_with_t_intrados
+from compas_tno.shapes import general_ub_lb_update_with_s
+from compas_tno.shapes import general_dub_dlb_with_s
+from compas_tno.shapes import general_ub_lb_update_with_n
+from compas_tno.shapes import general_dub_dlb_with_n
+from compas_tno.shapes import general_b_update_with_n
+from compas_tno.shapes import general_db_with_n
+from compas_tno.shapes import general_ub_lb_update_with_t_middle_constant
+from compas_tno.shapes import general_db_with_t_middle_constant
+from compas_tno.shapes import general_ub_lb_update_with_t_middle_variable
+from compas_tno.shapes import general_db_with_t_middle_variable
+from compas_tno.shapes import general_ub_lb_update_with_t_intrados
+from compas_tno.shapes import general_db_with_t_intrados
 
 
 def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):

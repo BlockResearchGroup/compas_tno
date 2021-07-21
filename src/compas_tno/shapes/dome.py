@@ -1,14 +1,25 @@
-
-
 from numpy import zeros
 from numpy import array
+from numpy import ones
 import math
-from math import sin, cos
-# from compas.datastructures import Mesh
-from compas_tno.datastructures import MeshDos
+
+from compas_tno.shapes import MeshDos
 from compas.datastructures import mesh_delete_duplicate_vertices
 
-from numpy import ones
+
+__all__ = [
+    'set_dome_heighfield',
+    'set_dome_with_spr',
+    'set_dome_polar_coord',
+    'geom_dome',
+    'dome_zt_update',
+    'dome_ub_lb_update',
+    'dome_dub_dlb',
+    'dome_b_update',
+    'dome_db',
+    'dome_b_update_with_n',
+    'dome_db_with_n'
+]
 
 
 def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], expanded=False):
@@ -352,9 +363,9 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
 
 
 def geom_dome(p0, ro, theta, phi):
-    x = ro * sin(theta) * cos(phi)
-    y = ro * sin(theta) * sin(phi)
-    z = ro * cos(theta)
+    x = ro * math.sin(theta) * math.cos(phi)
+    y = ro * math.sin(theta) * math.sin(phi)
+    z = ro * math.cos(theta)
     point = [p0[0] + x, p0[1] + y, p0[2] + z]
     return point
 

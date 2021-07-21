@@ -3,7 +3,7 @@ from compas_plotters import MeshPlotter
 from compas_tno.diagrams import FormDiagram
 from compas_tno.plotters import plot_form
 from compas_tno.problems import initialise_form
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 from compas_tno.viewers import view_mesh
 from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_thrust

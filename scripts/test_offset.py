@@ -17,7 +17,7 @@ from compas.datastructures import Mesh
 
 from compas.geometry import cross_vectors
 
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 import math
 
 # ----------------------------------------------------------------------

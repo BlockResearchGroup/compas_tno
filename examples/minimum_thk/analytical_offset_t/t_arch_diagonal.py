@@ -16,7 +16,7 @@ import math
 
 from numpy import linspace
 from compas.utilities import geometric_key
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 
 # ----------------------------------------------------------------------
 # -----------EXAMPLE OF MIN THICKNESS FOR POINTED ARCH --------------------

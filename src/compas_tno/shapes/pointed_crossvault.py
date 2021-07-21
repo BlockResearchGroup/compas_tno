@@ -1,13 +1,20 @@
-import math
-from numpy import arange
 from numpy import array
 from numpy import linspace
-from compas.datastructures import Mesh
-from compas_tno.datastructures import MeshDos
-from numpy import array
 from numpy import ones
 from numpy import zeros
-from compas_tno.shapes.crossvault import rectangular_topology
+
+from compas_tno.shapes import MeshDos
+from compas_tno.shapes import rectangular_topology
+
+import math
+
+
+__all__ = [
+    'pointed_vault_heightfields',
+    'pointed_vault_middle_update',
+    'pointed_vault_ub_lb_update',
+    'pointed_vault_dub_dlb'
+]
 
 
 def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], hc=8.0, he=None, hm=None, thk=None,  t=0.0, tol=0.00):
