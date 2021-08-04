@@ -43,7 +43,7 @@ def RunCommand(is_interactive):
     form.settings['show.vertices'] = show_vertices
 
     scene.update()
-    scene.save()
+    # scene.save()
 
 
 # ==============================================================================

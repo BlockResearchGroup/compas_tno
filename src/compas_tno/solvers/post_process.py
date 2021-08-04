@@ -72,32 +72,32 @@ def post_process_analysis(analysis):
     reactions(form, plot=plot)
 
     if 't' in variables:
-        if shape.data['type'] == 'general':
+        if shape.datashape['type'] == 'general':
             if thickness_type == 'constant':
                 form.attributes['thk'] = thk
-                shape.data['thk'] = thk
+                shape.datashape['thk'] = thk
                 shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
                 shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
                 form.envelope_from_shape(shape)
             elif thickness_type == 'variable':
-                t0 = shape.data['thk']
+                t0 = shape.datashape['thk']
                 thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
                 form.attributes['thk'] = thk
-                shape.data['thk'] = thk
+                shape.datashape['thk'] = thk
                 if printout:
                     print('Optimum Value corresponds to a thickness of:', thk)
                 shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
                 form.envelope_from_shape(shape)
             elif thickness_type == 'intrados':
                 form.attributes['thk'] = thk
-                shape.data['thk'] = thk
+                shape.datashape['thk'] = thk
                 shape.middle = shape.intrados.offset_mesh(n=thk/2, direction='up')
                 shape.extrados = shape.intrados.offset_mesh(n=thk, direction='up')
                 form.envelope_from_shape(shape)
         else:
             form.attributes['thk'] = thk
-            shape.data['thk'] = thk
-            shape = Shape.from_library(shape.data)
+            shape.datashape['thk'] = thk
+            shape = Shape.from_library(shape.datashape)
             form.envelope_from_shape(shape)
 
     if 's' in variables:
@@ -197,32 +197,32 @@ def post_process_general(analysis):
     reactions(form)
 
     if 't' in variables:
-        if shape.data['type'] == 'general':
+        if shape.datashape['type'] == 'general':
             if thickness_type == 'constant':
                 form.attributes['thk'] = thk
-                shape.data['thk'] = thk
+                shape.datashape['thk'] = thk
                 shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
                 shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
                 apply_envelope_from_shape(form, shape)
             elif thickness_type == 'variable':
-                t0 = shape.data['thk']
+                t0 = shape.datashape['thk']
                 thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
                 form.attributes['thk'] = thk
-                shape.data['thk'] = thk
+                shape.datashape['thk'] = thk
                 if printout:
                     print('Optimum Value corresponds to a thickness of:', thk)
                 shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
                 apply_envelope_from_shape(form, shape)
             elif thickness_type == 'intrados':
                 form.attributes['thk'] = thk
-                shape.data['thk'] = thk
+                shape.datashape['thk'] = thk
                 shape.middle = shape.intrados.offset_mesh(n=thk/2, direction='up')
                 shape.extrados = shape.intrados.offset_mesh(n=thk, direction='up')
                 form.envelope_from_shape(shape)
         else:
             form.attributes['thk'] = thk
-            shape.data['thk'] = thk
-            shape = Shape.from_library(shape.data)
+            shape.datashape['thk'] = thk
+            shape = Shape.from_library(shape.datashape)
             apply_envelope_from_shape(form, shape)  # Check if this is ok for adapted pattern
             i = 0
             for key in form.vertices():  # this resolver the problem due to the adapted pattern
@@ -232,8 +232,8 @@ def post_process_general(analysis):
 
     if 'adapted-envelope' in features:
         form.attributes['thk'] = thk
-        shape.data['thk'] = thk
-        shape = Shape.from_library(shape.data)
+        shape.datashape['thk'] = thk
+        shape = Shape.from_library(shape.datashape)
         apply_envelope_from_shape(form, shape)
 
 

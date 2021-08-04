@@ -10,13 +10,13 @@ import math
 
 n = 50
 
-# data = {
-#     'type': 'crossvault',
-#     'thk': 0.5,
-#     'discretisation': [n, n],
-#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-#     't': 0.0,
-# }
+data = {
+    'type': 'crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0,
+}
 
 # data = {
 #     'type': 'pointed_crossvault',

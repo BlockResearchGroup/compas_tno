@@ -31,7 +31,7 @@ def constr_wrapper(xopt, *args):
         z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
     if 't' in variables or 's' in variables or 'n' in variables:
         thk = xopt[-1].item()
-        t = shape.data['t']
+        t = shape.datashape['t']
 
     args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
     z, q = zq_from_qid(q[ind], args)
@@ -79,7 +79,7 @@ def constr_wrapper_general(variables, M):
     check = k
     M.q = M.B.dot(qid)
     thk = M.thk
-    t = M.shape.data['t']
+    t = M.shape.datashape['t']
 
     if 'xyb' in M.variables:
         xyb = variables[check:check + 2*nb]

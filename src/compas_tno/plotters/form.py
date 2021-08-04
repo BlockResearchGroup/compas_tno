@@ -382,13 +382,13 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     # q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     lines = []
 
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
 
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
         lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
         lines = lines + lines_arch + lines_form
 
-    if shape.data['type'] == 'pointed_arch':
+    if shape.datashape['type'] == 'pointed_arch':
         lines_pointed_arch = _draw_lines_pointed_arch(shape)
         lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
         lines = lines_form + lines_pointed_arch
@@ -437,7 +437,7 @@ def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_
     if not colours:
         colours = [None]*len(forms)
 
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
         lines = lines_arch
 
@@ -606,11 +606,11 @@ def plot_gif_forms_xz(forms, shape, radius=0.05, fix_width=False, max_width=10, 
     img_count = 0
     pattern = 'image_{}.png'
 
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
         discr = 100
-        H = shape.data['H']
-        L = shape.data['L']
-        thk = shape.data['thk']
+        H = shape.datashape['H']
+        L = shape.datashape['L']
+        thk = shape.datashape['thk']
         R = H / 2 + (L**2 / (8 * H))
         zc = R - H
         re = R + thk/2
@@ -690,11 +690,11 @@ def _draw_lines_arch(shape, stereotomy=False):
     lines_arch = []
     width_bounds = 0.8
     width_voussoirs = width_bounds/2
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
         discr = 100
-        H = shape.data['H']
-        L = shape.data['L']
-        thk = shape.data['thk']
+        H = shape.datashape['H']
+        L = shape.datashape['L']
+        thk = shape.datashape['thk']
         R = H / 2 + (L**2 / (8 * H))
         zc = R - H
         re = R + thk/2
@@ -758,12 +758,12 @@ def _draw_lines_pointed_arch(shape):
 
     lines_arch = []
     width_bounds = 0.8
-    if shape.data['type'] == 'pointed_arch':
+    if shape.datashape['type'] == 'pointed_arch':
         discr = 101
-        hc = shape.data['hc']
-        L = shape.data['L']
-        x0 = shape.data['x0']
-        thk = shape.data['thk']
+        hc = shape.datashape['hc']
+        L = shape.datashape['L']
+        x0 = shape.datashape['x0']
+        thk = shape.datashape['thk']
         R = 1/L * (hc**2 + L**2/4)
         re = R + thk/2
         ri = R - thk/2
@@ -813,9 +813,9 @@ def _draw_lines_pointed_arch(shape):
 def _find_extreme_lines(shape):
 
     lines_extreme = []
-    H = shape.data['H']
-    L = shape.data['L']
-    thk = shape.data['thk']
+    H = shape.datashape['H']
+    L = shape.datashape['L']
+    thk = shape.datashape['thk']
     margin = 1.05
 
     lines_extreme.append({         # Dictionary with the shape of the structure
@@ -871,7 +871,7 @@ def plot_gif_forms_and_shapes_xz(forms, shapes, radius=0.05, fix_width=False, ma
     img_count = 0
     pattern = 'image_{}.png'
 
-    if shapes[0].data['type'] == 'arch':
+    if shapes[0].datashape['type'] == 'arch':
         lines_arch = _draw_lines_arch(shapes[0], stereotomy=stereotomy)
         lines_extreme = _find_extreme_lines(shapes[0])
     lines, vertices = lines_and_points_from_form(forms[0], plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)

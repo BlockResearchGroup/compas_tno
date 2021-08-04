@@ -3,25 +3,28 @@ from compas_tno.shapes.dome import dome_zt_update
 from compas_tno.shapes.crossvault import crossvault_middle_update
 from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 
-from compas_plotters import MeshPlotter
-
 
 __all__ = [
-    'apply_horizontal_multiplier',
     'apply_selfweight_from_shape',
-    'apply_selfweight_from_pattern'
+    'apply_selfweight_from_pattern',
+    'apply_horizontal_multiplier',
+
+    'apply_selfweight_from_shape_proxy',
 ]
 
 
-def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
+def apply_selfweight_from_shape_proxy(formdata, shapedata):  # this works only forlibrary shapes
+    # TODO: crate a proper to_data from_data for shapes, and make it happen.
 
-    arg = 'p' + direction
+    from compas_tno.diagrams import FormDiagram
+    from compas_tno.shapes import Shape
 
-    for key in form.vertices():
-        pz = form.vertex_attribute(key, 'pz')
-        form.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
+    form = FormDiagram.from_data(formdata)
+    shape = Shape.from_library(shapedata)
 
-    return
+    apply_selfweight_from_shape(form, shape)
+
+    return form.to_data()
 
 
 def apply_selfweight_from_shape(form, shape, pz_negative=True):
@@ -33,12 +36,12 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
     x = form.vertices_attribute('x')  # check if array is necessary here
     y = form.vertices_attribute('y')
 
-    if shape.data['type'] == 'dome':
-        zt = dome_zt_update(x, y, shape.data['radius'], shape.data['t'], shape.data['center'])
-    elif shape.data['type'] == 'crossvault':
-        zt = crossvault_middle_update(x, y,  shape.data['t'],  xy_span=shape.data['xy_span'])
-    elif shape.data['type'] == 'pointed_crossvault':
-        zt = pointed_vault_middle_update(x, y,  shape.data['t'],  xy_span=shape.data['xy_span'], hc=shape.data['hc'], he=shape.data['he'], hm=shape.data['hm'])
+    if shape.datashape['type'] == 'dome':
+        zt = dome_zt_update(x, y, shape.datashape['radius'], shape.datashape['t'], shape.datashape['center'])
+    elif shape.datashape['type'] == 'crossvault':
+        zt = crossvault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'])
+    elif shape.datashape['type'] == 'pointed_crossvault':
+        zt = pointed_vault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'], hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
     else:
         XY = form.vertices_attributes('xy')
         zt = shape.get_middle_pattern(XY)
@@ -56,7 +59,7 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
         form.vertex_attribute(key, 'pz', value=pz)
         pzt += pz
 
-    if shape.data['type'] == 'arch' or shape.data['type'] == 'pointed_arch':
+    if shape.datashape['type'] == 'arch' or shape.datashape['type'] == 'pointed_arch':
         pzt = 0
         for key in form.vertices():
             form.vertex_attribute(key, 'pz', value=1.0)
@@ -102,6 +105,9 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
     print('total load applied:', pzt)
 
     if plot:
+
+        from compas_plotters import MeshPlotter
+
         plotter = MeshPlotter(form, figsize=(10, 10))
         plotter.draw_edges()
         plotter.draw_vertices(text=key_real_to_key)
@@ -118,6 +124,17 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
         plotter.show()
 
         return
+
+
+def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
+
+    arg = 'p' + direction
+
+    for key in form.vertices():
+        pz = form.vertex_attribute(key, 'pz')
+        form.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
+
+    return
 
 
 # def vertex_projected_area(form, key):  # Modify to compute the projected aerea of all and save as an attribute

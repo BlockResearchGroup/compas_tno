@@ -118,7 +118,7 @@ def sensitivities_wrapper(xopt, *args):
         z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
     if 't' in variables or 's' in variables or 'n' in variables:
         thk = xopt[-1].item()
-        t = shape.data['t']
+        t = shape.datashape['t']
 
     q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
     z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
@@ -262,7 +262,7 @@ def sensitivities_wrapper_general(variables, M):
     nbz = 0
     nbxy = 0
     thk = M.thk  # Introduce this because it might be necessary
-    t = M.shape.data['t']
+    t = M.shape.datashape['t']
 
     qid = variables[:k]
     check = k

@@ -282,7 +282,7 @@ def set_up_general_optimisation(analysis):
     save_iterations = optimiser.data.get('save_iterations', False)
 
     if shape:
-        thk = optimiser.data.get('thk', shape.data['thk'])
+        thk = optimiser.data.get('thk', shape.datashape['thk'])
     else:
         thk = 0.20
 

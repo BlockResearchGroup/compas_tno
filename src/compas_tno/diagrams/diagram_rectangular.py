@@ -30,10 +30,10 @@ def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
     if isinstance(discretisation, list):
         discretisation = discretisation[0]
 
-    y1 = xy_span[1][1]
-    y0 = xy_span[1][0]
-    x1 = xy_span[0][1]
-    x0 = xy_span[0][0]
+    y1 = float(xy_span[1][1])
+    y0 = float(xy_span[1][0])
+    x1 = float(xy_span[0][1])
+    x0 = float(xy_span[0][0])
     x_span = x1 - x0
     y_span = y1 - y0
     dx = x_span/discretisation
@@ -134,10 +134,10 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_braci
     if isinstance(discretisation, list):
         discretisation = discretisation[0]
 
-    y1 = xy_span[1][1]
-    y0 = xy_span[1][0]
-    x1 = xy_span[0][1]
-    x0 = xy_span[0][0]
+    y1 = float(xy_span[1][1])
+    y0 = float(xy_span[1][0])
+    x1 = float(xy_span[0][1])
+    x0 = float(xy_span[0][0])
     x_span = x1 - x0
     y_span = y1 - y0
     dx = x_span/discretisation
@@ -275,10 +275,10 @@ def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discreti
     if isinstance(discretisation, list):
         discretisation = discretisation[0]
 
-    y1 = xy_span[1][1]
-    y0 = xy_span[1][0]
-    x1 = xy_span[0][1]
-    x0 = xy_span[0][0]
+    y1 = float(xy_span[1][1])
+    y0 = float(xy_span[1][0])
+    x1 = float(xy_span[0][1])
+    x0 = float(xy_span[0][0])
     x_span = x1 - x0
     y_span = y1 - y0
     dx = x_span/discretisation
@@ -383,10 +383,10 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
         msg = "Warning!: discretisation of this form diagram has to be even."
         raise ValueError(msg)
 
-    y1 = xy_span[1][1]
-    y0 = xy_span[1][0]
-    x1 = xy_span[0][1]
-    x0 = xy_span[0][0]
+    y1 = float(xy_span[1][1])
+    y0 = float(xy_span[1][0])
+    x1 = float(xy_span[0][1])
+    x0 = float(xy_span[0][0])
 
     x_span = x1 - x0
     y_span = y1 - y0
@@ -505,10 +505,10 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
         msg = "Warning!: discretisation of this form diagram has to be even."
         raise ValueError(msg)
 
-    y1 = xy_span[1][1]
-    y0 = xy_span[1][0]
-    x1 = xy_span[0][1]
-    x0 = xy_span[0][0]
+    y1 = float(xy_span[1][1])
+    y0 = float(xy_span[1][0])
+    x1 = float(xy_span[0][1])
+    x0 = float(xy_span[0][0])
     x_span = x1 - x0
     y_span = y1 - y0
     division_x = discretisation[0]

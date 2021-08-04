@@ -83,7 +83,7 @@ class Analysis(object):
 
     """
 
-    __module__ = 'compas_tna.shapes'
+    __module__ = 'compas_tno.analysis'
 
     def __init__(self):
         self.data = {}
@@ -188,7 +188,7 @@ class Analysis(object):
             lb_damage = float(interpolate.griddata(intrados_damage[:, :2], intrados_damage[:, 2], [x, y]))
             ub_damage = float(interpolate.griddata(extrados_damage[:, :2], extrados_damage[:, 2], [x, y]))
             if math.isnan(lb_damage) or math.isnan(lb_):
-                lb_ = -1 * shape.data['t']
+                lb_ = -1 * shape.datashape['t']
                 # print('Shape interpolation got NaN, check results (x,y): ({0:.3f}, {1:.3f})'.format(x, y))
             else:
                 lb_ = max(lb_, lb_damage)
@@ -236,7 +236,7 @@ class Analysis(object):
         if assume_shape:
             data = assume_shape
         else:
-            data = shape.data
+            data = shape.datashape
 
         thk = data['thk']
 
@@ -342,7 +342,7 @@ class Analysis(object):
         swt0 = self.shape.compute_selfweight()
         thk_reduction0 = thk_reduction
         data_diagram = self.form.parameters
-        data_shape = self.shape.data
+        data_shape = self.shape.datashape
         ro = self.shape.ro
         last_min = 0
         last_max = 100
@@ -476,7 +476,7 @@ class Analysis(object):
         thicknesses_max = []
         objectives = ['min', 'max']
         ro = self.shape.ro
-        data_shape = self.shape.data
+        data_shape = self.shape.datashape
 
         # Find extreme (min thickness) solution:
 
@@ -679,7 +679,7 @@ class Analysis(object):
         thicknesses_max = []
         objectives = ['min', 'max']
         ro = self.shape.ro
-        data_shape = self.shape.data
+        data_shape = self.shape.datashape
         thk0 = data_shape['thk']
         t = data_shape['t']
         initial_intrados = self.shape.intrados.copy()

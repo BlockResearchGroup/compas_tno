@@ -77,6 +77,9 @@ def RunCommand(is_interactive):
     # compas_rhino.display_message("AGS has started.")
     # Browser()  # working on a Browser
 
+    # code to install in python:
+    # python -m compas_tno.install
+
 
 # ==============================================================================
 # Main

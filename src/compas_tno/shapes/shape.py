@@ -10,11 +10,13 @@ from compas.geometry import normalize_vector
 
 from compas_tno.shapes import MeshDos
 
+from compas.datastructures import Datastructure
+
 
 __all__ = ['Shape']
 
 
-class Shape(object):
+class Shape(Datastructure):
 
     """The ``Shape`` class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.
 
@@ -54,20 +56,21 @@ class Shape(object):
 
     """
 
-    __module__ = 'compas_tna.shapes'
+    __module__ = 'compas_tno.shapes'
 
     def __init__(self):
         super(Shape, self).__init__()
-        self.data = {
+        self.datashape = {
             'type': None,
             'thk': 1.0,
-            'discretisation': [100, 100],
+            'discretisation': [20, 20],
             'xy_span': [0.0, 10.0],
             't': 10.0,
         }
         self.intrados = None
         self.extrados = None
         self.middle = None
+        self.name = "shape"
         self.total_selfweight = 0.0
         self.area = 0.0
         self.ro = 20.0
@@ -151,11 +154,11 @@ class Shape(object):
             intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm, thk=thk)
         elif typevault == 'domicalvault':
             xy_span = data['xy_span']
-            center = data.get('center', None)
+            center = [sum(xy_span[0])/2 , sum(xy_span[1])/2]
             radius = data.get('radius', None)
             intrados, extrados, middle = domical_vault(xy_span=xy_span, thk=thk, radius=radius, center=center, t=t, discretisation=discretisation)
 
-        shape.data = data
+        shape.datashape = data
         shape.intrados = intrados
         shape.extrados = extrados
         shape.middle = middle
@@ -182,7 +185,40 @@ class Shape(object):
 
         """
 
-        return
+        from compas.rpc import Proxy
+
+        proxy = Proxy()
+        proxy.package = 'compas_tno.shapes'
+
+        typevault = data['type']
+        thk = data['thk']
+        discretisation = data['discretisation']
+        t = data.get('t', 0.0)
+        expanded = data.get('expanded', False)
+
+        if typevault == 'crossvault':
+            xy_span = data['xy_span']
+            intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+        elif typevault == 'crossvault':
+            xy_span = data['xy_span']
+            intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+
+        intrados = MeshDos.from_data(intra_data)
+        extrados = MeshDos.from_data(extra_data)
+        middle = MeshDos.from_data(middle_data)
+
+        shape = cls()
+        shape.datashape = data
+        shape.intrados = intrados
+        shape.extrados = extrados
+        shape.middle = middle
+
+        shape.area = middle.area()
+        shape.volume = shape.compute_volume()
+        shape.total_selfweight = shape.compute_selfweight()
+
+        return shape
+
 
     @classmethod
     def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data=None):
@@ -220,7 +256,7 @@ class Shape(object):
                 shape.middle.vertex_attribute(key, 'z', (ub + lb)/2)
 
         if data:
-            shape.data = data
+            shape.datashape = data
 
         return shape
 
@@ -467,7 +503,7 @@ class Shape(object):
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
-                t = self.data['t']
+                t = self.datashape['t']
             except:
                 print('No t is assigned to vertices in intrados.')
                 t = None
@@ -489,7 +525,7 @@ class Shape(object):
         if assume_shape:
             data = assume_shape
         else:
-            data = self.data
+            data = self.datashape
 
         if data['type'] == 'dome':
             xc, yc = data['center']
@@ -512,7 +548,7 @@ class Shape(object):
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
-                t = self.data['t']
+                t = self.datashape['t']
             except:
                 print('No t is assigned to vertices in intrados.')
                 t = None
@@ -537,7 +573,7 @@ class Shape(object):
         middle = self.middle
         ro = self.ro
         try:
-            thk = self.data['thk']
+            thk = self.datashape['thk']
             area = middle.area()
             total_selfweight = thk * area * ro
         except:
@@ -561,7 +597,7 @@ class Shape(object):
         """
 
         middle = self.middle
-        thk = self.data['thk']
+        thk = self.datashape['thk']
         area = middle.area()
         volume = thk * area
 

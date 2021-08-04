@@ -100,7 +100,6 @@ def RunCommand(is_interactive):
 
     form = FormDiagram.from_library(data)
 
-    scene.purge()
     scene.add(form, name='Form', layer='TNO::FormDiagram')
     scene.update()
     scene.save()

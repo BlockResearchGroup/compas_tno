@@ -42,7 +42,7 @@ def get_shape_ub(shape, x, y):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.extrados.vertices_attributes('xyz'), [x, y], method=method)
 
 
@@ -58,7 +58,7 @@ def get_shape_ub_pattern(shape, XY):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.extrados.vertices_attributes('xyz'), XY, method=method)
 
 
@@ -76,7 +76,7 @@ def get_shape_ub_fill(shape, x, y):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.extrados_fill.vertices_attributes('xyz'), [x, y], method=method)
 
 
@@ -94,7 +94,7 @@ def get_shape_lb(shape, x, y):
     z : float
         The intrados evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.intrados.vertices_attributes('xyz'), [x, y], method=method)
 
 
@@ -110,7 +110,7 @@ def get_shape_lb_pattern(shape, XY):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.intrados.vertices_attributes('xyz'), XY, method=method)
 
 
@@ -128,7 +128,7 @@ def get_shape_middle(shape, x, y):
     z : float
         The middle surface evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.middle.vertices_attributes('xyz'), [x, y], method=method)
 
 
@@ -144,7 +144,7 @@ def get_shape_middle_pattern(shape, XY):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.data.get('interpolation', 'linear')
+    method = shape.datashape.get('interpolation', 'linear')
     return interpolate_from_poincloud(shape.middle.vertices_attributes('xyz'), XY, method=method)
 
 

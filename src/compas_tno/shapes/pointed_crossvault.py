@@ -17,7 +17,12 @@ __all__ = [
 ]
 
 
-def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], hc=8.0, he=None, hm=None, thk=None,  t=0.0, tol=0.00):
+def pointed_vault_heightfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[20, 20], hc=8.0, he=None, hm=None, tol=10e-6, t=0.0, *args, **kwargs):
+    intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, thk=thk, discretisation=discretisation, hc=hc, he=he, hm=hm, tol=tol, t=t)
+    return intrados.to_data(), extrados.to_data(), middle.to_data()
+
+
+def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None,  t=0.0, tol=0.00):
     """ Set pointed-vault heights.
 
     Parameters

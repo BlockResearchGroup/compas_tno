@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import compas_rhino
 from compas_tno.rhino.diagramobject import DiagramObject
+from compas_rhino.objects import BaseObject
 import scriptcontext as sc
 
 __all__ = ['Scene']
@@ -65,7 +66,10 @@ class Scene(object):
         GUID
         """
         guid = uuid4()
-        obj = DiagramObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
+        if name == 'Shape':
+            obj = BaseObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
+        else:
+            obj = DiagramObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
         self.objects[guid] = obj
         return guid
 
@@ -137,11 +141,11 @@ class Scene(object):
     def redraw(self):
         """Redraw the entire scene."""
         compas_rhino.rs.EnableRedraw(False)
-        try:
-            for guid in self.objects:
-                self.objects[guid].draw()
-        except Exception:
-            pass
+        # try:
+        for guid in self.objects:
+            self.objects[guid].draw()
+        # except Exception:
+        #     pass
         compas_rhino.rs.EnableRedraw(True)
         compas_rhino.rs.Redraw()
 
@@ -150,7 +154,7 @@ class Scene(object):
         self.clear()
         self.redraw()
 
-    def save(self):
+    def save(self):  # This has to be updated to reflect the new Shape
         if not self._db:
             return
         states = self._db['states']
@@ -159,25 +163,37 @@ class Scene(object):
         self._current = -1
         state = []
         for guid, obj in self.objects.items():
-            # the definition of a state should be formalised
-            # this is equivalent to the data schema of data objects
-            # the scene has a state schema
-            # whether or not to store a state could be the responsibility of the caller...
-            state.append({
-                'object': {
-                    'name': obj.name,
-                    'layer': obj.layer,
-                    'visible': obj.visible,
-                    'settings': obj.settings,
-                    'anchor': obj.anchor,
-                    'location': list(obj.location),
-                    'scale': obj.scale,
-                },
-                'diagram': {
-                    'type': type(obj.diagram),
-                    'data': obj.diagram.to_data(),
-                },
-            })
+            print(type(obj))
+            if type(obj) == DiagramObject:
+                state.append({
+                    'object': {
+                        'name': obj.name,
+                        'layer': obj.layer,
+                        'visible': obj.visible,
+                        'settings': obj.settings,
+                        'anchor': obj.anchor,
+                        'location': list(obj.location),
+                        'scale': obj.scale,
+                    },
+                    'diagram': {
+                        'type': type(obj.diagram),
+                        'data': obj.diagram.to_data(),
+                    },
+                })
+            elif type(obj) == BaseObject:
+                state.append({
+                    'object': {
+                        'name': obj.name,
+                        'layer': obj.layer,
+                        'visible': obj.visible,
+                        'settings': obj.settings,
+                        'anchor': obj.anchor,
+                        'location': list(obj.location),
+                        'scale': obj.scale,
+                    },
+                })
+            else:
+                print('Check the type of object added to the scene')
         states.append(state)
         if len(states) > self._depth:
             del states[0]

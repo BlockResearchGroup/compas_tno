@@ -238,23 +238,23 @@ class FormArtist(DiagramArtist):
             compas_rhino.rs.ObjectColor(guid, color)
         return
 
-    def draw_intrados(self, displacement=None, layer='Intrados'):
+    # def draw_intrados(self, displacement=None, layer='Intrados'):
 
-        self.draw_from_attributes(attribute='lb', name='Intrados', color=self.color_mesh_intrados, displacement=displacement, layer=layer)
+    #     self.draw_from_attributes(attribute='lb', name='Intrados', color=self.color_mesh_intrados, displacement=displacement, layer=layer)
 
-        return
+    #     return
 
-    def draw_extrados(self, displacement=None, layer='Extrados'):
+    # def draw_extrados(self, displacement=None, layer='Extrados'):
 
-        self.draw_from_attributes(attribute='ub', name='Extrados', color=self.color_mesh_extrados, displacement=displacement, layer=layer)
+    #     self.draw_from_attributes(attribute='ub', name='Extrados', color=self.color_mesh_extrados, displacement=displacement, layer=layer)
 
-        return
+    #     return
 
-    def draw_middle(self, displacement=None, layer='Middle'):
+    # def draw_middle(self, displacement=None, layer='Middle'):
 
-        self.draw_from_attributes(attribute='target', name='Middle', color=self.color_mesh_middle, displacement=displacement, layer=layer)
+    #     self.draw_from_attributes(attribute='target', name='Middle', color=self.color_mesh_middle, displacement=displacement, layer=layer)
 
-        return
+    #     return
 
     def draw_reactions(self, layer='Reactions', displacement=None, TextDot=False):
 

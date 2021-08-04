@@ -14,7 +14,7 @@ __all__ = ['DiagramArtist']
 
 
 class DiagramArtist(MeshArtist):
-    """Base artist for diagrams in AGS.
+    """Base artist for diagrams in TNO.
 
     Attributes
     ----------

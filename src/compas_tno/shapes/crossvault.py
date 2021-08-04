@@ -10,14 +10,20 @@ from compas_tno.shapes import MeshDos
 import math
 
 
-__all__ = ['cross_vault_highfields',
+__all__ = ['cross_vault_highfields_proxy',
+           'cross_vault_highfields',
            'crossvault_ub_lb_update',
            'crossvault_middle_update',
            'crossvault_dub_dlb'
            ]
 
 
-def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100], expanded=False):
+def cross_vault_highfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, tol=10e-6, t=0.0, discretisation=[100, 100], expanded=False, *args, **kwargs):
+    intrados, extrados, middle = cross_vault_highfields(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation, expanded=False)
+    return intrados.to_data(), extrados.to_data(), middle.to_data()
+
+
+def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, tol=10e-6, t=0.0, discretisation=[100, 100], expanded=False):
     """ Set Cross-Vault heights.
 
     Parameters

@@ -18,14 +18,20 @@ class FormObject(DiagramObject):
         'show.supports': True,
         'show.edges': True,
         'show.vertexlabels': False,
+        'show.vertexloads': False,
         'show.edgelabels': False,
         'show.forcecolors': False,
         'show.forcelabels': False,
         'show.forcepipes': False,
+        'show.vertex_lower_bound': False,
+        'show.vertex_upper_bound': False,
 
         'color.vertices': (0, 0, 0),
         'color.vertexlabels': (255, 255, 255),
+        'color.vertexloads': (0, 0, 0),
         'color.vertices:is_fixed': (255, 0, 0),
+        'color.vertices:upper_bound': (0, 255, 0),
+        'color.vertices:lower_bound': (0, 0, 255),
         'color.edges': (0, 0, 0),
         'color.edges:is_ind': (0, 255, 255),
         'color.edges:is_external': (0, 255, 0),
@@ -117,6 +123,46 @@ class FormObject(DiagramObject):
             color = {}
             color.update({vertex: self.settings['color.vertices:is_fixed'] for vertex in self.diagram.vertices_where({'is_fixed': True})})
             guids = self.artist.draw_vertices(vertices=vertices, color=color)
+            self.guid_vertex = zip(guids, vertices)
+
+        # vertex loads
+        if self.settings['show.vertexloads']:
+            text = {vertex: '{0:.1f}'.format(self.diagram.vertex_attribute(vertex, 'pz')) for vertex in self.diagram.vertices()}
+            color = {}
+            color.update({vertex: self.settings['color.vertexloads'] for vertex in vertices})
+            color.update({vertex: self.settings['color.vertices:is_fixed'] for vertex in self.diagram.vertices_where({'is_fixed': True})})
+            guids = self.artist.draw_vertexlabels(text=text, color=color)
+            self.guid_vertexlabel = zip(guids, vertices)
+
+        # upper and lower bounds
+        points = []
+        vertices = []
+        if self.settings['show.vertex_lower_bound']:
+            i = 0
+            for key in self.diagram.vertices():
+                lb = self.diagram.vertex_attribute(key, 'lb')
+                if lb:
+                    vertices.append(key)
+                    points.append({
+                        'pos': [self.vertex_xyz[i][0], self.vertex_xyz[i][1], lb],
+                        'color': self.settings['color.vertices:lower_bound']
+                    })
+                i += 1
+
+        if self.settings['show.vertex_upper_bound']:
+            i = 0
+            for key in self.diagram.vertices():
+                ub = self.diagram.vertex_attribute(key, 'ub')
+                if ub:
+                    vertices.append(key)
+                    points.append({
+                        'pos': [self.vertex_xyz[i][0], self.vertex_xyz[i][1], ub],
+                        'color': self.settings['color.vertices:upper_bound']
+                    })
+                i += 1
+
+        if points:
+            guids = compas_rhino.draw_points(points, layer="TNO::Shape::Bounds", clear=False, redraw=False)
             self.guid_vertex = zip(guids, vertices)
 
         # edges
