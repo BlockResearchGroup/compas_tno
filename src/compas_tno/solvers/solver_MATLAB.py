@@ -3,10 +3,10 @@ from compas_tno.algorithms import zlq_from_qid
 from compas_tno.algorithms import zlq_from_q
 from compas_tno.algorithms import xyz_from_q
 
-try:
-    import matlab.engine
-except:
-    print('Error: MATLAB Python Engine Not Available!')
+# try:
+import matlab.engine
+# except:
+#     print('Error: MATLAB Python Engine Not Available!')
 
 from numpy import array
 
@@ -92,7 +92,10 @@ def run_loadpath_from_form_MATLAB(form, problem=None, printout=False):
     # Initiate Matlab Engine
     # start_time1 = time.time()
 
+    # from matlab import engine
+    # future = engine.start_matlab(background=True)
     future = matlab.engine.start_matlab(background=True)
+
     eng = future.result()
 
     if not problem:

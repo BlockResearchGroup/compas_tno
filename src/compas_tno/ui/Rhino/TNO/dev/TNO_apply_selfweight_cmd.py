@@ -47,8 +47,15 @@ def RunCommand(is_interactive):
     # scene.add(shape, name='Shape', layer='TNO::Shape')
 
     form.settings['show.vertexloads'] = True
-
     scene.update()
+
+    validate = compas_rhino.rs.GetString("Validade Loads", "True", ["True", "False", "Cancel"])
+    if validate == "True":
+        form.settings['show.vertexloads'] = False
+        scene.update()
+    else:
+        return
+
     scene.save()
 
 

@@ -46,8 +46,16 @@ def RunCommand(is_interactive):
 
     form.settings['show.vertex_lower_bound'] = True
     form.settings['show.vertex_upper_bound'] = True
-
     scene.update()
+
+    validate = compas_rhino.rs.GetString("Validade Envelope", "True", ["True", "False", "Cancel"])
+    if validate == "True":
+        form.settings['show.vertex_lower_bound'] = False
+        form.settings['show.vertex_upper_bound'] = False
+        scene.update()
+    else:
+        return
+
     scene.save()
 
 

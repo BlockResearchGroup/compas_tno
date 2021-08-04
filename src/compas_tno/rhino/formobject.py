@@ -127,6 +127,7 @@ class FormObject(DiagramObject):
 
         # vertex loads
         if self.settings['show.vertexloads']:
+            vertices = list(self.diagram.vertices())
             text = {vertex: '{0:.1f}'.format(self.diagram.vertex_attribute(vertex, 'pz')) for vertex in self.diagram.vertices()}
             color = {}
             color.update({vertex: self.settings['color.vertexloads'] for vertex in vertices})

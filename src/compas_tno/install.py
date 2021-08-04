@@ -60,7 +60,7 @@ if __name__ == '__main__':
         print("\n", "-"*10, "Removing existing packages", "-"*10)
         uninstall()
 
-    print("\n", "-"*10, "Installing RV2 python plugin", "-"*10)
+    print("\n", "-"*10, "Installing TNO python plugin", "-"*10)
 
     plugin_path = os.path.dirname(__file__)
     plugin_path = os.path.join(plugin_path, 'ui/Rhino/TNO')

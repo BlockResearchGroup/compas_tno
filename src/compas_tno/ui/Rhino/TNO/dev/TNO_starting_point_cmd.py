@@ -15,11 +15,25 @@ __commandname__ = "TNO_starting_point"
 
 def RunCommand(is_interactive):
 
-    print('WIP')
+    if 'TNO' not in sc.sticky:
+        compas_rhino.display_message('TNO has not been initialised yet.')
+        return
 
-    # if 'TNO' not in sc.sticky:
-    #     compas_rhino.display_message('TNO has not been initialised yet.')
-    #     return
+    scene = sc.sticky['TNO']['scene']
+    proxy = sc.sticky['TNO']['proxy']
+
+    objects = scene.find_by_name('Form')
+    if not objects:
+        compas_rhino.display_message("There is no FormDiagram in the scene.")
+        return
+    form = objects[0]
+
+    objects = scene.find_by_name('Shape')
+    if not objects:
+        compas_rhino.display_message("There is no Shape in the scene.")
+        return
+    shape = objects[0]
+
 
     # scene = sc.sticky['TNO']['scene']
 
