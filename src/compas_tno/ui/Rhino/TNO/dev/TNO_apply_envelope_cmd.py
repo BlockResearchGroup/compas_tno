@@ -40,10 +40,6 @@ def RunCommand(is_interactive):
     shapedata = shape.shape.datashape  # WIP
     form.diagram.data = proxy.apply_envelope_from_shape_proxy(formdata, shapedata)
 
-    # scene.purge()
-    # scene.add(form, name='Form', layer='TNO::FormDiagram')
-    # scene.add(shape, name='Shape', layer='TNO::Shape')
-
     form.settings['show.vertex_lower_bound'] = True
     form.settings['show.vertex_upper_bound'] = True
     scene.update()

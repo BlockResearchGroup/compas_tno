@@ -62,16 +62,16 @@ print(form)
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = 'min'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+print(optimiser.settings)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
 
@@ -85,28 +85,28 @@ analysis.run()
 
 forms.append(deepcopy(form))
 
-# save_photo =  os.path.join(compas_tno.get('/imgs/'), 'arch_minthk_noblocks_' + optimiser.data['objective'] + '.pdf')
+# save_photo =  os.path.join(compas_tno.get('/imgs/'), 'arch_minthk_noblocks_' + optimiser.settings['objective'] + '.pdf')
 blocks_on_plot = False
 # plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
 
 # --------------------- 4.1 Modify Minimisation for maximum thrust ---------------------
 
-# optimiser.data['objective'] = 'bestfit'
+# optimiser.settings['objective'] = 'bestfit'
 # analysis.set_up_optimiser()
 # analysis.run()
 # forms.append(deepcopy(form))
 
 
-# optimiser.data['objective'] = 'max'
-# optimiser.data['qmax'] = 102.6
+# optimiser.settings['objective'] = 'max'
+# optimiser.settings['qmax'] = 102.6
 # analysis.set_up_optimiser()
 # analysis.run()
 # forms.append(deepcopy(form))
 
-# optimiser.data['qmax'] = 102.6
+# optimiser.settings['qmax'] = 102.6
 # Constraint [ 87.6 / 102.6 / 117.6 ]
 
-# optimiser.data['objective'] = 'min'
+# optimiser.settings['objective'] = 'min'
 # for key in form.vertices():
 #     form.vertex_attribute(key, 'ub', 0.97)
 # analysis.set_up_optimiser()
@@ -115,19 +115,19 @@ blocks_on_plot = False
 #     form.vertex_attribute(key, 'ub', 1.0 + thk/2)
 # forms.append(deepcopy(form))
 
-# optimiser.data['objective'] = 'min'
+# optimiser.settings['objective'] = 'min'
 # analysis.set_up_optimiser()
 # analysis.run()
 # forms.append(deepcopy(form))
 
-optimiser.data['objective'] = 'max'
+optimiser.settings['objective'] = 'max'
 analysis.set_up_optimiser()
 analysis.run()
 forms.append(deepcopy(form))
 
 colours = ['0000FF', 'FF0000']
 
-save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_noblocks_minmax_' + optimiser.data['objective'] + '.pdf')
+save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_noblocks_minmax_' + optimiser.settings['objective'] + '.pdf')
 # plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, stereotomy=blocks_on_plot, save=save_photo, hide_negative=True).show()
 
 # print(forms)
@@ -137,5 +137,5 @@ plot_forms_xz(forms, arch, colours=colours, plot_reactions='simple', fix_width=T
 
 
 
-# optimiser.data['qmax'] = 102.6
+# optimiser.settings['qmax'] = 102.6
 # Constraint [ 87.6 / 102.6 / 117.6 ]

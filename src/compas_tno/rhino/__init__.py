@@ -17,9 +17,11 @@ from __future__ import absolute_import
 
 from compas_tno.diagrams import FormDiagram
 from compas_tno.diagrams import ForceDiagram
+from compas_tno.shapes import Shape
+from compas_tno.optimisers import Optimiser
+
 from compas_rhino.objects import BaseObject
 from compas_rhino.artists import BaseArtist
-from compas_tno.shapes import Shape
 
 from .diagramartist import DiagramArtist  # noqa: F401
 from .formartist import FormArtist  # noqa: F401
@@ -30,14 +32,19 @@ from .diagramobject import DiagramObject  # noqa: F401
 from .formobject import FormObject  # noqa: F401
 from .forceobject import ForceObject  # noqa: F401
 from .shapeobject import ShapeObject
-
-DiagramArtist.register(FormDiagram, FormArtist)
-DiagramArtist.register(ForceDiagram, ForceArtist)
-BaseArtist.register(Shape, ShapeArtist)
+from .optimiserobject import OptimiserObject  # noqa: F401
 
 DiagramObject.register(FormDiagram, FormObject)
+DiagramArtist.register(FormDiagram, FormArtist)
+
 DiagramObject.register(ForceDiagram, ForceObject)
+DiagramArtist.register(ForceDiagram, ForceArtist)
+
 BaseObject.register(Shape, ShapeObject)
+BaseArtist.register(Shape, ShapeArtist)
+
+BaseObject.register(Optimiser, OptimiserObject)
+BaseArtist.register(Optimiser, DiagramArtist)
 
 from .scene import Scene  # noqa: F401
 from .settings import SettingsForm  # noqa: F401

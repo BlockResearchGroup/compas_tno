@@ -33,8 +33,8 @@ title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation
 path = os.path.join(folder, title)
 
 # accept = False
-# form = FormDiagram.from_json(os.path.join(compas_tno.get('/temp/'), 'form_' + optimiser.data['objective'] + '.json'))
-# file_address = path + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+# form = FormDiagram.from_json(os.path.join(compas_tno.get('/temp/'), 'form_' + optimiser.settings['objective'] + '.json'))
+# file_address = path + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 # if accept:
 #     form.to_json(file_address)
 # print(x)
@@ -62,23 +62,23 @@ print('Vault geometry created!')
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-# optimiser.data['library'] = 'Scipy'
-# optimiser.data['solver'] = 'slsqp'
-# optimiser.data['library'] = 'MMA'
-# optimiser.data['solver'] = 'MMA'
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = objective
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['summary'] = True
-optimiser.data['qmax'] = 1000.0 # swt/2
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-optimiser.data['derivative_test'] = False
+# optimiser.settings['library'] = 'Scipy'
+# optimiser.settings['solver'] = 'slsqp'
+# optimiser.settings['library'] = 'MMA'
+# optimiser.settings['solver'] = 'MMA'
+optimiser.settings['library'] = 'IPOPT'
+optimiser.settings['solver'] = 'IPOPT'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = objective
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['summary'] = True
+optimiser.settings['qmax'] = 1000.0 # swt/2
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+optimiser.settings['derivative_test'] = False
 
 # ----------------------- 2. Create Form Diagram ---------------------------
 
@@ -140,9 +140,9 @@ analysis.run()
 elapsed_time = time.time() - start_time
 print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
-form.to_json(os.path.join(compas_tno.get('/temp/'), 'form_' + optimiser.data['objective'] + '.json'))
+form.to_json(os.path.join(compas_tno.get('/temp/'), 'form_' + optimiser.settings['objective'] + '.json'))
 
-file_address = path + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+file_address = path + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 print('ExitFlag:', optimiser.exitflag)
 if optimiser.exitflag == 0:
     form.to_json(file_address)

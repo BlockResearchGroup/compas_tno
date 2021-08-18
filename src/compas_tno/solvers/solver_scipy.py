@@ -4,7 +4,6 @@ from scipy.optimize import shgo
 from compas.numerical import devo_numpy
 from compas.numerical import ga
 
-# from .post_process import post_process_analysis
 from .post_process import post_process_general
 
 import time
@@ -37,7 +36,7 @@ def run_optimisation_scipy(analysis):
     """
 
     optimiser = analysis.optimiser
-    solver = optimiser.data['solver']
+    solver = optimiser.settings['solver']
     fobj = optimiser.fobj
     fconstr = optimiser.fconstr
     fgrad = optimiser.fgrad
@@ -46,11 +45,11 @@ def run_optimisation_scipy(analysis):
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym, variables, shape_data = args[:50]
     bounds = optimiser.bounds
     x0 = optimiser.x0
-    printout = optimiser.data.get('printout', True)
-    grad_choice = optimiser.data.get('gradient', False)
-    jac_choice = optimiser.data.get('jacobian', False)
-    max_iter = optimiser.data.get('max_iter', 500)
-    callback = optimiser.data.get('callback', None)
+    printout = optimiser.settings.get('printout', True)
+    grad_choice = optimiser.settings.get('gradient', False)
+    jac_choice = optimiser.settings.get('jacobian', False)
+    max_iter = optimiser.settings.get('max_iter', 500)
+    callback = optimiser.settings.get('callback', None)
 
     if grad_choice is False:
         fgrad = None
@@ -97,9 +96,6 @@ def run_optimisation_scipy(analysis):
     optimiser.niter = niter
     optimiser.message = message
 
-    # if 'ind' in variables:
-    #     post_process_analysis(analysis)
-    # else:
     post_process_general(analysis)
 
     return analysis

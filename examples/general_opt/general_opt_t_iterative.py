@@ -114,20 +114,20 @@ for c in [0.1]:
             # ------------------------------------------------------------
 
             optimiser = Optimiser()
-            optimiser.data['library'] = solver
-            optimiser.data['solver'] = solver
-            optimiser.data['constraints'] = constraints
-            optimiser.data['variables'] = variables
-            optimiser.data['features'] = features
-            optimiser.data['objective'] = obj
-            optimiser.data['plot'] = False
-            optimiser.data['find_inds'] = False
-            optimiser.data['max_iter'] = 1000
-            optimiser.data['gradient'] = True
-            optimiser.data['printout'] = True
-            optimiser.data['jacobian'] = True
-            optimiser.data['derivative_test'] = False
-            optimiser.data['starting_point'] = starting_point
+            optimiser.settings['library'] = solver
+            optimiser.settings['solver'] = solver
+            optimiser.settings['constraints'] = constraints
+            optimiser.settings['variables'] = variables
+            optimiser.settings['features'] = features
+            optimiser.settings['objective'] = obj
+            optimiser.settings['plot'] = False
+            optimiser.settings['find_inds'] = False
+            optimiser.settings['max_iter'] = 1000
+            optimiser.settings['gradient'] = True
+            optimiser.settings['printout'] = True
+            optimiser.settings['jacobian'] = True
+            optimiser.settings['derivative_test'] = False
+            optimiser.settings['starting_point'] = starting_point
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -161,7 +161,7 @@ for c in [0.1]:
                 print('Ratio Thrust/Weight:', thrust/weight)
 
                 folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', 'min_thk', type_structure, type_formdiagram)
-                if 'ind' in optimiser.data['variables']:
+                if 'ind' in optimiser.settings['variables']:
                     folder = os.path.join(folder, 'fixed')
                 else:
                     folder = os.path.join(folder, 'mov_c_' + str(c))
@@ -171,10 +171,10 @@ for c in [0.1]:
                 os.makedirs(folder, exist_ok=True)
                 title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
                 save_form = os.path.join(folder, title)
-                address = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+                address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
                 solutions[c][obj][thk] = thrust/weight * 100
-                img_file = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.png'
+                img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)
@@ -220,10 +220,10 @@ for c in [0.1]:
                 # plot_form(form, show_q=False, cracks=True).show()
                 # view_solution(form).show()
 
-                optimiser.data['starting_point'] = 'current'
-                optimiser.data['max_thk'] = min(thk*1.25, 0.5)
+                optimiser.settings['starting_point'] = 'current'
+                optimiser.settings['max_thk'] = min(thk*1.25, 0.5)
                 apply_bounds_on_q(form, qmax=0.0)
-                optimiser.data['features'] = ['sym', 'adapted-envelope']
+                optimiser.settings['features'] = ['sym', 'adapted-envelope']
                 i += 1
 
 print(solutions)

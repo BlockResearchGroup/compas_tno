@@ -56,17 +56,17 @@ form = form.initialise_tna(plot=False)
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'MMA'
-optimiser.data['solver'] = 'MMA'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['solver_options']['derivatives'] = 'PyTorch'  # 'DF_brute' 'DF_reduced' and 'analytical' in process.
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 3000.0
-print(optimiser.data)
+optimiser.settings['library'] = 'MMA'
+optimiser.settings['solver'] = 'MMA'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = 'min'
+optimiser.settings['printout'] = True
+optimiser.settings['solver_options']['derivatives'] = 'PyTorch'  # 'DF_brute' 'DF_reduced' and 'analytical' in process.
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 3000.0
+print(optimiser.settings)
 
 # --------------------- 5. Set up and run analysis ---------------------
 

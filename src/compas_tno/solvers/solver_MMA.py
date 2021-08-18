@@ -14,7 +14,7 @@ from compas_tno.algorithms import zlq_from_qid
 
 from compas.utilities import geometric_key
 
-from .post_process import post_process_analysis
+from .post_process import post_process_general
 
 import time
 
@@ -53,11 +53,11 @@ def run_optimisation_MMA(analysis):
 
     form = analysis.form
     optimiser = analysis.optimiser
-    solver = optimiser.data['solver']
-    constraints = optimiser.data['constraints']
-    objective = optimiser.data['objective']
-    gradient = optimiser.data.get('gradient', False)
-    jacobian = optimiser.data.get('jacobian', False)
+    solver = optimiser.settings['solver']
+    constraints = optimiser.settings['constraints']
+    objective = optimiser.settings['objective']
+    gradient = optimiser.settings.get('gradient', False)
+    jacobian = optimiser.settings.get('jacobian', False)
     fconstr = optimiser.fconstr
     args = optimiser.args
 

@@ -103,10 +103,10 @@ def RunCommand(is_interactive):
 
         if data['type'] == 'pointed_crossvault':
             min_hc = max((data['xy_span'][0][1] - data['xy_span'][0][0])/2, (data['xy_span'][1][1] - data['xy_span'][1][0])/2)
-            hc = compas_rhino.rs.GetReal("Height at midspan (<{0})".format(min_hc), min_hc)
+            hc = compas_rhino.rs.GetReal("Height at midspan (>{0})".format(min_hc), min_hc)
             if not hc:
                 return
-            data['hc'] = hc
+            data['hc'] = float(max(hc, min_hc))
 
             add_h = compas_rhino.rs.GetString("Set heights on edge and rubble?", "No", ["Yes", "No", "Cancel"])
             if add_h == "Yes":
@@ -116,6 +116,9 @@ def RunCommand(is_interactive):
                 hm = compas_rhino.rs.GetReal("Height at rubble (<{0})".format(min_hc), min_hc)
                 if hm:
                     data['hm'] = hm
+            else:
+                data['hm'] = None
+                data['he'] = None
 
     print(data)
 

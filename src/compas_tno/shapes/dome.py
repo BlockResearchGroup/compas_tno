@@ -8,6 +8,7 @@ from compas.datastructures import mesh_delete_duplicate_vertices
 
 
 __all__ = [
+    'dome_heightfields_proxy',
     'set_dome_heighfield',
     'set_dome_with_spr',
     'set_dome_polar_coord',
@@ -20,6 +21,11 @@ __all__ = [
     'dome_b_update_with_n',
     'dome_db_with_n'
 ]
+
+
+def dome_heightfields_proxy(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], *args, **kwargs):
+    intrados, extrados, middle = set_dome_heighfield(center=center, radius=radius, thk=thk, t=t, discretisation=discretisation)
+    return intrados.to_data(), extrados.to_data(), middle.to_data()
 
 
 def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], expanded=False):

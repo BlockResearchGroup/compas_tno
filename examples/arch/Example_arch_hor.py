@@ -60,16 +60,16 @@ print(form)
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = 'min'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+print(optimiser.settings)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
 
@@ -91,16 +91,16 @@ print(fopt)
 # --------------------- 4.1 Create Minimisation for maximum thrust ---------------------
 
 # optimiser = Optimiser()
-# optimiser.data['library'] = 'Scipy'
-# optimiser.data['solver'] = 'slsqp'
-# optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-# optimiser.data['variables'] = ['ind', 'zb']
-# optimiser.data['objective'] = 'max'
-# optimiser.data['printout'] = True
-# optimiser.data['plot'] = False
-# optimiser.data['find_inds'] = True
-# optimiser.data['qmax'] = 1000.0
-# print(optimiser.data)
+# optimiser.settings['library'] = 'Scipy'
+# optimiser.settings['solver'] = 'slsqp'
+# optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+# optimiser.settings['variables'] = ['ind', 'zb']
+# optimiser.settings['objective'] = 'max'
+# optimiser.settings['printout'] = True
+# optimiser.settings['plot'] = False
+# optimiser.settings['find_inds'] = True
+# optimiser.settings['qmax'] = 1000.0
+# print(optimiser.settings)
 
 # # ------------------------- 4.2 Run optimisation with scipy ---------------------------
 
@@ -116,5 +116,5 @@ print(fopt)
 # form.to_json(file_address)
 
 import os
-save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_horizontal_' + optimiser.data['objective'] + '.pdf')
+save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_horizontal_' + optimiser.settings['objective'] + '.pdf')
 plot_form_xz(form, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, hide_negative=True, save = save_photo).show()

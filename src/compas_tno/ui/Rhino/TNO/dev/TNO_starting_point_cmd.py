@@ -22,6 +22,8 @@ def RunCommand(is_interactive):
     scene = sc.sticky['TNO']['scene']
     proxy = sc.sticky['TNO']['proxy']
 
+    proxy.restart_server()
+
     objects = scene.find_by_name('Form')
     if not objects:
         compas_rhino.display_message("There is no FormDiagram in the scene.")
@@ -32,28 +34,20 @@ def RunCommand(is_interactive):
     if not objects:
         compas_rhino.display_message("There is no Shape in the scene.")
         return
-    shape = objects[0]
 
+    # add check to see if loads are applied and if bounds on q are set
 
-    # scene = sc.sticky['TNO']['scene']
+    proxy.package = 'compas_tno.problems'
 
-    # guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
-    # if not guids:
-    #     return
+    formdata = form.diagram.to_data()
+    form.diagram.data, output = proxy.initialize_loadpath_proxy(formdata)
 
-    # lines = compas_rhino.get_line_coordinates(guids)
-    # graph = FormGraph.from_lines(lines)
+    message = output['status'] + ' - LP: ' + str(round(output['fopt'], 1)) + ' kN.m'
 
-    # if not graph.is_planar_embedding():
-    #     compas_rhino.display_message('The graph is not planar. Therefore, a form diagram cannot be created.')
-    #     return
+    compas_rhino.display_message(message)
 
-    # form = FormDiagram.from_graph(graph)
-
-    # scene.purge()
-    # scene.add(form, name='Form', layer='TNO::FormDiagram')
-    # scene.update()
-    # scene.save()
+    scene.update()
+    scene.save()
 
 
 # ==============================================================================

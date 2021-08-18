@@ -1,21 +1,12 @@
-
-from compas_tno.algorithms import zlq_from_qid
-from compas_tno.algorithms import zlq_from_q
 from compas_tno.algorithms import xyz_from_q
 
-# try:
 import matlab.engine
-# except:
-#     print('Error: MATLAB Python Engine Not Available!')
+import time
 
 from numpy import array
 
-import time
-
-from compas.utilities import geometric_key
 from compas_tno.algorithms import reactions
 
-from compas_tno.problems import initialise_problem
 from compas_tno.problems import initialise_problem_general
 from compas_tno.problems import adapt_problem_to_fixed_diagram
 
@@ -49,10 +40,10 @@ def run_optimisation_MATLAB(analysis):
     optimiser = analysis.optimiser
     args_cvx = optimiser.args
     indset = form.attributes['indset']
-    find_inds = optimiser.data['find_inds']
-    objective = optimiser.data['objective']
-    printout = optimiser.data['printout']
-    plot = optimiser.data['plot']
+    find_inds = optimiser.settings['find_inds']
+    objective = optimiser.settings['objective']
+    printout = optimiser.settings['printout']
+    plot = optimiser.settings['plot']
 
     i_k = form.index_key()
     i_uv = form.index_uv()
@@ -73,7 +64,7 @@ def run_optimisation_MATLAB(analysis):
     return analysis
 
 
-def run_loadpath_from_form_MATLAB(form, problem=None, printout=False):
+def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=False):
     """ Run convex optimisation problem with MATLAB directly from the Form Diagram
         OBS: Requires installation of CVX and MATLAB.
 
@@ -89,29 +80,19 @@ def run_loadpath_from_form_MATLAB(form, problem=None, printout=False):
 
     """
 
-    # Initiate Matlab Engine
-    # start_time1 = time.time()
-
-    # from matlab import engine
-    # future = engine.start_matlab(background=True)
     future = matlab.engine.start_matlab(background=True)
 
     eng = future.result()
 
     if not problem:
         problem = initialise_problem_general(form)
-        # adapt_problem_to_fixed_diagram(problem, form, printout=True)
-        # from compas_tno.plotters import plot_independents
-        # plot_independents(form).show()
-    # else:
-    #     adapt_problem_to_fixed_diagram(problem, form)
 
-    call_and_output_CVX_MATLAB(form, problem, eng)
+    if find_inds:
+        adapt_problem_to_fixed_diagram(problem, form)
 
-    # elapsed_time1 = time.time() - start_time1
-    # print('Elapsed time considering loading:', elapsed_time1)
+    output = call_and_output_CVX_MATLAB(form, problem, eng)
 
-    return form
+    return output
 
 
 def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
@@ -124,7 +105,6 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         fopt, qopt, exitflag, niter, status, sol_time = call_cvx(problem, eng, printout=printout)
 
     problem.q = qopt
-    print('Max-Min qopt:', max(qopt), min(qopt))
     Xfinal = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
     problem.X[problem.free, 2] = Xfinal[:, 2]
 
@@ -150,6 +130,15 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
 
     summary = True
 
+    # Output dictionary
+
+    output = {}
+    output['fopt'] = fopt
+    output['exitflag'] = exitflag
+    output['status'] = status
+    output['niter'] = niter
+    output['sol_time'] = sol_time
+
     if printout or summary:
         print('\n' + '-' * 50)
         print('LOADPATH OPTIMISATION WITH CVX (MATLAB)')
@@ -160,7 +149,7 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         print('sol. time : {0:.3f} sec'.format(sol_time))
         print('-' * 50 + '\n')
 
-    return fopt, exitflag
+    return output
 
 
 def call_cvx(problem, eng, printout=False):
@@ -178,7 +167,7 @@ def call_cvx(problem, eng, printout=False):
 
     # load_csr_matrix_to_matlab(problem.E, 'E', eng)
 
-    print(problem.qmin.shape, problem.qmax.shape, problem.q.shape)
+    # print(problem.qmin.shape, problem.qmax.shape, problem.q.shape)
 
     eng.workspace['xt'] = matlab.double(problem.X[:, 0].reshape(-1, 1).transpose().tolist())
     eng.workspace['yt'] = matlab.double(problem.X[:, 1].reshape(-1, 1).transpose().tolist())

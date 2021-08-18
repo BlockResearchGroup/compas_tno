@@ -116,17 +116,17 @@ plot_form(form).show()
 # --------------------- Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']  # Note addition of constraint on rollers
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = True
-optimiser.data['objective'] = objective
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = False
-optimiser.data['jacobian'] = False
+optimiser.settings['library'] = 'IPOPT'
+optimiser.settings['solver'] = 'IPOPT'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']  # Note addition of constraint on rollers
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = True
+optimiser.settings['objective'] = objective
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+optimiser.settings['gradient'] = False
+optimiser.settings['jacobian'] = False
 
 data_shape = {
     'type': type_structure,
@@ -188,13 +188,13 @@ uv_i = form.uv_index()
 #     form.edge_attribute((u, v), 'is_ind', value=True)
 # form.attributes['indset'] = gkeys
 
-find_inds = optimiser.data['find_inds']
-printout = optimiser.data['printout']
-objective = optimiser.data['objective']
-variables = optimiser.data['variables']
-qmax = optimiser.data['qmax']
-qmin = optimiser.data['qmin']
-constraints = optimiser.data['constraints']
+find_inds = optimiser.settings['find_inds']
+printout = optimiser.settings['printout']
+objective = optimiser.settings['objective']
+variables = optimiser.settings['variables']
+qmax = optimiser.settings['qmax']
+qmin = optimiser.settings['qmin']
+constraints = optimiser.settings['constraints']
 indset = form.attributes['indset']
 
 args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)

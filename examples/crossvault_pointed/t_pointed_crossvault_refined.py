@@ -135,24 +135,24 @@ for type_formdiagram in ['topology-crossbraced']:  # THIS CAN ONLY WORK IF WE AD
         # --------------------- Create Optimiser ---------------------
 
         optimiser = Optimiser()
-        # optimiser.data['library'] = 'Scipy'
-        # optimiser.data['solver'] = 'SLSQP'
-        optimiser.data['library'] = 'IPOPT'
-        optimiser.data['solver'] = 'IPOPT'
-        optimiser.data['max_iter'] = 1000
-        optimiser.data['constraints'] = ['funicular', 'envelope']
-        optimiser.data['printout'] = True
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 10e+10
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
+        # optimiser.settings['library'] = 'Scipy'
+        # optimiser.settings['solver'] = 'SLSQP'
+        optimiser.settings['library'] = 'IPOPT'
+        optimiser.settings['solver'] = 'IPOPT'
+        optimiser.settings['max_iter'] = 1000
+        optimiser.settings['constraints'] = ['funicular', 'envelope']
+        optimiser.settings['printout'] = True
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 10e+10
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
         if minimise_thickness:
-            optimiser.data['objective'] = 't'
-            optimiser.data['variables'] = ['ind', 'zb', 't']
+            optimiser.settings['objective'] = 't'
+            optimiser.settings['variables'] = ['ind', 'zb', 't']
         else:
-            optimiser.data['objective'] = 'bestfit'
-            optimiser.data['variables'] = ['ind', 'zb']
+            optimiser.settings['objective'] = 'bestfit'
+            optimiser.settings['variables'] = ['ind', 'zb']
 
         j = 0
         for radius in R:

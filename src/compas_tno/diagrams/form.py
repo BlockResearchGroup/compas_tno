@@ -61,6 +61,8 @@ class FormDiagram(FormDiagram):
             'f': 1.0,
             'is_symmetry': False,
             'is_ind': False,
+            'qmin': -1e+4,
+            'qmax': 1e-8
         })
         self.args = None
         self.attributes['loadpath'] = 0.0

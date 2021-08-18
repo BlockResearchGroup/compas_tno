@@ -58,18 +58,18 @@ form = form.initialise_tna(plot=False)
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'target'
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 900.0
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular']
+optimiser.settings['variables'] = ['ind']
+optimiser.settings['objective'] = 'target'
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 900.0
+print(optimiser.settings)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
@@ -92,7 +92,7 @@ form1 = form.copy()
 
 # --------------------- 6. Run it for MAX ---------------------
 
-optimiser.data['variables'] = ['ind', 'zb']
+optimiser.settings['variables'] = ['ind', 'zb']
 analysis.set_up_optimiser()
 analysis.run()
 

@@ -68,6 +68,8 @@ class Scene(object):
         guid = uuid4()
         if name == 'Shape':
             obj = BaseObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
+        elif name == 'Optimiser':
+            obj = BaseObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
         else:
             obj = DiagramObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
         self.objects[guid] = obj

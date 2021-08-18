@@ -14,6 +14,7 @@ __all__ = [
     'apply_bounds_on_q',
 
     'apply_envelope_from_shape_proxy',
+    'apply_bounds_on_q_proxy',
 ]
 
 
@@ -27,6 +28,17 @@ def apply_envelope_from_shape_proxy(formdata, shapedata):  # this works only for
     shape = Shape.from_library(shapedata)
 
     apply_envelope_from_shape(form, shape)
+
+    return form.to_data()
+
+
+def apply_bounds_on_q_proxy(formdata, qmin=-1e+4, qmax=1e-8):  # no need of proxy - change in future
+
+    from compas_tno.diagrams import FormDiagram
+
+    form = FormDiagram.from_data(formdata)
+
+    apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
 
     return form.to_data()
 

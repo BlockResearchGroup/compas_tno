@@ -88,18 +88,18 @@ form = form.initialise_loadpath()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = False
-optimiser.data['summary'] = False
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1e+8
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-optimiser.data['summary'] = True
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'SLSQP'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = False
+optimiser.settings['summary'] = False
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1e+8
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+optimiser.settings['summary'] = True
 
 # ----------------------- Create Analysis loop on limit analysis --------------------------
 

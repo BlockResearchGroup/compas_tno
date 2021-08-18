@@ -22,7 +22,6 @@ from compas_tno.problems import gradient_fmax
 from compas_tno.problems import f_min_thrust
 from compas_tno.problems import f_max_thrust
 
-from .post_process import post_process_analysis
 from .post_process import post_process_general
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
@@ -132,11 +131,11 @@ def run_optimisation_ipopt(analysis):
 
     optimiser = analysis.optimiser
 
-    constraints = optimiser.data['constraints']
-    objective = optimiser.data['objective']
-    printout = optimiser.data.get('printout', False)
-    gradients = optimiser.data.get('gradient', False)
-    variables = optimiser.data['variables']
+    constraints = optimiser.settings['constraints']
+    objective = optimiser.settings['objective']
+    printout = optimiser.settings.get('printout', False)
+    gradients = optimiser.settings.get('gradient', False)
+    variables = optimiser.settings['variables']
 
     bounds = optimiser.bounds
     x0 = optimiser.x0
@@ -279,7 +278,7 @@ def run_optimisation_ipopt(analysis):
     # analysis.form = form
     # reactions(form, plot=plot)
 
-    # summary = optimiser.data.get('summary', False)
+    # summary = optimiser.settings.get('summary', False)
 
     # if summary:
     #     print('\n' + '-' * 50)
@@ -312,13 +311,13 @@ def _nlp_options(nlp, optimiser):
     # nlp.addOption('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
     # nlp.addOption('max_iter', 500)
 
-    if not optimiser.data['printout']:
+    if not optimiser.settings['printout']:
         nlp.addOption('print_level', 0)
-    if optimiser.data.get('derivative_test', None):
+    if optimiser.settings.get('derivative_test', None):
         nlp.addOption('derivative_test', 'first-order')
         # nlp.addOption('derivative_test_perturbation') #, 10e-8
         # nlp.addOption('derivative_test_print_all', 'yes')
-    if optimiser.data.get('max_iter', None):
-        nlp.addOption('max_iter', optimiser.data['max_iter'])
+    if optimiser.settings.get('max_iter', None):
+        nlp.addOption('max_iter', optimiser.settings['max_iter'])
 
     return nlp

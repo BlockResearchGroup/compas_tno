@@ -111,17 +111,17 @@ for file_name in files:
     # --------------------- 4. Create Minimisation Optimiser ---------------------
 
     optimiser = Optimiser()
-    optimiser.data['library'] = 'Scipy'
-    optimiser.data['solver'] = 'SLSQP'
-    optimiser.data['constraints'] = ['funicular', 'envelope']
-    optimiser.data['variables'] = ['ind', 'zb', 't']
-    optimiser.data['objective'] = 't'
-    optimiser.data['printout'] = True
-    optimiser.data['plot'] = False
-    optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 1000.0
-    optimiser.data['gradient'] = gradients
-    optimiser.data['jacobian'] = gradients
+    optimiser.settings['library'] = 'Scipy'
+    optimiser.settings['solver'] = 'SLSQP'
+    optimiser.settings['constraints'] = ['funicular', 'envelope']
+    optimiser.settings['variables'] = ['ind', 'zb', 't']
+    optimiser.settings['objective'] = 't'
+    optimiser.settings['printout'] = True
+    optimiser.settings['plot'] = False
+    optimiser.settings['find_inds'] = True
+    optimiser.settings['qmax'] = 1000.0
+    optimiser.settings['gradient'] = gradients
+    optimiser.settings['jacobian'] = gradients
 
     # --------------------- 5. Set up and run analysis ---------------------
 
@@ -147,6 +147,6 @@ for file_name in files:
         os.makedirs(folder_save, exist_ok=True)
         title = file_name + '_' + type_formdiagram + '_discr_' + str(discretisation)
         save_form = os.path.join(folder_save, title)
-        # form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+        # form.to_json(save_form + '_min_thk_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json')
 
         view_solution(form, vault).show()

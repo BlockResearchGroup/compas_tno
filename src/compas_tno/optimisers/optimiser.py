@@ -1,15 +1,15 @@
-
-
+from compas.datastructures import Datastructure
 
 __all__ = ['Optimiser']
 
-class Optimiser(object):
+
+class Optimiser(Datastructure):
 
     """The ``Optimiser`` sets the parameters of the optimisation.
 
     Notes
     -----
-    An ``Optimiser`` keeps track in the following information in the dictionary stored in Optimiser.data:
+    An ``Optimiser`` keeps track in the following information in the dictionary stored in optimiser.settings:
 
         *  'library'           : ['Scipy','MATLAB','MMA','IPOPT','Scipy', ... others to come]
         *  'solver'            : ['slsqp','SDPT3','MMA', ... others to come],
@@ -24,30 +24,54 @@ class Optimiser(object):
 
     """
 
-    __module__ = 'compas_tna.optimiser'
-
+    __module__ = 'compas_tno.optimisers'
 
     def __init__(self):
-        self.data = {
-        'library'           : 'Scipy',
-        'solver'            : 'slsqp',
-        'objective'         : 'min',
-        'constraints'       : ['funicular', 'envelope', 'reac_bounds', 'partial_reactions', 'cracks'],
-        'variables'         : ['ind', 'zb', 'all-qs'],
-        'use_indset'        : True,
-        'solver_options'    : {},
-        'qmin'              : -1e-6,
+        self.settings = {
+            'library': 'Scipy',
+            'solver': 'slsqp',
+            'objective': 'min',
+            'constraints': ['funicular', 'envelope'],
+            'variables': ['q', 'zb'],
+            'use_indset': True,
+            'solver_options': {},
+            'qmin': -1e-6,
         }
-        self.fobj = None
-        self.fconstr = None
         self.x0 = None
         self.xopt = None
         self.fopt = None
         self.mesage = None
         self.time = None
         self.niter = None
-        self.args = None
         self.exitflag = None
+        self.log = None
 
+    @property
+    def data(self):
+        """dict : A data dict representing the shape data structure for serialization.
+        """
+        data = {
+            'settings': self.settings,
+            'x0': self.x0,
+            'xopt': self.xopt,
+            'fopt': self.fopt,
+            'message': self.message,
+            'niter': self.niter,
+            'exitflag': self.exitflag,
+            'log': self.log,
+        }
+        return data
 
-    # This class must separate the functions objective functions and etc...
+    @data.setter
+    def data(self, data):
+        if 'data' in data:
+            data = data['data']
+        self.settings = data.get('settings') or {}
+
+        self.x0 = data.get('x0') or None
+        self.xopt = data.get('xopt') or None
+        self.fopt = data.get('fopt') or None
+        self.message = data.get('message') or None
+        self.niter = data.get('niter') or None
+        self.exitflag = data.get('exitflag') or None
+        self.log = data.get('log') or None

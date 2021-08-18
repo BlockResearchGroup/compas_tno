@@ -40,12 +40,6 @@ def RunCommand(is_interactive):
     shapedata = shape.shape.datashape  # WIP
     form.diagram.data = proxy.apply_selfweight_from_shape_proxy(formdata, shapedata)
 
-    # form = FormDiagram.from_data(formdata)
-
-    # scene.purge()
-    # scene.add(form, name='Form', layer='TNO::FormDiagram')
-    # scene.add(shape, name='Shape', layer='TNO::Shape')
-
     form.settings['show.vertexloads'] = True
     scene.update()
 

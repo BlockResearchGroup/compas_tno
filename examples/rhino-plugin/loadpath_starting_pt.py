@@ -12,12 +12,15 @@ form = FormDiagram.from_library(data_form)
 scene = Scene()
 proxy = Proxy()
 
+proxy.restart_server()
+
 proxy.package = 'compas_tno.utilities'
 
 formdata = form.to_data()
 shapedata = data_shape
 formdata = proxy.apply_selfweight_from_shape_proxy(formdata, shapedata)
 formdata = proxy.apply_envelope_from_shape_proxy(formdata, shapedata)
+formdata = proxy.apply_bounds_on_q_proxy(formdata)
 
 form = FormDiagram.from_data(formdata)
 
@@ -27,7 +30,7 @@ scene.update()
 
 print('Part I - ok')
 
-proxy = Proxy()
+# proxy = Proxy()
 
 objects = scene.find_by_name('Form')
 formobject = objects[0]
@@ -38,8 +41,7 @@ shapeobject = objects[0]
 proxy.package = 'compas_tno.problems'
 
 formdata = form.to_data()
-# out = proxy.initialize_loadpath_proxy(formdata)
-out = proxy.test_import_proxy(formdata)
+formobject.diagram.data = proxy.initialize_loadpath_proxy(formdata)
 
 scene.update()
 

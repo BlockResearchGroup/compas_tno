@@ -51,47 +51,6 @@ class Problem():
     @classmethod
     def from_formdiagram(cls, form, indset=None, printout=False, find_inds=False):
         problem = cls()
-        # args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
-        # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, xlimits, ylimits = args
-        # problem.q = q
-        # problem.m = q.shape[0]
-        # problem.n = form.number_of_vertices()
-        # problem.ind = ind
-        # problem.dep = dep
-        # problem.E = E
-        # problem.Edinv = Edinv
-        # problem.Ei = Ei
-        # problem.C = C
-        # problem.Ct = Ct
-        # problem.Ci = Ci
-        # problem.Cit = Cit
-        # problem.Cf = Cf
-        # problem.U = U
-        # problem.V = V
-        # problem.p = p
-        # problem.P = hstack([px, py, pz])
-        # problem.free = free
-        # problem.fixed = fixed
-        # problem.lh = lh
-        # problem.sym = sym
-        # problem.k = k
-        # problem.lb = lb
-        # problem.ub = ub
-        # problem.lb_ind = lb_ind
-        # problem.ub_ind = ub_ind
-        # problem.s = s
-        # problem.Wfree = Wfree
-        # problem.X = hstack([x, y, z])
-        # problem.free_x = free_x
-        # problem.free_y = free_y
-        # problem.rol_x = rol_x
-        # problem.rol_y = rol_y
-        # problem.Citx = Citx
-        # problem.City = City
-        # problem.Cftx = Cftx
-        # problem.Cfty = Cfty
-        # problem.xlimits = xlimits
-        # problem.ylimits = ylimits
 
         return problem
 
@@ -499,7 +458,6 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
     return args
 
 
-
 def initialise_problem_general(form, printout=None, tol=0.001):
     """ Initialise the problem for a given Form-Diagram building the main matrices used in the subsequente analysis.
 
@@ -738,6 +696,7 @@ def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, printout=Fal
     problem.B = B
 
     return
+
 
 def adapt_problem_to_sym_and_fixed_diagram(problem, form, axis_symmetry=None, printout=False):
 

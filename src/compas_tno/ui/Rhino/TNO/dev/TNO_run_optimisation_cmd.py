@@ -15,31 +15,55 @@ __commandname__ = "TNO_run_optimisation"
 
 def RunCommand(is_interactive):
 
-    print('WIP')
+    if 'TNO' not in sc.sticky:
+        compas_rhino.display_message('TNO has not been initialised yet.')
+        return
 
-    # if 'TNO' not in sc.sticky:
-    #     compas_rhino.display_message('TNO has not been initialised yet.')
-    #     return
+    scene = sc.sticky['TNO']['scene']
+    proxy = sc.sticky['TNO']['proxy']
 
-    # scene = sc.sticky['TNO']['scene']
+    objects = scene.find_by_name('Form')
+    if not objects:
+        compas_rhino.display_message("There is no FormDiagram in the scene.")
+        return
+    form = objects[0]
 
-    # guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
-    # if not guids:
-    #     return
+    objects = scene.find_by_name('Shape')
+    if not objects:
+        compas_rhino.display_message("There is no Shape in the scene.")
+        return
+    shape = objects[0]
 
-    # lines = compas_rhino.get_line_coordinates(guids)
-    # graph = FormGraph.from_lines(lines)
+    objects = scene.find_by_name('Optimiser')
+    if not objects:
+        compas_rhino.display_message("Select First the optimisation settings.")
+        return
+    optimiser = objects[0]
 
-    # if not graph.is_planar_embedding():
-    #     compas_rhino.display_message('The graph is not planar. Therefore, a form diagram cannot be created.')
-    #     return
+    # add check to see if loads are applied and if bounds on q are set
 
-    # form = FormDiagram.from_graph(graph)
+    proxy.package = 'compas_tno.problems'
 
-    # scene.purge()
-    # scene.add(form, name='Form', layer='TNO::FormDiagram')
-    # scene.update()
-    # scene.save()
+    formdata = form.diagram.to_data()
+    shapedata = shape.shape.datashape  # WIP
+    optimiserdata = optimiser.optimiser.settings
+
+    optimiserdata['solver'] = 'SLSQP'
+
+    shapedata, formdata, optimiserdata = proxy.run_NLP_proxy(shapedata, formdata, optimiserdata)
+
+    form.diagram.data = formdata
+
+    print(optimiserdata)
+
+    message = optimiserdata['status'] + ' fopt: ' + str(round(optimiserdata['fopt'], 2))
+    compas_rhino.display_message(message)
+
+    form.settings['show.cracks'] = True
+
+    scene.update()
+    scene.save()
+
 
 
 # ==============================================================================

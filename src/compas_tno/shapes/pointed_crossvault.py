@@ -10,6 +10,7 @@ import math
 
 
 __all__ = [
+    'pointed_vault_heightfields_proxy',
     'pointed_vault_heightfields',
     'pointed_vault_middle_update',
     'pointed_vault_ub_lb_update',

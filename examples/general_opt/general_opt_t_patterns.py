@@ -109,23 +109,23 @@ for c in [0.1]:
             # ------------------------------------------------------------
 
             optimiser = Optimiser()
-            # optimiser.data['library'] = 'SLSQP'
-            # optimiser.data['solver'] = 'SLSQP'
-            optimiser.data['library'] = 'IPOPT'
-            optimiser.data['solver'] = 'IPOPT'
-            optimiser.data['constraints'] = ['funicular', 'envelope']
-            optimiser.data['variables'] = ['sym', 'zb', 't']
-            # optimiser.data['variables'] = ['ind', 'zb', 't']
-            optimiser.data['objective'] = obj
-            optimiser.data['plot'] = False
-            optimiser.data['find_inds'] = False
-            optimiser.data['max_iter'] = 500
-            optimiser.data['qmax'] = 1000.0
-            optimiser.data['gradient'] = True
-            optimiser.data['printout'] = True
-            optimiser.data['jacobian'] = True
-            optimiser.data['derivative_test'] = False
-            optimiser.data['max_iter'] = 500
+            # optimiser.settings['library'] = 'SLSQP'
+            # optimiser.settings['solver'] = 'SLSQP'
+            optimiser.settings['library'] = 'IPOPT'
+            optimiser.settings['solver'] = 'IPOPT'
+            optimiser.settings['constraints'] = ['funicular', 'envelope']
+            optimiser.settings['variables'] = ['sym', 'zb', 't']
+            # optimiser.settings['variables'] = ['ind', 'zb', 't']
+            optimiser.settings['objective'] = obj
+            optimiser.settings['plot'] = False
+            optimiser.settings['find_inds'] = False
+            optimiser.settings['max_iter'] = 500
+            optimiser.settings['qmax'] = 1000.0
+            optimiser.settings['gradient'] = True
+            optimiser.settings['printout'] = True
+            optimiser.settings['jacobian'] = True
+            optimiser.settings['derivative_test'] = False
+            optimiser.settings['max_iter'] = 500
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -150,8 +150,8 @@ for c in [0.1]:
             # os.makedirs(folder, exist_ok=True)
             title = type_structure + '_' + type_
             save_form = os.path.join(folder, title)
-            address = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
-            img_file = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.png'
+            address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
+            img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
 
             # plot_superimposed_diagrams(form, form_base).show()
             # view_solution(form).show()

@@ -54,17 +54,17 @@ print(form)
 # --------------------- 3. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'MMA'
-optimiser.data['solver'] = 'MMA'
-optimiser.data['constraints'] = ['funicular', 'envelope']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['solver_options']['derivatives'] = 'PyTorch'  # 'DF_brute' 'DF_reduced' and 'analytical' in process.
-optimiser.data['plot'] = True
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-print(optimiser.data)
+optimiser.settings['library'] = 'MMA'
+optimiser.settings['solver'] = 'MMA'
+optimiser.settings['constraints'] = ['funicular', 'envelope']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = 'min'
+optimiser.settings['printout'] = True
+optimiser.settings['solver_options']['derivatives'] = 'PyTorch'  # 'DF_brute' 'DF_reduced' and 'analytical' in process.
+optimiser.settings['plot'] = True
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+print(optimiser.settings)
 
 # --------------------- 4.2 Create Minimisation Optimiser ---------------------
 

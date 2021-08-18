@@ -112,22 +112,22 @@ for c in [c]:  # set the distance that the nodes can move
             # ------------------------------------------------------------
 
             optimiser = Optimiser()
-            optimiser.data['library'] = solver
-            optimiser.data['solver'] = solver
-            optimiser.data['constraints'] = constraints
-            optimiser.data['variables'] = variables
-            optimiser.data['features'] = features
-            optimiser.data['axis_symmetry'] = axis_sym
-            optimiser.data['objective'] = obj
-            optimiser.data['plot'] = True
-            optimiser.data['find_inds'] = False
-            optimiser.data['printout'] = True
-            optimiser.data['max_iter'] = 10000
-            optimiser.data['gradient'] = gradients
-            optimiser.data['jacobian'] = gradients
-            optimiser.data['derivative_test'] = True
+            optimiser.settings['library'] = solver
+            optimiser.settings['solver'] = solver
+            optimiser.settings['constraints'] = constraints
+            optimiser.settings['variables'] = variables
+            optimiser.settings['features'] = features
+            optimiser.settings['axis_symmetry'] = axis_sym
+            optimiser.settings['objective'] = obj
+            optimiser.settings['plot'] = True
+            optimiser.settings['find_inds'] = False
+            optimiser.settings['printout'] = True
+            optimiser.settings['max_iter'] = 10000
+            optimiser.settings['gradient'] = gradients
+            optimiser.settings['jacobian'] = gradients
+            optimiser.settings['derivative_test'] = True
 
-            optimiser.data['starting_point'] = starting_point
+            optimiser.settings['starting_point'] = starting_point
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -150,7 +150,7 @@ for c in [c]:  # set the distance that the nodes can move
             print('Ratio Thrust/Weight:', thrust/weight)
 
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram)
-            if 'ind' in optimiser.data['variables']:
+            if 'ind' in optimiser.settings['variables']:
                 folder = os.path.join(folder, 'fixed')
             else:
                 folder = os.path.join(folder, 'mov_c_' + str(c))
@@ -162,10 +162,10 @@ for c in [c]:  # set the distance that the nodes can move
             os.makedirs(folder, exist_ok=True)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
-            address = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.json'
+            address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
             if 'lambd' in obj:
-                address = save_form + '_' + optimiser.data['objective'] + '_' + str(lambd) + '_thk_' + str(100*thk) + '.json'
+                address = save_form + '_' + optimiser.settings['objective'] + '_' + str(lambd) + '_thk_' + str(100*thk) + '.json'
 
             plot_superimposed_diagrams(form, form_base).show()
             plot_form(form, show_q=False, cracks=True).show()
@@ -173,7 +173,7 @@ for c in [c]:  # set the distance that the nodes can move
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
-                img_file = save_form + '_' + optimiser.data['objective'] + '_thk_' + str(100*thk) + '.png'
+                img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)

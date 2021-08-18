@@ -87,15 +87,15 @@ plot_form(form).show()
 #--- If using LOADPATH
 
 # optimiser = Optimiser()
-# optimiser.data['library'] = 'MATLAB'
-# optimiser.data['solver'] = 'SDPT3'
-# optimiser.data['constraints'] = ['funicular']
-# optimiser.data['variables'] = ['ind']
-# optimiser.data['objective'] = 'loadpath'
-# optimiser.data['printout'] = True
-# optimiser.data['plot'] = False
-# optimiser.data['find_inds'] = True
-# optimiser.data['qmax'] = 10e+10
+# optimiser.settings['library'] = 'MATLAB'
+# optimiser.settings['solver'] = 'SDPT3'
+# optimiser.settings['constraints'] = ['funicular']
+# optimiser.settings['variables'] = ['ind']
+# optimiser.settings['objective'] = 'loadpath'
+# optimiser.settings['printout'] = True
+# optimiser.settings['plot'] = False
+# optimiser.settings['find_inds'] = True
+# optimiser.settings['qmax'] = 10e+10
 # analysis = Analysis.from_elements(dome, form, optimiser)
 # analysis.apply_selfweight()
 # analysis.set_up_optimiser()
@@ -123,26 +123,26 @@ plot_form(form, show_q=False).show()
 # --------------------- 4. Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds' 'symmetry-horizontal']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+4
-optimiser.data['gradient'] = True
-optimiser.data['jacobian'] = True
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds' 'symmetry-horizontal']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10e+4
+optimiser.settings['gradient'] = True
+optimiser.settings['jacobian'] = True
+print(optimiser.settings)
 
 # --------------------------- 4.1 Set The objective to min and start loop ---------------------------
 
-optimiser.data['objective'] = 'min'
+optimiser.settings['objective'] = 'min'
 
 while exitflag == 0:
 
     t_over_R = thk/R
-    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.data['objective']
+    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective']
 
     print('\n----------- Problem Title:', title, '\n')
 
@@ -183,14 +183,14 @@ while exitflag == 0:
 
 # --------------------------- 5.2 Set The objective to max and run ---------------------------
 
-optimiser.data['objective'] = 'max'
+optimiser.settings['objective'] = 'max'
 exitflag = 0
 load_mult = 0.0           # Start from zero Horizontal Load applied, or maybe from a certain amount...
 
 while exitflag == 0:
 
     t_over_R = thk/R
-    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.data['objective']
+    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective']
 
     print('\n----------- Problem Title:', title, '\n')
 

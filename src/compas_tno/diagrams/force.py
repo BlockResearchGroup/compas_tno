@@ -17,8 +17,6 @@ class ForceDiagram(ForceDiagram):
             'name': 'Force'})
         self.update_default_vertex_attributes({
             'is_fixed': False,
-            'is_fixed_x': False,
-            'is_fixed_y': False,
             'is_param': False})
         self.update_default_edge_attributes({
             'l': 0.0,

@@ -68,16 +68,16 @@ plot_form(form).show()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', ' symmetry']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'target'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 3000.0
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', ' symmetry']
+optimiser.settings['variables'] = ['ind']
+optimiser.settings['objective'] = 'target'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 3000.0
+print(optimiser.settings)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
@@ -98,7 +98,7 @@ form.to_json(file_address)
 
 # --------------------- 6. Run it for MAX ---------------------
 
-optimiser.data['variables'] = ['ind', 'zb']
+optimiser.settings['variables'] = ['ind', 'zb']
 analysis.set_up_optimiser()
 analysis.run()
 

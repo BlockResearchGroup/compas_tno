@@ -100,18 +100,18 @@ for x_discr in [20]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
         i = 0
 
         optimiser = Optimiser()
-        optimiser.data['library'] = solvers[i][0]
-        optimiser.data['solver'] = solvers[i][1]
-        optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-        optimiser.data['variables'] = ['ind', 'zb', 't']
-        optimiser.data['objective'] = 't'
-        optimiser.data['printout'] = False
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 1000.0
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
-        print(optimiser.data)
+        optimiser.settings['library'] = solvers[i][0]
+        optimiser.settings['solver'] = solvers[i][1]
+        optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+        optimiser.settings['variables'] = ['ind', 'zb', 't']
+        optimiser.settings['objective'] = 't'
+        optimiser.settings['printout'] = False
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 1000.0
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
+        print(optimiser.settings)
 
         # --------------------- 5. Set up and run analysis ---------------------
 
@@ -133,7 +133,7 @@ for x_discr in [20]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
 
-            address = save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json'
+            address = save_form + '_min_thk_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json'
             print(address)
 
             # form.to_json(address)

@@ -8,6 +8,7 @@ __all__ = [
     'apply_selfweight_from_shape',
     'apply_selfweight_from_pattern',
     'apply_horizontal_multiplier',
+    'apply_fill_load',
 
     'apply_selfweight_from_shape_proxy',
 ]
@@ -133,6 +134,13 @@ def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
     for key in form.vertices():
         pz = form.vertex_attribute(key, 'pz')
         form.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
+
+    return
+
+
+def apply_fill_load(form):
+
+    print('Non implemented')
 
     return
 

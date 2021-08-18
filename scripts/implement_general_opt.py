@@ -85,21 +85,21 @@ apply_sag(form)
 # ------------------------------------------------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'SLSQP'
-optimiser.data['solver'] = 'SLSQP'
-# optimiser.data['library'] = 'IPOPT'
-# optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope']
-# optimiser.data['variables'] = ['q', 'sym']
-optimiser.data['variables'] = ['q', 'sym', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = False
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = True
-optimiser.data['jacobian'] = True
-optimiser.data['derivative_test'] = True
+optimiser.settings['library'] = 'SLSQP'
+optimiser.settings['solver'] = 'SLSQP'
+# optimiser.settings['library'] = 'IPOPT'
+# optimiser.settings['solver'] = 'IPOPT'
+optimiser.settings['constraints'] = ['funicular', 'envelope']
+# optimiser.settings['variables'] = ['q', 'sym']
+optimiser.settings['variables'] = ['q', 'sym', 'zb']
+optimiser.settings['objective'] = 'min'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = False
+optimiser.settings['qmax'] = 1000.0
+optimiser.settings['gradient'] = True
+optimiser.settings['jacobian'] = True
+optimiser.settings['derivative_test'] = True
 
 # --------------------- 5. Set up and run analysis ---------------------
 

@@ -58,16 +58,16 @@ plot_form(form).show()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'max'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'symmetry']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = 'max'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10e+10
+print(optimiser.settings)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
@@ -87,7 +87,7 @@ plot_form(form, show_q=False, simple=True, cracks=True).show()
 # form.to_json(file_address)
 
 import os
-file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ optimiser.data['objective'] + '.json')
+file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ optimiser.settings['objective'] + '.json')
 form.to_json(file_address)
 
 view_thrust(form).show()

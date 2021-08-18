@@ -77,6 +77,57 @@ class Shape(Datastructure):
         self.fill = False
         self.fill_ro = 20.0
 
+    @property
+    def data(self):
+        """dict : A data dict representing the shape data structure for serialization.
+        """
+        dataintrados = None
+        dataextrados = None
+        datamiddle = None
+
+        if self.intrados:
+            dataintrados = self.intrados.to_data()
+        if self.extrados:
+            dataextrados = self.extrados.to_data()
+        if self.middle:
+            datamiddle = self.middle.to_data()
+
+        data = {
+            'datashape': self.datashape,
+            'intrados': dataintrados,
+            'extrados': dataextrados,
+            'middle': datamiddle,
+            'name': self.name,
+            'total_selfweight': self.total_selfweight,
+            'area': self.area,
+            'ro': self.ro,
+            'fill': self.fill,
+            'fill_ro': self.fill_ro
+        }
+        return data
+
+    @data.setter
+    def data(self, data):
+        if 'data' in data:
+            data = data['data']
+        self.datashape = data.get('datashape') or {}
+
+        self.name = data.get('name') or "shape"
+        self.total_selfweight = data.get('total_selfweight') or 0.0
+        self.area = data.get('area') or 0.0
+        self.ro = data.get('ro') or 20.0
+        self.fill = data.get('fill') or False
+        self.fill_ro = data.get('ro') or 20.0
+
+        dataintrados = data.get('intrados')
+        dataextrados = data.get('extrados')
+        datamiddle = data.get('middle')
+
+        self.intrados = MeshDos.from_data(dataintrados) if dataintrados else None
+        self.extrados = MeshDos.from_data(dataextrados) if dataintrados else None
+        self.middle = MeshDos.from_data(datamiddle) if dataintrados else None
+
+
     @classmethod
     def from_library(cls, data):
         """Construct a Shape from a library.
@@ -199,9 +250,19 @@ class Shape(Datastructure):
         if typevault == 'crossvault':
             xy_span = data['xy_span']
             intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
-        elif typevault == 'crossvault':
+        elif typevault == 'pavillionvault':
             xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+            intra_data, extra_data, middle_data = proxy.pavillion_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+        elif typevault == 'pointed_crossvault':
+            xy_span = data['xy_span']
+            hc = data['hc']
+            hm = data.get('hm', None)
+            he = data.get('he', None)
+            intra_data, extra_data, middle_data = proxy.pointed_vault_heightfields_proxy(xy_span=xy_span, thk=thk, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm)
+        elif typevault == 'dome':
+            center = data['center']
+            radius = data['radius']
+            intrados, extrados, middle = proxy.set_dome_heighfield_proxy(center, radius=radius, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
 
         intrados = MeshDos.from_data(intra_data)
         extrados = MeshDos.from_data(extra_data)

@@ -89,22 +89,22 @@ form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/freeform/tom/form_so
 # Creating Analysis and Running
 
 optimiser = Optimiser()
-optimiser.data['library'] = solver
-optimiser.data['solver'] = solver
-optimiser.data['constraints'] = constraints
-optimiser.data['variables'] = variables
-optimiser.data['features'] = features
-optimiser.data['axis_symmetry'] = axis_sym
-optimiser.data['objective'] = obj
-optimiser.data['plot'] = True
-optimiser.data['printout'] = True
-optimiser.data['max_iter'] = 1000
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-optimiser.data['derivative_test'] = False
-optimiser.data['save_iterations'] = True
+optimiser.settings['library'] = solver
+optimiser.settings['solver'] = solver
+optimiser.settings['constraints'] = constraints
+optimiser.settings['variables'] = variables
+optimiser.settings['features'] = features
+optimiser.settings['axis_symmetry'] = axis_sym
+optimiser.settings['objective'] = obj
+optimiser.settings['plot'] = True
+optimiser.settings['printout'] = True
+optimiser.settings['max_iter'] = 1000
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+optimiser.settings['derivative_test'] = False
+optimiser.settings['save_iterations'] = True
 
-optimiser.data['starting_point'] = starting_point
+optimiser.settings['starting_point'] = starting_point
 
 analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.set_up_optimiser()

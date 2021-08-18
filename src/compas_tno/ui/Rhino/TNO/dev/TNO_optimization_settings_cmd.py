@@ -5,9 +5,7 @@ from __future__ import division
 import scriptcontext as sc
 
 import compas_rhino
-
-from compas_tno.diagrams import FormGraph
-from compas_tno.diagrams import FormDiagram
+from compas_tno.optimisers import Optimiser
 
 
 __commandname__ = "TNO_optimization_settings"
@@ -15,31 +13,104 @@ __commandname__ = "TNO_optimization_settings"
 
 def RunCommand(is_interactive):
 
-    print('WIP')
+    if 'TNO' not in sc.sticky:
+        compas_rhino.display_message('TNO has not been initialised yet.')
+        return
 
-    # if 'TNO' not in sc.sticky:
-    #     compas_rhino.display_message('TNO has not been initialised yet.')
-    #     return
+    scene = sc.sticky['TNO']['scene']
 
-    # scene = sc.sticky['TNO']['scene']
+    # 'optimiser.library': 'SLSQP',
+    # 'optimiser.solver': 'SLSQP',
+    # 'optimiser.constraints': [],
+    # 'optimiser.variables': [],
+    # 'optimiser.objective': 'min',
+    # 'optimiser.printout': False,
+    # 'optimiser.max_iter': 500,
+    # 'optimiser.qmin': -1e+4,
+    # 'optimiser.qmax': +1e-8,
+    # 'optimiser.gradient': True,
+    # 'optimiser.jacobian': True,
+    # 'optimiser.derivative_test': True,
+    # 'optimiser.features': [],
+    # 'axis_symmetry': None,
+    # 'optimiser.starting_point': 'loadpath'
 
-    # guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
-    # if not guids:
-    #     return
+    data = {}
 
-    # lines = compas_rhino.get_line_coordinates(guids)
-    # graph = FormGraph.from_lines(lines)
+    data['gradient'] = True
+    data['jacobian'] = True
+    data['printout'] = True
 
-    # if not graph.is_planar_embedding():
-    #     compas_rhino.display_message('The graph is not planar. Therefore, a form diagram cannot be created.')
-    #     return
+    # objective
+    obj = compas_rhino.rs.GetString("Optimisation Objective", "min", ["min", "max", "thk", "Cancel"])
+    if not obj or obj == "Cancel":
+        return
+    data['objective'] = obj
 
-    # form = FormDiagram.from_graph(graph)
+    # variables
+    options = ['q', 'zb', 'xyb']
+    items = ("ForceDensitiesQ", "False", "True"), ("HeightSupportsZb", "False", "True"), ("PlanarSupportsXyb", "False", "True")
+    results = compas_rhino.rs.GetBoolean("Select Variables", items, (True, True, False))
+    if not results:
+        return
+    data['variables'] = [i for indx, i in enumerate(options) if results[indx]]
 
-    # scene.purge()
-    # scene.add(form, name='Form', layer='TNO::FormDiagram')
-    # scene.update()
-    # scene.save()
+    # constraints
+    options = ['funicular', 'envelope', 'reac_bounds', 'envelopexy']
+    items = ("Funicular", "False", "True"), ("Envelope", "False", "True"), ("ReactionBounds", "False", "True"), ("EnvelopeXy", "False", "True")
+    results = compas_rhino.rs.GetBoolean("Select Constraints", items, (True, True, False, False))
+    if not results:
+        return
+    data['constraints'] = [i for indx, i in enumerate(options) if results[indx]]
+
+    # features
+    options = ['fixed', 'sym']
+    items = ("FixedProjection", "False", "True"), ("Symmetry", "False", "True")
+    results = compas_rhino.rs.GetBoolean("Select Features", items, (True, False))
+    if not results:
+        return
+    data['features'] = [i for indx, i in enumerate(options) if results[indx]]
+
+    # solver
+    lib = compas_rhino.rs.GetString("Select Library", "SLSQP", ["SLSQP", "IPOPT", "Cancel"])
+    if not lib or lib == "Cancel":
+        return
+    data['library'] = lib
+    data['solver'] = lib
+
+    # max iter
+    max_iter = compas_rhino.rs.GetInteger("Maximum of Iterations", 500)
+    if not max_iter:
+        return
+    data['max_iter'] = max_iter
+
+    # starting point
+    sp = compas_rhino.rs.GetString("Select Starting point", "current", ["current", "loadpath", "ParalelliseTna", "Cancel"])
+    if not sp or sp == "Cancel":
+        return
+    data['starting_point'] = sp
+
+    # qmax qmin
+    qmin = compas_rhino.rs.GetReal("Assign qmin", -1e+4)
+    if not qmin:
+        pass
+    else:
+        data['qmin'] = float(qmin)
+    qmax = compas_rhino.rs.GetReal("Assign qmax", +1e-8)
+    if not qmax:
+        pass
+    else:
+        data['qmax'] = float(qmax)
+
+    # print(data)
+
+    optimiser = Optimiser()
+    optimiser.settings = data
+
+    scene.add(optimiser, name='Optimiser', layer=None)
+
+    scene.update()
+    scene.save()
 
 
 # ==============================================================================

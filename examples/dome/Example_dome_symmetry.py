@@ -74,16 +74,16 @@ while exitflag == 0:
     # --------------------- 5. Create Minimisation Optimiser ---------------------
 
     optimiser = Optimiser()
-    optimiser.data['library'] = 'Scipy'
-    optimiser.data['solver'] = 'slsqp'
-    optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
-    optimiser.data['variables'] = ['ind', 'zb']
-    optimiser.data['objective'] = 'min'
-    optimiser.data['printout'] = True
-    optimiser.data['plot'] = False
-    optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 10e10
-    print(optimiser.data)
+    optimiser.settings['library'] = 'Scipy'
+    optimiser.settings['solver'] = 'slsqp'
+    optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
+    optimiser.settings['variables'] = ['ind', 'zb']
+    optimiser.settings['objective'] = 'min'
+    optimiser.settings['printout'] = True
+    optimiser.settings['plot'] = False
+    optimiser.settings['find_inds'] = True
+    optimiser.settings['qmax'] = 10e10
+    print(optimiser.settings)
 
     # --------------------- 6. Set up and run analysis ---------------------
 
