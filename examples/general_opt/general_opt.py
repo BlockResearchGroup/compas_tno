@@ -13,6 +13,10 @@ from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 
+
+# added a silly change
+
+
 span = 10.0
 k = 1.0
 discretisation = 10
