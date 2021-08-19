@@ -15,7 +15,7 @@ __commandname__ = "TNO_shape_from_meshes"
 
 def RunCommand(is_interactive):
 
-    print('WIP')
+    print('WIP !')
 
     # if 'TNO' not in sc.sticky:
     #     compas_rhino.display_message('TNO has not been initialised yet.')
