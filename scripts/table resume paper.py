@@ -15,7 +15,7 @@ for t in [0.50, 0.305]:
         try:
             fnm = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/7,5x10/cross_fd/cross_fd_discr_20_'+ objective + '_t='+ str(int(t*1000)) +'.json'
             form = FormDiagram.from_json(fnm)
-        except:
+        except BaseException:
             fnm = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/7,5x10/cross_fd/cross_fd_discr_20_'+ objective + '_t='+ str(int(t*100)) +'.json'
             form = FormDiagram.from_json(fnm)
         print('\n\n/------------- Load: ', t, objective, '\n', fnm)
@@ -29,7 +29,7 @@ for t in [0.50, 0.305]:
         try:
             print('Objective: ', round(form.attributes['fopt'],1))
             print('Type-opt: ', form.attributes['objective'])
-        except:
+        except BaseException:
             reactions(form, plot= False)
             fopt = 0
             for key in form.vertices_where({'is_fixed': True}):
@@ -50,7 +50,7 @@ for t in [0.50, 0.418]:
         try:
             fnm = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/7,5x10/fan_fd/fan_fd_discr_16_'+ objective + '_t='+ str(int(t*1000)) +'.json'
             form = FormDiagram.from_json(fnm)
-        except:
+        except BaseException:
             fnm = '/Users/mricardo/compas_dev/me/minmax/cross/rectangular/7,5x10/fan_fd/fan_fd_discr_16_'+ objective + '_t='+ str(int(t*100)) +'.json'
             form = FormDiagram.from_json(fnm)
         print('\n\n/------------- Load: ', t, objective, '\n', fnm)

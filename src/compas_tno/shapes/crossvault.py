@@ -334,7 +334,7 @@ def crossvault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e
 def _sqrt(x):
     try:
         sqrt_x = math.sqrt(x)
-    except:
+    except BaseException:
         if x > -10e4:
             sqrt_x = math.sqrt(abs(x))
         else:

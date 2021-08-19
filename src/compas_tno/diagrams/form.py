@@ -1,10 +1,9 @@
-
 from compas.utilities import geometric_key
 
 from compas.datastructures import Mesh
 from compas.datastructures import mesh_bounding_box_xy
 
-from compas_tno.diagrams.diagram_arch import create_arch
+from compas_tno.diagrams.diagram_arch import create_arch_form_diagram
 from compas_tno.diagrams.diagram_arch import create_linear_form_diagram
 from compas_tno.diagrams.diagram_rectangular import create_cross_form
 from compas_tno.diagrams.diagram_rectangular import create_cross_diagonal
@@ -25,7 +24,8 @@ __all__ = ['FormDiagram']
 
 class FormDiagram(FormDiagram):
 
-    """The ``FormDiagram`` class imports the attributes and set ups from compas_tna.diagrams.FormDiagram and include some functionalities useful for the assessment of masonry structures.
+    """The ``FormDiagram`` class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some functionalities
+    useful for the assessment of masonry structures.
 
     It defined the form-diagram that will be the layout of the forces within the structure
 
@@ -105,7 +105,7 @@ class FormDiagram(FormDiagram):
         partial_bracing_modules = data.get('partial_bracing_modules')
 
         if form_type == 'arch':
-            form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
+            form = cls().create_arch_form_diagram(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'pointed_arch':
             form = cls().create_pointed_arch(L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'cross_fd':
@@ -153,7 +153,7 @@ class FormDiagram(FormDiagram):
 
         """
 
-        form = create_arch(cls(), L=L, H=H, x0=x0, total_nodes=total_nodes)
+        form = create_arch_form_diagram(cls(), L=L, H=H, x0=x0, total_nodes=total_nodes)
 
         return form
 
@@ -397,7 +397,7 @@ class FormDiagram(FormDiagram):
         return form
 
     @classmethod
-    def from_assembly():
+    def from_assembly(self):
         NotImplementedError
 
     @classmethod
@@ -423,7 +423,6 @@ class FormDiagram(FormDiagram):
         mesh = Mesh.from_vertices_and_faces(vertices, faces)
         form = cls().from_mesh(mesh)
         return form
-
 
     @classmethod
     def from_skeleton(cls, data):
@@ -451,7 +450,7 @@ class FormDiagram(FormDiagram):
 
             max_x = 0
             for key in skeleton_mesh.vertices():
-                x, y, z = skeleton_mesh.vertex_coordinates(key)
+                x, _, _ = skeleton_mesh.vertex_coordinates(key)
                 if x > max_x:
                     max_x = x
             scale = radius / max_x
@@ -468,26 +467,31 @@ class FormDiagram(FormDiagram):
     # --------------------------------------------------------------- #
 
     def q(self):
+        """Return the force densities ``q`` of the diagram."""
         return [self.edge_attribute(edge, 'q') for edge in self.edges_where({'_is_edge': True})]
 
     def xy(self):
+        """Return the ``xy`` coordinates of the diagram."""
         return self.vertices_attributes('xy')
 
     def fixed(self):
+        """Return the keys of the fixed vertices of the diagram."""
         return list(self.vertices_where({'is_fixed': True}))
 
     def fixed_x(self):
+        """Return the keys of the fixed-in-x vertices of the diagram."""
         return list(self.vertices_where({'is_fixed_x': True, 'is_fixed': False}))
 
     def fixed_y(self):
+        """Return the keys of the fixed-in-y vertices of the diagram."""
         return list(self.vertices_where({'is_fixed_y': True, 'is_fixed': False}))
 
     def ind(self):
+        """Return the identifiers for the edges selected as independents on the diagram."""
         return list(self.edges_where({'is_ind': True}))
 
     def update_f(self):
-        """ Update 'f' attribute based on .
-        """
+        """Update attributes force ``f`` based on force densities ``q``and lengths ``l``."""
 
         for u, v in self.edges():
             f = self.edge_attribute((u, v), 'q') * self.edge_length(u, v)
@@ -496,8 +500,7 @@ class FormDiagram(FormDiagram):
         return
 
     def overview_forces(self):
-        """ Quick overview of the important parameters of a network.
-        """
+        """Print an overview of the forces in the ``Form Diagram``."""
 
         self.update_f()
 
@@ -531,6 +534,7 @@ class FormDiagram(FormDiagram):
         return
 
     def thrust(self):
+        """Returns the (horizontal) thrust."""
 
         thrust = 0
         for key in self.vertices_where({'is_fixed': True}):
@@ -542,6 +546,7 @@ class FormDiagram(FormDiagram):
         return thrust
 
     def lumped_swt(self):
+        """Returns the lumped selfweight on the nodes."""
 
         swt = 0
         for key in self.vertices():
@@ -550,64 +555,19 @@ class FormDiagram(FormDiagram):
 
         return swt
 
-    # def shuffle_diagram(self, keep_q=False):
-    #     """ Modify the FormDiagram by shuffling the edges.
-
-    #     Parameters
-    #     ----------
-    #     form : obj
-    #         Original FormDiagram.
-
-    #     Returns
-    #     -------
-    #     obj
-    #         Shuffled FormDiagram.
-
-    #     """
-
-    #     # Edges
-
-    #     edges = [self.edge_coordinates(u, v) for u, v in self.edges()]
-    #     edges = [[sp[:2] + [0], ep[:2] + [0]] for sp, ep in edges]
-    #     qs = {geometric_key(self.edge_midpoint(u, v)[:2] + [0]): self.edge_attribute((u, v), 'q') for u, v in self.edges()}
-    #     shuffle(edges)
-
-    #     form_ = FormDiagram.from_lines(edges, delete_boundary_face=True)
-    #     form_.update_default_edge_attributes({'is_symmetry': False})
-    #     sym = [geometric_key(self.edge_midpoint(u, v)[:2] + [0])for u, v in self.edges_where({'is_symmetry': True})]
-    #     for u, v in form_.edges():
-    #         if geometric_key(form_.edge_midpoint(u, v)) in sym:
-    #             form_.edge_attribute((u, v), 'is_symmetry', True)
-    #         if keep_q:
-    #             form_.edge_attribute((u, v), 'q', qs[geometric_key(form_.edge_midpoint(u, v)[:2] + [0])])
-
-    #     # Vertices
-
-    #     gkey_key = form_.gkey_key()
-    #     for key, vertex in self.vertex.items():
-    #         gkey = geometric_key(self.vertex_coordinates(key)[:2] + [0])
-    #         form_.vertex[gkey_key[gkey]] = vertex
-
-    #     form_.attributes['indset'] = []
-
-    #     return form_
-
     def distance_target(self):
-        """ Compute the squared distance from a target.
-        """
+        """ Compute the squared vertical distance from a target."""
 
         f = 0
-        for key, vertex in self.vertex.items():
-            z = vertex.get('z')
-            s = vertex.get('target')
-            w = vertex.get('weight', 1.0)
-            f += w * (z - s)**2
+        for key in self.vertices():
+            z = self.vertex_attribute(key, 'z')
+            s = self.vertex_attribute(key, 'target')
+            f += (z - s)**2
 
         return f
 
     def loadpath(self):
-        """ Compute loadpath in the current configuration based on the force attributes stored in the Diagram.
-        """
+        """ Compute loadpath in the current configuration based on the force attributes stored in the ``FormDiagram``. """
 
         lp = 0
         for u, v in self.edges_where({'_is_external': False}):
@@ -620,38 +580,33 @@ class FormDiagram(FormDiagram):
 
         return lp
 
-    def number_of_independents(self, printout=False):
-
-        total = 0
-        for key in self.edges_where({'is_ind': True}):
-            total += 1
-        if total == 0:
-            print('Warning, no independent edges found!')
-
-        if printout:
-            print('Form has {0} independents'.format(total))
-
-        return total
+    def number_of_independents(self):
+        """ Compute the number of independent edges."""
+        return len(list(self.vertices_where({'is_ind': True})))
 
     # --------------------------------------------------------------- #
     # -----------------------BOUNDARIES------------------------------ #
     # --------------------------------------------------------------- #
 
     def number_of_supports(self, printout=False):
-
-        total = 0
-        for key in self.vertices_where({'is_fixed': True}):
-            total += 1
-        if total == 0:
-            print('Warning, no fixed points were found!')
-
-        if printout:
-            print('Form has {0} supports'.format(total))
-
-        return total
+        """ Compute the number of supports."""
+        return len(list(self.vertices_where({'is_fixed': True})))
 
     def delete_boundary_edges(self, delete_corner_vertex=True):  # WIP: Fix this for a pavillion vault geometry with 'cross_fd' form diagram.
-        """ Delete boundary edges on a diagram.
+        """
+        Delete boundary edges on a diagram.
+
+        Parameters
+        ----------
+        delete_corner_vertex : bool, optional
+            Delete the corner vertices.
+            The default value is ``True``.
+
+        Returns
+        -------
+        None
+            The ``FormDiagram`` is modified in place.
+
         """
 
         for u, v in self.edges_on_boundary():
@@ -677,21 +632,44 @@ class FormDiagram(FormDiagram):
         return self
 
     def set_boundary_supports(self):
-        """ Set all node on the boundary of a pattern as supports.
-        """
+        """ Set all node on the boundary of a pattern as supports."""
 
         for key in self.vertices_on_boundary():
             self.vertex_attribute(key, 'is_fixed', True)
 
-        return self
+        return
 
     def set_boundary_rollers(self, max_rx=[0.0, 0.0], max_ry=[0.0, 0.0], total_rx=None, total_ry=None):
+        """
+        Set boundary vertices as rollers.
+
+        Parameters
+        ----------
+        max_rx : list, optional
+            Assign the maximum reaction in x to the vertices in the left and right boundary.
+            The default value is ``[0.0, 0.0]``.
+        max_ry : list, optional
+            Assign the maximum reaction in y to the vertices in the top and bottom boundary.
+            The default value is ``[0.0, 0.0]``.
+        total_rx : list, optional
+            Assign the maximum total reaction in x of the vertices in the right or left boundary.
+            The default value is ``None``, in which the ``max_rx`` is used for all vertices.
+        total_ry : list, optional
+            Assign the maximum total reaction in y of the vertices in the top or bottom boundary.
+            The default value is ``None``, in which the ``max_ry`` is used for all vertices.
+
+        Returns
+        -------
+        None
+            The ``FormDiagram`` is modified in place.
+
+        """
         corners = mesh_bounding_box_xy(self)
         xs = [point[0] for point in corners]
         ys = [point[1] for point in corners]
         xlimits = [min(xs), max(xs)]
         ylimits = [min(ys), max(ys)]
-        if total_rx is not None:
+        if not total_rx:
             nx0 = 0
             nx1 = 0
             for key in self.vertices_where({'x': xlimits[0]}):
@@ -699,7 +677,7 @@ class FormDiagram(FormDiagram):
             for key in self.vertices_where({'x': xlimits[1]}):
                 nx1 += 1
             max_rx = [total_rx[0]/nx0, total_rx[1]/nx1]
-        if total_ry is not None:
+        if not total_ry:
             ny0 = 0
             ny1 = 0
             for key in self.vertices_where({'y': ylimits[0]}):
@@ -709,7 +687,7 @@ class FormDiagram(FormDiagram):
             max_ry = [total_ry[0]/ny0, total_ry[1]/ny1]
         for key in self.vertices_on_boundary():
             if self.vertex_attribute(key, 'is_fixed') is False:
-                x, y, z = self.vertex_coordinates(key)
+                x, y, _ = self.vertex_coordinates(key)
                 if x == xlimits[0]:
                     self.vertex_attribute(key, 'rol_x', True)
                     self.vertex_attribute(key, 'max_rx', max_rx[0])
@@ -729,14 +707,14 @@ class FormDiagram(FormDiagram):
     # --------------------------SYMMETRY----------------------------- #
     # --------------------------------------------------------------- #
 
-
     def number_of_sym_edges(self, printout=False):
+        """ Compute the symmetric edges."""
 
         i_sym_max = 0
         for u, v in self.edges_where({'_is_edge': True}):
             try:
                 i_sym = self.edge_attribute((u, v), 'sym_key')
-            except:
+            except BaseException:
                 print('Warning, no symmetry relation found!')
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
@@ -748,12 +726,13 @@ class FormDiagram(FormDiagram):
         return i_sym_max
 
     def number_of_sym_vertices(self, printout=False):
+        """ Compute the symmetric vertices."""
 
         i_sym_max = 0
         for key in self.vertices():
             try:
                 i_sym = self.vertex_attribute(key, 'sym_key')
-            except:
+            except BaseException:
                 print('Warning, no symmetry relation found!')
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
@@ -765,12 +744,13 @@ class FormDiagram(FormDiagram):
         return i_sym_max
 
     def number_of_sym_supports(self, printout=False):
+        """ Compute the symmetric supports."""
 
         i_sym_max = 0
         for key in self.vertices_where({'is_fixed': True}):
             try:
                 i_sym = self.vertex_attribute(key, 'sym_key')
-            except:
+            except BaseException:
                 print('Warning, no symmetry relation found!')
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
@@ -782,9 +762,7 @@ class FormDiagram(FormDiagram):
         return i_sym_max
 
     def build_symmetry_map(self):
-        r"""
-        Build the dictionary mapsym (i ->j) that associate one edge j per group of symmetry i.
-        """
+        """Build the dictionary mapsym (i -> j) that associate one edge j per group of symmetry i."""
 
         mapsym = {}
 
@@ -810,19 +788,46 @@ class FormDiagram(FormDiagram):
     # --------------------------------------------------------------- #
 
     def add_feet_(self, delete_face=False):
-        """ Add feet to the support as in compas_tna.
+        """
+        Add feet to the support as in ``compas_tna``.
+
+        Parameters
+        ----------
+        delete_face : bool, optional
+            Option to delete the outside face of the diagram.
+            The default value is ``False``.
+
+        Returns
+        -------
+        None
+            The ``FormDiagram`` is modified in place.
+
         """
 
         if delete_face:
             self.delete_face(0)
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
-        self.update_boundaries(self, feet=2)
+        self.update_boundaries()
+        # self.update_boundaries(self, feet=2)
 
-        return self
+        return
 
-    def remove_feet(self, openings=None, rmax=0.01):
-        """ Remove feet from the support as in compas_tna.
+    def remove_feet(self, openings=None):
+        """
+        Remove the feet of the support as in ``compas_tna``.
+
+        Parameters
+        ----------
+        openings : bool, optional
+            Whether openings are present.
+            The default value is ``None``.
+
+        Returns
+        -------
+        form_: FormDiagram
+            The new ``FormDiagram``.
+
         """
 
         lines = []
@@ -873,4 +878,3 @@ class FormDiagram(FormDiagram):
             form_.edge_attribute((u, v), name='q', value=qi)
 
         return form_
-

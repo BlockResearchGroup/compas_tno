@@ -1,5 +1,4 @@
-from compas.datastructures import Mesh
-from compas.utilities import geometric_key_xy
+from compas_tno.shapes import MeshDos
 from numpy import array
 from scipy import interpolate
 from triangle import triangulate
@@ -167,8 +166,8 @@ def delaunay_mesh_from_points(points):
         XY(Z) coordinates of the points to triangulate.
     Returns
     -------
-    obj
-        MeshDos.
+    mesh : MeshDos
+        Delaunay mesh created.
 
     """
 
@@ -182,24 +181,24 @@ def delaunay_mesh_from_points(points):
         vertices_flat.append([x, y, 0.0])
         i += 1
     faces = result['triangles']
-    faces_meaningful = []
+    # faces_meaningful = []
 
-    mesh_flat = Mesh.from_vertices_and_faces(vertices_flat, faces)
+    mesh = MeshDos.from_vertices_and_faces(vertices_flat, faces)
 
-    i = 0
-    for fkey in mesh_flat.faces():
-        if mesh_flat.face_area(fkey) > 0.001:
-            faces_meaningful.append(faces[i])
-        i = i+1
+    # i = 0
+    # for fkey in mesh_flat.faces():
+    #     if mesh_flat.face_area(fkey) > 0.001:
+    #         faces_meaningful.append(faces[i])
+    #     i = i+1
 
-    mesh = Mesh.from_vertices_and_faces(vertices, faces_meaningful)  # Did this to avoid faces with area = 0, see if it is necessary
+    # mesh = MeshDos.from_vertices_and_faces(vertices, faces_meaningful)  # Did this to avoid faces with area = 0, see if it is necessary
 
     return mesh
 
 
 def create_mesh_from_topology_and_pointcloud(meshtopology, pointcloud, isnan_height=0.0):
     """
-    Create a mesh based on a given topology and the heights based a pointcloud.
+    Create a mesh based on a given topology and the heights based in a pointcloud.
 
     Parameters
     ----------
@@ -216,7 +215,7 @@ def create_mesh_from_topology_and_pointcloud(meshtopology, pointcloud, isnan_hei
 
     """
     vertices, faces = meshtopology.to_vertices_and_faces()
-    mesh = Mesh.from_vertices_and_faces(vertices, faces)
+    mesh = MeshDos.from_vertices_and_faces(vertices, faces)
     XY = mesh.vertices_attributes('xy')
     z = interpolate_from_poincloud(pointcloud, XY)
 
@@ -248,7 +247,7 @@ def create_mesh_from_topology_and_basemesh(meshtopology, mesh_base):
 
     """
     vertices, faces = meshtopology.to_vertices_and_faces()
-    mesh = Mesh.from_vertices_and_faces(vertices, faces)
+    mesh = MeshDos.from_vertices_and_faces(vertices, faces)
     XY = mesh.vertices_attributes('xy')
     XYZ_base = mesh_base.vertices_attributes('xyz')
     z = interpolate_from_poincloud(XYZ_base, XY)

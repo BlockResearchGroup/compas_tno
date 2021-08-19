@@ -82,7 +82,7 @@ if __name__ == "__main__":
         try:
             old_q = old_qs[gkey]
             form.edge_attribute((u,v), 'q', old_q)
-        except:
+        except BaseException:
             form.edge_attribute((u,v), 'q', 0.0)
     for key in form.vertices_where({'is_fixed': True}):
         gkey = geometric_key(form.vertex_coordinates(key))

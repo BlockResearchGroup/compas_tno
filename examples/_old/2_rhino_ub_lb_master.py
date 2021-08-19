@@ -31,7 +31,7 @@ for t in [0.14]:
 
         try:
             cracks_lb, cracks_ub = form.attributes['cracks']
-        except:
+        except BaseException:
             cracks_lb = []
             cracks_ub = []
         fs = []
@@ -71,7 +71,7 @@ for t in [0.14]:
                     rs.ObjectColor(id, color = (0,0,200))
                     id = rs.AddSphere([x,y,z], radius_circlus)
                     rs.ObjectColor(id, color = (0,0,200))
-            except:
+            except BaseException:
                 pass
             try:
                 ub = form.vertex_attribute(key, 'ub')
@@ -80,7 +80,7 @@ for t in [0.14]:
                     rs.ObjectColor(id, color = (200,0,0))
                     id = rs.AddSphere([x,y,z], radius_circlus)
                     rs.ObjectColor(id, color = (200,0,0))
-            except:
+            except BaseException:
                 pass
         if cracks_lb:
             for i in cracks_lb:

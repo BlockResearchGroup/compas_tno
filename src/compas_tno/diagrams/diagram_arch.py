@@ -3,27 +3,34 @@ from compas.utilities import geometric_key
 import math
 
 
-def create_arch(cls, H=1.00, L=2.0, x0=0.0, total_nodes=100):
+__all__ = [
+    'create_arch_form_diagram',
+    'create_linear_form_diagram',
+]
+
+
+def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
     """ Helper to create a arch linear form-diagram with equaly spaced (in 3D) nodes.
 
     Parameters
     ----------
-    H : float
+    H : float, optional
         Rise of the arch measured with regards to the center line.
-
-    L : float
+        The Default value is ``1.0``.
+    L : float, optional
         Span of the arch considered as center, to center. (L <= 2*H).
-
-    x0: float
+        The Default value is ``2.0``.
+    x0: float, optional
         Beginning of the linear form diagram.
-
-    total_nodes : int
+        The Default value is ``0.0``.
+    total_nodes : int, optional
         Numbers of nodes to be considered in the form diagram.
+        The Default value is ``100``.
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram generated according to the parameters.
 
     """
 
@@ -65,17 +72,20 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
 
     Parameters
     ----------
-    L : float
-        Span of the arch considered as center, to center.
-    x0: float
+    L : float, optional
+        Span of the arch considered as center, to center. (L <= 2*H).
+        The Default value is ``2.0``.
+    x0: float, optional
         Beginning of the linear form diagram.
-    total_nodes : int
+        The Default value is ``0.0``.
+    total_nodes : int, optional
         Numbers of nodes to be considered in the form diagram.
+        The Default value is ``100``.
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram generated according to the parameters.
 
     """
 

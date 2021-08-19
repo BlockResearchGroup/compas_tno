@@ -36,7 +36,7 @@ i_k = form.index_key()
 
 try:
     cracks_lb, cracks_ub = form.attributes['cracks']
-except:
+except BaseException:
     cracks_lb = []
     cracks_ub = []
 fs = []

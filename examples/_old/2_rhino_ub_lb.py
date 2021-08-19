@@ -22,7 +22,7 @@ master = 'MIXED'
 
 try:
     cracks_lb, cracks_ub = form.attributes['cracks']
-except:
+except BaseException:
     cracks_lb = []
     cracks_ub = []
 fs = []
@@ -60,14 +60,14 @@ for key in form.vertices():
         if abs(z - lb) < tol_crack:
             id = rs.AddPoint([x,y,z])
             rs.ObjectColor(id, color = (0,0,200))
-    except:
+    except BaseException:
         pass
     try:
         ub = form.vertex_attribute(key, 'ub')
         if abs(z - ub) < tol_crack:
             id = rs.AddPoint([x,y,z])
             rs.ObjectColor(id, color = (200,0,0))
-    except:
+    except BaseException:
         pass
 if cracks_lb:
     for i in cracks_lb:
@@ -151,7 +151,7 @@ for key in form.vertices_where({'rol_x': True}):
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(rx))
         print('Rx on key: ', key, 'Value: ', rx)
-    except:
+    except BaseException:
         pass
 
 for key in form.vertices_where({'rol_y': True}):
@@ -162,7 +162,7 @@ for key in form.vertices_where({'rol_y': True}):
         id = rs.AddLine(sp, ep)
         rs.ObjectName(id, str(ry))
         print('Ry on key: ', key, 'Value: ', ry)
-    except:
+    except BaseException:
         pass
 
 pipes_layer = master + '::Pipes'

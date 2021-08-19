@@ -9,19 +9,17 @@ compas_tno.problems
     :toctree: generated/
     :nosignatures:
 
-    constr_wrapper
-
 
 """
 from __future__ import absolute_import
 
-from .constraints import *
-from .derivatives import *
-from .objectives import *
-from .problems import *
-from .callbacks import *
-from .initialize import *
-from .setup import *
-from .proxy import *
+from .constraints import *  # noqa: F401 F403
+from .derivatives import *  # noqa: F401 F403
+from .objectives import *  # noqa: F401 F403
+from .problems import *  # noqa: F401 F403
+from .callbacks import *  # noqa: F401 F403
+from .initialize import *  # noqa: F401 F403
+from .setup import *  # noqa: F401 F403
+from .proxy import *  # noqa: F401 F403
 
 __all__ = [name for name in dir() if not name.startswith('_')]

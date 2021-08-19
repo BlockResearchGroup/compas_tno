@@ -1,7 +1,5 @@
-from compas_viewers.meshviewer import MeshViewer
 from compas_viewers.multimeshviewer import MultiMeshViewer
 from compas_viewers.objectviewer import ObjectViewer
-from compas.geometry import Point
 from compas.geometry import Line
 
 
@@ -273,7 +271,7 @@ def view_fill(shape, cut_negatives=True):
     extrados = shape.extrados
     try:
         extrados_fill = shape.extrados_fill
-    except:
+    except BaseException:
         print('No fill is assigned')
         extrados_fill = shape.extrados
 

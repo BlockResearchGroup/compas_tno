@@ -44,7 +44,7 @@ for i in range(len(R)):
 
     try:
         cracks_lb, cracks_ub = form.attributes['cracks']
-    except:
+    except BaseException:
         cracks_lb = []
         cracks_ub = []
     fs = []
@@ -101,7 +101,7 @@ for i in range(len(R)):
                 rs.ObjectColor(id, color=(0, 0, 255))
                 id = rs.AddSphere([x, y, z], radius_circlus)
                 rs.ObjectColor(id, color=(0, 0, 255))
-        except:
+        except BaseException:
             pass
         try:
             ub = form.vertex_attribute(key, 'ub')
@@ -110,7 +110,7 @@ for i in range(len(R)):
                 rs.ObjectColor(id, color=(0, 128, 0))
                 id = rs.AddSphere([x, y, z], radius_circlus)
                 rs.ObjectColor(id, color=(0, 128, 0))
-        except:
+        except BaseException:
             pass
     # if cracks_lb:
     #    for i in cracks_lb:
@@ -209,7 +209,7 @@ for i in range(len(R)):
             id = rs.AddLine(sp, ep)
             rs.ObjectName(id, str(rx))
             print('Rx on key: ', key, 'Value: ', rx)
-        except:
+        except BaseException:
             pass
 
     for key in form.vertices_where({'rol_y': True}):
@@ -220,7 +220,7 @@ for i in range(len(R)):
             id = rs.AddLine(sp, ep)
             rs.ObjectName(id, str(ry))
             print('Ry on key: ', key, 'Value: ', ry)
-        except:
+        except BaseException:
             pass
 
     rs.LayerVisible(reac_val, False)

@@ -5,9 +5,8 @@ from __future__ import division
 import scriptcontext as sc
 
 import compas_rhino
-
-from compas_tno.diagrams import FormGraph
-from compas_tno.diagrams import FormDiagram
+from compas_rhino.geometry import RhinoMesh
+from compas_tno.shapes import Shape
 
 
 __commandname__ = "TNO_shape_from_meshes"
@@ -15,31 +14,45 @@ __commandname__ = "TNO_shape_from_meshes"
 
 def RunCommand(is_interactive):
 
-    print('WIP !')
+    if 'TNO' not in sc.sticky:
+        compas_rhino.display_message('TNO has not been initialised yet.')
+        return
 
-    # if 'TNO' not in sc.sticky:
-    #     compas_rhino.display_message('TNO has not been initialised yet.')
-    #     return
+    scene = sc.sticky['TNO']['scene']
 
-    # scene = sc.sticky['TNO']['scene']
+    answer = compas_rhino.rs.GetString("Select a method to input the shape. From", "Cancel", ["IntraExtrados", "IntraExtradosMiddle", "Middle", "Cancel"])
+    if not answer:
+        return
+    if answer == "Cancel":
+        return
 
-    # guids = compas_rhino.select_lines(message='Select Form Diagram Lines')
-    # if not guids:
-    #     return
+    middle = None
 
-    # lines = compas_rhino.get_line_coordinates(guids)
-    # graph = FormGraph.from_lines(lines)
+    if answer == "IntraExtrados" or answer == "IntraExtradosMiddle":
+        guid_intrados = compas_rhino.select_mesh(message='Select Intrados Mesh')
+        if not guid_intrados:
+            return
+        intrados_RM = RhinoMesh.from_guid(guid_intrados)
+        intrados = intrados_RM.to_compas()
 
-    # if not graph.is_planar_embedding():
-    #     compas_rhino.display_message('The graph is not planar. Therefore, a form diagram cannot be created.')
-    #     return
+        guid_extrados = compas_rhino.select_mesh(message='Select Intrados Mesh')
+        if not guid_extrados:
+            return
+        extrados_RM = RhinoMesh.from_guid(guid_extrados)
+        extrados = extrados_RM.to_compas()
 
-    # form = FormDiagram.from_graph(graph)
+    if answer == "Middle" or answer == "IntraExtradosMiddle":
+        guid_middle = compas_rhino.select_mesh(message='Select Intrados Mesh')
+        if not guid_middle:
+            return
+        middle_RM = RhinoMesh.from_guid(guid_middle)
+        middle = middle_RM.to_compas()
 
-    # scene.purge()
-    # scene.add(form, name='Form', layer='TNO::FormDiagram')
-    # scene.update()
-    # scene.save()
+    shape = Shape.from_meshes(intrados, extrados, middle, data=None)
+
+    scene.add(shape, name='Shape', layer='TNO::Shape')
+    scene.update()
+    scene.save()
 
 
 # ==============================================================================

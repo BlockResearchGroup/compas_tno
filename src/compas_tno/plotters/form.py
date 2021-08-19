@@ -1,5 +1,9 @@
 import compas_tno
-from compas_tna.diagrams import FormDiagram
+import matplotlib.pyplot as plt
+import math
+import os
+
+from math import sqrt
 
 from compas_plotters import MeshPlotter
 from compas_plotters import Plotter
@@ -7,12 +11,7 @@ from compas_plotters import Plotter
 from numpy import array
 from numpy import linspace
 
-import matplotlib.pyplot as plt
-
 from compas.utilities import geometric_key
-from math import sqrt
-import math
-import os
 
 
 __all__ = [
@@ -139,7 +138,8 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
         plotter.draw_vertices(keys=rad_colors.keys(), facecolor=rad_colors, radius=radius)
         if heights:
             plotter.draw_vertices(keys=[i for i in form.vertices_where({'is_fixed': True})], facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-                                  radius=radius, text={i: [round(form.vertex_attribute(i, 'lb'), 3), round(form.vertex_attribute(i, 'ub'), 3), round(form.vertex_attribute(i, 'z'), 3)] for i in form.vertices()})  # form.vertex_attribute(i, 'z')
+                                  radius=radius, text={i: [round(form.vertex_attribute(i, 'lb'), 3), round(form.vertex_attribute(i, 'ub'), 3),
+                                                           round(form.vertex_attribute(i, 'z'), 3)] for i in form.vertices()})  # form.vertex_attribute(i, 'z')
 
     plotter.draw_lines(lines)
     if save:
@@ -218,7 +218,7 @@ def plot_superimposed_diagrams(form, form_base, show_q=True, thick='f', radius=0
     return plotter
 
 
-def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', heights=False, show_edgeuv=False, cracks=False, save=None):
+def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', show_edgeuv=False, cracks=False, save=None):
     """ Extended plotting of a FormDiagram
 
     Parameters
@@ -239,8 +239,6 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
         Show the force densities on the edges.
     thick : str ('q')
         Attribute that the thickness of the form should be related to.
-    heights : bool (False)
-        Plot the heights of the nodes.
     show_edgeuv : bool (False)
         Show u,v of the edges.
     cracks : bool (False)
@@ -258,7 +256,6 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
     # Create gradient for the distance to target -> red on top and blue on bottom.
     # TODO: CODE THIS
 
-    uv_i = form.uv_index()
     q = [form.edge_attribute((u, v), thick) for u, v in form.edges_where({'_is_edge': True})]
     qmax = max(abs(array(q)))
     lines = []
@@ -266,8 +263,6 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
 
     for u, v in form.edges_where({'_is_edge': True}):
         qi = form.edge_attribute((u, v), thick)
-        l = form.edge_length(u, v)
-        uv_i = form.uv_index
 
         if simple:
             if qi > 0:
@@ -331,9 +326,6 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
     plotter = MeshPlotter(form, figsize=(10, 10))
     if radius:
         plotter.draw_vertices(facecolor=rad_colors, radius=radius)
-        if heights:
-            plotter.draw_vertices(keys=[i for i in form.vertices_where({'is_fixed': True})], facecolor={i: '#aaaaaa' for i in form.vertices_where({'is_fixed': True})},
-                                  radius=radius, text={i: [round(form.vertex_attribute(i, 'lb'), 3), round(form.vertex_attribute(i, 'ub'), 3), round(form.vertex_attribute(i, 'z'), 3)] for i in form.vertices()})  # form.vertex_attribute(i, 'z')
 
     plotter.draw_lines(lines)
     if save:
@@ -342,7 +334,8 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
     return plotter
 
 
-def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, stereotomy=False, save=False, hide_negative=False, tol_cracks=10e-5):
+def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, stereotomy=False,
+                 save=False, hide_negative=False, tol_cracks=10e-5):
     """ Plot a FormDiagram in axis xz
 
     Parameters
@@ -404,7 +397,8 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     return plotter
 
 
-def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_width=10, plot_reactions=True, cracks=False, save=False, stereotomy=False, hide_cracks=False, hide_negative=False, tol_cracks=10e-5):
+def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_width=10, plot_reactions=True, cracks=False, save=False, stereotomy=False,
+                  hide_cracks=False, hide_negative=False, tol_cracks=10e-5):
     """ Plot multiple FormDiagrams in axis xz
 
     Parameters
@@ -459,7 +453,7 @@ def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_
     return plotter
 
 
-def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=False, colour=None, hide_cracks=False, tol_cracks = 10e-5):
+def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=False, colour=None, hide_cracks=False, tol_cracks=10e-5):
     vertices = []
     lines = []
     xs = []
@@ -473,7 +467,7 @@ def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, 
 
     for key in form.vertices():
         xs.append(form.vertex_coordinates(key)[0])
-        if form.vertex_attribute(key, 'is_fixed') == True:
+        if form.vertex_attribute(key, 'is_fixed'):
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
                 rz = abs(form.vertex_attribute(key, '_rz'))
@@ -689,7 +683,6 @@ def _draw_lines_arch(shape, stereotomy=False):
 
     lines_arch = []
     width_bounds = 0.8
-    width_voussoirs = width_bounds/2
     if shape.datashape['type'] == 'arch':
         discr = 100
         H = shape.datashape['H']
@@ -721,10 +714,6 @@ def _draw_lines_arch(shape, stereotomy=False):
                 })
         if stereotomy:
             for i in range(stereotomy + 1):
-                if i == 0 or i == stereotomy:
-                    width = width_bounds
-                else:
-                    width = width_voussoirs
                 i_arch = i/stereotomy*discr
                 angle_i = angle_init_e + i_arch * an_e
                 xi = xc - ri * math.cos(angle_i)
@@ -810,10 +799,10 @@ def _draw_lines_pointed_arch(shape):
 
     return lines_arch
 
+
 def _find_extreme_lines(shape):
 
     lines_extreme = []
-    H = shape.datashape['H']
     L = shape.datashape['L']
     thk = shape.datashape['thk']
     margin = 1.05
@@ -834,7 +823,8 @@ def _find_extreme_lines(shape):
     return lines_extreme
 
 
-def plot_gif_forms_and_shapes_xz(forms, shapes, radius=0.05, fix_width=False, max_width=10, plot_reactions=True, cracks=False, hide_negative=True, save=False, stereotomy=False, delay=0.5):
+def plot_gif_forms_and_shapes_xz(forms, shapes, radius=0.05, fix_width=False, max_width=10, plot_reactions=True, cracks=False, hide_negative=True, save=False,
+                                 stereotomy=False, delay=0.5):
     """ Plot multiple FormDiagrams in axis xz in a gif with different shapes.
 
     Parameters
@@ -926,7 +916,8 @@ def plot_gif_forms_and_shapes_xz(forms, shapes, radius=0.05, fix_width=False, ma
     return plotter
 
 
-def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, heights=False, show_edgeuv=False, save=None, thk=0.20, plot_reactions=False, joints=False, cracks=False, yrange=None, linestyle='solid'):
+def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, heights=False, show_edgeuv=False, save=None,
+                                  thk=0.20, plot_reactions=False, joints=False, cracks=False, yrange=None, linestyle='solid'):
     """ Plot of a 2D diagram in the XZ plane
 
     Parameters
@@ -975,7 +966,7 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
     xs = []
     reac_lines = []
 
-    if yrange == None:
+    if not yrange:
         edges_considered = list(form.edges())
         vertices_considered = list(form.vertices())
     else:
@@ -1010,11 +1001,10 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
 
     for key in vertices_considered:
         xs.append(form.vertex_coordinates(key)[0])
-        if form.vertex_attribute(key, 'is_fixed') == True:
+        if form.vertex_attribute(key, 'is_fixed'):
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
                 rz = abs(form.vertex_attribute(key, '_rz'))
-                signe_rz = rz/abs(rz)
                 rx = form.vertex_attribute(key, '_rx')
                 print(x, z, rx, rz)
                 reac_line = [x, z, x - z * rx / rz, 0.0]
@@ -1060,12 +1050,8 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
             'linestyle': linestyle
         })
 
-    try:
-        Re = form.attributes['Re']
-        Ri = form.attributes['Ri']
-    except:
-        Re = 1.1  # (max(xs) - min(xs))/2 + thk/2
-        Ri = 0.9  # (max(xs) - min(xs))/2 - thk/2
+    Re = form.attributes.get('Re', 1.1)
+    Ri = form.attributes.get('Ri', 0.9)
 
     xc = (max(xs) - min(xs))/2
     discr = 200
@@ -1080,17 +1066,17 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
                 'width': 0.5,
             })
         lines.append({
-                'start': [xc - Re,  0],
-                'end':   [xc - Ri, 0],
-                'color': '000000',
-                'width': 0.5,
-            })
+            'start': [xc - Re,  0],
+            'end':   [xc - Ri, 0],
+            'color': '000000',
+            'width': 0.5,
+        })
         lines.append({
-                'start': [xc + Re,  0],
-                'end':   [xc + Ri, 0],
-                'color': '000000',
-                'width': 0.5,
-            })
+            'start': [xc + Re,  0],
+            'end':   [xc + Ri, 0],
+            'color': '000000',
+            'width': 0.5,
+        })
 
     if plot_reactions:
         for reac_line in reac_lines:
@@ -1285,7 +1271,6 @@ def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     """
 
     lines = []
-    i = 0
 
     i_sym_max = 0
     for u, v in form.edges_where({'_is_edge': True}):
@@ -1296,7 +1281,7 @@ def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
             i_sym_max = i_sym
 
     from compas.utilities import rgb_to_hex
-    colormap = plt.cm.hsv  # gist_ncar nipy_spectral, Set1, Paired coolwarm
+    colormap = plt.cm.get_cmap('hsv')  # gist_ncar nipy_spectral, Set1, Paired coolwarm
     colors = [rgb_to_hex(colormap(i)[:3]) for i in linspace(0, 1.0, i_sym_max + 1)]
 
     for u, v in form.edges_where({'_is_edge': True}):
@@ -1335,6 +1320,7 @@ def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
 
     return plotter
 
+
 def plot_symmetry_vertices(form, radius=0.1, print_sym=True, fix_width=True, width=10, save=False):
     """ Extended plotting of a FormDiagram showing the symmetric relations in vertices.
 
@@ -1360,9 +1346,6 @@ def plot_symmetry_vertices(form, radius=0.1, print_sym=True, fix_width=True, wid
 
     """
 
-    lines = []
-    i = 0
-
     i_sym_max = 0
     for key in form.vertices():
         i_sym = form.vertex_attribute(key, 'sym_key')
@@ -1370,7 +1353,7 @@ def plot_symmetry_vertices(form, radius=0.1, print_sym=True, fix_width=True, wid
             i_sym_max = i_sym
 
     from compas.utilities import rgb_to_hex
-    colormap = plt.cm.hsv  # gist_ncar nipy_spectral, Set1, Paired coolwarm
+    colormap = plt.cm.get_cmap('hsv')  # gist_ncar nipy_spectral, Set1, Paired coolwarm
     colors = [rgb_to_hex(colormap(i)[:3]) for i in linspace(0, 1.0, i_sym_max + 1)]
     rad_colors = {}
     texts = {}

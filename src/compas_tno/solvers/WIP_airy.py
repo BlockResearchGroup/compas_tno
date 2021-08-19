@@ -233,7 +233,7 @@ def local_matrix_external(form, key, plot=False):
         kn.append(normalize_vector(edge)[:2])
         try:
             i_edge = uv_i[(v, key)]
-        except:
+        except BaseException:
             i_edge = uv_i[(key, v)]
         if form.is_edge_on_boundary(key, v) is False:
             uv_lg[j] = i_edge
@@ -313,7 +313,7 @@ def assembly_Cf(form, plot=False):
     for u, v in form.edges_on_boundary():
         try:
             ext_edges.append(uv_i[(u, v)])
-        except:
+        except BaseException:
             ext_edges.append(uv_i[(v, u)])
     edges_int = E - len(form.edges_on_boundary())
     print('Form has {0} interior edges\n   {1} bound edges\n   {2} total nodes\n   {3} boundaries nodes'.format(edges_int, len(ext_edges), N, len(form.vertices_on_boundary())))
@@ -333,7 +333,7 @@ def assembly_Cf(form, plot=False):
     for u, v in form.edges_on_boundary():
         try:
             i = uv_i[(u, v)]
-        except:
+        except BaseException:
             i = uv_i[(v, u)]
 
     return Cf
@@ -358,7 +358,7 @@ def A_heights(form):
                 try:
                     i_edge = uv_i[key, m]
                     h_ij = form.edge_length(key, m)
-                except:
+                except BaseException:
                     i_edge = uv_i[m, key]
                     h_ij = form.edge_length(m, key)
                 val = (zi - zm)/h_ij
@@ -384,7 +384,7 @@ def A_stress(form, Rm):
                 try:
                     i_edge = uv_i[key, m]
                     h_ij = form.edge_length(key, m)
-                except:
+                except BaseException:
                     i_edge = uv_i[m, key]
                     h_ij = form.edge_length(m, key)
                 Rmij = Rm[i_edge]
@@ -426,7 +426,7 @@ def hessian(form):
         for v in neighbors:
             try:
                 dfHi = form.edge_attribute((u, v), 'jump')
-            except:
+            except BaseException:
                 dfHi = form.edge_attribute((v, u), 'jump')
             hess += dfHi
         form.vertex_attribute(key, 'hessian', hess)

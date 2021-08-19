@@ -117,7 +117,7 @@ if buttress:
             try:
                 key = gkey_key[geometric_key(sp)]
                 b = ep - sp
-            except:
+            except BaseException:
                 key = gkey_key[geometric_key(ep)]
                 b = sp - ep
             form.vertex_attribute(key, name = 'b', value = [b[0], b[1]])

@@ -166,7 +166,7 @@ def set_b_constraint(form, bmax, printout):
             try:
                 [b_] = form.vertex_attributes(key, 'b')
                 b.append(b_)
-            except:
+            except BaseException:
                 pass
         b = array(b)
     else:
@@ -179,7 +179,7 @@ def set_b_constraint(form, bmax, printout):
 def set_joints_constraint(form, printout):
     try:
         joints = form.attributes['joints']
-    except:
+    except BaseException:
         joints = None
     if printout and joints:
         print('Constraints on the Joints set for {0} contacts.'.format(len(joints)))
@@ -193,7 +193,7 @@ def set_cracks_constraint(form, cracks, printout):
             if printout:
                 print('Cracks Definition')
                 print(cracks_lb, cracks_ub)
-        except:
+        except BaseException:
             cracks_lb = []
             cracks_ub = []
     else:

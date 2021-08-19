@@ -138,7 +138,7 @@ if __name__ == "__main__":
         u,v = pair
         try:
             index_bound.append(uv_i[(u,v)])
-        except:
+        except BaseException:
             index_bound.append(uv_i[(v,u)])
     zs = []
 

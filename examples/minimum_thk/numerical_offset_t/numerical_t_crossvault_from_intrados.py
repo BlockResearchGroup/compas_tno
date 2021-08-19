@@ -123,7 +123,7 @@ for discretisation in discretisations:
         # form = form.initialise_tna(plot=False)
         try:
             form = FormDiagram.from_json(save_form + '_lp_' + '.json')
-        except:
+        except BaseException:
             form.initialise_loadpath()
             form.to_json(save_form + '_lp_' + '.json')
         # plot_form(form).show()

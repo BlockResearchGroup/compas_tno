@@ -4,7 +4,8 @@ compas_tno
 
 .. rst-class:: lead
 
-This package performs masonry assessment by menans of NLP with Funicular Thrust Networks.
+This package applies Thrust Network Analysis assess masonry structures respecting the principles of Limit Analysis. 
+
 
 .. .. figure:: /_images/
      :figclass: figure
@@ -18,11 +19,14 @@ Table of Contents
    :maxdepth: 3
    :titlesonly:
 
-   Introduction <self>
+   index <self>
+   introduction
    gettingstarted
    tutorial
+   examples
    api
    license
+   citing
 
 
 Indices and tables

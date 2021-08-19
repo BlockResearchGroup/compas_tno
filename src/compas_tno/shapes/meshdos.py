@@ -33,8 +33,6 @@ class MeshDos(Mesh):
 
     """
 
-    __module__ = 'compas_tno.datastructures'
-
     def __init__(self):  # add 'is_outside': False as default
         super(Mesh, self).__init__()
 

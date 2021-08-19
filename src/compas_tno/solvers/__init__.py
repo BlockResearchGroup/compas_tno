@@ -9,17 +9,16 @@ compas_tno.solvers
     :toctree: generated/
     :nosignatures:
 
-    Analysis
 
 """
 from __future__ import absolute_import
 
-from .mma_numpy import *
-from .solver_MMA import *
-from .solver_scipy import *
-from .solver_IPOPT import *
-from .solver_pyOpt import *
-from .solver_MATLAB import *
-from .post_process import *
+from .mma_numpy import *  # noqa: F401 F403
+from .solver_MMA import *  # noqa: F401 F403
+from .solver_scipy import *  # noqa: F401 F403
+from .solver_IPOPT import *  # noqa: F401 F403
+from .solver_pyOpt import *  # noqa: F401 F403
+from .solver_MATLAB import *  # noqa: F401 F403
+from .post_process import *  # noqa: F401 F403
 
 __all__ = [name for name in dir() if not name.startswith('_')]

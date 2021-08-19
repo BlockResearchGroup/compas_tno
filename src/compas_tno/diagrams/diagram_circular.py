@@ -4,33 +4,41 @@ from compas.datastructures import Mesh
 from compas.geometry import intersection_line_line_xy
 
 
+__all__ = [
+    'create_circular_radial_form',
+    'create_circular_radial_spaced_form',
+    'create_circular_spiral_form',
+]
+
+
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
     """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.
 
     Parameters
     ----------
-    center : list
+    center : list, optional
         Planar coordinates of the form-diagram [xc, yc].
-
-    radius: float
+        The default values is ``[5.0, 5.0]``.
+    radius : float, optional
         Radius of the form-diagram
-
-    discretisation : list
+        The default values is ``5.0``.
+    discretisation : list, optional
         Number of meridians, and of spikes from the center on the dome form-diagram.
-
-    r_oculus: float
+        The default values is ``[8, 20]``.
+    r_oculus : float, optional
         Value of the radius of the oculus, if no oculus is present should be set to zero.
-
-    diagonal: float
+        The default values is ``0.0``.
+    diagonal : bool, optional
         Activate diagonal in the quads.
-
-    partial_diagonal: float
-        Activate partial diagonal in the quads.
+        The default values is ``False``.
+    partial_diagonal : bool, optional
+        Activate diagonals to the 'right' or 'left' in the patttern.
+        The default values is ``False``.
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form: FormDiagram
+        The FormDiagram generated.
 
     """
 
@@ -124,28 +132,29 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
 
     Parameters
     ----------
-    center : list
+    center : list, optional
         Planar coordinates of the form-diagram [xc, yc].
-
-    radius: float
+        The default values is ``[5.0, 5.0]``.
+    radius : float, optional
         Radius of the form-diagram
-
-    discretisation : list
+        The default values is ``5.0``.
+    discretisation : list, optional
         Number of meridians, and of spikes from the center on the dome form-diagram.
-
-    r_oculus: float
+        The default values is ``[8, 20]``.
+    r_oculus : float, optional
         Value of the radius of the oculus, if no oculus is present should be set to zero.
-
-    diagonal: float
+        The default values is ``0.0``.
+    diagonal : bool, optional
         Activate diagonal in the quads.
-
-    partial_diagonal: float
-        Activate partial diagonal in the quads.
+        The default values is ``False``.
+    partial_diagonal : bool, optional
+        Activate diagonals to the 'right' or 'left' in the patttern.
+        The default values is ``False``.
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form: FormDiagram
+        The FormDiagram generated.
 
     """
 
@@ -238,22 +247,23 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
 
     Parameters
     ----------
-    center : list
+    center : list, optional
         Planar coordinates of the form-diagram [xc, yc].
-
-    radius: float
+        The default values is ``[5.0, 5.0]``.
+    radius : float, optional
         Radius of the form-diagram
-
-    discretisation : list
+        The default values is ``5.0``.
+    discretisation : list, optional
         Number of meridians, and of spikes from the center on the dome form-diagram.
-
-    r_oculus: float
+        The default values is ``[8, 20]``.
+    r_oculus : float, optional
         Value of the radius of the oculus, if no oculus is present should be set to zero.
+        The default values is ``0.0``.
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form: FormDiagram
+        The FormDiagram generated.
 
     """
 

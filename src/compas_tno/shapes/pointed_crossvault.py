@@ -574,7 +574,7 @@ def circle_3points_xy(p1, p2, p3):
 def _sqrt(x):
     try:
         sqrt_x = math.sqrt(x)
-    except:
+    except BaseException:
         if x > -10e4:
             sqrt_x = math.sqrt(abs(x))
         else:

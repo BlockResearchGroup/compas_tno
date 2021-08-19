@@ -6,9 +6,6 @@ import scriptcontext as sc
 
 import compas_rhino
 
-from compas_tno.diagrams import FormDiagram
-
-
 __commandname__ = "TNO_form_assign_supports"
 
 

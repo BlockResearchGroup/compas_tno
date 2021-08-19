@@ -7,9 +7,10 @@ from compas_tno.plotters import plot_form
 # -----------------------------------------------------------
 
 data = {
-    'type': 'cross_with_diagonal',
+    'type': 'cross_diagonal',
     'xy_span': [[0, 10], [0, 10]],
     'discretisation': 10,
+    'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data)

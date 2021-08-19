@@ -56,7 +56,7 @@ class Shape(Datastructure):
 
     """
 
-    __module__ = 'compas_tno.shapes'
+    # __module__ = 'compas_tno.shapes'
 
     def __init__(self):
         super(Shape, self).__init__()
@@ -127,7 +127,6 @@ class Shape(Datastructure):
         self.extrados = MeshDos.from_data(dataextrados) if dataintrados else None
         self.middle = MeshDos.from_data(datamiddle) if dataintrados else None
 
-
     @classmethod
     def from_library(cls, data):
         """Construct a Shape from a library.
@@ -135,7 +134,7 @@ class Shape(Datastructure):
         Parameters
         ----------
         data : dictionary
-            Dictionary with the options to create the vault.
+            Dictionary with the settings to create the vault.
 
         Returns
         -------
@@ -205,7 +204,7 @@ class Shape(Datastructure):
             intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm, thk=thk)
         elif typevault == 'domicalvault':
             xy_span = data['xy_span']
-            center = [sum(xy_span[0])/2 , sum(xy_span[1])/2]
+            center = [sum(xy_span[0])/2, sum(xy_span[1])/2]
             radius = data.get('radius', None)
             intrados, extrados, middle = domical_vault(xy_span=xy_span, thk=thk, radius=radius, center=center, t=t, discretisation=discretisation)
 
@@ -227,7 +226,7 @@ class Shape(Datastructure):
         Parameters
         ----------
         data : dictionary
-            Dictionary with the options to create the vault.
+            Dictionary with the setttings to create the vault.
 
         Returns
         -------
@@ -280,7 +279,6 @@ class Shape(Datastructure):
 
         return shape
 
-
     @classmethod
     def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data=None):
         """Construct a Shape from meshes for intrados, extrados, and middle.
@@ -291,10 +289,12 @@ class Shape(Datastructure):
             Mesh for intrados.
         extrados : mesh
             Mesh for extrados.
-        middle : mesh
+        middle : mesh, optional
             Mesh for middle.
-        data : dict (None)
-            Dictionary with the data in required.
+            The default value is ``None``, in a case in which no middle surface is assigned
+        data : dict, optional
+            Dictionary with the data about the structure.
+            The default value is ``None``, no data is assigned.
 
         Returns
         -------
@@ -321,33 +321,33 @@ class Shape(Datastructure):
 
         return shape
 
-    # @classmethod
-    # def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
-    #     """Construct a Shape from a pointcloud.
+    @classmethod
+    def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pointcloud.
 
-    #     Parameters
-    #     ----------
-    #     intrados_pts : list
-    #         List of points collected in the intrados.
-    #     extrados : mesh
-    #         List of points collected in the extrados.
-    #     middle : mesh (None)
-    #         Mesh for middle.
-    #     data : dict (None)
-    #         Dictionary with the data in required.
+        Parameters
+        ----------
+        intrados_pts : list
+            List of points collected in the intrados.
+        extrados : mesh
+            List of points collected in the extrados.
+        middle : mesh (None)
+            Mesh for middle.
+        data : dict (None)
+            Dictionary with the data in required.
 
-    #     Returns
-    #     -------
-    #     Shape
-    #         A Shape object.
+        Returns
+        -------
+        Shape
+            A Shape object.
 
-    #     """
+        """
 
-    #     intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
-    #     extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
-    #     shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+        intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
+        extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
-    #     return shape
+        return shape
 
     @classmethod
     def from_middle(cls, middle, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
@@ -379,71 +379,71 @@ class Shape(Datastructure):
 
         return shape
 
-    @classmethod
-    def from_middle_pointcloud(cls, middle_pts, topology=None, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
-        """Construct a Shape from a pointcloud.
+    # @classmethod
+    # def from_middle_pointcloud(cls, middle_pts, topology=None, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
+    #     """Construct a Shape from a pointcloud.
 
-        Parameters
-        ----------
-        middle_pts : list
-            List of points collected in the intrados.
-        topology : mesh (None)
-            If a mesh is given the middle, intrados and extrados meshes will repeat the topology.
-        data : dict (None)
-            Dictionary with the data in required.
+    #     Parameters
+    #     ----------
+    #     middle_pts : list
+    #         List of points collected in the intrados.
+    #     topology : mesh (None)
+    #         If a mesh is given the middle, intrados and extrados meshes will repeat the topology.
+    #     data : dict (None)
+    #         Dictionary with the data in required.
 
-        Returns
-        -------
-        Shape
-            A Shape object.
+    #     Returns
+    #     -------
+    #     Shape
+    #         A Shape object.
 
-        """
+    #     """
 
-        if not topology:
-            middle = MeshDos.from_points_delaunay(middle_pts)
-        else:
-            middle = MeshDos.from_topology_and_pointcloud(topology, array(middle_pts))
-        if treat_creases:
-            middle.identify_creases_at_diagonals(xy_span=data['xy_span'])
-            middle.store_normals(correct_creases=True)
-        else:
-            middle.store_normals()
-        extrados_mesh = middle.offset_mesh(thk/2, direction='up')
-        intrados_mesh = middle.offset_mesh(thk/2, direction='down')
-        data['thk'] = thk
-        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+    #     if not topology:
+    #         middle = MeshDos.from_points_delaunay(middle_pts)
+    #     else:
+    #         middle = MeshDos.from_topology_and_pointcloud(topology, array(middle_pts))
+    #     if treat_creases:
+    #         middle.identify_creases_at_diagonals(xy_span=data['xy_span'])
+    #         middle.store_normals(correct_creases=True)
+    #     else:
+    #         middle.store_normals()
+    #     extrados_mesh = middle.offset_mesh(thk/2, direction='up')
+    #     intrados_mesh = middle.offset_mesh(thk/2, direction='down')
+    #     data['thk'] = thk
+    #     shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
-        return shape
+    #     return shape
 
-    @classmethod
-    def from_pointcloud_and_formdiagram(cls, form, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
-        """Construct a Shape from a pointcloud and a formdiagram that will have its topology copied.
+    # @classmethod
+    # def from_pointcloud_and_formdiagram(cls, form, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+    #     """Construct a Shape from a pointcloud and a formdiagram that will have its topology copied.
 
-        Parameters
-        ----------
-        form: FormDiagram
-            Form Diagram with the topology to be used.
-        intrados_pts : list
-            List of points collected in the intrados.
-        extrados : mesh
-            List of points collected in the extrados.
-        middle : mesh (None)
-            Mesh for middle.
-        data : dict (None)
-            Dictionary with the data in required.
+    #     Parameters
+    #     ----------
+    #     form: FormDiagram
+    #         Form Diagram with the topology to be used.
+    #     intrados_pts : list
+    #         List of points collected in the intrados.
+    #     extrados : mesh
+    #         List of points collected in the extrados.
+    #     middle : mesh (None)
+    #         Mesh for middle.
+    #     data : dict (None)
+    #         Dictionary with the data in required.
 
-        Returns
-        -------
-        Shape
-            A Shape object.
+    #     Returns
+    #     -------
+    #     Shape
+    #         A Shape object.
 
-        """
+    #     """
 
-        intrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(intrados_pts))
-        extrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(extrados_pts))
-        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+    #     intrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(intrados_pts))
+    #     extrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(extrados_pts))
+    #     shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
-        return shape
+    #     return shape
 
     @classmethod
     def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
@@ -514,17 +514,7 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_rhinosurface(cls):
-        ''' Work in progress'''
-        NotImplementedError
-
-    @classmethod
-    def from_rhinomesh(cls, data):
-        ''' Work in progress'''
-        NotImplementedError
-
-    @classmethod
-    def from_assembly():
+    def from_assembly(self):
         NotImplementedError
 
     def add_damage_from_meshes(self, intrados, extrados):
@@ -565,7 +555,7 @@ class Shape(Datastructure):
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
                 t = self.datashape['t']
-            except:
+            except BaseException:
                 print('No t is assigned to vertices in intrados.')
                 t = None
             if t is not None:
@@ -610,7 +600,7 @@ class Shape(Datastructure):
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
                 t = self.datashape['t']
-            except:
+            except BaseException:
                 print('No t is assigned to vertices in intrados.')
                 t = None
             if t is not None:
@@ -637,7 +627,7 @@ class Shape(Datastructure):
             thk = self.datashape['thk']
             area = middle.area()
             total_selfweight = thk * area * ro
-        except:
+        except BaseException:
             intrados = self.intrados
             extrados = self.extrados
             total_selfweight = 0

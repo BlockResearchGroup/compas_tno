@@ -29,12 +29,12 @@ def find_independents(E):
 
     Parameters
     ----------
-    array : E
+    E : array
         Equilibrium matrix.
 
     Returns
     -------
-    list : ind
+    ind : list
         Independent columns.
 
     """
@@ -71,15 +71,14 @@ def independents_exclude(E, outs):
 
     Parameters
     ----------
-    array : E
+    E : array
         Equilibrium matrix.
-
-    list : outs
-        List to exclude.
+    outs : list
+        List of edges (columns in the matrix) to exclude.
 
     Returns
     -------
-    list : ind
+    ind : list
         Independent columns.
 
     """
@@ -110,16 +109,16 @@ def independents_include(E, ins):
 
     Parameters
     ----------
-    array : E
+    E : array
         Equilibrium matrix.
-
-    list : ins
-        List to include.
+    ins : list
+        List of edges (columns in the matrix) to include.
 
     Returns
     -------
-    list : ind
+    ind : list
         Independent columns.
+
 
     """
 
@@ -159,18 +158,16 @@ def inds_incl_excl(E, ins, outs):
 
     Parameters
     ----------
-    array : E
+    E : array
         Equilibrium matrix.
-
-    list : outs
-        List to exclude.
-
-    list : ins
-        List to include.
+    ins : list
+        List of edges (columns in the matrix) to include.
+    outs : list
+        List of edges (columns in the matrix) to exclude.
 
     Returns
     -------
-    list : ind
+    ind : list
         Independent columns.
 
     """
@@ -218,15 +215,15 @@ def check_independents(args_inds, tol=0.001):
 
     Parameters
     ----------
-    list : args_inds
+    args_inds : list
         Arguments from the optimisation.
-
-    tol : float (0.001)
+    tol : float, optional
         Allowed error.
+        The default values is ``0.001``.
 
     Returns
     -------
-    bool : checked
+    checked : bool
         True if independents are checked.
 
     """
@@ -253,14 +250,15 @@ def check_horizontal(E, p):
 
     Parameters
     ----------
-    array : E
+    E : array
         Equilibrium matrix.
-    array : p
+    p : array
         Vector of horizontal loads.
+    
     Returns
     -------
-    bool : checked
-        True if loads can be taken.
+    checked : bool
+        True if independents are checked.
 
     """
 

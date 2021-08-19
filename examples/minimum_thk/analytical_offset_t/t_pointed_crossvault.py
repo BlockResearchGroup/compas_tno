@@ -88,7 +88,7 @@ print(pz_open_edge)
 save_lp = compas_tno.get('lp.json')
 try:
     form.from_json(save_lp)
-except:
+except BaseException:
     form = form.initialise_loadpath()
     form.to_json(save_lp)
 # plot_form(form).show()

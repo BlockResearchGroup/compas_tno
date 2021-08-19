@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 pz_radial = gkey_pz[gkey]
                 form.vertex_attribute(key, 'pz', pz_radial)
                 form.vertex_attribute(key, 'px', pz_radial*px)
-            except:
+            except BaseException:
                 print(gkey)
             if form.vertex_attribute(key, 'is_fixed') == True:
                 form.vertex_attribute(key, 'z', gkey_zb[gkey])
@@ -108,7 +108,7 @@ if __name__ == "__main__":
             try:
                 q_radial = mid_q[gkey]
                 form.edge_attribute((u,v), 'q', q_radial)
-            except:
+            except BaseException:
                 form.edge_attribute((u,v), 'q', 0.0)
 
         file_initial = PATH + '_lp.json'

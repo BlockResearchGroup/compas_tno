@@ -81,7 +81,8 @@ def RunCommand(is_interactive):
 
         data['xy_span'] = [[min(xy_coords[0]), max(xy_coords[0])], [min(xy_coords[1]), max(xy_coords[1])]]
 
-        layout = compas_rhino.rs.GetString("Set the type of shape (See docs)", "Cancel", ["crossvault", "pavillionvault", "parabolic_shell", "pointed_crossvault", "domicalvault", "Cancel"])
+        layout = compas_rhino.rs.GetString("Set the type of shape (See docs)", "Cancel", [
+                                           "crossvault", "pavillionvault", "parabolic_shell", "pointed_crossvault", "domicalvault", "Cancel"])
         if not layout:
             return
         if layout == "Cancel":

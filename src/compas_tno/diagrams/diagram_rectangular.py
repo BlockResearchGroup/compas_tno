@@ -6,24 +6,34 @@ from compas.geometry import rotate_points_xy
 from compas.datastructures import Mesh
 
 
+__all__ = [
+    'create_cross_form',
+    'create_cross_diagonal',
+    'create_cross_with_diagonal',
+    'create_fan_form',
+    'create_ortho_form',
+]
+
+
 def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
-    """ Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.
+    """ Helper to construct a FormDiagram based on with an orthogonal arrangement and main diagonal.
 
     Parameters
     ----------
-    xy_span : list
+    xy_span : list, optional
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-
-    discretisation: int
+        The default value is ``[[0.0, 10.0], [0.0, 10.0]]``.
+    discretisation: int, optional
         Set the density of the grid in x and y directions.
-
+        The default value is ``10``.
     fix : string
-        Option to select the constrained nodes: 'corners', 'all' are accepted.
+        Option to select the constrained nodes.
+        The default value is ``corners``, in which case only the corners are constrained
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram created.
 
     """
 
@@ -111,23 +121,27 @@ def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
 
 
 def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_bracing_modules=None, discretisation=10, fix='corners'):
-    """ Helper to construct a FormDiagram based on cross discretiastion diagonals.
+    """ Helper to construct a FormDiagram based on cross discretiastion including diagonals that go along the quads.
 
     Parameters
     ----------
-    xy_span : list
+    xy_span : list, optional
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-
-    discretisation: int
+        The default value is ``[[0.0, 10.0], [0.0, 10.0]]``.
+    partial_bracing_modules: int, optional
+        This define how many of the rows of quads should be diagonalised.
+        The default value is ``None``.
+    discretisation: int, optional
         Set the density of the grid in x and y directions.
-
+        The default value is ``10``.
     fix : string
-        Option to select the constrained nodes: 'corners', 'all' are accepted.
+        Option to select the constrained nodes.
+        The default value is ``corners``, in which case only the corners are constrained
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram created.
 
     """
 
@@ -230,6 +244,7 @@ def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], partial_braci
 
 
 def mirror_4x(line, line_hor, line_ver, lines):
+    """ Helper to mirror an object 4 times."""
 
     lines.append(line)
     a_mirror, b_mirror = mirror_points_line(line, line_hor)
@@ -243,6 +258,7 @@ def mirror_4x(line, line_hor, line_ver, lines):
 
 
 def mirror_8x(line, origin, line_hor, line_ver, lines):
+    """ Helper to mirror an object 8 times."""
 
     lines = mirror_4x(line, line_hor, line_ver, lines)
     rot = rotate_points_xy(line, math.pi/2, origin=origin)
@@ -252,23 +268,24 @@ def mirror_8x(line, origin, line_hor, line_ver, lines):
 
 
 def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='all'):
-    """ Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.
+    """ Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonals applied to all corners.
 
     Parameters
     ----------
-    xy_span : list
+    xy_span : list, optional
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-
-    discretisation: int
+        The default value is ``[[0.0, 10.0], [0.0, 10.0]]``.
+    discretisation: int, optional
         Set the density of the grid in x and y directions.
-
+        The default value is ``10``.
     fix : string
-        Option to select the constrained nodes: 'corners', 'all' are accepted.
+        Option to select the constrained nodes.
+        The default value is ``corners``, in which case only the corners are constrained
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram created.
 
     """
 
@@ -361,19 +378,20 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
 
     Parameters
     ----------
-    xy_span : list
+    xy_span : list, optional
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-
-    discretisation: int
+        The default value is ``[[0.0, 10.0], [0.0, 10.0]]``.
+    discretisation: int, optional
         Set the density of the grid in x and y directions.
-
+        The default value is ``10``.
     fix : string
-        Option to select the constrained nodes: 'corners', 'all' are accepted.
+        Option to select the constrained nodes.
+        The default value is ``corners``, in which case only the corners are constrained
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram created.
 
     """
 
@@ -478,24 +496,25 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
     return form
 
 
-def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,10], fix='corners'):
+def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
     """ Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.
 
     Parameters
     ----------
-    xy_span : list
+    xy_span : list, optional
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-
-    discretisation: int
+        The default value is ``[[0.0, 10.0], [0.0, 10.0]]``.
+    discretisation: int, optional
         Set the density of the grid in x and y directions.
-
+        The default value is ``10``.
     fix : string
-        Option to select the constrained nodes: 'corners', 'all' are accepted.
+        Option to select the constrained nodes.
+        The default value is ``corners``, in which case only the corners are constrained
 
     Returns
     -------
-    obj
-        FormDiagram.
+    form : FormDiagram
+        FormDiagram created.
 
     """
 
@@ -530,7 +549,7 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
             elif j == division_y and i < division_x:
                 lines.append([[xi, yi, 0.0], [xi + dx, yi, 0.0]])
 
-    #add edges closing
+    # add edges closing
 
     mesh = Mesh.from_lines(lines, delete_boundary_face=True)
     form = cls.from_mesh(mesh)

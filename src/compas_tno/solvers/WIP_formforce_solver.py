@@ -127,7 +127,7 @@ def optimise_fdm(form, plot = True, surf=False):
         try:
             step = stepsave
             incr = incrsave
-        except:
+        except BaseException:
             step = 10.0
             incr = 0.1
 

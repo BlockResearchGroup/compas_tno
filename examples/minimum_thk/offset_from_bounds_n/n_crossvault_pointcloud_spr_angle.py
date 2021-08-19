@@ -138,7 +138,7 @@ for discretisation in discretisations:
         # if j == 0:
         try:
             form = FormDiagram.from_json(save_form + '_lp_' + '.json')
-        except:
+        except BaseException:
             form.initialise_loadpath()
             form.to_json(save_form + '_lp_' + '.json')
         # plot_form(form).show()

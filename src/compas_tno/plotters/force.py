@@ -1,3 +1,4 @@
+from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 from compas_tna.diagrams import FormDiagram
 
@@ -53,7 +54,6 @@ def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_
     color = {}
     width = {}
     for key in force.edges():
-        u, v = key
         lengths[key] = '{0:.2f}'.format(force.form_edge_attribute(form, key, 'q'))
         if force.form_edge_attribute(form, key, '_is_external'):
             color[key] = '#00ff00'

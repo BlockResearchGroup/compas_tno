@@ -71,7 +71,7 @@ for key in form.vertices():
         target_key = key
 try:
     print('Key(s) Loaded: ', target_key)
-except:
+except BaseException:
     print('Did not get any key!')
 
 target_x  = L/2
@@ -83,7 +83,7 @@ for key in form.vertices():
         target_key2 = key
 try:
     print('Key(s) Loaded: ', target_key2)
-except:
+except BaseException:
     print('Did not get any key!')
 
 analysis.apply_pointed_load(target_key, load_mult_x, component='px')

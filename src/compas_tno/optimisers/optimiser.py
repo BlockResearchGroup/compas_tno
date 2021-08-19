@@ -24,7 +24,7 @@ class Optimiser(Datastructure):
 
     """
 
-    __module__ = 'compas_tno.optimisers'
+    # __module__ = 'compas_tno.optimisers'
 
     def __init__(self):
         self.settings = {

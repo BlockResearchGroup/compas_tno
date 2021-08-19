@@ -32,12 +32,12 @@ def z_from_form(mesh):
 
     Parameters
     ----------
-    form : obj
-        The FormDiagram.
+    form : FormDiagram
+        The FormDiagram with attributes relevant to the analysis (force densities, loads, fixities, etc).
 
     Returns
     -------
-    form : obj
+    form : FormDiagram
         The relaxed form diagram.
 
     """

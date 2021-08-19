@@ -285,7 +285,7 @@ for type_formdiagram in ['topology-crossbraced']:  # THIS CAN ONLY WORK IF WE AD
                     try:
                         form = FormDiagram.from_json(address_lp)
                         print('Loaded LP form diagram')
-                    except:
+                    except BaseException:
                         print('LP form diagram not found')
                         print(address_lp)
                         # form.selfweight_from_shape(vault)

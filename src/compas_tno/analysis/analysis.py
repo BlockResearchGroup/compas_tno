@@ -1,5 +1,7 @@
 import math
 
+from compas.data import Data
+
 from compas_tno.shapes import Shape
 import compas_tno
 import os
@@ -21,9 +23,6 @@ from compas_tno.utilities import apply_selfweight_from_pattern
 from compas_tno.utilities import get_shape_ub
 from compas_tno.utilities import get_shape_lb
 
-# from compas_tno.utilities import apply_symmetry
-# from compas_tno.utilities import apply_fill_load
-# from compas_tno.utilities import apply_pointed_load
 from compas_tno.utilities import apply_horizontal_multiplier
 from compas_tno.utilities import apply_envelope_from_shape
 
@@ -35,7 +34,7 @@ import time
 __all__ = ['Analysis']
 
 
-class Analysis(object):
+class Analysis(Data):
 
     """The ``Analysis`` class puts together the FormDiagram, the Shape and the Optimiser, assign loads, partial supports, cracks and much more to come...
 
@@ -78,7 +77,7 @@ class Analysis(object):
 
     """
 
-    __module__ = 'compas_tno.analysis'
+    # __module__ = 'compas_tno.analysis'
 
     def __init__(self):
         self.data = {}
@@ -127,30 +126,12 @@ class Analysis(object):
         return
 
     def apply_selfweight_from_pattern(self, pattern, plot=False):
-        """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram"""
+        """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
+
+            Warning, the base pattern has to coincide with nodes from the original form diagram.
+        """
 
         apply_selfweight_from_pattern(self.form, pattern, plot=plot)
-
-        return
-
-    def apply_symmetry(self, center=[5.0, 5.0, 0.0], axis_symmetry=None, correct_loads=True):
-        """Apply symmetry to the pattern based on the center point of the Form Diagram"""
-
-        apply_symmetry(self.form, center=center, axis_symmetry=axis_symmetry, correct_loads=correct_loads)
-
-        return
-
-    def apply_fill_load(self, plot=False):
-        """Apply fill load corresponding to the shape"""
-
-        apply_fill_load(self.form, self.shape, plot=plot)
-
-        return
-
-    def apply_pointed_load(self, keys, magnitudes, proportional=True, component='pz', component_get='pz'):
-        """Apply pointed load a node of the form diagram based on the shape"""
-
-        apply_pointed_load(self.form, keys=keys, magnitudes=magnitudes, proportional=proportional, component=component, component_get=component_get)
 
         return
 
@@ -326,7 +307,8 @@ class Analysis(object):
 
         return
 
-    def limit_analysis_GSF(self, thk, thk_reduction, span, thk_refined=None, limit_equal=0.01, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
+    def limit_analysis_GSF(self, thk, thk_reduction, span, thk_refined=None, limit_equal=0.01, fill_percentage=None, rollers_ratio=None,
+                           rollers_absolute=None, printout=True, plot=False, save_forms=None):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -342,7 +324,6 @@ class Analysis(object):
         last_min = 0
         last_max = 100
         last_thk_min = t0
-        last_thk_max = t0
         objectives = ['min', 'max']
         exitflag = 0
         address = None
@@ -388,7 +369,8 @@ class Analysis(object):
                     self.apply_envelope()
                     self.apply_reaction_bounds()
                     if fill_percentage:
-                        self.apply_fill_load()
+                        pass
+                        # self.apply_fill_load()
                     self.set_up_optimiser()
                     setup_time = time.time() - time0
                     self.run()
@@ -463,7 +445,8 @@ class Analysis(object):
 
         return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
 
-    def thk_minmax_GSF(self, thk_max, thk_step=0.05, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None, jump_minthk=False, swt_from_pattern=False):
+    def thk_minmax_GSF(self, thk_max, thk_step=0.05, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False,
+                       save_forms=None, jump_minthk=False, swt_from_pattern=False):
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -493,8 +476,6 @@ class Analysis(object):
             exitflag = 0
             setup_time = 0.0
             run_time = 0.0
-
-        # self.form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_14A=1.064177772475912_min_thk_t_0.2322171754922745.json')
 
         if exitflag == 0:
             thk_min = self.form.attributes['thk']
@@ -561,6 +542,7 @@ class Analysis(object):
                 self.shape.ro = ro
 
                 swt = self.shape.compute_selfweight()
+                swt0 = swt
 
                 # pzt = 0
                 # z = []
@@ -604,7 +586,8 @@ class Analysis(object):
                 self.apply_envelope()
                 self.apply_reaction_bounds()
                 if fill_percentage:
-                    self.apply_fill_load()
+                    pass
+                    # self.apply_fill_load()
                 self.set_up_optimiser()
                 setup_time = time.time() - time0
                 self.run()
@@ -632,7 +615,7 @@ class Analysis(object):
                     first_fail = True
                 else:
                     print('Failed Optimisation for [{0}] with thk: {1}'.format(self.optimiser.settings['objective'], thk))
-                    other_objective = 'min' if self.optimiser.settings['objective'] is 'max' else 'max'
+                    other_objective = 'min' if self.optimiser.settings['objective'] == 'max' else 'max'
                     if thk < thk_max:
                         if not first_fail:
                             thk = thk + thk_increase
@@ -707,7 +690,8 @@ class Analysis(object):
             T_over_swt = T/swt
             n_reduction = n - int(n_step*100)*math.floor(n*100.0/int(n_step*100))/100.0
             print('n (offset) | Min THK  |   Solved  |   Thrust |   T/W   |  n decr. |  Setup time  |   Run time')
-            print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4:.4f}   | {5:.2f}s  |   {6:.2f}s'.format(n, thk_min, T, T_over_swt, n_reduction, setup_time, run_time))
+            print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4:.4f}   | {5:.2f}s  |   {6:.2f}s'.format(n, thk_min, T, T_over_swt,
+                                                                                                                        n_reduction, setup_time, run_time))
 
             if plot:
                 plot_form(self.form, show_q=False, cracks=True).show()
@@ -770,6 +754,7 @@ class Analysis(object):
                 self.shape = Shape.from_meshes_and_formdiagram(self.form, intrados, extrados, middle=middle, data={'type': 'general', 't': t, 'thk': thk})
                 self.shape.ro = ro
                 swt = self.shape.compute_selfweight()
+                swt0 = swt
 
                 lumped_swt = self.form.lumped_swt()
                 if fill_percentage:
@@ -797,7 +782,8 @@ class Analysis(object):
                 self.apply_envelope()
                 self.apply_reaction_bounds()
                 if fill_percentage:
-                    self.apply_fill_load()
+                    pass
+                    # self.apply_fill_load()
                 self.set_up_optimiser()
                 setup_time = time.time() - time0
                 self.run()

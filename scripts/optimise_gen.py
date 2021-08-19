@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 # form.vertex_attribute(key, 'b', value = [0.10, 0.0] )
                 # print(form.vertex_attribute(key, 'b'))
             # print(x)
-            # except:
+            # except BaseException:
             #     pass
             # xs.append(x)
         #     print('LB: {0} - UB: {1}'.format(form.vertex_attribute(key,'lb'),form.vertex_attribute(key,'ub')))

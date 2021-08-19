@@ -58,7 +58,7 @@ for i in range(len(files_list)):
     for key in form.vertices():
         try:
             z_middle = form.vertex_attribute(key, 'target')[0]
-        except:
+        except BaseException:
             z_middle = form.vertex_attribute(key, 'target')
         swt += form.vertex_attribute(key, 'pz')
         form2.vertex_attribute(key, 'z', z_middle)

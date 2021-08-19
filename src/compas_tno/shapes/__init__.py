@@ -14,20 +14,20 @@ compas_tno.shapes
 """
 from __future__ import absolute_import
 
-from .meshdos import MeshDos
-from .shape import Shape
-from .rectangular_topology import *
+from .meshdos import *  # noqa: F401 F403
+from .shape import *  # noqa: F401 F403
+from .rectangular_topology import *  # noqa: F401 F403
 
 import compas
 
 if not compas.IPY:
-    from .circular_arch import *
-    from .crossvault import *
-    from .dome import *
-    from .general import *
-    from .pavillionvault import *
-    from .pointed_arch import *
-    from .pointed_crossvault import *
-    from .shells import *
+    from .circular_arch import *  # noqa: F401 F403
+    from .crossvault import *  # noqa: F401 F403
+    from .dome import *  # noqa: F401 F403
+    from .general import *  # noqa: F401 F403
+    from .pavillionvault import *  # noqa: F401 F403
+    from .pointed_arch import *  # noqa: F401 F403
+    from .pointed_crossvault import *  # noqa: F401 F403
+    from .shells import *  # noqa: F401 F403
 
 __all__ = [name for name in dir() if not name.startswith('_')]

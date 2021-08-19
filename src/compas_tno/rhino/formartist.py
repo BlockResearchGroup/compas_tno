@@ -9,8 +9,6 @@ from math import fabs
 from compas_tno.rhino.diagramartist import DiagramArtist
 from compas.utilities import color_to_colordict
 
-import rhinoscriptsyntax as rs
-
 colordict = partial(color_to_colordict, colorformat='rgb', normalize=False)
 
 
@@ -185,8 +183,8 @@ class FormArtist(DiagramArtist):
                 if abs(z - lb) < tol_cracks:
                     if spheres:
                         sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
-                        rs.ObjectColor(sphere, self.color_vertex_intrados)
-                        rs.ObjectLayer(sphere, layer)
+                        compas_rhino.rs.ObjectColor(sphere, self.color_vertex_intrados)
+                        compas_rhino.rs.ObjectLayer(sphere, layer)
                     else:
                         intra_vertices.append({
                             'pos': [x, y, z],
@@ -196,8 +194,8 @@ class FormArtist(DiagramArtist):
                 if abs(z - ub) < tol_cracks:
                     if spheres:
                         sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
-                        rs.ObjectColor(sphere, self.color_vertex_extrados)
-                        rs.ObjectLayer(sphere, layer)
+                        compas_rhino.rs.ObjectColor(sphere, self.color_vertex_extrados)
+                        compas_rhino.rs.ObjectLayer(sphere, layer)
                     else:
                         extra_vertices.append({
                             'pos': [x, y, z],
@@ -259,7 +257,7 @@ class FormArtist(DiagramArtist):
     def draw_reactions(self, layer='Reactions', displacement=None, TextDot=False):
 
         layer = layer or self.layer
-        # rs.CurrentLayer(layer)
+        # compas_rhino.rs.CurrentLayer(layer)
         for key in self.diagram.vertices_where({'is_fixed': True}):
             xb, yb, zb = self.diagram.vertex_coordinates(key)
             if displacement:
@@ -280,15 +278,15 @@ class FormArtist(DiagramArtist):
                 id = compas_rhino.rs.AddLine(sp, ep)
                 compas_rhino.rs.ObjectName(id, str(norm))
                 compas_rhino.rs.ObjectLayer(id, layer)
-                # rs.CurrentLayer(reac_val)
+                # compas_rhino.rs.CurrentLayer(reac_val)
                 if TextDot:
-                    rs.AddTextDot('({0:.1f};{1:.1f})'.format(rx, ry), sp, layer=layer)
-                # rs.CurrentLayer(reac_layer)
+                    compas_rhino.rs.AddTextDot('({0:.1f};{1:.1f})'.format(rx, ry), sp, layer=layer)
+                # compas_rhino.rs.CurrentLayer(reac_layer)
 
         return
 
     def redraw(self):
 
-        rs.EnableRedraw(True)
+        compas_rhino.rs.EnableRedraw(True)
 
         return

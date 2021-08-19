@@ -38,7 +38,7 @@ try:
     file_open = PATH + '_' + objective + '_t=' + str(int(round(thck*1000))) + '.json'
     print(file_open)
     form = FormDiagram.from_json(file_open)
-except:
+except BaseException:
     file_open = PATH + '_' + objective + '_t=' + str(int(round(thck*100))) + '.json'
     print(file_open)
     form = FormDiagram.from_json(file_open)

@@ -1,20 +1,9 @@
-from compas_tna.diagrams import FormDiagram
-from compas_tna.diagrams import ForceDiagram
-
-from compas.utilities import geometric_key
-from compas.utilities import reverse_geometric_key
-
-from compas.geometry import closest_point_on_line
-
-from compas_tno.algorithms.equilibrium import z_from_form
-
-from compas_plotters import MeshPlotter
-from copy import deepcopy
-
 import math
 
-from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_form_xz
+from compas_tna.diagrams import FormDiagram
+from compas.utilities import geometric_key
+from compas_plotters import MeshPlotter
 
 
 __all__ = [
@@ -31,7 +20,7 @@ def check_constraints(form, show=False, lb_show=False, ub_show=False, tol=1e-6):
 
     try:
         t = form.attributes['offset']
-    except:
+    except BaseException:
         t = 0.0
     outside = {}
     lbs = {}
@@ -158,14 +147,14 @@ def null_edges(form, plot=False):
             vx = round(coord_v[0], 3)
             vy = round(coord_v[1], 3)
             mid_x, mid_y, _ = form.edge_midpoint(u, v)
-            if uy == vy and ((uy is not 10.0 and vy is not 10.0) or (uy is not 0.0 and vy is not 0.0)):
+            if uy == vy and ((uy != 10.0 and vy != 10.0) or (uy != 0.0 and vy != 0.0)):
                 if (mid_y > mid_x and mid_y < 10 - mid_x) or (mid_y < mid_x and mid_y > 10 - mid_x):
                     if uy == 5.0 and vy == 5.0 and ux > 0.01 and vx > 0.01 and ux < 9.99 and vx < 9.99:  # Special for TOP 2
                         pass
                     else:
                         null_edges.append((u, v))
                         activ += 1
-            if ux == vx and ((ux is not 10.0 and vx is not 10.0) or (ux is not 0.0 and vx is not 0.0)):
+            if ux == vx and ((ux != 10.0 and vx != 10.0) or (ux != 0.0 and vx != 0.0)):
                 if (mid_y > mid_x and mid_y > 10 - mid_x) or (mid_y < mid_x and mid_y < 10 - mid_x):
                     if ux == 5.0 and vx == 5.0 and uy > 0.01 and vy > 0.01 and uy < 9.99 and vy < 9.99:  # Special for TOP 2
                         pass

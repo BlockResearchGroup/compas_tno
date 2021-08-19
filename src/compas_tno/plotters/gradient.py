@@ -1,9 +1,5 @@
 from compas_plotters import MeshPlotter
 from numpy import array
-from compas_tna.diagrams import FormDiagram
-from compas_tna.diagrams import ForceDiagram
-from compas.utilities import geometric_key
-from math import sqrt
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -14,6 +10,7 @@ __email__ = 'mricardo@ethz.ch'
 __all__ = [
     'plot_grad',
 ]
+
 
 def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
     """ Extended load-path plotting of a the Gradient
@@ -44,8 +41,6 @@ def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
 
     for u, v in form.edges():
         qi = form.edge_attribute((u, v), 'dq')
-        l = form.edge_length(u, v)
-        uv_i = form.uv_index
 
         if simple:
             if qi > 0:

@@ -81,7 +81,7 @@ for key in form.vertices():  # Loop on all vertices
         target_key = key  # Assign store this key in a variable
 try:
     print('Key(s) Loaded: ', target_key)
-except:
+except BaseException:
     print('Did not get any key!')
 
 plotter = MeshPlotter(form, figsize=(10,10))

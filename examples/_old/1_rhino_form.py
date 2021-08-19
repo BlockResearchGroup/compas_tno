@@ -42,7 +42,7 @@ for j in [2]: # j = 1
         try:
             t = form.attributes['offset']
             print('Translation of {0:.2f}'.format(t))
-        except:
+        except BaseException:
             t = 0.0
             print('No offset!')
 
