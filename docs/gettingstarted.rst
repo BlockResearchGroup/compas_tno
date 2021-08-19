@@ -183,4 +183,3 @@ Library with extensive list of solvers, some adequate for nonlinear optimisation
 More information abobut the library can be found here:
 
 * http://www.pyopt.org/download.html
-

@@ -4,11 +4,41 @@ Citing
 
 .. code-block:: none
 
-    @inproceedings{MaiaAvelino2020,
+    @article{MaiaAvelinoCAS2021,
+        author  = "Maia Avelino, R. and Iannuzzo, A. and Van Mele, T. and Block, P. ",
+        title   = "Assessing the safety of vaulted masonry structures using Thrust Network Analysis",
+        journal = "Computers and Structures",
+        year    = "2021",
+        volume  = "",
+        number  = "",
+        pages   = "",
+        month   = "",
+        doi     = "",
+        note    = "accepted",
+    }
+
+.. code-block:: none
+
+    @article{MaiaAvelinoAPPSC2021,
+        author  = "Maia Avelino, R. and Iannuzzo, A. and Van Mele, T. and Block, P. ",
+        title   = "Parametric stability analysis of groin vaults",
+        journal = "Applied Sciences",
+        year    = "2021",
+        volume  = "11",
+        number  = "8",
+        pages   = "3560",
+        month   = "April",
+        doi     = "10.3390/app11083560",
+        note    = "Special Issue 'Theory and Modelling of Historic Masonry Architecture', Eds. C. Cennamo and C. Cusano",
+    }
+
+.. code-block:: none
+
+    @inproceedings{MaiaAvelinoSAHC2021,
         author    = "Maia Avelino, R. and Iannuzzo, A. and Van Mele, T. and Block, P.",
         title     = "New strategies to assess the safety of unreinforced masonry structures using Thrust Network Analysis",
-        booktitle = "Proceedings of the SAHC Symposium 2020",
-        year      = "2020",
+        booktitle = "Proceedings of the SAHC Symposium 2021",
+        year      = "2021",
         editor    = "",
         volume    = "",
         number    = "",
@@ -17,7 +47,7 @@ Citing
         address   = "Barcelona",
         month     = "August",
         doi       = "",
-        note      = "submitted for review",
+        note      = "",
     }
 
 .. code-block:: none

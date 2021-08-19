@@ -1,9 +1,3 @@
-# Credits
+# Authors
 
-## Project Lead
-
-* Ricardo Maia Avelino <<mricardo@ethz.ch>>
-
-## Contributors
-
-None yet. Why not be the first?
+- Ricardo Maia Avelino <<maia@arch.ethz.ch>> [@ricardoavelino](https://github.com/ricardoavelino)

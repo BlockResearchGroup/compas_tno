@@ -9,14 +9,6 @@ compas_tno
 .. toctree::
     :maxdepth: 1
 
-    compas_tno.algorithms
-    compas_tno.analysis
-    compas_tno.datastructures
-    compas_tno.diagrams
-    compas_tno.optimisers
-    compas_tno.shapes
-    compas_tno.plotters
-    compas_tno.viewers
 
 """
 
@@ -25,32 +17,23 @@ from __future__ import print_function
 import os
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Block Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
-__version__ = '0.1.0'
+__author__ = ["Ricardo Maia Avelino"]
+__copyright__ = "Block Research Group - ETH Zurich"
+__license__ = "MIT License"
+__email__ = "maia@arch.ethz.ch"
+__version__ = "0.1.0"
 
 
 HERE = os.path.dirname(__file__)
 
-HOME = os.path.abspath(os.path.join(HERE, '../../'))
-DATA = os.path.abspath(os.path.join(HOME, 'data'))
-DOCS = os.path.abspath(os.path.join(HOME, 'docs'))
-TEMP = os.path.abspath(os.path.join(HOME, 'temp'))
+HOME = os.path.abspath(os.path.join(HERE, "../../"))
+DATA = os.path.abspath(os.path.join(HOME, "data"))
+DOCS = os.path.abspath(os.path.join(HOME, "docs"))
+TEMP = os.path.abspath(os.path.join(HOME, "temp"))
 
 
-__all__ = ['HOME', 'DATA', 'DOCS', 'TEMP']
+__all__ = ["HOME", "DATA", "DOCS", "TEMP"]
 
-# from .algorithms import *
-# from .analysis import *
-# from .diagrams import *
-# from .optimisers import *
-# from .plotters import *
-# from .shapes import *
-# from .solvers import *
-# from .utilities import *
-# from .datastructures import *
 
 def get(filename):
     """Get the full path to one of the sample data files.

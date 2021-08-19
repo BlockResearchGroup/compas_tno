@@ -2,14 +2,31 @@
 compas_tno
 ********************************************************************************
 
+.. rst-class:: lead
+
+This package performs masonry assessment by menans of NLP with Funicular Thrust Networks.
+
+.. .. figure:: /_images/
+     :figclass: figure
+     :class: figure-img img-fluid
+
+
+Table of Contents
+=================
+
 .. toctree::
    :maxdepth: 3
    :titlesonly:
 
-   intro
+   Introduction <self>
    gettingstarted
    tutorial
-   examples
    api
    license
-   citing
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`

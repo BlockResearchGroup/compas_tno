@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 
 # C extensions
-# *.so
+*.so
 
 # Distribution / packaging
 .Python
@@ -12,7 +12,7 @@ env/
 build/
 develop-eggs/
 dist/
-# downloads/
+downloads/
 eggs/
 .eggs/
 lib/
@@ -45,7 +45,6 @@ nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
-.pytest_cache/
 
 # Translations
 *.mo
@@ -101,18 +100,21 @@ ENV/
 # mypy
 .mypy_cache/
 
-# ------------------------------------------------------------------------------
+# ==============================================================================
 # compas_tno
-# ------------------------------------------------------------------------------
-
-.DS_Store
-.vscode
+# ==============================================================================
 
 *.3dmbak
 *.rhl
-*.pickle
+*.rui_bak
 
 temp/**
 !temp/PLACEHOLDER
 
-docsource/**/generated/
+.DS_Store
+
+.vscode
+
+docs/api/generated/
+
+conda.recipe/
