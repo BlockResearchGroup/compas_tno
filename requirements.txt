@@ -1,1 +1,5 @@
-COMPAS
+COMPAS >= 1.7.1
+compas_view2
+compas_tna
+compas_ags
+ipopt

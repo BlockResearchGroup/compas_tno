@@ -52,14 +52,14 @@ print(form)
 # --------------------- 2. Create Optimiser still with no objective  ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10000.0  # Check if this is limiting the solution
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10000.0  # Check if this is limiting the solution
 
 hor_study = [0.0, 0.025, 0.05, 0.075, 0.10, 0.125, 0.15, 0.175, 0.20, 0.225, 0.25, 0.275, 0.293]
 sizes = []
@@ -110,7 +110,7 @@ for hor_mult in hor_study:
 
         # --------------------------- 4.1 Set The objective to min and run ---------------------------
 
-        optimiser.data['objective'] = 'min'
+        optimiser.settings['objective'] = 'min'
         analysis.set_up_optimiser()
         analysis.run()
 
@@ -127,7 +127,7 @@ for hor_mult in hor_study:
 
         # --------------------------- 5.1 Set The objective to max and run ---------------------------
 
-        optimiser.data['objective'] = 'max'
+        optimiser.settings['objective'] = 'max'
         analysis.set_up_optimiser()
         analysis.run()
 

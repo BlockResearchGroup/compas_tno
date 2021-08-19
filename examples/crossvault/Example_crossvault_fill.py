@@ -54,14 +54,14 @@ for fill_percentage in [1.00, 0.75]:
     # --------------------- 3. Create Optimiser ---------------------
 
     optimiser = Optimiser()
-    optimiser.data['library'] = 'Scipy'
-    optimiser.data['solver'] = 'slsqp'
-    optimiser.data['constraints'] = ['funicular', 'envelope']
-    optimiser.data['variables'] = ['ind', 'zb']
-    optimiser.data['printout'] = False
-    optimiser.data['plot'] = False
-    optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 10e+20
+    optimiser.settings['library'] = 'Scipy'
+    optimiser.settings['solver'] = 'slsqp'
+    optimiser.settings['constraints'] = ['funicular', 'envelope']
+    optimiser.settings['variables'] = ['ind', 'zb']
+    optimiser.settings['printout'] = False
+    optimiser.settings['plot'] = False
+    optimiser.settings['find_inds'] = True
+    optimiser.settings['qmax'] = 10e+20
 
 
     # --------------------- 4. Shape with initial THK ---------------------

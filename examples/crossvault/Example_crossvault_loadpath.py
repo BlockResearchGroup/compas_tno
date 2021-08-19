@@ -52,16 +52,16 @@ print(form)
 # --------------------- 3. Create Convex Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'MATLAB'
-optimiser.data['solver'] = 'SDPT3'
-optimiser.data['constraints'] = ['funicular']
-optimiser.data['variables'] = ['ind']
-optimiser.data['objective'] = 'loadpath'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 3000.0
-print(optimiser.data)
+optimiser.settings['library'] = 'MATLAB'
+optimiser.settings['solver'] = 'SDPT3'
+optimiser.settings['constraints'] = ['funicular']
+optimiser.settings['variables'] = ['ind']
+optimiser.settings['objective'] = 'loadpath'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 3000.0
+print(optimiser.settings)
 
 # -------------- 4. Create Analysis Model and Run Convex Opt --------------
 
@@ -72,7 +72,7 @@ analysis.run()
 plot_form(form, show_q=False).show()
 
 import os
-file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ optimiser.data['objective'] + '.json')
+file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ optimiser.settings['objective'] + '.json')
 form.to_json(file_address)
 
 # file_address = compas_tno.get('test.json')

@@ -31,7 +31,7 @@ def constr_wrapper(xopt, *args):
         z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
     if 't' in variables or 's' in variables or 'n' in variables:
         thk = xopt[-1].item()
-        t = shape.data['t']
+        t = shape.datashape['t']
 
     args = q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y
     z, q = zq_from_qid(q[ind], args)
@@ -73,32 +73,78 @@ def constr_wrapper_general(variables, M):
     if isinstance(M, list):
         M = M[0]
 
-    m = M.m
+    k = M.k
+    nb = M.nb
+    qid = variables[:k]
+    check = k
+    M.q = M.B.dot(qid)
+    thk = M.thk
+    t = M.shape.datashape['t']
 
-    if len(variables) > m:
-        M.q = variables[:m]
-        M.X[M.fixed] = variables[m:].reshape(-1, 3, order='F')
-    else:
-        M.q = variables
+    if 'xyb' in M.variables:
+        xyb = variables[check:check + 2*nb]
+        check = check + 2*nb
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[check: check + nb]
+        check = check + nb
+        M.X[M.fixed, [2]] = zb.flatten()
+    if 't' in M.variables:
+        thk = variables[check: check + 1]
+        check = check + 1
+    if 'lambd' in M.variables:
+        lambd = variables[check: check + 1]
+        M.P[:, [0]] = lambd * M.px0
+        M.P[:, [1]] = lambd * M.py0
+        check = check + 1
 
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cf)
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
-    constraints = zeros([0, 1])
+    constraints = zeros([0, 1])  # missing compression only constraint
 
-    # constraints in x
-    xmin = (M.X[:, 0] - M.xlimits[:, 0]).reshape(-1, 1)
-    xmax = (M.xlimits[:, 1] - M.X[:, 0]).reshape(-1, 1)
-    constraints = vstack([constraints, xmin, xmax])
+    if 'funicular' in M.constraints:
+        qmin = M.q.reshape(-1, 1) - M.qmin
+        qmax = M.qmax - M.q.reshape(-1, 1)
+        constraints = vstack([constraints, qmin, qmax])
 
-    # constraints in y
-    ymin = (M.X[:, 1] - M.ylimits[:, 0]).reshape(-1, 1)
-    ymax = (M.ylimits[:, 1] - M.X[:, 1]).reshape(-1, 1)
-    constraints = vstack([constraints, ymin, ymax])
+    if 'envelopexy' in M.constraints:
+        # constraints in x
+        xmin = (M.X[:, 0] - M.xlimits[:, 0]).reshape(-1, 1)
+        xmax = (M.xlimits[:, 1] - M.X[:, 0]).reshape(-1, 1)
+        constraints = vstack([constraints, xmin, xmax])
 
-    # constraints in z
-    zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)
-    zmax = (M.ub.flatten() - M.X[:, 2]).reshape(-1, 1)
-    constraints = vstack([constraints, zmin, zmax])
+        # constraints in y
+        ymin = (M.X[:, 1] - M.ylimits[:, 0]).reshape(-1, 1)
+        ymax = (M.ylimits[:, 1] - M.X[:, 1]).reshape(-1, 1)
+        constraints = vstack([constraints, ymin, ymax])
+
+    if 'envelope' in M.constraints:
+        # constraints in z
+        if 'adapted-envelope' in M.features:
+            M.ub, M.lb = ub_lb_update(M.X[:, 0], M.X[:, 1], thk, t, M.shape, None, None, M.s, M.variables)
+        elif 't' in M.variables:
+            M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, t, M.shape, None, None, M.s, M.variables)
+        else:
+            pass
+        zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)
+        zmax = (M.ub.flatten() - M.X[:, 2]).reshape(-1, 1)
+        constraints = vstack([constraints, zmin, zmax])
+
+    if 'reac_bounds' in M.constraints:
+        # constraints in reactions
+        if 't' in M.variables:
+            M.b = b_update(M.x0, M.y0, thk, M.fixed, M.shape, M.b, M.variables)
+        elif 'n' in M.variables:
+            raise NotImplementedError
+        else:
+            pass
+
+        CbQC = M.Cb.transpose().dot(diags(M.q.flatten())).dot(M.C)
+        R = CbQC.dot(M.X) - M.P[M.fixed]
+        Rx = abs(M.b[:, [0]].reshape(-1, 1)) - multiply(M.X[:, [2]][M.fixed] - M.s[M.fixed], abs(divide(R[:, [0]], R[:, [2]]).reshape(-1, 1)))  # >= 0
+        Ry = abs(M.b[:, [1]].reshape(-1, 1)) - multiply(M.X[:, [2]][M.fixed] - M.s[M.fixed], abs(divide(R[:, [1]], R[:, [2]]).reshape(-1, 1)))  # >= 0
+
+        constraints = vstack([constraints, Rx, Ry])
 
     return constraints.flatten()
 

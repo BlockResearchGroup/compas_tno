@@ -86,19 +86,19 @@ for discretisation in discretisations:
         # --------------------- 4. Create Minimisation Optimiser ---------------------
 
         optimiser = Optimiser()
-        optimiser.data['library'] = 'Scipy'
-        optimiser.data['solver'] = 'slsqp'
-        optimiser.data['constraints'] = ['funicular', 'envelope']
-        optimiser.data['variables'] = ['ind', 'zb', 't']
-        optimiser.data['objective'] = 't'
-        optimiser.data['min_thk'] = 0.0
-        optimiser.data['max_thk'] = thk*1.0
-        optimiser.data['printout'] = False
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 1000.0
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
+        optimiser.settings['library'] = 'Scipy'
+        optimiser.settings['solver'] = 'slsqp'
+        optimiser.settings['constraints'] = ['funicular', 'envelope']
+        optimiser.settings['variables'] = ['ind', 'zb', 't']
+        optimiser.settings['objective'] = 't'
+        optimiser.settings['min_thk'] = 0.0
+        optimiser.settings['max_thk'] = thk*1.0
+        optimiser.settings['printout'] = False
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 1000.0
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
 
         # --------------------- 5. Set up and run analysis ---------------------
 
@@ -133,7 +133,7 @@ for discretisation in discretisations:
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_deg=' + str(deg)
             save_form = os.path.join(folder, title)
 
-            save_address = save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json'
+            save_address = save_form + '_min_thk_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json'
             if save:
                 form.to_json(save_address)
 

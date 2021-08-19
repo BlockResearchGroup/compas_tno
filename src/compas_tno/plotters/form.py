@@ -24,7 +24,8 @@ __all__ = [
     'plot_independents',
     'plot_gif_forms_xz',
     'plot_gif_forms_and_shapes_xz',
-    'plot_sym_inds',
+    'plot_symmetry',
+    'plot_symmetry_vertices',
 ]
 
 
@@ -99,7 +100,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             text = str(u) + ',' + str(v)
             # text = str(i)
         elif show_q:
-            text = round(qi, 2)
+            text = round(form.edge_attribute((u, v), 'q'), 2)
         else:
             text = ''
 
@@ -381,13 +382,13 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     # q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     lines = []
 
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
 
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
         lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
         lines = lines + lines_arch + lines_form
 
-    if shape.data['type'] == 'pointed_arch':
+    if shape.datashape['type'] == 'pointed_arch':
         lines_pointed_arch = _draw_lines_pointed_arch(shape)
         lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
         lines = lines_form + lines_pointed_arch
@@ -436,7 +437,7 @@ def plot_forms_xz(forms, shape, radius=0.05, colours=None, fix_width=False, max_
     if not colours:
         colours = [None]*len(forms)
 
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
         lines = lines_arch
 
@@ -605,11 +606,11 @@ def plot_gif_forms_xz(forms, shape, radius=0.05, fix_width=False, max_width=10, 
     img_count = 0
     pattern = 'image_{}.png'
 
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
         discr = 100
-        H = shape.data['H']
-        L = shape.data['L']
-        thk = shape.data['thk']
+        H = shape.datashape['H']
+        L = shape.datashape['L']
+        thk = shape.datashape['thk']
         R = H / 2 + (L**2 / (8 * H))
         zc = R - H
         re = R + thk/2
@@ -689,11 +690,11 @@ def _draw_lines_arch(shape, stereotomy=False):
     lines_arch = []
     width_bounds = 0.8
     width_voussoirs = width_bounds/2
-    if shape.data['type'] == 'arch':
+    if shape.datashape['type'] == 'arch':
         discr = 100
-        H = shape.data['H']
-        L = shape.data['L']
-        thk = shape.data['thk']
+        H = shape.datashape['H']
+        L = shape.datashape['L']
+        thk = shape.datashape['thk']
         R = H / 2 + (L**2 / (8 * H))
         zc = R - H
         re = R + thk/2
@@ -757,12 +758,12 @@ def _draw_lines_pointed_arch(shape):
 
     lines_arch = []
     width_bounds = 0.8
-    if shape.data['type'] == 'pointed_arch':
+    if shape.datashape['type'] == 'pointed_arch':
         discr = 101
-        hc = shape.data['hc']
-        L = shape.data['L']
-        x0 = shape.data['x0']
-        thk = shape.data['thk']
+        hc = shape.datashape['hc']
+        L = shape.datashape['L']
+        x0 = shape.datashape['x0']
+        thk = shape.datashape['thk']
         R = 1/L * (hc**2 + L**2/4)
         re = R + thk/2
         ri = R - thk/2
@@ -812,9 +813,9 @@ def _draw_lines_pointed_arch(shape):
 def _find_extreme_lines(shape):
 
     lines_extreme = []
-    H = shape.data['H']
-    L = shape.data['L']
-    thk = shape.data['thk']
+    H = shape.datashape['H']
+    L = shape.datashape['L']
+    thk = shape.datashape['thk']
     margin = 1.05
 
     lines_extreme.append({         # Dictionary with the shape of the structure
@@ -870,7 +871,7 @@ def plot_gif_forms_and_shapes_xz(forms, shapes, radius=0.05, fix_width=False, ma
     img_count = 0
     pattern = 'image_{}.png'
 
-    if shapes[0].data['type'] == 'arch':
+    if shapes[0].datashape['type'] == 'arch':
         lines_arch = _draw_lines_arch(shapes[0], stereotomy=stereotomy)
         lines_extreme = _find_extreme_lines(shapes[0])
     lines, vertices = lines_and_points_from_form(forms[0], plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative)
@@ -1013,8 +1014,10 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
                 rz = abs(form.vertex_attribute(key, '_rz'))
+                signe_rz = rz/abs(rz)
                 rx = form.vertex_attribute(key, '_rx')
-                reac_line = [x, z, x + z * rx / rz, 0.0]
+                print(x, z, rx, rz)
+                reac_line = [x, z, x - z * rx / rz, 0.0]
                 reac_lines.append(reac_line)
 
     for u, v in edges_considered:
@@ -1256,7 +1259,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     return plotter
 
 
-def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, save=False):
+def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, save=False):
     """ Extended plotting of a FormDiagram focusing on showing the symmetric relations among independent edges
 
     Parameters
@@ -1287,6 +1290,8 @@ def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     i_sym_max = 0
     for u, v in form.edges_where({'_is_edge': True}):
         i_sym = form.edge_attribute((u, v), 'sym_key')
+        if i_sym is None:
+            raise NameError('Check if symmetry is applied to to the problem formulation.')
         if i_sym > i_sym_max:
             i_sym_max = i_sym
 
@@ -1325,6 +1330,63 @@ def plot_sym_inds(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
     # plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
 
     plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
+
+    return plotter
+
+def plot_symmetry_vertices(form, radius=0.1, print_sym=True, fix_width=True, width=10, save=False):
+    """ Extended plotting of a FormDiagram showing the symmetric relations in vertices.
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    width : bool
+        Width of the lines in the plot.
+    max_width : float
+        Maximum edge width.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    lines = []
+    i = 0
+
+    i_sym_max = 0
+    for key in form.vertices():
+        i_sym = form.vertex_attribute(key, 'sym_key')
+        if i_sym > i_sym_max:
+            i_sym_max = i_sym
+
+    from compas.utilities import rgb_to_hex
+    colormap = plt.cm.hsv  # gist_ncar nipy_spectral, Set1, Paired coolwarm
+    colors = [rgb_to_hex(colormap(i)[:3]) for i in linspace(0, 1.0, i_sym_max + 1)]
+    rad_colors = {}
+    texts = {}
+    for key in form.vertices():
+        colour = '666666'
+        txt = ''
+        i_sym = form.vertex_attribute(key, 'sym_key')
+        colour = colors[i_sym]
+        if print_sym:
+            txt = str(i_sym)
+        texts[key] = txt
+        rad_colors[key] = colour
+
+    plotter = MeshPlotter(form, figsize=(10, 10))
+    plotter.draw_edges()
+    plotter.draw_vertices(facecolor=rad_colors, radius=radius, text=texts)
     if save:
         plotter.save(save)
 

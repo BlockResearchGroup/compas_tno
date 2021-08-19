@@ -55,14 +55,14 @@ for fill_percentage in [0.80]:
     # --------------------- 3. Create Optimiser ---------------------
 
     optimiser = Optimiser()
-    optimiser.data['library'] = 'IPOPT'
-    optimiser.data['solver'] = 'IPOPT'
-    optimiser.data['constraints'] = ['funicular', 'envelope']
-    optimiser.data['variables'] = ['ind', 'zb']
-    optimiser.data['printout'] = False
-    optimiser.data['plot'] = False
-    optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 10e+20
+    optimiser.settings['library'] = 'IPOPT'
+    optimiser.settings['solver'] = 'IPOPT'
+    optimiser.settings['constraints'] = ['funicular', 'envelope']
+    optimiser.settings['variables'] = ['ind', 'zb']
+    optimiser.settings['printout'] = False
+    optimiser.settings['plot'] = False
+    optimiser.settings['find_inds'] = True
+    optimiser.settings['qmax'] = 10e+20
 
 
     # --------------------- 4. Shape with initial THK ---------------------

@@ -1,14 +1,31 @@
-
-
 from numpy import zeros
 from numpy import array
+from numpy import ones
 import math
-from math import sin, cos
-# from compas.datastructures import Mesh
-from compas_tno.datastructures import MeshDos
+
+from compas_tno.shapes import MeshDos
 from compas.datastructures import mesh_delete_duplicate_vertices
 
-from numpy import ones
+
+__all__ = [
+    'dome_heightfields_proxy',
+    'set_dome_heighfield',
+    'set_dome_with_spr',
+    'set_dome_polar_coord',
+    'geom_dome',
+    'dome_zt_update',
+    'dome_ub_lb_update',
+    'dome_dub_dlb',
+    'dome_b_update',
+    'dome_db',
+    'dome_b_update_with_n',
+    'dome_db_with_n'
+]
+
+
+def dome_heightfields_proxy(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], *args, **kwargs):
+    intrados, extrados, middle = set_dome_heighfield(center=center, radius=radius, thk=thk, t=t, discretisation=discretisation)
+    return intrados.to_data(), extrados.to_data(), middle.to_data()
 
 
 def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], expanded=False):
@@ -352,9 +369,9 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
 
 
 def geom_dome(p0, ro, theta, phi):
-    x = ro * sin(theta) * cos(phi)
-    y = ro * sin(theta) * sin(phi)
-    z = ro * cos(theta)
+    x = ro * math.sin(theta) * math.cos(phi)
+    y = ro * math.sin(theta) * math.sin(phi)
+    z = ro * math.cos(theta)
     point = [p0[0] + x, p0[1] + y, p0[2] + z]
     return point
 
@@ -402,17 +419,25 @@ def dome_dub_dlb(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
     re = radius + thk/2
     dub = zeros((len(x), 1))
     dlb = zeros((len(x), 1))
+    dubdx = zeros((len(x), len(x)))
+    dubdy = zeros((len(x), len(x)))
+    dlbdx = zeros((len(x), len(x)))
+    dlbdy = zeros((len(x), len(x)))
 
     for i in range(len(x)):
         zi2 = ri**2 - (x[i] - xc)**2 - (y[i] - yc)**2
         ze2 = re**2 - (x[i] - xc)**2 - (y[i] - yc)**2
         ze = math.sqrt(ze2)
         dub[i] = 1/2 * re/ze
+        dubdx[i, i] = 1/2/ze * -2 * (x[i] - xc)
+        dubdy[i, i] = 1/2/ze * -2 * (y[i] - yc)
         if zi2 > 0.0:
             zi = math.sqrt(zi2)
             dlb[i] = -1/2 * ri/zi
+            dlbdx[i, i] = 1/2/zi * -2 * (x[i] - xc)
+            dlbdy[i, i] = 1/2/zi * -2 * (y[i] - yc)
 
-    return dub, dlb
+    return dub, dlb, dubdx, dubdy, dlbdx, dlbdy
 
 
 def dome_b_update(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):

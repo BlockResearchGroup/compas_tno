@@ -22,10 +22,14 @@ compas_tno.algorithms
 """
 from __future__ import absolute_import
 
-from .equilibrium import *
-from .equilibrium_pytorch import *
-from .independents import *
-from .smoothing import *
+import compas
+
+if not compas.IPY:
+    from .equilibrium import *
+    # from .equilibrium_pytorch import *
+    from .independents import *
+    from .smoothing import *
+    from .graphstatics import *
 
 
 __all__ = [name for name in dir() if not name.startswith('_')]

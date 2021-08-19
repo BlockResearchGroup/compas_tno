@@ -81,19 +81,19 @@ print(form)
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope']
-optimiser.data['variables'] = ['ind', 'zb', 's']
-optimiser.data['objective'] = 's'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-optimiser.data['thk'] = thk
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'SLSQP'
+optimiser.settings['constraints'] = ['funicular', 'envelope']
+optimiser.settings['variables'] = ['ind', 'zb', 's']
+optimiser.settings['objective'] = 's'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+optimiser.settings['thk'] = thk
+print(optimiser.settings)
 
 # --------------------------- 3.2 Run optimisation with scipy ---------------------------
 

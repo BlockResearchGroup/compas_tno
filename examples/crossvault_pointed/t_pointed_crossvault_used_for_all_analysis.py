@@ -144,26 +144,26 @@ for type_formdiagram in diagrams:
 
         optimiser = Optimiser()
         if solver == 'SLSQP':
-            optimiser.data['library'] = 'Scipy'
-            optimiser.data['solver'] = 'SLSQP'
+            optimiser.settings['library'] = 'Scipy'
+            optimiser.settings['solver'] = 'SLSQP'
         else:
-            optimiser.data['library'] = 'IPOPT'
-            optimiser.data['solver'] = 'IPOPT'
-        optimiser.data['max_iter'] = 2000
-        optimiser.data['constraints'] = ['funicular', 'envelope']
-        optimiser.data['printout'] = True  # True
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 10e+10
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
-        optimiser.data['max_thk'] = thk * 1.0
+            optimiser.settings['library'] = 'IPOPT'
+            optimiser.settings['solver'] = 'IPOPT'
+        optimiser.settings['max_iter'] = 2000
+        optimiser.settings['constraints'] = ['funicular', 'envelope']
+        optimiser.settings['printout'] = True  # True
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 10e+10
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
+        optimiser.settings['max_thk'] = thk * 1.0
         if minimise_thickness:
-            optimiser.data['objective'] = 't'
-            optimiser.data['variables'] = ['ind', 'zb', 't']
+            optimiser.settings['objective'] = 't'
+            optimiser.settings['variables'] = ['ind', 'zb', 't']
         else:
-            optimiser.data['objective'] = 'bestfit'
-            optimiser.data['variables'] = ['ind', 'zb']
+            optimiser.settings['objective'] = 'bestfit'
+            optimiser.settings['variables'] = ['ind', 'zb']
 
         for i in range(len(R)):
 
@@ -238,10 +238,10 @@ for type_formdiagram in diagrams:
 
                 compute_initial_point = False
 
-                optimiser.data['max_thk'] = thk_min
+                optimiser.settings['max_thk'] = thk_min
                 # if radius == 7.5:
-                #     optimiser.data['max_thk'] = 0.2419
-                #     optimiser.data['max_iter'] = 500
+                #     optimiser.settings['max_thk'] = 0.2419
+                #     optimiser.settings['max_iter'] = 500
                 tmin_reduced = thk_min
                 print('Constraining it for:', tmin_reduced)
                 thk = tmin_reduced

@@ -16,11 +16,6 @@ import math
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_form_xz
 
-__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__   = 'MIT License'
-__email__     = 'mricardo@ethz.ch'
-
 
 __all__ = [
     'check_constraints',
@@ -32,7 +27,7 @@ __all__ = [
 ]
 
 
-def check_constraints(form, show=False, lb_show=False, ub_show=False, tol = 1e-6):
+def check_constraints(form, show=False, lb_show=False, ub_show=False, tol=1e-6):
 
     try:
         t = form.attributes['offset']
@@ -79,8 +74,8 @@ def check_constraints(form, show=False, lb_show=False, ub_show=False, tol = 1e-6
             plotter.draw_edges()
             plotter.show()
 
-
     return penalty
+
 
 def distance_target(form, method='least-squares'):
 
@@ -103,6 +98,7 @@ def distance_target(form, method='least-squares'):
 
     return dist
 
+
 def replicate_contraints(file, file_constraint):
 
     form = FormDiagram.from_json(file)
@@ -111,7 +107,7 @@ def replicate_contraints(file, file_constraint):
 
     for key_real in form.vertices():
         coord = form.vertex_coordinates(key_real)
-        gkey_proj = geometric_key([coord[0],coord[1],0.0])
+        gkey_proj = geometric_key([coord[0], coord[1], 0.0])
         gkey_planar[gkey_proj] = key_real
 
     for key in form_.vertices():
@@ -120,12 +116,13 @@ def replicate_contraints(file, file_constraint):
         ub = form_.vertex[key].get('ub', 0.0)
         if target < 10**(-4):
             target = 0.00
-        gkey = geometric_key([form_.vertex_coordinates(key)[0],form_.vertex_coordinates(key)[1], 0.0])
+        gkey = geometric_key([form_.vertex_coordinates(key)[0], form_.vertex_coordinates(key)[1], 0.0])
         form.vertex_attribute(gkey_planar[gkey], 'target', target)
         form.vertex_attribute(gkey_planar[gkey], 'lb', lb)
         form.vertex_attribute(gkey_planar[gkey], 'ub', ub)
 
     return form
+
 
 def interp_surf(form):
 
@@ -141,9 +138,10 @@ def interp_surf(form):
 
     from scipy import interpolate
 
-    surf = interpolate.interp2d(x, y, s, kind = 'linear')
+    surf = interpolate.interp2d(x, y, s, kind='linear')
 
     return surf
+
 
 def null_edges(form, plot=False):
 
@@ -151,31 +149,31 @@ def null_edges(form, plot=False):
     all_edges = []
 
     for u, v in form.edges():
-        if form.edge_attribute((u,v), '_is_external') == False and form.edge_attribute((u,v), '_is_edge') == True:
+        if form.edge_attribute((u, v), '_is_external') == False and form.edge_attribute((u, v), '_is_edge') == True:
             activ = 0
             coord_u = form.vertex_coordinates(u)
             coord_v = form.vertex_coordinates(v)
-            ux = round(coord_u[0],3)
-            uy = round(coord_u[1],3)
-            vx = round(coord_v[0],3)
-            vy = round(coord_v[1],3)
-            mid_x, mid_y, _ = form.edge_midpoint(u,v)
+            ux = round(coord_u[0], 3)
+            uy = round(coord_u[1], 3)
+            vx = round(coord_v[0], 3)
+            vy = round(coord_v[1], 3)
+            mid_x, mid_y, _ = form.edge_midpoint(u, v)
             if uy == vy and ((uy is not 10.0 and vy is not 10.0) or (uy is not 0.0 and vy is not 0.0)):
                 if (mid_y > mid_x and mid_y < 10 - mid_x) or (mid_y < mid_x and mid_y > 10 - mid_x):
-                    if uy == 5.0 and vy == 5.0 and ux > 0.01 and vx > 0.01 and ux < 9.99 and vx < 9.99: # Special for TOP 2
+                    if uy == 5.0 and vy == 5.0 and ux > 0.01 and vx > 0.01 and ux < 9.99 and vx < 9.99:  # Special for TOP 2
                         pass
                     else:
-                        null_edges.append((u,v))
+                        null_edges.append((u, v))
                         activ += 1
             if ux == vx and ((ux is not 10.0 and vx is not 10.0) or (ux is not 0.0 and vx is not 0.0)):
                 if (mid_y > mid_x and mid_y > 10 - mid_x) or (mid_y < mid_x and mid_y < 10 - mid_x):
-                    if ux == 5.0 and vx == 5.0 and uy > 0.01 and vy > 0.01 and uy < 9.99 and vy < 9.99: # Special for TOP 2
+                    if ux == 5.0 and vx == 5.0 and uy > 0.01 and vy > 0.01 and uy < 9.99 and vy < 9.99:  # Special for TOP 2
                         pass
                     else:
-                        null_edges.append((u,v))
+                        null_edges.append((u, v))
                         activ += 1
             if activ == 0:
-                all_edges.append((u,v))
+                all_edges.append((u, v))
 
     if plot:
         plotter = MeshPlotter(form, figsize=(10, 10))
@@ -209,8 +207,7 @@ def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
     return cons
 
 
-def create_cracks(form , dx =[[0.50, 0.55]], dy = [[-0.1, 0.1]], type = ['top'], view = False):
-
+def create_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top'], view=False):
     """ Create cracks on a form diagram to the nodes desired.
 
     Parameters
@@ -253,7 +250,8 @@ def create_cracks(form , dx =[[0.50, 0.55]], dy = [[-0.1, 0.1]], type = ['top'],
 
     return form
 
-def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0, tol = 1e-3):
+
+def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3):
 
     k_i = form.key_index()
 
@@ -271,28 +269,29 @@ def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0, to
     re = r + thk/2
     form.attributes['Re'] = re
     form.attributes['Ri'] = ri
-    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m / Number of Blocks: {6}'.format(2*r, 2*ri, 2*re, thk, (thk/ri), (thk/r),blocks))
+    print('SpanMid: {0:.2} m / SpanInt: {1:.2} m / SpanExt: {2:.2} m / Thickness: {3:.4} m / Ratio t/Ri: {4:.4} m / Ratio t/R: {5:.4} m / Number of Blocks: {6}'.format(2 *
+          r, 2*ri, 2*re, thk, (thk/ri), (thk/r), blocks))
 
     njoints = blocks+1
     joints = {}
     for j in range(njoints):
         theta = j/blocks*math.pi
-        xi = xc + ri * math.cos(theta) # takeout
+        xi = xc + ri * math.cos(theta)  # takeout
         zi = ri * math.sin(theta) + tol
         xe = xc + re * math.cos(theta)
-        ze = re * math.sin(theta) + tol # take out
-        xmax = max(xi,xe)
-        xmin = min(xi,xe)
+        ze = re * math.sin(theta) + tol  # take out
+        xmax = max(xi, xe)
+        xmin = min(xi, xe)
         possible_edges = []
-        for (u,v) in form.edges():
+        for (u, v) in form.edges():
             xu, xv = form.vertex_coordinates(u)[0], form.vertex_coordinates(v)[0]
-            if max(xu,xv) >= xmin and min(xu,xv) <= xmax:
-                possible_edges.append(tuple(sorted([k_i[u],k_i[v]])))
+            if max(xu, xv) >= xmin and min(xu, xv) <= xmax:
+                possible_edges.append(tuple(sorted([k_i[u], k_i[v]])))
                 if form.vertex_attribute(u, 'is_fixed') == True:
-                    possible_edges.append(tuple(sorted([-k_i[u],k_i[u]])))
+                    possible_edges.append(tuple(sorted([-k_i[u], k_i[u]])))
                 if form.vertex_attribute(v, 'is_fixed') == True:
-                    possible_edges.append(tuple(sorted([-k_i[v],k_i[v]])))
-        joints[j] = [[xi,y,zi],[xe,y,ze],set(possible_edges)]
+                    possible_edges.append(tuple(sorted([-k_i[v], k_i[v]])))
+        joints[j] = [[xi, y, zi], [xe, y, ze], set(possible_edges)]
         print(joints[j])
     form.attributes['joints'] = joints
 
@@ -300,27 +299,28 @@ def circular_joints(form , x0 = None, xf = None, blocks = 18, thk=0.5, t=0.0, to
         x, _, _ = form.vertex_coordinates(key)
         zt = math.sqrt(r**2 - (x-xc)**2)
         ze = math.sqrt(re**2 - (x-xc)**2) - t
-        form.vertex_attribute(key,'target',value=zt)
+        form.vertex_attribute(key, 'target', value=zt)
         zi2 = ri**2 - (x-xc)**2
         if zi2 < 0:
             zi = 0 - t
         else:
             zi = math.sqrt(zi2) - t
-        if form.vertex_attribute(key,'is_fixed') == True:
-            form.vertex_attribute(key,'lb',value=None)
-            form.vertex_attribute(key,'ub',value=None)
+        if form.vertex_attribute(key, 'is_fixed') == True:
+            form.vertex_attribute(key, 'lb', value=None)
+            form.vertex_attribute(key, 'ub', value=None)
         else:
-            form.vertex_attribute(key,'lb',value=zi)
-            form.vertex_attribute(key,'ub',value=ze)
+            form.vertex_attribute(key, 'lb', value=zi)
+            form.vertex_attribute(key, 'ub', value=ze)
         # form.vertex_attribute(key,'z',value=ze)
         if form.vertex_attribute(key, 'is_fixed') == True:
-            form.vertex_attribute(key, 'b', value = [thk/2,0.0])
+            form.vertex_attribute(key, 'b', value=[thk/2, 0.0])
         if x == x0:
             form.attributes['tmax'] = ze
 
     return form
 
-def rollers_on_openings(form, xy_span = [[0.0,10.0],[0.0,10.0]], max_f = 5.0, constraint_directions = 'all'):
+
+def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, constraint_directions='all'):
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]

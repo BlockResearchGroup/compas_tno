@@ -10,17 +10,17 @@ load_mult = 0.00
 load_increase = 0.01
 direction_loads = 'px'
 optimiser = Optimiser()
-optimiser.data['objective'] = 'max'
+optimiser.settings['objective'] = 'max'
 type_formdiagram = 'radial_fd'
 style_diagonals = 'straight'
-# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.data['objective']
+# title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.settings['objective']
 folder = compas_tno.get('/dome/') # Folder to Save the structure
 size_parameters = []
 size_min = []
 
 while load_mult <= 0.30:
-    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.data['objective']
-    # title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.data['objective']
+    title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.settings['objective']
+    # title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective']
     jsonpath = os.path.join(folder, title + '.json')
     form = FormDiagram.from_json(jsonpath)
     reactions(form, plot=False)

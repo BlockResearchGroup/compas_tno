@@ -105,15 +105,15 @@ plot_form(form_load, show_q=False).show()
 #--- If using LOADPATH
 
 # optimiser = Optimiser()
-# optimiser.data['library'] = 'MATLAB'
-# optimiser.data['solver'] = 'SDPT3'
-# optimiser.data['constraints'] = ['funicular']
-# optimiser.data['variables'] = ['ind']
-# optimiser.data['objective'] = 'loadpath'
-# optimiser.data['printout'] = True
-# optimiser.data['plot'] = False
-# optimiser.data['find_inds'] = True
-# optimiser.data['qmax'] = 10e+10
+# optimiser.settings['library'] = 'MATLAB'
+# optimiser.settings['solver'] = 'SDPT3'
+# optimiser.settings['constraints'] = ['funicular']
+# optimiser.settings['variables'] = ['ind']
+# optimiser.settings['objective'] = 'loadpath'
+# optimiser.settings['printout'] = True
+# optimiser.settings['plot'] = False
+# optimiser.settings['find_inds'] = True
+# optimiser.settings['qmax'] = 10e+10
 # analysis = Analysis.from_elements(dome, form, optimiser)
 # analysis.apply_selfweight_from_pattern(form_load, plot=True) # This adds selfweight from the "base pattern"
 # analysis.set_up_optimiser()
@@ -134,19 +134,19 @@ form_start = deepcopy(form)      # Keep this solution as starting point afterwar
 # --------------------- 4. Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
-print(optimiser.data)
+optimiser.settings['library'] = 'IPOPT'
+optimiser.settings['solver'] = 'IPOPT'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10e+10
+print(optimiser.settings)
 
 # --------------------------- 4.1 Set The objective to min and start loop ---------------------------
 
-for optimiser.data['objective'] in ['max']:
+for optimiser.settings['objective'] in ['max']:
 
     form = form_start
     load_mult = load_mult0
@@ -155,7 +155,7 @@ for optimiser.data['objective'] in ['max']:
     while exitflag == 0:
 
         t_over_R = thk/R
-        title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.data['objective']
+        title = 'Dome_Px=' + str(load_mult) + '_discr_' + str(discretisation) + '_' + type_formdiagram + '_' + style_diagonals + '_' + optimiser.settings['objective']
 
         load_json = os.path.join(folder, title + '.json')
         form = FormDiagram.from_json(load_json)
@@ -174,9 +174,9 @@ for optimiser.data['objective'] in ['max']:
             form.vertex_attribute(key, 'lb', - t)
         analysis.apply_reaction_bounds()
         if load_mult == 0.0:
-            optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
+            optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry']
         else:
-            optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
+            optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds', 'symmetry-horizontal']
         analysis.apply_hor_multiplier(load_mult, direction_loads)  # This line applies the horizontal multiplier
         analysis.set_up_optimiser()
         analysis.run()
@@ -193,7 +193,7 @@ for optimiser.data['objective'] in ['max']:
         if exitflag == 0:
             # if -1 * fopt > f0:
             form.to_json(os.path.join(folder, title + '.json'))
-            if optimiser.data['objective'] == 'min':
+            if optimiser.settings['objective'] == 'min':
                 forms_min.append(deepcopy(form))
                 solutions_min.append(fopt_over_weight)
                 size_parameters_min.append(load_mult)
@@ -209,7 +209,7 @@ for optimiser.data['objective'] in ['max']:
             print('\nOptimisation did not find a solution for multiplier:', load_mult)
             print('Last solved multiplier:', round(load_mult - load_increase, 4))
 
-    print('\n\nSolutions min and max so far, after running:', optimiser.data['objective'])
+    print('\n\nSolutions min and max so far, after running:', optimiser.settings['objective'])
     print(size_parameters_min)
     print(solutions_min)
     print(size_parameters_max)

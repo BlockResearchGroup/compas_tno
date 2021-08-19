@@ -13,7 +13,7 @@ from compas_tno.viewers import view_mesh
 from compas_tno.viewers import view_solution
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 from compas.geometry import normalize_vector
 from compas.geometry import sum_vectors
 from compas.geometry import norm_vector
@@ -106,18 +106,18 @@ form.initialise_loadpath()
 # --------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope']
-optimiser.data['variables'] = ['ind', 'zb', 't']
-optimiser.data['objective'] = 't'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope']
+optimiser.settings['variables'] = ['ind', 'zb', 't']
+optimiser.settings['objective'] = 't'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+print(optimiser.settings)
 
 # --------------------
 # Analysis

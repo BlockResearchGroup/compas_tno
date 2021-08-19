@@ -1,11 +1,18 @@
-from compas_tno.datastructures import MeshDos
-from compas.utilities import geometric_key
 from numpy import ones
 from numpy import zeros
 from numpy import array
-import math
-from compas_tno.shapes.crossvault import rectangular_topology
 from numpy import linspace
+
+from compas_tno.shapes import rectangular_topology
+from compas_tno.shapes import MeshDos
+
+import math
+
+
+__all__ = ['pointed_arch_shape',
+           'pointed_arch_ub_lb_update',
+           'pointed_arch_dub_dlb'
+           ]
 
 
 def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):

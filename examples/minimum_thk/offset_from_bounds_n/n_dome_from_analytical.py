@@ -11,7 +11,7 @@ from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
 from compas_tno.viewers import view_normals
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 import math
 from scipy import rand
 
@@ -108,17 +108,17 @@ for x_discr in [4, 8, 12, 16]:
         # --------------------- 4. Create Minimisation Optimiser ---------------------
 
         optimiser = Optimiser()
-        optimiser.data['library'] = 'Scipy'
-        optimiser.data['solver'] = 'SLSQP'
-        optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-        optimiser.data['variables'] = ['ind', 'zb', 'n']
-        optimiser.data['objective'] = 'n'
-        optimiser.data['printout'] = True
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 1000.0
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
+        optimiser.settings['library'] = 'Scipy'
+        optimiser.settings['solver'] = 'SLSQP'
+        optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+        optimiser.settings['variables'] = ['ind', 'zb', 'n']
+        optimiser.settings['objective'] = 'n'
+        optimiser.settings['printout'] = True
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 1000.0
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
 
         # --------------------- 5. Set up and run analysis ---------------------
 
@@ -146,7 +146,7 @@ for x_discr in [4, 8, 12, 16]:
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
 
-            form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+            form.to_json(save_form + '_min_thk_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json')
 
             sols[str(discretisation)] = thk_min
 

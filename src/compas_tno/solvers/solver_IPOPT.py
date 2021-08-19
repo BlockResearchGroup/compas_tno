@@ -1,13 +1,4 @@
-import ipopt
-from torch import tensor
-
-from compas_tno.algorithms import f_constraints_pytorch
-from compas_tno.algorithms import f_objective_pytorch
-from compas_tno.algorithms import compute_autograd
-from compas_tno.algorithms import compute_autograd_jacobian
-
-from compas_tno.algorithms import reactions
-from compas_tno.algorithms import zlq_from_qid
+import cyipopt
 
 from compas.utilities import geometric_key
 
@@ -23,7 +14,7 @@ from compas_tno.problems import gradient_fmax
 from compas_tno.problems import f_min_thrust
 from compas_tno.problems import f_max_thrust
 
-from .post_process import post_process_analysis
+from .post_process import post_process_general
 
 __author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
 __copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
@@ -132,22 +123,16 @@ def run_optimisation_ipopt(analysis):
 
     optimiser = analysis.optimiser
 
-    constraints = optimiser.data['constraints']
-    objective = optimiser.data['objective']
-    printout = optimiser.data.get('printout', False)
-    gradients = optimiser.data.get('gradient', False)
-    variables = optimiser.data['variables']
+    constraints = optimiser.settings['constraints']
+    objective = optimiser.settings['objective']
+    printout = optimiser.settings.get('printout', False)
+    gradients = optimiser.settings.get('gradient', False)
+    variables = optimiser.settings['variables']
 
     bounds = optimiser.bounds
     x0 = optimiser.x0
     g0 = optimiser.g0
-    if 'ind' in variables:
-        args = optimiser.args
-    else:
-        args = [optimiser.M]
-        optimiser.args = args
-
-    print(args)
+    args = [optimiser.M]
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
@@ -161,6 +146,13 @@ def run_optimisation_ipopt(analysis):
 
         EdinvEi = Edinv*Ei
         Edinv_p = Edinv.dot(p)
+
+        from torch import tensor
+
+        from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
+        from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
 
         EdinvEi_th = tensor(EdinvEi)
         Edinv_p_th = tensor(Edinv_p)
@@ -213,7 +205,7 @@ def run_optimisation_ipopt(analysis):
         cu[-nsym:] = [0.0]*nsym
         cl[-nsym:] = [0.0]*nsym
 
-    nlp = ipopt.problem(
+    nlp = cyipopt.problem(
         n=len(x0),
         m=len(g0),
         problem_obj=problem_obj,
@@ -249,7 +241,7 @@ def run_optimisation_ipopt(analysis):
     optimiser.niter = None  # Did not find a way to display number of iterations
     optimiser.message = info['status_msg']
 
-    post_process_analysis(analysis)
+    post_process_general(analysis)
 
     # g_final = fconstr(xopt, *args)
     # args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
@@ -283,7 +275,7 @@ def run_optimisation_ipopt(analysis):
     # analysis.form = form
     # reactions(form, plot=plot)
 
-    # summary = optimiser.data.get('summary', False)
+    # summary = optimiser.settings.get('summary', False)
 
     # if summary:
     #     print('\n' + '-' * 50)
@@ -316,13 +308,13 @@ def _nlp_options(nlp, optimiser):
     # nlp.addOption('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
     # nlp.addOption('max_iter', 500)
 
-    if not optimiser.data['printout']:
+    if not optimiser.settings['printout']:
         nlp.addOption('print_level', 0)
-    if optimiser.data.get('derivative_test', None):
+    if optimiser.settings.get('derivative_test', None):
         nlp.addOption('derivative_test', 'first-order')
         # nlp.addOption('derivative_test_perturbation') #, 10e-8
         # nlp.addOption('derivative_test_print_all', 'yes')
-    if optimiser.data.get('max_iter', None):
-        nlp.addOption('max_iter', optimiser.data['max_iter'])
+    if optimiser.settings.get('max_iter', None):
+        nlp.addOption('max_iter', optimiser.settings['max_iter'])
 
     return nlp

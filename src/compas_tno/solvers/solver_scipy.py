@@ -4,7 +4,6 @@ from scipy.optimize import shgo
 from compas.numerical import devo_numpy
 from compas.numerical import ga
 
-# from .post_process import post_process_analysis
 from .post_process import post_process_general
 
 import time
@@ -37,23 +36,20 @@ def run_optimisation_scipy(analysis):
     """
 
     optimiser = analysis.optimiser
-    solver = optimiser.data['solver']
-    variables = optimiser.data['variables']
+    solver = optimiser.settings['solver']
     fobj = optimiser.fobj
     fconstr = optimiser.fconstr
     fgrad = optimiser.fgrad
     fjac = optimiser.fjac
-    if 'ind' in variables:
-        args = optimiser.args
-    else:
-        args = [optimiser.M]
+    args = [optimiser.M]
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym, variables, shape_data = args[:50]
     bounds = optimiser.bounds
     x0 = optimiser.x0
-    printout = optimiser.data.get('printout', True)
-    grad_choice = optimiser.data.get('gradient', False)
-    jac_choice = optimiser.data.get('jacobian', False)
-    max_iter = optimiser.data.get('max_iter', 500)
+    printout = optimiser.settings.get('printout', True)
+    grad_choice = optimiser.settings.get('gradient', False)
+    jac_choice = optimiser.settings.get('jacobian', False)
+    max_iter = optimiser.settings.get('max_iter', 500)
+    callback = optimiser.settings.get('callback', None)
 
     if grad_choice is False:
         fgrad = None
@@ -63,7 +59,7 @@ def run_optimisation_scipy(analysis):
     start_time = time.time()
 
     if solver == 'slsqp' or solver == 'SLSQP':
-        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, fgrad, fjac, printout, fconstr, args, iter=max_iter)
+        fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, fgrad, fjac, printout, fconstr, args, max_iter, callback)
     elif solver == 'shgo':
         dict_constr = []
         for i in range(len(fconstr(x0, *args))):
@@ -100,17 +96,14 @@ def run_optimisation_scipy(analysis):
     optimiser.niter = niter
     optimiser.message = message
 
-    if 'ind' in variables:
-        post_process_analysis(analysis)
-    else:
-        post_process_general(analysis)
+    post_process_general(analysis)
 
     return analysis
 
 
-def _slsqp(fn, qid0, bounds, fprime, fprime_ieqcons, printout, fieq, args, iter):
+def _slsqp(fn, qid0, bounds, fprime, fprime_ieqcons, printout, fieq, args, iter, callback):
     pout = 2 if printout else 0
-    opt = fmin_slsqp(fn, qid0, args=args, disp=pout, fprime=fprime, f_ieqcons=fieq, fprime_ieqcons=fprime_ieqcons, bounds=bounds, full_output=1, iter=iter)
+    opt = fmin_slsqp(fn, qid0, args=args, disp=pout, fprime=fprime, f_ieqcons=fieq, fprime_ieqcons=fprime_ieqcons, bounds=bounds, full_output=1, iter=iter, callback=callback)
 
     return opt[1], opt[0], opt[3], opt[2], opt[4]
 

@@ -61,21 +61,21 @@ plot_form(form, show_q=False, fix_width=10).show()
 # --------------------- Create Optimiser ---------------------
 
 optimiser = Optimiser()
-# optimiser.data['library'] = 'MMA'
-# optimiser.data['solver'] = 'MMA'
-# optimiser.data['library'] = 'IPOPT'
-# optimiser.data['solver'] = 'IPOPT'
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = False
-optimiser.data['summary'] = False
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1e+3
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
+# optimiser.settings['library'] = 'MMA'
+# optimiser.settings['solver'] = 'MMA'
+# optimiser.settings['library'] = 'IPOPT'
+# optimiser.settings['solver'] = 'IPOPT'
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'SLSQP'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = False
+optimiser.settings['summary'] = False
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1e+3
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
 
 for hc in hc_list:
 

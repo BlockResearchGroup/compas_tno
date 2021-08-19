@@ -6,6 +6,14 @@ from numpy import array
 import math
 
 
+__all__ = ['arch_shape',
+           'arch_ub_lb_update',
+           'arch_dub_dlb',
+           'arch_b_update',
+           'arch_db'
+           ]
+
+
 def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
     """ Helper to create meshes to define upper and lower bounds of 2D arch.
 

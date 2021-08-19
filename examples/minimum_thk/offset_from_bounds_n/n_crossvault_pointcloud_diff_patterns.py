@@ -10,7 +10,7 @@ from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_normals
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 from compas.datastructures import mesh_delete_duplicate_vertices
 
 from scipy import rand
@@ -61,8 +61,11 @@ for discretisation in [14, 16, 18, 20]:
         for j in range(n * discretisation + 1):
             xy.append([i * span / (n * discretisation), j * span / (n * discretisation)])
 
-    z_ub = analytical_shape.get_ub_pattern(xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
-    z_lb = analytical_shape.get_lb_pattern(xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
+    from compas_tno.utilities import get_shape_ub_pattern
+    from compas_tno.utilities import get_shape_lb_pattern
+
+    z_ub = get_shape_ub_pattern(analytical_shape, xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
+    z_lb = get_shape_lb_pattern(analytical_shape, xy).reshape(-1, 1) + error * (2 * rand(len(xy), 1) - 1)
 
     for i in range(len(xy)):
         points_lb.append([xy[i][0], xy[i][1], float(z_lb[i])])
@@ -114,17 +117,17 @@ for discretisation in [14, 16, 18, 20]:
     # --------------------- 4. Create Minimisation Optimiser ---------------------
 
     optimiser = Optimiser()
-    optimiser.data['library'] = 'Scipy'
-    optimiser.data['solver'] = 'SLSQP'
-    optimiser.data['constraints'] = ['funicular', 'envelope']
-    optimiser.data['variables'] = ['ind', 'zb', 'n']
-    optimiser.data['objective'] = 'n'
-    optimiser.data['printout'] = True
-    optimiser.data['plot'] = False
-    optimiser.data['find_inds'] = True
-    optimiser.data['qmax'] = 1000.0
-    optimiser.data['gradient'] = gradients
-    optimiser.data['jacobian'] = gradients
+    optimiser.settings['library'] = 'Scipy'
+    optimiser.settings['solver'] = 'SLSQP'
+    optimiser.settings['constraints'] = ['funicular', 'envelope']
+    optimiser.settings['variables'] = ['ind', 'zb', 'n']
+    optimiser.settings['objective'] = 'n'
+    optimiser.settings['printout'] = True
+    optimiser.settings['plot'] = False
+    optimiser.settings['find_inds'] = True
+    optimiser.settings['qmax'] = 1000.0
+    optimiser.settings['gradient'] = gradients
+    optimiser.settings['jacobian'] = gradients
 
     # --------------------- 5. Set up and run analysis ---------------------
 
@@ -147,7 +150,7 @@ for discretisation in [14, 16, 18, 20]:
         title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method'
         save_form = os.path.join(folder, title)
 
-        form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+        form.to_json(save_form + '_min_thk_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json')
 
         sols[str(discretisation)] = thk_min
 

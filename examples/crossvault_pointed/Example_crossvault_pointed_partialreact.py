@@ -51,14 +51,14 @@ form = FormDiagram.from_library(data_diagram)
 # --------------------- Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'symmetry', 'envelope', 'R']  # Note addition of constraint on rollers
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = False
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'SLSQP'
+optimiser.settings['constraints'] = ['funicular', 'symmetry', 'envelope', 'R']  # Note addition of constraint on rollers
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = False
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10e+10
 
 for hc in hc_list:
 

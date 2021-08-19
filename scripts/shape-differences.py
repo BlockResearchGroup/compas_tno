@@ -5,7 +5,7 @@ from compas_tno.viewers import view_shapes
 from compas_tno.shapes.crossvault import crossvault_middle_update
 from compas_tno.shapes.crossvault import crossvault_ub_lb_update
 from numpy import array
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 from compas_plotters import MeshPlotter
 import math
 

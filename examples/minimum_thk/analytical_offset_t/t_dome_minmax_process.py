@@ -77,18 +77,18 @@ form.overview_forces()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'IPOPT'
-optimiser.data['solver'] = 'IPOPT'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb', 't']
-optimiser.data['objective'] = 't'
-optimiser.data['printout'] = False
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
-print(optimiser.data)
+optimiser.settings['library'] = 'IPOPT'
+optimiser.settings['solver'] = 'IPOPT'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb', 't']
+optimiser.settings['objective'] = 't'
+optimiser.settings['printout'] = False
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
+print(optimiser.settings)
 
 # --------------------- 5.1 Set up and run analysis for GSF ---------------------
 
@@ -114,11 +114,11 @@ title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation
 
 forms_address = os.path.join(folder, title)
 
-optimiser.data['printout'] = True
-# optimiser.data['qmax'] = 5.0
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['derivative_test'] = True
-optimiser.data['objective'] = 'min'
+optimiser.settings['printout'] = True
+# optimiser.settings['qmax'] = 5.0
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['derivative_test'] = True
+optimiser.settings['objective'] = 'min'
 
 # form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/min_max/dome_radial_fd_discr_[20, 16]qmax=5.json')
 

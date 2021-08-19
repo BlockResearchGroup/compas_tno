@@ -13,7 +13,7 @@ from compas_tno.viewers import view_mesh
 from compas_tno.viewers import view_solution
 from compas_tno.viewers import view_shapes_pointcloud
 from compas_tno.viewers import view_solution
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 from compas.geometry import normalize_vector
 from compas.geometry import sum_vectors
 from compas.geometry import norm_vector
@@ -154,21 +154,21 @@ for discretisation in discretisations:
         # --------------------
 
         optimiser = Optimiser()
-        optimiser.data['library'] = 'Scipy'
-        optimiser.data['solver'] = 'slsqp'
-        optimiser.data['constraints'] = ['funicular', 'envelope']
-        # optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
-        optimiser.data['variables'] = ['ind', 'zb', 't']
-        optimiser.data['objective'] = 't'
-        optimiser.data['thickness_type'] = 'constant'
-        optimiser.data['min_thk'] = 0.0
-        optimiser.data['max_thk'] = thk*2.0
-        optimiser.data['printout'] = True
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 1000.0
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
+        optimiser.settings['library'] = 'Scipy'
+        optimiser.settings['solver'] = 'slsqp'
+        optimiser.settings['constraints'] = ['funicular', 'envelope']
+        # optimiser.settings['constraints'] = ['funicular', 'envelope', 'symmetry']
+        optimiser.settings['variables'] = ['ind', 'zb', 't']
+        optimiser.settings['objective'] = 't'
+        optimiser.settings['thickness_type'] = 'constant'
+        optimiser.settings['min_thk'] = 0.0
+        optimiser.settings['max_thk'] = thk*2.0
+        optimiser.settings['printout'] = True
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 1000.0
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
 
         # --------------------
         # Analysis
@@ -191,7 +191,7 @@ for discretisation in discretisations:
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_deg=' + str(deg)
             save_form = os.path.join(folder, title)
 
-            form.to_json(save_form + '_min_thk_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+            form.to_json(save_form + '_min_thk_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json')
 
             # sols[str(discretisation)] = thk_min
             # sols[str(A)] = thk_min

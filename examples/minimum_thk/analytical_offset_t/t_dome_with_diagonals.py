@@ -122,18 +122,18 @@ for x_discr in [20, 24]:
         i = 2
 
         optimiser = Optimiser()
-        optimiser.data['library'] = solvers[i][0]
-        optimiser.data['solver'] = solvers[i][1]
-        optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-        optimiser.data['variables'] = ['ind', 'zb', 't']
-        optimiser.data['objective'] = 't'
-        optimiser.data['printout'] = True
-        optimiser.data['plot'] = False
-        optimiser.data['find_inds'] = True
-        optimiser.data['qmax'] = 1000.0
-        optimiser.data['gradient'] = gradients
-        optimiser.data['jacobian'] = gradients
-        print(optimiser.data)
+        optimiser.settings['library'] = solvers[i][0]
+        optimiser.settings['solver'] = solvers[i][1]
+        optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+        optimiser.settings['variables'] = ['ind', 'zb', 't']
+        optimiser.settings['objective'] = 't'
+        optimiser.settings['printout'] = True
+        optimiser.settings['plot'] = False
+        optimiser.settings['find_inds'] = True
+        optimiser.settings['qmax'] = 1000.0
+        optimiser.settings['gradient'] = gradients
+        optimiser.settings['jacobian'] = gradients
+        print(optimiser.settings)
 
         # --------------------- 5. Set up and run analysis ---------------------
 
@@ -154,12 +154,12 @@ for x_discr in [20, 24]:
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
-            form.to_json(save_form + '_min_thk_diagonal_' + type_diagonal + '_' + optimiser.data['objective'] + '_' + str(thk_min) + '.json')
+            form.to_json(save_form + '_min_thk_diagonal_' + type_diagonal + '_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.json')
 
             sols[str(discretisation)] = thk_min
             print('Solved:', discretisation, thk_min)
 
-            plot_form(form, show_q=False, cracks=True, save=save_form + '_min_thk_diagonal_' + type_diagonal + '_' + optimiser.data['objective'] + '_' + str(thk_min) + '.pdf')
+            plot_form(form, show_q=False, cracks=True, save=save_form + '_min_thk_diagonal_' + type_diagonal + '_' + optimiser.settings['objective'] + '_' + str(thk_min) + '.pdf')
 
         else:
             print('Not Solved:', discretisation)

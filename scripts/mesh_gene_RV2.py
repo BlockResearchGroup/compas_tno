@@ -3,7 +3,7 @@ from compas_plotters import MeshPlotter
 from compas_tno.diagrams import FormDiagram
 from compas_tno.plotters import plot_form
 from compas_tno.problems import initialise_form
-from compas_tno.datastructures import MeshDos
+from compas_tno.shapes import MeshDos
 from compas_tno.viewers import view_mesh
 from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_thrust
@@ -126,21 +126,21 @@ shape = Shape.from_middle_pointcloud(pts, topology=form, thk=thk, printout=True)
 # view_thrust(form).show()
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'SLSQP'
-optimiser.data['constraints'] = ['funicular', 'envelope']
-# optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
-optimiser.data['variables'] = ['ind', 't']
-optimiser.data['objective'] = 't'
-optimiser.data['thickness_type'] = 'constant'
-optimiser.data['min_thk'] = 0.01
-optimiser.data['max_thk'] = thk*1.0
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 1000.0
-optimiser.data['gradient'] = gradients
-optimiser.data['jacobian'] = gradients
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'SLSQP'
+optimiser.settings['constraints'] = ['funicular', 'envelope']
+# optimiser.settings['constraints'] = ['funicular', 'envelope', 'symmetry']
+optimiser.settings['variables'] = ['ind', 't']
+optimiser.settings['objective'] = 't'
+optimiser.settings['thickness_type'] = 'constant'
+optimiser.settings['min_thk'] = 0.01
+optimiser.settings['max_thk'] = thk*1.0
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 1000.0
+optimiser.settings['gradient'] = gradients
+optimiser.settings['jacobian'] = gradients
 
 form.overview_forces()
 

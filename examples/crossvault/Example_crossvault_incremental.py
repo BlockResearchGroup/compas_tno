@@ -10,7 +10,7 @@ from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_thrust
 from compas_tno.viewers import view_solution
 from compas_tno.plotters import diagram_of_thrust
-from compas_tno.plotters import save_csv
+from compas_tno.plotters import save_csv_row
 
 # ------------------------------------------------------------------------------------
 # ------ EXAMPLE OF INCREMENTAL MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
@@ -53,14 +53,14 @@ form = form.initialise_tna(plot=False)
 # --------------------- 3. Create Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = False
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'symmetry']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = False
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10e+10
 
 
 # --------------------- 4. Shape with initial THK ---------------------
@@ -86,13 +86,13 @@ save_form = os.path.join(folder, title)
 
 analysis = Analysis.from_elements(vault, form, optimiser)
 results = analysis.limit_analysis_GSF(thk, thk_reduction, R, save_forms=save_form)
-thicknesses, size_parameters, solutions_min, solutions_max = results
+sizes, solutions = results
 
 # ----------------------- 6. Save output data --------------------------
 
 
 csv_file = os.path.join(folder, title + '_data.csv')
-save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
+save_csv_row(sizes, solutions, path=csv_file, title=title)
 
 img_graph = os.path.join(folder, title + '_diagram.pdf')
-diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()
+diagram_of_thrust(sizes, solutions, save=img_graph).show()

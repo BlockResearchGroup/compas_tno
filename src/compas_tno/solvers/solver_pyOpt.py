@@ -23,7 +23,7 @@ def run_optimisation_pyOpt(analysis):
 
     form = analysis.form
     optimiser = analysis.optimiser
-    solver = optimiser.data['solver']
+    solver = optimiser.settings['solver']
     fobj = optimiser.fobj
     fconstr = optimiser.fconstr
     args = optimiser.args
@@ -33,7 +33,7 @@ def run_optimisation_pyOpt(analysis):
     k_i = form.key_index()
     bounds = optimiser.bounds
     x0 = optimiser.x0
-    plot = optimiser.data['plot']
+    plot = optimiser.settings['plot']
 
     if solver.split('-')[0] == 'pyOpt':
         lower = [lw[0] for lw in bounds]

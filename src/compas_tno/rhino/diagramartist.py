@@ -14,11 +14,11 @@ __all__ = ['DiagramArtist']
 
 
 class DiagramArtist(MeshArtist):
-    """Base artist for diagrams in AGS.
+    """Base artist for diagrams in TNO.
 
     Attributes
     ----------
-    diagram : :class:`compas_ags.diagrams.Diagram`
+    diagram : :class:`compas_tno.diagrams.Diagram`
         The diagram associated with the artist.
 
     """

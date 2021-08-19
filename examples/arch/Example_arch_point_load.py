@@ -78,14 +78,14 @@ forms_max = []
 # --------------------- 2. Create Optimiser still with no objective  ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'reac_bounds']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 5000.0  # Check if this is limiting the solution
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'reac_bounds']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 5000.0  # Check if this is limiting the solution
 
 while exitflag == 0:
 
@@ -123,7 +123,7 @@ while exitflag == 0:
 
     # --------------------------- 4.1 Set The objective to min and run ---------------------------
 
-    optimiser.data['objective'] = 'min'
+    optimiser.settings['objective'] = 'min'
     analysis.set_up_optimiser()
     analysis.run()
 
@@ -141,7 +141,7 @@ while exitflag == 0:
 
     # --------------------------- 5.1 Set The objective to max and run ---------------------------
 
-    optimiser.data['objective'] = 'max'
+    optimiser.settings['objective'] = 'max'
     analysis.set_up_optimiser()
     analysis.run()
 
@@ -180,7 +180,7 @@ print(solutions_max)
 
 formplot = forms_min[len(forms_min)-1]
 import os
-save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_pointload_' + optimiser.data['objective'] + '.pdf')
+save_photo = os.path.join(compas_tno.get('/imgs/'), 'arch_pointload_' + optimiser.settings['objective'] + '.pdf')
 plot_form_xz(formplot, arch, show_q=False, plot_reactions='simple', fix_width=True, max_width=5, radius=0.02, hide_negative=True, save = save_photo).show()
 
 # if plot_figures:

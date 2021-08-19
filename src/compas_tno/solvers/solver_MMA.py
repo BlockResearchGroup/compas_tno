@@ -1,21 +1,13 @@
 from compas_tno.solvers import mma_numpy
-from torch import tensor
 from numpy import hstack
 from numpy import array
 from numpy import zeros
 from numpy import ones
 import numpy as np
 
-from compas_tno.algorithms import f_constraints_pytorch_MMA
-from compas_tno.algorithms import f_objective_pytorch
-from compas_tno.algorithms import compute_autograd
-from compas_tno.algorithms import compute_autograd_jacobian
-from compas_tno.algorithms import reactions
-from compas_tno.algorithms import zlq_from_qid
-
 from compas.utilities import geometric_key
 
-from .post_process import post_process_analysis
+from .post_process import post_process_general
 
 import time
 
@@ -52,13 +44,12 @@ def run_optimisation_MMA(analysis):
 
     """
 
-    form = analysis.form
     optimiser = analysis.optimiser
-    solver = optimiser.data['solver']
-    constraints = optimiser.data['constraints']
-    objective = optimiser.data['objective']
-    gradient = optimiser.data.get('gradient', False)
-    jacobian = optimiser.data.get('jacobian', False)
+    solver = optimiser.settings['solver']
+    constraints = optimiser.settings['constraints']
+    objective = optimiser.settings['objective']
+    gradient = optimiser.settings.get('gradient', False)
+    jacobian = optimiser.settings.get('jacobian', False)
     fconstr = optimiser.fconstr
     args = optimiser.args
 
@@ -106,6 +97,13 @@ def run_optimisation_MMA(analysis):
 
         q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
         :48]
+
+        from torch import tensor
+
+        from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch_MMA
+        from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
 
         args_MMA = list(args)
         args_MMA.append([fobj, fconstr])

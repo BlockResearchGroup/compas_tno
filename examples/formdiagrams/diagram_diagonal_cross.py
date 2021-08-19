@@ -16,7 +16,7 @@ from compas_tno.viewers.thrust import view_solution
 
 thk = 0.5
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'cross_with_diagonal'
 discretisation = 10
 
 # ----------------------- 1. Create CrossVault shape ---------------------------
@@ -42,7 +42,6 @@ data_diagram = {
     'xy_span': [[0, 10], [0, 10]],
     'discretisation': discretisation,
     'fix': 'corners',
-    'partial_bracing_modules': 4,
 }
 
 form = FormDiagram.from_library(data_diagram)
@@ -60,16 +59,16 @@ plot_form(form).show()
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
 optimiser = Optimiser()
-optimiser.data['library'] = 'Scipy'
-optimiser.data['solver'] = 'slsqp'
-optimiser.data['constraints'] = ['funicular', 'envelope', 'symmetry']
-optimiser.data['variables'] = ['ind', 'zb']
-optimiser.data['objective'] = 'min'
-optimiser.data['printout'] = True
-optimiser.data['plot'] = False
-optimiser.data['find_inds'] = True
-optimiser.data['qmax'] = 10e+10
-print(optimiser.data)
+optimiser.settings['library'] = 'Scipy'
+optimiser.settings['solver'] = 'slsqp'
+optimiser.settings['constraints'] = ['funicular', 'envelope', 'symmetry']
+optimiser.settings['variables'] = ['ind', 'zb']
+optimiser.settings['objective'] = 'min'
+optimiser.settings['printout'] = True
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = True
+optimiser.settings['qmax'] = 10e+10
+print(optimiser.settings)
 
 # --------------------- 5. Set up and run analysis ---------------------
 
