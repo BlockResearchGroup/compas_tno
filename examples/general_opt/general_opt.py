@@ -56,7 +56,7 @@ data_diagram = {
 
 form = FormDiagram.from_library(data_diagram)
 
-plot_form(form, show_q=False).show()
+# plot_form(form, show_q=False).show()
 
 # Create shape
 
@@ -122,7 +122,8 @@ analysis = Analysis.from_elements(vault, form, optimiser)
 analysis.set_up_optimiser()
 analysis.run()
 
-print(optimiser.settings)
+data = optimiser.to_data()
+optimiser = Optimiser.from_data(data)
 
 weight = 0
 for key in form.vertices():

@@ -9,6 +9,7 @@ __all__ = ['initialize_loadpath_proxy',
 def initialize_loadpath_proxy(formdata, problem=None):
 
     from compas_tno.diagrams import FormDiagram
+
     form = FormDiagram.from_data(formdata)
     output = initialize_loadpath(form, problem=problem)
 
@@ -24,15 +25,12 @@ def run_NLP_proxy(shapedata, formdata, optimiserdata):
     from compas_tno.optimisers import Optimiser
     from compas_tno.shapes import Shape
 
-    shape = Shape.from_library(shapedata)
-    optimiser = Optimiser()
-    optimiser.settings = optimiserdata
+    shape = Shape.from_data(shapedata)
     form = FormDiagram.from_data(formdata)
+    optimiser = Optimiser.from_data(optimiserdata)
 
     analysis = Analysis.from_elements(shape, form, optimiser)
     analysis.set_up_optimiser()
     analysis.run()
 
-    # TODO: add an option here to initialise the loadpath with SLSQP/IPOPT if matlab/cvx can not be reached.
-
-    return shape.datashape, form.to_data(), optimiser.settings
+    return shape.to_data(), form.to_data(), optimiser.to_data()

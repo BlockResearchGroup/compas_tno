@@ -120,8 +120,6 @@ def RunCommand(is_interactive):
                 data['hm'] = None
                 data['he'] = None
 
-    print(data)
-
     shape = Shape.from_library_proxy(data)
 
     scene.add(shape, name='Shape', layer='TNO::Shape')

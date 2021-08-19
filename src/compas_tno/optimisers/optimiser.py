@@ -68,10 +68,10 @@ class Optimiser(Datastructure):
             data = data['data']
         self.settings = data.get('settings') or {}
 
-        self.x0 = data.get('x0') or None
-        self.xopt = data.get('xopt') or None
-        self.fopt = data.get('fopt') or None
-        self.message = data.get('message') or None
-        self.niter = data.get('niter') or None
-        self.exitflag = data.get('exitflag') or None
-        self.log = data.get('log') or None
+        self.x0 = data.get('x0', None)
+        self.xopt = data.get('xopt', None)
+        self.fopt = data.get('fopt', None)
+        self.message = data.get('message', None)
+        self.niter = data.get('niter', None)
+        self.exitflag = data.get('exitflag', None)
+        self.log = data.get('log', None)

@@ -20,7 +20,6 @@ formdata = form.to_data()
 shapedata = data_shape
 formdata = proxy.apply_selfweight_from_shape_proxy(formdata, shapedata)
 formdata = proxy.apply_envelope_from_shape_proxy(formdata, shapedata)
-formdata = proxy.apply_bounds_on_q_proxy(formdata)
 
 form = FormDiagram.from_data(formdata)
 

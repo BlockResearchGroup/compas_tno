@@ -20,11 +20,11 @@ class FormObject(DiagramObject):
         'show.vertexlabels': False,
         'show.vertexloads': False,
         'show.edgelabels': False,
+        'show.cracks': False,
         'show.forcecolors': False,
         'show.forcelabels': False,
         'show.forcepipes': False,
-        'show.vertex_lower_bound': False,
-        'show.vertex_upper_bound': False,
+        'show.vertices_bound': False,
 
         'color.vertices': (0, 0, 0),
         'color.vertexlabels': (255, 255, 255),
@@ -99,6 +99,9 @@ class FormObject(DiagramObject):
 
         self.artist.vertex_xyz = self.vertex_xyz
 
+        guids = []
+        vertices = []
+
         # vertices (including supports)
         if self.settings['show.vertices']:
             vertices = list(self.diagram.vertices())
@@ -125,6 +128,62 @@ class FormObject(DiagramObject):
             guids = self.artist.draw_vertices(vertices=vertices, color=color)
             self.guid_vertex = zip(guids, vertices)
 
+        # upper and lower bounds
+        if self.settings['show.vertices_bound']:
+            points_bounds = []
+            vertices_bounds = []
+            for key in self.diagram.vertices():
+                lb = self.diagram.vertex_attribute(key, 'lb')
+                ub = self.diagram.vertex_attribute(key, 'ub')
+                x, y, z = self.diagram.vertex_coordinates(key)
+                if lb:
+                    vertices_bounds.append(key)
+                    points_bounds.append({
+                        'pos': [x, y, lb],
+                        'color': self.settings['color.vertices:lower_bound']
+                    })
+                if ub:
+                    vertices_bounds.append(key)
+                    points_bounds.append({
+                        'pos': [x, y, ub],
+                        'color': self.settings['color.vertices:upper_bound']
+                    })
+
+            if points_bounds:
+                guids_bounds = compas_rhino.draw_points(points_bounds, layer="TNO::Shape::Bounds", clear=False, redraw=False)
+                guids = guids + guids_bounds
+                vertices = vertices + vertices_bounds
+                self.guid_vertex = zip(guids, vertices)
+
+        if self.settings['show.cracks']:
+            points_cracks = []
+            vertices_cracks = []
+            for key in self.diagram.vertices():
+                lb = self.diagram.vertex_attribute(key, 'lb')
+                ub = self.diagram.vertex_attribute(key, 'ub')
+                x, y, z = self.diagram.vertex_coordinates(key)
+                if ub is not None and lb is not None:
+                    if abs(ub - z) < 10e-4:
+                        vertices_cracks.append(key)
+                        points_cracks.append({
+                            'pos': [x, y, ub],
+                            'color': self.settings['color.vertices:upper_bound']
+                        })
+                    elif abs(lb - z) < 10e-4:
+                        vertices_cracks.append(key)
+                        points_cracks.append({
+                            'pos': [x, y, lb],
+                            'color': self.settings['color.vertices:lower_bound']
+                        })
+                    else:
+                        pass
+
+            if points_cracks:
+                guids_cracks = compas_rhino.draw_points(points_cracks, layer="TNO::Shape::Cracks", clear=False, redraw=False)
+                guids = guids + guids_cracks
+                vertices = vertices + vertices_cracks
+                self.guid_vertex = zip(guids, vertices)
+
         # vertex loads
         if self.settings['show.vertexloads']:
             vertices = list(self.diagram.vertices())
@@ -134,70 +193,6 @@ class FormObject(DiagramObject):
             color.update({vertex: self.settings['color.vertices:is_fixed'] for vertex in self.diagram.vertices_where({'is_fixed': True})})
             guids = self.artist.draw_vertexlabels(text=text, color=color)
             self.guid_vertexlabel = zip(guids, vertices)
-
-        # upper and lower bounds
-        points = []
-        vertices = []
-        if self.settings['show.vertex_lower_bound']:
-            i = 0
-            for key in self.diagram.vertices():
-                lb = self.diagram.vertex_attribute(key, 'lb')
-                if lb:
-                    vertices.append(key)
-                    points.append({
-                        'pos': [self.vertex_xyz[i][0], self.vertex_xyz[i][1], lb],
-                        'color': self.settings['color.vertices:lower_bound']
-                    })
-                i += 1
-
-        if self.settings['show.vertex_upper_bound']:
-            i = 0
-            for key in self.diagram.vertices():
-                ub = self.diagram.vertex_attribute(key, 'ub')
-                if ub:
-                    vertices.append(key)
-                    points.append({
-                        'pos': [self.vertex_xyz[i][0], self.vertex_xyz[i][1], ub],
-                        'color': self.settings['color.vertices:upper_bound']
-                    })
-                i += 1
-
-        if points:
-            guids = compas_rhino.draw_points(points, layer="TNO::Shape::Bounds", clear=False, redraw=False)
-            if self.guid_vertex:
-                guid_vertex_pt0 = self.guid_vertex
-                guid_vertex_pt = zip(guids, vertices)
-                self.guid_vertex = zip(list(guid_vertex_pt0) + list(guid_vertex_pt))
-
-        if self.settings['show.cracks']:
-            points = []
-            vertices = []
-            for key in self.diagram.vertices():
-                lb = self.diagram.vertex_attribute(key, 'lb')
-                ub = self.diagram.vertex_attribute(key, 'ub')
-                x, y, z = self.diagram.vertex_coordinates(key)
-                if ub is not None and lb is not None:
-                    if abs(ub - z) < 10e-4:
-                        vertices.append(key)
-                        points.append({
-                            'pos': [x, y, ub],
-                            'color': self.settings['color.vertices:upper_bound']
-                        })
-                    elif abs(lb - z) < 10e-4:
-                        vertices.append(key)
-                        points.append({
-                            'pos': [x, y, lb],
-                            'color': self.settings['color.vertices:lower_bound']
-                        })
-                    else:
-                        pass
-
-        if points:
-            guids = compas_rhino.draw_points(points, layer="TNO::Shape::Cracks", clear=False, redraw=False)
-            if self.guid_vertex:
-                guid_vertex_pt0 = self.guid_vertex
-                guid_vertex_pt = zip(guids, vertices)
-                self.guid_vertex = zip(list(guid_vertex_pt0) + list(guid_vertex_pt))
 
         # edges
         if self.settings['show.edges']:

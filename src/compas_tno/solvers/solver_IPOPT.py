@@ -1,13 +1,5 @@
 import cyipopt
 
-from compas_tno.algorithms import f_constraints_pytorch
-from compas_tno.algorithms import f_objective_pytorch
-from compas_tno.algorithms import compute_autograd
-from compas_tno.algorithms import compute_autograd_jacobian
-
-from compas_tno.algorithms import reactions
-from compas_tno.algorithms import zlq_from_qid
-
 from compas.utilities import geometric_key
 
 import time
@@ -156,6 +148,11 @@ def run_optimisation_ipopt(analysis):
         Edinv_p = Edinv.dot(p)
 
         from torch import tensor
+
+        from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
+        from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
 
         EdinvEi_th = tensor(EdinvEi)
         Edinv_p_th = tensor(Edinv_p)

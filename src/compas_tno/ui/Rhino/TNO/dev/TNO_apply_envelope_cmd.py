@@ -6,9 +6,6 @@ import scriptcontext as sc
 
 import compas_rhino
 
-from compas_tno.diagrams import FormGraph
-from compas_tno.diagrams import FormDiagram
-
 
 __commandname__ = "TNO_apply_envelope"
 
@@ -37,17 +34,15 @@ def RunCommand(is_interactive):
     proxy.package = 'compas_tno.utilities'
 
     formdata = form.diagram.to_data()
-    shapedata = shape.shape.datashape  # WIP
+    shapedata = shape.shape.to_data()
     form.diagram.data = proxy.apply_envelope_from_shape_proxy(formdata, shapedata)
 
-    form.settings['show.vertex_lower_bound'] = True
-    form.settings['show.vertex_upper_bound'] = True
+    form.settings['show.vertices_bound'] = True
     scene.update()
 
     validate = compas_rhino.rs.GetString("Validade Envelope", "True", ["True", "False", "Cancel"])
     if validate == "True":
-        form.settings['show.vertex_lower_bound'] = False
-        form.settings['show.vertex_upper_bound'] = False
+        form.settings['show.vertices_bound'] = False
         scene.update()
     else:
         return

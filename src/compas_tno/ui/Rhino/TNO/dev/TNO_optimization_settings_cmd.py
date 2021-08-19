@@ -19,30 +19,12 @@ def RunCommand(is_interactive):
 
     scene = sc.sticky['TNO']['scene']
 
-    # 'optimiser.library': 'SLSQP',
-    # 'optimiser.solver': 'SLSQP',
-    # 'optimiser.constraints': [],
-    # 'optimiser.variables': [],
-    # 'optimiser.objective': 'min',
-    # 'optimiser.printout': False,
-    # 'optimiser.max_iter': 500,
-    # 'optimiser.qmin': -1e+4,
-    # 'optimiser.qmax': +1e-8,
-    # 'optimiser.gradient': True,
-    # 'optimiser.jacobian': True,
-    # 'optimiser.derivative_test': True,
-    # 'optimiser.features': [],
-    # 'axis_symmetry': None,
-    # 'optimiser.starting_point': 'loadpath'
-
     data = {}
 
-    data['gradient'] = True
-    data['jacobian'] = True
     data['printout'] = True
 
     # objective
-    obj = compas_rhino.rs.GetString("Optimisation Objective", "min", ["min", "max", "thk", "Cancel"])
+    obj = compas_rhino.rs.GetString("Optimisation Objective", "min", ["min", "max", "t", "Cancel"])
     if not obj or obj == "Cancel":
         return
     data['objective'] = obj
@@ -78,6 +60,12 @@ def RunCommand(is_interactive):
     data['library'] = lib
     data['solver'] = lib
 
+    # derivatives
+    deriv = compas_rhino.rs.GetString("Use analytical derivatives", "True", ["True", "False", "Cancel"])
+    if deriv == "True":
+        data['gradient'] = True
+        data['jacobian'] = True
+
     # max iter
     max_iter = compas_rhino.rs.GetInteger("Maximum of Iterations", 500)
     if not max_iter:
@@ -102,12 +90,14 @@ def RunCommand(is_interactive):
     else:
         data['qmax'] = float(qmax)
 
-    # print(data)
-
-    optimiser = Optimiser()
-    optimiser.settings = data
-
-    scene.add(optimiser, name='Optimiser', layer=None)
+    objects = scene.find_by_name('Optimiser')
+    if not objects:
+        optimiser = Optimiser()
+        optimiser.settings = data
+        scene.add(optimiser, name='Optimiser', layer=None)
+    else:
+        optimiser = objects[0]
+        optimiser.optimiser.settings = data
 
     scene.update()
     scene.save()

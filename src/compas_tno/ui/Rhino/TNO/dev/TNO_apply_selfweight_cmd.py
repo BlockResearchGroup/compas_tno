@@ -6,9 +6,6 @@ import scriptcontext as sc
 
 import compas_rhino
 
-from compas_tno.diagrams import FormDiagram
-from compas_tno.shapes import Shape
-
 
 __commandname__ = "TNO_apply_selfweight"
 
@@ -37,7 +34,7 @@ def RunCommand(is_interactive):
     proxy.package = 'compas_tno.utilities'
 
     formdata = form.diagram.to_data()
-    shapedata = shape.shape.datashape  # WIP
+    shapedata = shape.shape.to_data()
     form.diagram.data = proxy.apply_selfweight_from_shape_proxy(formdata, shapedata)
 
     form.settings['show.vertexloads'] = True

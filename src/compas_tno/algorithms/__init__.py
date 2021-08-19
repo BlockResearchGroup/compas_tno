@@ -26,7 +26,7 @@ import compas
 
 if not compas.IPY:
     from .equilibrium import *
-    from .equilibrium_pytorch import *
+    # from .equilibrium_pytorch import *
     from .independents import *
     from .smoothing import *
     from .graphstatics import *

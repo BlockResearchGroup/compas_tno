@@ -36,14 +36,12 @@ def RunCommand(is_interactive):
     vertices = form.select_vertices("Fix selected vertices (unfix all others)")
     if not vertices:
         return
-    print(vertices)
 
     form.diagram.vertices_attribute('is_fixed', True, keys=vertices)
-    print(vertices)
     form.settings['show.vertices'] = show_vertices
 
     scene.update()
-    # scene.save()
+    scene.save()
 
 
 # ==============================================================================

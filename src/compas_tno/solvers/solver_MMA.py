@@ -5,13 +5,6 @@ from numpy import zeros
 from numpy import ones
 import numpy as np
 
-from compas_tno.algorithms import f_constraints_pytorch_MMA
-from compas_tno.algorithms import f_objective_pytorch
-from compas_tno.algorithms import compute_autograd
-from compas_tno.algorithms import compute_autograd_jacobian
-from compas_tno.algorithms import reactions
-from compas_tno.algorithms import zlq_from_qid
-
 from compas.utilities import geometric_key
 
 from .post_process import post_process_general
@@ -51,7 +44,6 @@ def run_optimisation_MMA(analysis):
 
     """
 
-    form = analysis.form
     optimiser = analysis.optimiser
     solver = optimiser.settings['solver']
     constraints = optimiser.settings['constraints']
@@ -107,6 +99,11 @@ def run_optimisation_MMA(analysis):
         :48]
 
         from torch import tensor
+
+        from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch_MMA
+        from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
+        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
 
         args_MMA = list(args)
         args_MMA.append([fobj, fconstr])

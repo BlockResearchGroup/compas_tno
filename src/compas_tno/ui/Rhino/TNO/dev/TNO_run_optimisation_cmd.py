@@ -45,25 +45,23 @@ def RunCommand(is_interactive):
     proxy.package = 'compas_tno.problems'
 
     formdata = form.diagram.to_data()
-    shapedata = shape.shape.datashape  # WIP
-    optimiserdata = optimiser.optimiser.settings
-
-    optimiserdata['solver'] = 'SLSQP'
+    shapedata = shape.shape.to_data()
+    optimiser.optimiser.message = None
+    optimiserdata = optimiser.optimiser.to_data()
 
     shapedata, formdata, optimiserdata = proxy.run_NLP_proxy(shapedata, formdata, optimiserdata)
 
     form.diagram.data = formdata
+    shape.shape.data = shapedata
+    optimiser.optimiser.data = optimiserdata
 
-    print(optimiserdata)
-
-    message = optimiserdata['status'] + ' fopt: ' + str(round(optimiserdata['fopt'], 2))
+    message = optimiser.optimiser.message + ' fopt: ' + str(round(optimiser.optimiser.fopt, 2))
     compas_rhino.display_message(message)
 
     form.settings['show.cracks'] = True
 
     scene.update()
     scene.save()
-
 
 
 # ==============================================================================
