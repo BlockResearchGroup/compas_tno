@@ -40,7 +40,8 @@ def apply_envelope_from_shape(form, shape):
     elif shape.datashape['type'] == 'crossvault':
         zub, zlb = crossvault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'])
     elif shape.datashape['type'] == 'pointed_crossvault':
-        zub, zlb = pointed_vault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'], hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
+        zub, zlb = pointed_vault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'], hc=shape.datashape['hc'],
+                                              he=shape.datashape['he'], hm=shape.datashape['hm'])
     elif shape.datashape['type'] == 'arch':
         zub, zlb = arch_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
     elif shape.datashape['type'] == 'pointed_arch':

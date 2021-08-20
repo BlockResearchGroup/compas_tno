@@ -42,7 +42,7 @@ def view_mesh(mesh, name='mesh', normals=False, length=1.0, settings=None):
             'vertices.on': False,
             'edges.on': True,
             'faces.on': True,
-            }
+        }
 
     viewer.add(mesh, name=name, settings=settings)
 
@@ -55,6 +55,7 @@ def view_mesh(mesh, name='mesh', normals=False, length=1.0, settings=None):
             viewer.add(line, name='normal-{}'.format(key))
 
     return viewer
+
 
 def view_meshes(meshes, settings=None):
 
@@ -69,12 +70,13 @@ def view_meshes(meshes, settings=None):
             'vertices.on': False,
             'edges.on': True,
             'faces.on': True,
-            }
+        }
 
     for mesh in meshes:
         viewer.add(mesh, settings=settings)
 
     return viewer
+
 
 def view_intrados(shape, settings_bounds=None):
     """ Viewer showing the intrados of a shape
@@ -93,6 +95,7 @@ def view_intrados(shape, settings_bounds=None):
 
     return view_mesh(shape.intrados, name="Intrados", settings=settings_bounds)
 
+
 def view_extrados(shape, settings_bounds=None):
     """ Viewer showing the extrados of a shape
 
@@ -109,6 +112,7 @@ def view_extrados(shape, settings_bounds=None):
     """
 
     return view_mesh(shape.extrados, name="Extrados", settings=settings_bounds)
+
 
 def view_middle(shape, settings_middle=None):
     """ Viewer showing the middle (target) surface of a shape
@@ -157,12 +161,13 @@ def view_shapes_pointcloud(shape, settings_bounds=None):
             'vertices.on': True,
             'edges.on': False,
             'faces.on': True,
-            }
+        }
 
     viewer.add(intrados, name="Intrados", settings=settings_bounds)
     viewer.add(extrados, name="Extrados", settings=settings_bounds)
 
     return viewer
+
 
 def view_shapes(shape, show_middle=True, settings_middle=None, settings_bounds=None):
     """ Viewer showing the middle (target) surface of a shape
@@ -196,7 +201,7 @@ def view_shapes(shape, show_middle=True, settings_middle=None, settings_bounds=N
             'vertices.on': False,
             'edges.on': True,
             'faces.on': True,
-            }
+        }
 
     if not settings_bounds:
         settings_bounds = {
@@ -207,7 +212,7 @@ def view_shapes(shape, show_middle=True, settings_middle=None, settings_bounds=N
             'vertices.on': False,
             'edges.on': True,
             'faces.on': True,
-            }
+        }
 
     if show_middle:
         viewer.add(middle, name="Middle/Target", settings=settings_middle)

@@ -1,59 +1,22 @@
-from compas_tna.diagrams import FormDiagram
-
-from compas_tno.algorithms.grad_based import optimise_tna
-from compas_tno.algorithms.scale import evaluate_scale
-from compas_tno.algorithms.scale import lagrangian_scale
-from compas_tno.algorithms.scale import scale_form
-from compas_tno.algorithms.equilibrium import z_from_form
-
 # from compas_tno.diagrams.form import energy
 # from compas_tno.diagrams.form import loadpath
 # from compas_tno.diagrams.form import adapt_tna
 # from compas_tno.diagrams.form import evaluate_a
-from compas.geometry import Plane
-
-from compas.numerical import grad
 
 # from scipy import tensordot
 # from scipy.optimize import nnls
 
-from sympy import Array
 from sympy import tensorproduct
 
 from compas.numerical import normrow
-from compas.numerical import normalizerow
 from compas.geometry import normalize_vector
-from compas.datastructures import mesh_face_matrix
-from compas.datastructures import mesh_quads_to_triangles
 from compas.geometry import is_ccw_xy
 
-from compas.datastructures import Mesh
-from compas_plotters import MeshPlotter
-
-from compas_tno.plotters import plot_form
-
-from copy import deepcopy
 from numpy import array
-from numpy import argmin
 from numpy import cross
 from numpy import dot
 from numpy import zeros
 from numpy import int8
-from numpy.linalg import lstsq
-from numpy.linalg import matrix_rank
-from numpy.linalg import pinv
-from numpy.linalg import det
-
-from compas.numerical.linalg import spsolve
-from compas.numerical.linalg import spsolve_with_known
-import math
-from numpy.linalg import inv
-
-
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
@@ -74,7 +37,6 @@ def planes_trimesh(form):
 
     for key in form.faces():
         vs = form.face_vertices(key)
-        M.append(vs)
         p1 = array(form.vertex_coordinates(vs[0]))
         p2 = array(form.vertex_coordinates(vs[1]))
         p3 = array(form.vertex_coordinates(vs[2]))
@@ -83,8 +45,8 @@ def planes_trimesh(form):
         v2 = p2 - p1
         cp = cross(v1, v2)
         a, b, c = cp
-        d = -1 * dot(cp, p3)
-        sol = [a, b, c, d]
+        # d = -1 * dot(cp, p3)
+        # sol = [a, b, c, d]
         form.set_face_attribute(key, 'dx', value=a/abs(a))
         form.set_face_attribute(key, 'dy', value=b/abs(b))
 
@@ -402,10 +364,10 @@ def hessian(form):
     for key in form.vertices():
         area = form.vertex_attribute(key, 'pz')
         neighbors = form.vertex_neighborhood(key)
-        # jump = Array([[0,0],[0,0]])
+        jump = array([[0, 0], [0, 0]])
         u = key
         for v in neighbors:
-            edge = Array(form.vertex_coordinates(v)[:2] + [0]) - Array(form.vertex_coordinates(u)[:2] + [0])
+            edge = array(form.vertex_coordinates(v)[:2] + [0]) - array(form.vertex_coordinates(u)[:2] + [0])
             hi = cross(edge, [0, 0, 1])
             hi_ = normalize_vector(hi)
             Hi = tensorproduct(hi_, hi_)
@@ -421,7 +383,7 @@ def hessian(form):
     for key in form.vertices():
         area = form.vertex_attribute(key, 'pz')
         neighbors = form.vertex_neighborhood(key)
-        hess = Array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
+        hess = array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         u = key
         for v in neighbors:
             try:
@@ -439,7 +401,7 @@ def simple_nurbs(a, b, h, par=20, plot=False):
 
     from geomdl import CPGen
     from geomdl import BSpline
-    from geomdl import NURBS
+    # from geomdl import NURBS
     from geomdl import utilities
     from geomdl.visualization import VisMPL
     from matplotlib import cm
@@ -477,6 +439,6 @@ def simple_nurbs(a, b, h, par=20, plot=False):
         surf.vis = VisMPL.VisSurface(ctrlpts=True, legend=False)
 
         # Plot the surface
-        surf.render(colormap=cm.cool)
+        surf.render(colormap=cm.get_cmap('cool'))
 
     return surf

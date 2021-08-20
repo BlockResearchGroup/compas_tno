@@ -174,30 +174,30 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
 
-    y1_ub = y1 + thk/2
-    y0_ub = y0 - thk/2
-    x1_ub = x1 + thk/2
-    x0_ub = x0 - thk/2
+    # y1_ub = y1 + thk/2
+    # y0_ub = y0 - thk/2
+    # x1_ub = x1 + thk/2
+    # x0_ub = x0 - thk/2
 
     y1_lb = y1 - thk/2
     y0_lb = y0 + thk/2
     x1_lb = x1 - thk/2
     x0_lb = x0 + thk/2
 
-    lx_ub = x1_ub - x0_ub
-    ly_ub = y1_ub - y0_ub
+    # lx_ub = x1_ub - x0_ub
+    # ly_ub = y1_ub - y0_ub
 
-    lx_lb = x1_lb - x0_lb
-    ly_lb = y1_lb - y0_lb
+    # lx_lb = x1_lb - x0_lb
+    # ly_lb = y1_lb - y0_lb
 
     lx = x1 - x0
     ly = y1 - y0
 
-    hc_ub = hc + thk/2
-    hc_lb = hc - thk/2
+    # hc_ub = hc + thk/2
+    # hc_lb = hc - thk/2
 
-    r_x = _find_r_given_h_l(hc, x1 - x0)
-    r_y = _find_r_given_h_l(hc, y1 - y0)
+    # r_x = _find_r_given_h_l(hc, x1 - x0)
+    # r_y = _find_r_given_h_l(hc, y1 - y0)
 
     if he:
         he_ub = he.copy()
@@ -252,8 +252,9 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
                 # hi_lb = k1_lb + math.sqrt(r1_lb ** 2 - (xi - h1_lb) ** 2)
                 hi = k1 + math.sqrt(r1 ** 2 - (xi - h1) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, ly)
@@ -274,8 +275,9 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
                 # hi_lb = k3_lb + math.sqrt(r3_lb ** 2 - (yi - h3_lb) ** 2)
                 hi = k3 + math.sqrt(r3 ** 2 - (yi - h3) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, lx)
@@ -296,8 +298,9 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
                 # hi_lb = k2_lb + math.sqrt(r2_lb ** 2 - (xi - h2_lb) ** 2)
                 hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, ly)
@@ -318,8 +321,9 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
                 # hi_lb = k4_lb + math.sqrt(r4_lb ** 2 - (yi - h4_lb) ** 2)
                 hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, lx)
@@ -349,30 +353,30 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
     x1 = xy_span[0][1]
     x0 = xy_span[0][0]
 
-    y1_ub = y1 + thk/2
-    y0_ub = y0 - thk/2
-    x1_ub = x1 + thk/2
-    x0_ub = x0 - thk/2
+    # y1_ub = y1 + thk/2
+    # y0_ub = y0 - thk/2
+    # x1_ub = x1 + thk/2
+    # x0_ub = x0 - thk/2
 
     y1_lb = y1 - thk/2
     y0_lb = y0 + thk/2
     x1_lb = x1 - thk/2
     x0_lb = x0 + thk/2
 
-    lx_ub = x1_ub - x0_ub
-    ly_ub = y1_ub - y0_ub
+    # lx_ub = x1_ub - x0_ub
+    # ly_ub = y1_ub - y0_ub
 
-    lx_lb = x1_lb - x0_lb
-    ly_lb = y1_lb - y0_lb
+    # lx_lb = x1_lb - x0_lb
+    # ly_lb = y1_lb - y0_lb
 
     lx = x1 - x0
     ly = y1 - y0
 
-    hc_ub = hc + thk/2
-    hc_lb = hc - thk/2
+    # hc_ub = hc + thk/2
+    # hc_lb = hc - thk/2
 
-    r_x = _find_r_given_h_l(hc, x1 - x0)
-    r_y = _find_r_given_h_l(hc, y1 - y0)
+    # r_x = _find_r_given_h_l(hc, x1 - x0)
+    # r_y = _find_r_given_h_l(hc, y1 - y0)
 
     if he:
         he_ub = he.copy()
@@ -429,8 +433,9 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
                 # hi_lb = k1_lb + math.sqrt(r1_lb ** 2 - (xi - h1_lb) ** 2)
                 hi = k1 + math.sqrt(r1 ** 2 - (xi - h1) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, ly)
@@ -453,8 +458,9 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
                 # hi_lb = k3_lb + math.sqrt(r3_lb ** 2 - (yi - h3_lb) ** 2)
                 hi = k3 + math.sqrt(r3 ** 2 - (yi - h3) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, lx)
@@ -477,8 +483,9 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
                 # hi_lb = k2_lb + math.sqrt(r2_lb ** 2 - (xi - h2_lb) ** 2)
                 hi = k2 + math.sqrt(r2 ** 2 - (xi - h2) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_lb = _find_r_given_h_l(hi_lb, ly_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_ub = _find_r_given_h_l(hi_ub, ly_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, ly)
@@ -501,8 +508,9 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
                 # hi_lb = k4_lb + math.sqrt(r4_lb ** 2 - (yi - h4_lb) ** 2)
                 hi = k4 + math.sqrt(r4 ** 2 - (yi - h4) ** 2)
             else:
-                hi_ub = hc_ub
-                hi_lb = hc_lb
+                pass
+                # hi_ub = hc_ub
+                # hi_lb = hc_lb
             # ri_ub = _find_r_given_h_l(hi_ub, lx_ub)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             # ri_lb = _find_r_given_h_l(hi_lb, lx_lb)  # This in the equation ri ** 2 =  (xi - xc_) ** 2 + (zi - zc_) ** 2  -> zc = 0.0 and xc_ = (x0 + x1)/2
             ri = _find_r_given_h_l(hi, lx)
@@ -528,9 +536,9 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
     return dub, dlb  # ub, lb
 
 
-def _find_r_given_h_l(h, l):
+def _find_r_given_h_l(h, length):
 
-    r = h**2/l + l/4
+    r = h**2/length + length/4
 
     return r
 

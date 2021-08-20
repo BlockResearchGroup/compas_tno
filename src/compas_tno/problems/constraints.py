@@ -2,7 +2,6 @@ from numpy import vstack
 from numpy import hstack
 from numpy import multiply
 from numpy import divide
-from numpy import array
 from numpy import zeros
 from numpy import transpose
 from compas_tno.algorithms.equilibrium import zq_from_qid
@@ -23,7 +22,8 @@ __all__ = [
 
 def constr_wrapper(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
 
     if 'ind' in variables:  # Not yet deal with all-q
         q[ind] = xopt[:k].reshape(-1, 1)
@@ -153,7 +153,8 @@ def constr_wrapper_inequalities(xopt, *args):  # This considers a equality in As
     """
     This computes the sensitivities considering only inequality constraints.
     """
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
     constraints = constr_wrapper(xopt, *args)
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         Aq = Asym.dot(vstack([q[ind], z[fixed]])).flatten()

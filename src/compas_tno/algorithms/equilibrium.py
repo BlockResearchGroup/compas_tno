@@ -238,7 +238,6 @@ def z_update(form):
     """
 
     k_i = form.key_index()
-    uv_i = form.uv_index()
     vcount = len(form.vertex)
     anchors = list(form.anchors())
     fixed = list(form.fixed())
@@ -323,7 +322,6 @@ def scale_form(form, r):
     from scipy.sparse.linalg import spsolve
 
     k_i = form.key_index()
-    uv_i = form.uv_index()
     vcount = len(form.vertex)
     anchors = list(form.anchors())
     fixed = list(form.fixed())
@@ -381,7 +379,6 @@ def update_form(form, q):
     Ci = C[:, free]
     Cf = C[:, fixed]
     Cit = Ci.transpose()
-    Ct = C.transpose()
     Q = diags([q.ravel()], [0])
 
     A = Cit.dot(Q).dot(Ci)
@@ -425,9 +422,8 @@ def reactions(form, plot=False):
 
     n = form.number_of_vertices()
     fixed = [k_i[key] for key in form.fixed()]
-    rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
+    # rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
-    free = list(set(range(n)) - set(fixed) - set(rol))
 
     # Co-ordinates and loads
 

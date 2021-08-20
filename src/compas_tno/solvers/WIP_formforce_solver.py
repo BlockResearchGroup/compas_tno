@@ -7,7 +7,6 @@ from numpy import zeros
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse import diags
-from compas.numerical import normrow
 
 from compas.numerical import connectivity_matrix
 
@@ -27,62 +26,52 @@ from compas_tno.plotters import plot_grad
 
 from copy import deepcopy
 
-__author__    = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__   = 'MIT License'
-__email__     = 'mricardo@ethz.ch'
-
 
 __all__ = [
     'optimise_fdm',
     'optimise_tna',
 ]
 
-def optimise_fdm(form, plot = True, surf=False):
+
+def optimise_fdm(form, plot=True, surf=False):
 
     # Mapping
 
-    k_i  = form.key_index()
-    i_k  = form.index_key()
-    i_uv = form.index_uv()
-    uv_i = form.uv_index()
+    k_i = form.key_index()
 
     # Vertices and edges
 
     vertices = [k_i[key] for key in form.vertices_where({'_is_external': False})]
-    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True, '_is_external' : False})]
+    edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True, '_is_external': False})]
     fixed = [k_i[key] for key in form.vertices_where({'_is_external': False, 'is_fixed': True})]
-    free  = list(set(vertices) - set(fixed))
+    free = list(set(vertices) - set(fixed))
 
-    m = len(edges)
     n = len(vertices)
-    ni = len(free)
 
     # Co-ordinates and loads
 
     xyz = zeros((n, 3))
-    x   = zeros((n, 1))
-    y   = zeros((n, 1))
-    z   = zeros((n, 1))
-    s   = zeros((n, 1))
-    px  = zeros((n, 1))
-    py  = zeros((n, 1))
-    pz  = zeros((n, 1))
+    x = zeros((n, 1))
+    y = zeros((n, 1))
+    z = zeros((n, 1))
+    s = zeros((n, 1))
+    px = zeros((n, 1))
+    py = zeros((n, 1))
+    pz = zeros((n, 1))
 
     for key, vertex in form.vertex.items():
-        if vertex.get('_is_external') == False:
+        if vertex.get('_is_external') is False:
             i = k_i[key]
             xyz[i, :] = form.vertex_coordinates(key)
-            x[i]  = vertex.get('x')
-            y[i]  = vertex.get('y')
-            z[i]  = vertex.get('z')
-            s[i]  = vertex.get('target')
+            x[i] = vertex.get('x')
+            y[i] = vertex.get('y')
+            z[i] = vertex.get('z')
+            s[i] = vertex.get('target')
             px[i] = vertex.get('px', 0)
             py[i] = vertex.get('py', 0)
             pz[i] = vertex.get('pz', 0)
 
-    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True, '_is_external' : False})])[:, newaxis]
-    p = pz[free]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True, '_is_external': False})])[:, newaxis]
 
     # Interpolate Target Surface
 
@@ -92,18 +81,20 @@ def optimise_fdm(form, plot = True, surf=False):
 
     # C and E matrices
 
-    C   = connectivity_matrix(edges, 'csr')
-    Ci  = C[:, free]
+    C = connectivity_matrix(edges, 'csr')
+    Ci = C[:, free]
     Cit = Ci.transpose()
 
     # From Here calculate Iteractivelly q...
 
     it = 0
     it_max = 100
+    stepsave = 10.0
+    incrsave = 0.1
 
     while it < it_max:
 
-        print('-'*10,' Iteration {0}'.format(it))
+        print('-'*10, ' Iteration {0}'.format(it))
 
         D = Cit.dot(diags(q.flatten())).dot(C)
         Di = D[:, free]
@@ -113,7 +104,7 @@ def optimise_fdm(form, plot = True, surf=False):
         # (L, values) = _chofactor(Di.toarray())
 
         W = diags(C.dot(z).flatten())  # dimension m x m
-        J = spsolve(Di, Cit.dot(W)) # dimension ni x m
+        J = spsolve(Di, Cit.dot(W))  # dimension ni x m
 
         # Y_ = spsolve(L,Cit.dot(W))
         # X_ = spsolve(L.transpose(),Y_)
@@ -124,17 +115,13 @@ def optimise_fdm(form, plot = True, surf=False):
 
         grad = (2 * (z[free] - s[free]).transpose() * J).transpose()
 
-        try:
-            step = stepsave
-            incr = incrsave
-        except BaseException:
-            step = 10.0
-            incr = 0.1
+        step = stepsave
+        incr = incrsave
 
         k = 0
         kmax = 300
         q0 = q
-        f0 = energy(form)
+        f0 = form.loadpath()
         form_ = deepcopy(form)
         cont = True
 
@@ -145,21 +132,21 @@ def optimise_fdm(form, plot = True, surf=False):
             q = q0 + step * grad
             k += 1
 
-            form_ = update_form(form_,q)
-            f = energy(form_)
+            form_ = update_form(form_, q)
+            f = form.loadpath()
 
             if f < f0:
                 break
             else:
-                if step/10 <incr:
+                if step/10 < incr:
                     incr = incr/2
 
                 step = step - incr
 
-                if k%100 == 0:
+                if k % 100 == 0:
                     print('Iteration steplength: {0} / Stepsize: {1} / Energy Var: {2:.1f}%'.format(k, step, (f-f0)/f0*100))
 
-                if k>kmax:
+                if k > kmax:
                     print('Iterations on steplength reached the maximum {0}'.format(kmax))
                     break
 
@@ -169,10 +156,10 @@ def optimise_fdm(form, plot = True, surf=False):
             form = form_
             stepsave = step
             incrsave = incr
-            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
+            q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
             for key, vertex in form_.vertex.items():
                 i = k_i[key]
-                z[i]  = vertex.get('z')
+                z[i] = vertex.get('z')
             print('End of Iteration {0} / Stepsize: {1:.5f} / Evergy Var: {2:.1f}% / Energy: {3:.1f}'.format(it, step, (f-f0)/f0*100, f))
 
             form = z_from_form(form)
@@ -180,9 +167,9 @@ def optimise_fdm(form, plot = True, surf=False):
             if surf:
                 for key, vertex in form.vertex.items():
                     xi, yi, _ = form.vertex_coordinates(key)
-                    [si] = surf(xi,yi).tolist()
-                    form.vertex_attribute(key,'target',value=si)
-                print('Updating constraints. Energy: {0:.1f}'.format(energy(form)))
+                    [si] = surf(xi, yi).tolist()
+                    form.vertex_attribute(key, 'target', value=si)
+                print('Updating constraints. Energy: {0:.1f}'.format(form.loadpath()))
 
         else:
             print('Optimisation not found - Iteration {0} / Stepsize: {1:.5f} / Energy: {2:.1f}'.format(it, step, f))
@@ -193,14 +180,14 @@ def optimise_fdm(form, plot = True, surf=False):
         if plot:
             plot_form(form).show()
 
-
     return form
 
-def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_max = 2.5, steplength=None, null=None, save_steps=False):
+
+def optimise_tna(form, objective='target', plot=None, it_max=20, alpha=1.0, a_max=2.5, steplength=None, null=None, save_steps=False):
 
     # Mapping
 
-    k_i  = form.key_index()
+    k_i = form.key_index()
     uv_i = form.uv_index()
 
     # Vertices and edges
@@ -208,50 +195,50 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
     vertices = [k_i[key] for key in form.vertices()]
     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({'_is_edge': True})]
     fixed = [k_i[key] for key in form.vertices_where({'is_anchor': True})]
-    free  = list(set(vertices) - set(fixed))
+    free = list(set(vertices) - set(fixed))
     if null:
-        null_i = [uv_i[(u,v)] for u, v in null]
+        null_i = [uv_i[(u, v)] for u, v in null]
 
     n = len(vertices)
 
     # Co-ordinates and loads
 
     xyz = zeros((n, 3))
-    x   = zeros((n, 1))
-    y   = zeros((n, 1))
-    z   = zeros((n, 1))
-    s   = zeros((n, 1))
-    px  = zeros((n, 1))
-    py  = zeros((n, 1))
-    pz  = zeros((n, 1))
+    x = zeros((n, 1))
+    y = zeros((n, 1))
+    z = zeros((n, 1))
+    s = zeros((n, 1))
+    px = zeros((n, 1))
+    py = zeros((n, 1))
+    pz = zeros((n, 1))
     w = zeros((n, 1))
 
     for key, vertex in form.vertex.items():
         i = k_i[key]
         xyz[i, :] = form.vertex_coordinates(key)
-        x[i]  = vertex.get('x')
-        y[i]  = vertex.get('y')
-        z[i]  = vertex.get('z')
-        s[i]  = vertex.get('target', 0)
+        x[i] = vertex.get('x')
+        y[i] = vertex.get('y')
+        z[i] = vertex.get('z')
+        s[i] = vertex.get('target', 0)
         px[i] = vertex.get('px', 0)
         py[i] = vertex.get('py', 0)
         pz[i] = vertex.get('pz', 0)
         w[i] = vertex.get('weight', 1.0)
 
-    q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
+    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
     Wfree = diags(w[free].flatten())
 
-    C   = connectivity_matrix(edges, 'csr')
-    Ci  = C[:, free]
+    C = connectivity_matrix(edges, 'csr')
+    Ci = C[:, free]
     Cit = Ci.transpose()
 
     if objective == 'target':
         grad_exp = grad_target
-        f_exp = energy
+        f_exp = form.distance_target()
         print('Optimisation takes as objective minimise distance to target')
     if objective == 'loadpath':
         grad_exp = grad_lp
-        f_exp = loadpath
+        f_exp = form.loadpath()
         print('Optimisation takes as objective minimise loadpath')
 
     args = (C, Ci, Cit, x, y, Wfree, s, free)
@@ -266,7 +253,7 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
     while it < it_max:
 
-        print('\n','-'*20,'\n',' Iteration {0}'.format(it))
+        print('\n', '-'*20, '\n', ' Iteration {0}'.format(it))
 
         grad = grad_exp(q, z, args)
 
@@ -312,13 +299,13 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
 
             if plot and k == 1:
                 for u, v in form_.edges_where({'_is_edge': True}):
-                    [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
-                    form_.edge_attribute((u,v),'dq',value = dq)
+                    [dq] = (q[uv_i[(u, v)]] - q0[uv_i[(u, v)]])
+                    form_.edge_attribute((u, v), 'dq', value=dq)
 
                 plot_grad(form_).show()
 
-            form_, force = paralelise_form(form_,force_, q.flatten(), alpha=alpha) #, plot=True)
-            a = evaluate_a(form_, plot=False)
+            form_, force = paralelise_form(form_, force_, q.flatten(), alpha=alpha)  # , plot=True)
+            a = max(form.edges_attribute('a'))
 
             f = f_exp(form_)
             # print('f = {0:.2f}'.format(f))
@@ -334,15 +321,15 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
             if f < f0:
                 break
             else:
-                if step/10 <incr:
+                if step/10 < incr:
                     incr = incr/2
 
                 step = step - incr
 
-                if k%10 == 0:
+                if k % 10 == 0:
                     print('Iteration steplength: {0} / Stepsize: {1} / Angle Deviation: {2} / Energy Var: {3:.1f}%'.format(k, step, a, (f-f0)/f0*100))
 
-                if k>kmax:
+                if k > kmax:
                     print('Iterations on steplength reached the maximum {0}'.format(kmax))
                     break
 
@@ -351,22 +338,22 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
         # a = evaluate_a(form, print=False)
 
         for u, v in form_.edges_where({'_is_edge': True}):
-                [dq] = (q[uv_i[(u,v)]] - q0[uv_i[(u,v)]])
-                form_.edge_attribute((u,v),'dq',value = dq)
+            [dq] = (q[uv_i[(u, v)]] - q0[uv_i[(u, v)]])
+            form_.edge_attribute((u, v), 'dq', value=dq)
 
         for key, vertex in form_.vertex.items():
             i = k_i[key]
-            z[i]  = vertex.get('z')
-
+            z[i] = vertex.get('z')
 
         # Update Function
 
         if f < f0:
             form = form_
-            q = array([form.edge_attribute((u,v),'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
+            q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
             # stepsave = step
             # incrsave = incr
-            print('End of Iteration {0} / Step number: {1} / Stepsize: {2:.5f} / Evergy Var: {3:.1f}% / Energy: {4:.1f} / Angle Dev: {5:.3f}'.format(it, k, step, (f-f0)/f0*100, f, a))
+            print('End of Iteration {0} / Step number: {1} / Stepsize: {2:.5f} / Evergy Var: {3:.1f}% / Energy: {4:.1f} / Angle Dev: {5:.3f}'.format(it, k, step,
+                                                                                                                                                     (f-f0)/f0*100, f, a))
             # form = paralelise_form(form,q)
 
         else:
@@ -375,18 +362,19 @@ def optimise_tna(form, objective ='target', plot= None, it_max=20, alpha=1.0, a_
             plot_force(force, form).show()
             break
 
-        if save_steps and it%10 == 0:
-            print_ +=1
+        if save_steps and it % 10 == 0:
+            print_ += 1
             form.to_json('/Users/mricardo/compas_dev/me/bestfit/iterations/pillow_' + str(print_) + '.json')
 
         it += 1
 
         if plot:
-            if it%5 == 0:
+            if it % 5 == 0:
                 plot_form(form).show()
                 plot_force(force, form).show()
 
     return form
+
 
 def grad_target(q, z, args):
 
@@ -398,8 +386,8 @@ def grad_target(q, z, args):
     # Grad Calculation
 
     W = diags(C.dot(z).flatten())  # dimension m x m
-    J = spsolve(Di, Cit.dot(W)) # dimension ni x m
-    grad = ( ( Wfree * - 2 * (z[free] - s[free]) ).transpose() * J).transpose()
+    J = spsolve(Di, Cit.dot(W))  # dimension ni x m
+    grad = ((Wfree * - 2 * (z[free] - s[free])).transpose() * J).transpose()
 
     return grad
 
@@ -415,10 +403,10 @@ def grad_lp(q, z, args):
 
     grad1 = (C.dot(x))**2 + (C.dot(y))**2 + (C.dot(z))**2
     W = diags(C.dot(z).flatten())  # dimension m x m
-    J = spsolve(Di, Cit.dot(W)) # dimension ni x m
-    M = Ci.dot(J) # dimension m x m verify
-    K = W.dot(M) # Shape m x 1
-    grad2 = ( 2 * q.transpose() * K ).transpose()
+    J = spsolve(Di, Cit.dot(W))  # dimension ni x m
+    M = Ci.dot(J)  # dimension m x m verify
+    K = W.dot(M)  # Shape m x 1
+    grad2 = (2 * q.transpose() * K).transpose()
     grad = grad1 + grad2
 
     return grad

@@ -693,7 +693,7 @@ def raaupdate(xmma, xval, xmin, xmax, low, upp, f0valnew, fvalnew, f0app, fapp, 
     raacof = np.maximum(raacof, raacofmin)
     #
     f0appe = f0app+0.5*epsimin
-    if np.all(f0valnew > f0appe) == True:
+    if np.all(f0valnew > f0appe):
         deltaraa0 = (1.0/raacof)*(f0valnew-f0app)
         zz0 = 1.1*(raa0+deltaraa0)
         zz0 = np.minimum(zz0, 10*raa0)
@@ -721,7 +721,7 @@ def concheck(m, epsimin, f0app, f0valnew, fapp, fvalnew):
     fappe = fapp+epsimin*eeem
     arr1 = np.concatenate((f0appe.flatten(), fappe.flatten()))
     arr2 = np.concatenate((f0valnew.flatten(), fvalnew.flatten()))
-    if np.all(arr1 >= arr2) == True:
+    if np.all(arr1 >= arr2):
         conserv = 1
     else:
         conserv = 0

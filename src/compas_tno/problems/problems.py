@@ -26,12 +26,6 @@ from compas_tno.utilities import build_symmetry_transformation
 import time
 
 
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
-
-
 __all__ = [
     'Problem',
     'initialise_problem',
@@ -55,8 +49,7 @@ class Problem():
         return problem
 
 
-#old function
-def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.001, c=0.5):
+def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.001, c=0.5):  # old function -> delete
     """ Initialise the problem for a given Form-Diagram and return the set of matrices and vectors to optimise.
 
     Parameters
@@ -299,6 +292,8 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
 
     """
 
+    import torch as th
+
     # Mapping
 
     k_i = form.key_index()
@@ -437,7 +432,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
     p = vstack([px[free_x], py[free_y]])
     q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
 
-    if any(p) == True:
+    if any(p):
         check_hor = check_horizontal(E, p)
         if check_hor:
             print('Horizontal Loads can be taken!')

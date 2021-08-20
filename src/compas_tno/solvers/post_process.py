@@ -1,13 +1,8 @@
-import compas_tno
-
 from compas_tno.algorithms import reactions
-from compas_tno.algorithms import zq_from_qid
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape
-from compas_tno.diagrams import ForceDiagram
-
 from compas_tno.utilities import apply_envelope_from_shape
-from compas.utilities import geometric_key
+
 
 __all__ = [
     'post_process_general'
@@ -119,7 +114,6 @@ def post_process_general(analysis):
         shape = Shape.from_library(shape.datashape)
         apply_envelope_from_shape(form, shape)
 
-
     # if 's' in variables:
     #     s = -1 * fopt
     #     for key in form.vertices():
@@ -151,28 +145,27 @@ def post_process_general(analysis):
 
 def save_geometry_at_iterations(analysis):
 
-    form = analysis.form
-    optimiser = analysis.optimiser
-    shape = analysis.shape
+    print('WIP')
+    # form = analysis.form
+    # optimiser = analysis.optimiser
+    # shape = analysis.shape
 
-    M = optimiser.M
+    # M = optimiser.M
 
-    file_qs = compas_tno.get('output.json')
+    # file_qs = compas_tno.get('output.json')
 
-    force = ForceDiagram.from_formdiagram(form)
-    key_index = form.key_index()
-    _key_index = force.key_index()
+    # force = ForceDiagram.from_formdiagram(form)
+    # key_index = form.key_index()
+    # _key_index = force.key_index()
 
-    form, force = form.reciprocal_from_form(plot=False)
+    # form, force = form.reciprocal_from_form(plot=False)
 
-    with open(file_qs, mode='r', encoding='utf-8') as f:
-        data = json.load(f)
+    # with open(file_qs, mode='r', encoding='utf-8') as f:
+    #     data = json.load(f)
 
-    Xform = {}
-    Xforce = {}
+    # Xform = {}
+    # Xforce = {}
 
-    iterations = len(data['iterations'])
-
-
+    # iterations = len(data['iterations'])
 
     return

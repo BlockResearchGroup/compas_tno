@@ -4,11 +4,11 @@ from compas.datastructures import mesh_smooth_area
 from compas.datastructures import mesh_smooth_centerofmass
 
 from compas.geometry import closest_point_on_line
-from compas.geometry import closest_point_on_line_xy
 
 __all__ = [
     'constrained_smoothing'
 ]
+
 
 def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorithm='centroid'):
     """Constrained smoothing of a mesh. Constraints can be points and lines.

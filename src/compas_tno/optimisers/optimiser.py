@@ -13,11 +13,10 @@ class Optimiser(Datastructure):
 
         *  'library'           : ['Scipy','MATLAB','MMA','IPOPT','Scipy', ... others to come]
         *  'solver'            : ['slsqp','SDPT3','MMA', ... others to come],
-        *  'objective'         : ['min','max','loadpath','target'],
+        *  'objective'         : ['min','max','t','loadpath','target'],
         *  'constraints'       : ['funicular', 'envelope', 'reac_bounds', 'partial_reactions', 'cracks'],
         *  'variables'         : ['ind', 'zb', 'all-qs'],
-        *  'use_indset'        : True,
-        *  'solver_options'    : {},
+        *  'find_inds'        : True,
         *  'exitflag'          : 1,
         *  'fopt'              : None,
         *  'xopt'              : None,
@@ -32,10 +31,17 @@ class Optimiser(Datastructure):
             'solver': 'slsqp',
             'objective': 'min',
             'constraints': ['funicular', 'envelope'],
+            'features': ['fixed'],
             'variables': ['q', 'zb'],
-            'use_indset': True,
+            'find_inds': True,
+            'printout': False,
+            'starting_point': 'loadpath',
+            'gradient': True,
+            'jacobian': True,
             'solver_options': {},
-            'qmin': -1e-6,
+            'max_iter': 500,
+            'qmin': -1e+4,
+            'qmax': 1e-8,
         }
         self.x0 = None
         self.xopt = None

@@ -33,6 +33,7 @@ __all__ = [
     'compute_autograd_jacobian'
 ]
 
+
 def q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep):
     k = len(ind)
     m = k + len(dep)
@@ -107,7 +108,8 @@ def f_objective_pytorch(variables, *args):
 
 
 def f_constraints_pytorch(variables, *args):
-    Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th = args
+    (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx,
+     max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th) = args
     q = q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     if 'funicular' in dict_constr:
         constraints = q[dep]
@@ -136,7 +138,8 @@ def f_constraints_pytorch(variables, *args):
 
 
 def f_constraints_pytorch_MMA(variables, *args):  # THe equality constraints are transformed in 2 inequalities (symmetry constraint)
-    Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th = args
+    (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx,
+     max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th) = args
     q = q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     if 'funicular' in dict_constr:
         constraints = q
@@ -164,7 +167,8 @@ def f_constraints_pytorch_MMA(variables, *args):  # THe equality constraints are
 
 
 def bounds_constraints_pytorch(variables, *args):
-    Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th = args
+    (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed, ub, lb, ub_ind, lb_ind, b, dict_constr, max_rol_rx, max_rol_ry, rol_x,
+     rol_y, px, py, Asym, U_th, V_th) = args
     q = q_from_variables_pytorch(variables, Edinv_p_th, EdinvEi_th, ind, dep)
     if 'funicular' in dict_constr:
         constraints = q

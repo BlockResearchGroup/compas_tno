@@ -136,7 +136,6 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
     return intrados, extrados, middle
 
 
-
 def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5.0, tol=10e-6, t=0.0, discretisation=[100, 100]):
     """ Set parabolic vault heights.
 
@@ -201,11 +200,15 @@ def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5
 
     return intrados, extrados, middle
 
-def parabolic_shell_middle_update(xi, yi, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
 
-    return z
+def parabolic_shell_middle_update(xi, yi, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
+    print('WIP')
+    zt = 0
+    return zt
 
 
 def parabolic_shell_ub_lb_update(xi, yi, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
-
+    print('WIP')
+    zub = 0
+    zlb = 0
     return zub, zlb

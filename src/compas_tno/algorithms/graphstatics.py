@@ -1,36 +1,30 @@
 
 
 from compas_tno.diagrams import ForceDiagram
-
-from compas.geometry import distance_point_point_xy
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_force
 
 from compas_tna.equilibrium import horizontal
 from compas_tna.equilibrium import horizontal_nodal
 from compas_tna.equilibrium import vertical_from_zmax
+from compas_tna.utilities import rot90
+from compas_tna.utilities import apply_bounds
+from compas_tna.utilities import parallelise_sparse
 
 from compas.numerical import connectivity_matrix
+from compas.numerical import spsolve_with_known
+from compas.numerical import normrow
+from compas.numerical import normalizerow
+from compas.geometry import distance_point_point_xy
+from compas.geometry import angle_vectors_xy
+
+from compas_plotters import MeshPlotter
 
 from numpy import array
 from numpy import float64
 
 from scipy.sparse import diags
 from scipy.sparse.linalg import factorized
-
-from compas.numerical import spsolve_with_known
-from compas.numerical import normrow
-from compas.numerical import normalizerow
-
-from compas_tna.utilities import rot90
-
-from compas.geometry import angle_vectors_xy
-
-from compas_tna.utilities import apply_bounds
-from compas_tna.utilities import parallelise_sparse
-
-from compas_plotters import MeshPlotter
-
 
 __all__ = [
     'update_tna',
@@ -75,12 +69,6 @@ def update_tna(form, delete_face=True, plots=False, save=False):
     if plots:
         plot_force(force, form, radius=0.05).show()
         plot_form(form, radius=0.05).show()
-
-    # st = 'discretize/02_complete_1div_complete'
-
-    if save:
-        force.to_obj('/Users/mricardo/compas_dev/compas_loadpath/data/' + st + '_force.obj')
-        form.to_json('/Users/mricardo/compas_dev/compas_loadpath/data/' + st + '_tna.json')
 
     return form, force
 
@@ -204,8 +192,8 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
 
     uv = C.dot(xy)
     _uv = _C.dot(_xy)
-    l = normrow(uv)
-    _l = normrow(_uv)
+    length = normrow(uv)
+    _length = normrow(_uv)
 
     t = alpha * normalizerow(uv) + (1 - alpha) * normalizerow(_uv)
 
@@ -213,26 +201,26 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
 
     for k in range(kmax):
         # apply length bounds
-        apply_bounds(l, lmin, lmax)
-        apply_bounds(_l, fmin, fmax)
+        apply_bounds(length, lmin, lmax)
+        apply_bounds(_length, fmin, fmax)
         # print, if allowed
         if display:
             print(k)
         if alpha != 1.0:
             # if emphasis is not entirely on the form
             # update the form diagram
-            xy = parallelise_sparse(CtC, Ct.dot(l * t), xy, fixed, 'CtC')
+            xy = parallelise_sparse(CtC, Ct.dot(length * t), xy, fixed, 'CtC')
             uv = C.dot(xy)
-            l = normrow(uv)
+            length = normrow(uv)
         if alpha != 0.0:
             # if emphasis is not entirely on the force
             # update the force diagram
-            _xy = parallelise_sparse(_Ct_C, _Ct.dot(_l * t), _xy, _fixed, '_Ct_C')
+            _xy = parallelise_sparse(_Ct_C, _Ct.dot(_length * t), _xy, _fixed, '_Ct_C')
             _uv = _C.dot(_xy)
-            _l = normrow(_uv)
+            _length = normrow(_uv)
 
-    f = _l
-    q = (f / l).astype(float64)
+    f = _length
+    q = (f / length).astype(float64)
     q = q.reshape(-1, 1)
     # print('Final qs')
     # print(q)
@@ -251,7 +239,7 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
         i = uv_i[(u, v)]
         attr['q'] = q[i, 0]
         attr['f'] = f[i, 0]
-        attr['_l'] = l[i, 0]
+        attr['_l'] = length[i, 0]
         attr['a'] = a[i]
 
     for key, attr in force.vertices(True):
@@ -272,8 +260,8 @@ def paralelise_form(form, force, q, alpha=1.0, kmax=100, plot=None, display=Fals
 
     xyz[free, 2] = A_solve(p[free, 2] - B.dot(xyz[fixed, 2]))
 
-    l = normrow(C.dot(xyz))
-    f = q * l
+    length = normrow(C.dot(xyz))
+    f = q * length
     r = C.transpose().dot(Q).dot(C).dot(xyz) - p
 
     for key, attr in form.vertices(True):
@@ -345,11 +333,10 @@ def reciprocal_from_form(form, zmax=5.0, method='algebraic', plot=False, alpha=1
     form.vertices_attribute('is_anchor', True, keys=corners)
 
     for key in form.vertices_where({'is_fixed': True}):
-        react = abs(form.vertex_attribute(key, '_rx'))
         break
     leaves = False
     for u, v in form.edges_on_boundary():
-        if form.edge_attribute((u, v), '_is_edge') == False:
+        if form.edge_attribute((u, v), '_is_edge') is False:
             leaves = True
             break
     if leaves is False:
@@ -365,12 +352,6 @@ def reciprocal_from_form(form, zmax=5.0, method='algebraic', plot=False, alpha=1
             form.edge_attribute((u, v), 'fmax', value=qi*lh)
             form.edge_attribute((u, v), 'lmin', value=lh)
             form.edge_attribute((u, v), 'lmax', value=lh)
-        # else:
-        #     form.edge_attribute((u, v), 'fmin', value=react)
-        #     form.edge_attribute((u, v), 'fmax', value=react)
-        #     form.edge_attribute((u, v), 'lmin', value=1.0)
-        #     form.edge_attribute((u, v), 'lmax', value=1.0)
-        #     form.edge_attribute((u, v), 'q', value=react)
 
     if plot:
         plot_form(form).show()

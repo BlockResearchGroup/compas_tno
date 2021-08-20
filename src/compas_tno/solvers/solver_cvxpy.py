@@ -4,17 +4,20 @@ from cvxpy import matrix_frac
 from cvxpy import Minimize
 from cvxpy import Problem
 
+from numpy import hstack
+
 from compas_tno.algorithms import z_from_form
 from compas_tno.algorithms import zlq_from_qid
 from compas_tno.algorithms import zlq_from_q
-
 from compas_tno.problems import initialise_problem
+
+from compas.numerical import equilibrium_matrix
 
 from numpy import zeros
 from numpy import ones
-import matlab.engine
-
 from numpy import array
+
+import matlab.engine
 
 from compas.utilities import geometric_key
 from compas_tno.algorithms.equilibrium import reactions
@@ -40,7 +43,6 @@ def optimise_convex(form, qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
     k_i = form.key_index()
     i_k = form.index_key()
     i_uv = form.index_uv()
-    uv_i = form.uv_index()
 
     # Set-up of the problem and start matlab engine
 
@@ -48,7 +50,8 @@ def optimise_convex(form, qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
     eng = future.result()
 
     args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, free_x, free_y, rol_x, rol_y, Citx, City, Cfx, Cfy = args
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cfx, Cfy) = args
 
     # Problem specifities
 
@@ -140,7 +143,7 @@ def call_cvx(objective, args_cvx):
     status = eng.workspace['cvx_status']
     niter = eng.workspace['cvx_slvitr']
 
-    if status is not 'Infeasible':
+    if status != 'Infeasible':
         exitflag = 0
     else:
         exitflag = 1
@@ -185,7 +188,7 @@ def call_cvx_ind(fobj, args_cvx):
     qopt = array(eng.workspace['q'])
     niter = eng.workspace['cvx_slvitr']
 
-    if status is not 'Infeasible':
+    if status == 'Infeasible':
         exitflag = 0
     else:
         exitflag = 1
@@ -204,7 +207,8 @@ def min_loadpath(form, args, printout=False):
 
     uv_i = form.uv_index()
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
+     s, Wfree, anchors, x, y, b) = args
     m = form.number_of_edges()
     q = cp.Variable(m)
 
@@ -256,7 +260,8 @@ def min_thrust(form, args, zmin, zmax, printout=False):
 
     uv_i = form.uv_index()
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
+     s, Wfree, anchors, x, y, b) = args
     m = form.number_of_edges()
     q = cp.Variable(m)
 
@@ -284,6 +289,7 @@ def min_thrust(form, args, zmin, zmax, printout=False):
 
     lp = prob.solve(verbose=printout)
     form.attributes['solve'] = prob.solver_stats
+    form.attributes['loadpath'] = lp
 
     for u, v in form.edges():
         i = uv_i[(u, v)]
@@ -297,7 +303,8 @@ def min_thrust(form, args, zmin, zmax, printout=False):
 
 def max_thrust(form, args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
+     s, Wfree, anchors, x, y, b) = args
     xy = hstack([x, y])
     E = equilibrium_matrix(C, xy, free, 'csr')
     m = form.number_of_edges()
@@ -305,7 +312,7 @@ def max_thrust(form, args):
 
     # -------- OBJECTIVE FUNCTION
 
-    fobj = x.T*C.T*diag(q)*Cf*xf + y.T*C.T*diag(q)*Cf*yf
+    fobj = x.T*C.T*diag(q)*Cf*x[fixed] + y.T*C.T*diag(q)*Cf*y[fixed]
     objective = cp.Minimize(fobj)
 
     # -------- CONSTRAINTS
@@ -322,14 +329,15 @@ def max_thrust(form, args):
     # -------- SOLVE
 
     lp = prob.solve()
-    q_sol = q.value
+    form.attributes['loadpath'] = lp
 
-    return q_sol
+    return q.value
 
 
 def feasibility(form, args):
 
-    q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target, s, Wfree, anchors, x, y, b = args
+    (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
+     s, Wfree, anchors, x, y, b) = args
     xy = hstack([x, y])
     E = equilibrium_matrix(C, xy, free, 'csr')
     m = form.number_of_edges()
@@ -353,6 +361,6 @@ def feasibility(form, args):
     # -------- SOLVE
 
     lp = prob.solve()
-    q_sol = q.value
+    form.attributes['loadpath'] = lp
 
-    return q_sol
+    return q.value

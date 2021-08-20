@@ -120,7 +120,7 @@ def interp_surf(form):
     s = []
 
     for key, vertex in form.vertex.items():
-        if vertex.get('_is_external') == False:
+        if vertex.get('_is_external') is False:
             x.append(vertex.get('x'))
             y.append(vertex.get('y'))
             s.append(vertex.get('target'))
@@ -138,7 +138,7 @@ def null_edges(form, plot=False):
     all_edges = []
 
     for u, v in form.edges():
-        if form.edge_attribute((u, v), '_is_external') == False and form.edge_attribute((u, v), '_is_edge') == True:
+        if form.edge_attribute((u, v), '_is_external') is False and form.edge_attribute((u, v), '_is_edge') is True:
             activ = 0
             coord_u = form.vertex_coordinates(u)
             coord_v = form.vertex_coordinates(v)
@@ -221,7 +221,7 @@ def create_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top'], view=
     cracks_ub = []
     cracks_lb = []
 
-    count = 0
+    # count = 0
 
     for key in form.vertices():
         x, y, _ = form.vertex_coordinates(key)
@@ -235,7 +235,7 @@ def create_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top'], view=
     form.attributes['cracks'] = (cracks_lb, cracks_ub)
 
     if view:
-        plot_form_xz(form, radius=0.02, cracks=True).show()
+        plot_form_xz(form, None, radius=0.02, cracks=True).show()
 
     return form
 
@@ -244,7 +244,7 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
 
     k_i = form.key_index()
 
-    if x0 == None or xf == None:
+    if x0 is None or xf is None:
         x = []
         for key in form.vertices():
             x.append(form.vertex_coordinates(key)[0])
@@ -276,9 +276,9 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
             xu, xv = form.vertex_coordinates(u)[0], form.vertex_coordinates(v)[0]
             if max(xu, xv) >= xmin and min(xu, xv) <= xmax:
                 possible_edges.append(tuple(sorted([k_i[u], k_i[v]])))
-                if form.vertex_attribute(u, 'is_fixed') == True:
+                if form.vertex_attribute(u, 'is_fixed'):
                     possible_edges.append(tuple(sorted([-k_i[u], k_i[u]])))
-                if form.vertex_attribute(v, 'is_fixed') == True:
+                if form.vertex_attribute(v, 'is_fixed'):
                     possible_edges.append(tuple(sorted([-k_i[v], k_i[v]])))
         joints[j] = [[xi, y, zi], [xe, y, ze], set(possible_edges)]
         print(joints[j])
@@ -294,14 +294,14 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
             zi = 0 - t
         else:
             zi = math.sqrt(zi2) - t
-        if form.vertex_attribute(key, 'is_fixed') == True:
+        if form.vertex_attribute(key, 'is_fixed'):
             form.vertex_attribute(key, 'lb', value=None)
             form.vertex_attribute(key, 'ub', value=None)
         else:
             form.vertex_attribute(key, 'lb', value=zi)
             form.vertex_attribute(key, 'ub', value=ze)
         # form.vertex_attribute(key,'z',value=ze)
-        if form.vertex_attribute(key, 'is_fixed') == True:
+        if form.vertex_attribute(key, 'is_fixed'):
             form.vertex_attribute(key, 'b', value=[thk/2, 0.0])
         if x == x0:
             form.attributes['tmax'] = ze
@@ -319,7 +319,7 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
     bndr = form.vertices_on_boundary()
 
     for key in bndr:
-        if form.vertex_attribute(key, 'is_fixed') == False:
+        if form.vertex_attribute(key, 'is_fixed') is False:
             x, y, _ = form.vertex_coordinates(key)
             if x == x1 and (constraint_directions in ['all', 'x']):
                 form.vertex_attribute(key, 'rol_x', True)

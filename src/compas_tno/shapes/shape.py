@@ -380,7 +380,8 @@ class Shape(Datastructure):
         return shape
 
     # @classmethod
-    # def from_middle_pointcloud(cls, middle_pts, topology=None, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
+    # def from_middle_pointcloud(cls, middle_pts, topology=None, thk=0.50, treat_creases=False, printout=False,
+    #                            data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
     #     """Construct a Shape from a pointcloud.
 
     #     Parameters

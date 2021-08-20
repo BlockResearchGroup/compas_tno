@@ -1,25 +1,21 @@
 import cyipopt
 
-from compas.utilities import geometric_key
-
 import time
 
 from numpy import hstack
 from numpy import array
 
-from compas_tno.problems import sensitivities_wrapper
-from compas_tno.problems import constr_wrapper
-from compas_tno.problems import gradient_fmin
-from compas_tno.problems import gradient_fmax
-from compas_tno.problems import f_min_thrust
-from compas_tno.problems import f_max_thrust
+try:
+    from torch import tensor
+
+    from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
+    from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
+    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
+    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
+except BaseException:
+    pass  # Module tensor not available
 
 from .post_process import post_process_general
-
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [
@@ -141,18 +137,11 @@ def run_optimisation_ipopt(analysis):
 
     if not gradients:
 
-        q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym = args[
-        :48]
+        (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+         free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym) = args[:48]
 
         EdinvEi = Edinv*Ei
         Edinv_p = Edinv.dot(p)
-
-        from torch import tensor
-
-        from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
-        from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
-        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
-        from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
 
         EdinvEi_th = tensor(EdinvEi)
         Edinv_p_th = tensor(Edinv_p)
@@ -179,7 +168,6 @@ def run_optimisation_ipopt(analysis):
         problem_obj.bounds = bounds
         problem_obj.x0 = x0
         problem_obj.args = args
-        problem_obj.fgrad = gradient_fmin
 
         variables = tensor(x0, requires_grad=True)
         g0 = f_constraints_pytorch(variables, *args_constr)
@@ -242,49 +230,6 @@ def run_optimisation_ipopt(analysis):
     optimiser.message = info['status_msg']
 
     post_process_general(analysis)
-
-    # g_final = fconstr(xopt, *args)
-    # args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
-    # z, _, q, q_ = zlq_from_qid(q[ind], args)
-
-    # gkeys = []
-    # for i in ind:
-    #     u, v = i_uv[i]
-    #     gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-    # form.attributes['indset'] = gkeys
-
-    # for i in range(form.number_of_vertices()):
-    #     key = i_k[i]
-    #     form.vertex_attribute(key=key, name='z', value=float(z[i]))
-
-    # for c, qi in enumerate(list(q_.ravel())):
-    #     u, v = i_uv[c]
-    #     form.edge_attribute((u, v), 'q', float(qi))
-
-    # lp = 0
-    # for u, v in form.edges_where({'_is_edge': True}):
-    #     if form.edge_attribute((u, v), 'is_symmetry') is False:
-    #         qi = form.edge_attribute((u, v), 'q')
-    #         li = form.edge_length(u, v)
-    #         lp += abs(qi) * li**2
-    # form.attributes['loadpath'] = float(lp)
-
-    # # form.attributes['iter'] = niter
-    # optimiser.exitflag = exitflag
-    # optimiser.fopt = fopt
-    # analysis.form = form
-    # reactions(form, plot=plot)
-
-    # summary = optimiser.settings.get('summary', False)
-
-    # if summary:
-    #     print('\n' + '-' * 50)
-    #     print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-    #     print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-    #     print('zb range  : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-    #     print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
-    #     print('fopt      : {0:.3f}'.format(fopt))
-    #     print('-' * 50 + '\n')
 
     return analysis
 

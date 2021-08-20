@@ -1,24 +1,17 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
-from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import view_solution
 
-from compas_tno.utilities import apply_envelope_from_shape
-from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_envelope_on_xy
 from compas_tno.utilities import apply_horizontal_multiplier
-from compas_tno.utilities import apply_bounds_on_q
 
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 
-
-# added a silly change
-
-
 span = 10.0
 k = 1.0
+lamd = None
 discretisation = 10
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
@@ -29,6 +22,8 @@ type_ = None
 pattern_load = None  # '/Users/mricardo/compas_dev/me/loadpath/corner/topology/' + type_ + '_complete.json'
 
 c = 0.1
+
+lambd = 0.1
 
 objective = 'min'
 solver = 'SLSQP'
@@ -79,11 +74,6 @@ vault = Shape.from_library(data_shape)
 # -----------------------  INITIALISE   ----------------------
 # ------------------------------------------------------------
 
-# Apply Selfweight and Envelope
-
-apply_envelope_from_shape(form, vault)
-apply_selfweight_from_shape(form, vault)
-
 if 'lambd' in variables:
     apply_horizontal_multiplier(form, lambd=lambd)
 
@@ -116,9 +106,9 @@ optimiser.settings['max_iter'] = 500
 # --------------------- 5. Set up and run analysis ---------------------
 
 analysis = Analysis.from_elements(vault, form, optimiser)
-# analysis.apply_selfweight()
-# analysis.apply_envelope()
-# analysis.apply_reaction_bounds()
+analysis.apply_selfweight()
+analysis.apply_envelope()
+analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
@@ -133,6 +123,5 @@ thrust = abs(optimiser.fopt)
 print('Ratio Thrust/Weight:', thrust/weight)
 
 # Viewing
-plot_superimposed_diagrams(form, form_base).show()
 plot_form(form, show_q=False, cracks=True).show()
 view_solution(form).show()

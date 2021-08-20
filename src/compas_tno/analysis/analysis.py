@@ -77,10 +77,8 @@ class Analysis(Data):
 
     """
 
-    # __module__ = 'compas_tno.analysis'
-
     def __init__(self):
-        self.data = {}
+        self.settings = {}
         self.shape = None
         self.form = None
         self.optimiser = None
@@ -145,7 +143,7 @@ class Analysis(Data):
     def apply_envelope(self):
         """Invoke method to apply ub and lb to the nodes based on the shape's intrados and extrados"""
 
-        apply_envelope_from_shape(self.shape, self.shape)
+        apply_envelope_from_shape(self.form, self.shape)
 
         return
 

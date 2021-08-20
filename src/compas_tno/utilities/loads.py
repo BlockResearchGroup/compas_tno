@@ -41,7 +41,8 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
     elif shape.datashape['type'] == 'crossvault':
         zt = crossvault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'])
     elif shape.datashape['type'] == 'pointed_crossvault':
-        zt = pointed_vault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'], hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
+        zt = pointed_vault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'],
+                                         hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
     else:
         XY = form.vertices_attributes('xy')
         zt = shape.get_middle_pattern(XY)

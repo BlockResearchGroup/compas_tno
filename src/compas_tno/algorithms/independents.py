@@ -254,7 +254,7 @@ def check_horizontal(E, p):
         Equilibrium matrix.
     p : array
         Vector of horizontal loads.
-    
+
     Returns
     -------
     checked : bool

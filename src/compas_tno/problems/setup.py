@@ -17,10 +17,6 @@ from compas_tno.problems import gradient_bestfit_general
 from compas_tno.problems import gradient_horprojection_general
 from compas_tno.problems import gradient_loadpath_general
 
-from compas_tno.problems import f_min_loadpath
-from compas_tno.problems import f_min_thrust
-from compas_tno.problems import f_max_thrust
-from compas_tno.problems import f_target
 from compas_tno.problems import f_constant
 from compas_tno.problems import f_reduce_thk
 from compas_tno.problems import f_tight_crosssection
@@ -34,23 +30,13 @@ from compas_tno.problems import initialize_tna
 from compas_tno.algorithms import apply_sag
 from compas_tno.algorithms import z_from_form
 
-from compas_tno.problems import gradient_fmin
-from compas_tno.problems import gradient_fmax
 from compas_tno.problems import gradient_feasibility
 from compas_tno.problems import gradient_reduce_thk
 from compas_tno.problems import gradient_tight_crosssection
-from compas_tno.problems import gradient_bestfit
-from compas_tno.problems import gradient_loadpath
 
-from compas_tno.problems import sensitivities_wrapper
-from compas_tno.problems import sensitivities_wrapper_inequalities
 from compas_tno.problems import sensitivities_wrapper_general
 
-from compas_tno.problems import constr_wrapper
-from compas_tno.problems import constr_wrapper_inequalities
 from compas_tno.problems import constr_wrapper_general
-
-from compas.datastructures import mesh_bounding_box_xy
 
 from compas_tno.plotters import plot_symmetry
 from compas_tno.plotters import plot_symmetry_vertices
@@ -128,7 +114,7 @@ def set_up_general_optimisation(analysis):
         z_from_form(form)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'tna':
-        print('WIP')
+        initialize_tna(form)
     else:
         print('Warning: define starting point')
 
@@ -291,7 +277,6 @@ def set_up_general_optimisation(analysis):
             print('Shape of jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
-        # print('Constraint Mapping: dep: 0-{0} | z: {1}-{2} | reac-bound: {3}-{4}'.format(len(dep)-1, len(dep), len(dep)+2*len(z)-1, len(dep)+2*len(z), len(dep)+2*len(z)+2*len(fixed)-1))
         violated = []
         for i in range(len(g0)):
             if g0[i] < 0:

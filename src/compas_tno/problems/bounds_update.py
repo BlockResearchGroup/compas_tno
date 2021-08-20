@@ -121,7 +121,8 @@ def b_update(x, y, thk, fixed, shape, b, variables):
             if shape.datashape['base_structure']['type'] == 'dome' or shape.datashape['base_structure']['type'] == 'dome_polar':
                 return dome_b_update_with_n(x, y, thk, fixed, b, center=shape.datashape['base_structure']['center'])
             else:
-                return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
+                raise Exception
+                # return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
         else:
             raise Exception
     else:
@@ -141,7 +142,8 @@ def db_update(x, y, thk, fixed, shape, b, variables):
             if shape.datashape['base_structure']['type'] == 'dome':
                 return dome_db_with_n(x, y, fixed, center=shape.datashape['base_structure']['center'])
             else:
-                return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
+                raise Exception
+                # return general_b_update_with_n(b, thk, fixed)  # thk is 'n' in this equation
         else:
             raise Exception
     else:

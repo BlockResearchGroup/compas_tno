@@ -42,7 +42,6 @@ def run_optimisation_scipy(analysis):
     fgrad = optimiser.fgrad
     fjac = optimiser.fjac
     args = [optimiser.M]
-    # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym, variables, shape_data = args[:50]
     bounds = optimiser.bounds
     x0 = optimiser.x0
     printout = optimiser.settings.get('printout', True)

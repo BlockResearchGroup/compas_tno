@@ -1,7 +1,4 @@
-from compas_viewers.meshviewer import MeshViewer
-from compas_viewers.multimeshviewer import MultiMeshViewer
 from compas_viewers.objectviewer import ObjectViewer
-from compas.datastructures import Mesh
 from compas.geometry import Line
 from compas_tno.shapes import Shape
 
@@ -14,6 +11,7 @@ __all__ = [
     'view_thrust_as_lines',
     'view_bestfit_solution'
 ]
+
 
 def view_thrust(form, settings_form=None, cracks=True):
     """ Viewer showing the thrust network.
@@ -46,10 +44,10 @@ def view_thrust(form, settings_form=None, cracks=True):
         if ub is not None and lb is not None:
             if cracks:
                 if abs(ub - z) < 10e-4:
-                    viewer.add(Point(x, y, z), name="Extrados (%s)"%extrad, settings={'vertices.color': '#008000', 'vertices.size': 15.0, 'vertices.on': True})  # green extrados
+                    viewer.add(Point(x, y, z), name="Extrados (%s)" % extrad, settings={'vertices.color': '#008000', 'vertices.size': 15.0, 'vertices.on': True})  # green extrados
                     extrad += 1
                 elif abs(lb - z) < 10e-4:
-                    viewer.add(Point(x, y, z), name="Intrados (%s)"%intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                    viewer.add(Point(x, y, z), name="Intrados (%s)" % intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
                     intrad += 1
 
     if not settings_form:
@@ -62,11 +60,12 @@ def view_thrust(form, settings_form=None, cracks=True):
             'vertices.on': False,
             'edges.on': True,
             'faces.on': False,
-            }
+        }
 
     viewer.add(form, name="FormDiagram", settings=settings_form)
 
     return viewer
+
 
 def view_thrust_as_lines(form, settings_form=None, cracks=True, viewer=None):
     """ Viewer showing the thrust network.
@@ -110,6 +109,7 @@ def view_thrust_as_lines(form, settings_form=None, cracks=True, viewer=None):
 
     return viewer
 
+
 def view_thrusts(forms, settings_form=None, cracks=True):
     """ Viewer showing the thrust network.
 
@@ -143,10 +143,10 @@ def view_thrusts(forms, settings_form=None, cracks=True):
             x, y, z = form.vertex_coordinates(key)
             if cracks:
                 if abs(ub - z) < 10e-4:
-                    viewer.add(Point(x, y, z), name="Extrados (%s)"%extrad, settings={'vertices.color': '#008000', 'vertices.size': 15.0, 'vertices.on': True})  # green extrados
+                    viewer.add(Point(x, y, z), name="Extrados (%s)" % extrad, settings={'vertices.color': '#008000', 'vertices.size': 15.0, 'vertices.on': True})  # green extrados
                     extrad += 1
                 elif abs(lb - z) < 10e-4:
-                    viewer.add(Point(x, y, z), name="Intrados (%s)"%intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                    viewer.add(Point(x, y, z), name="Intrados (%s)" % intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
                     intrad += 1
 
         if not settings_form:
@@ -159,11 +159,12 @@ def view_thrusts(forms, settings_form=None, cracks=True):
                 'vertices.on': False,
                 'edges.on': True,
                 'faces.on': False,
-                }
+            }
 
         viewer.add(form, name="FormDiagram", settings=settings_form)
 
     return viewer
+
 
 def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cracks=True, reactions=True, thickness=False, outside=True):
     """ Viewer showing the thrust network together with intrados and extrados.
@@ -201,17 +202,17 @@ def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cr
         x, y, z = form.vertex_coordinates(key)
         if cracks:
             if abs(ub - z) < 10e-4:
-                viewer.add(Point(x, y, z), name="Extrados (%s)"%extrad, settings={'vertices.color': '#008000', 'vertices.size': 15.0, 'vertices.on': True})  # green extrados
+                viewer.add(Point(x, y, z), name="Extrados (%s)" % extrad, settings={'vertices.color': '#008000', 'vertices.size': 15.0, 'vertices.on': True})  # green extrados
                 extrad += 1
             elif abs(lb - z) < 10e-4:
-                viewer.add(Point(x, y, z), name="Intrados (%s)"%intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                viewer.add(Point(x, y, z), name="Intrados (%s)" % intrad, settings={'vertices.color': '#0000FF', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
                 intrad += 1
         if outside:
             if z > ub:
-                viewer.add(Point(x, y, z), name="Outside - Intra (%s)"%out, settings={'vertices.color': '#000000', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                viewer.add(Point(x, y, z), name="Outside - Intra (%s)" % out, settings={'vertices.color': '#000000', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
                 out += 1
             elif z < lb:
-                viewer.add(Point(x, y, z), name="Outside - Extra (%s)"%out, settings={'vertices.color': '#000000', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
+                viewer.add(Point(x, y, z), name="Outside - Extra (%s)" % out, settings={'vertices.color': '#000000', 'vertices.size': 15.0, 'vertices.on': True})  # blue intrados
                 out += 1
 
     if not settings_form:
@@ -224,7 +225,7 @@ def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cr
             'vertices.on': False,
             'edges.on': True,
             'faces.on': False,
-            }
+        }
 
     if not settings_bounds:
         settings_bounds = {
@@ -235,7 +236,7 @@ def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cr
             'vertices.on': False,
             'edges.on': False,
             'faces.on': True,
-            }
+        }
 
     viewer.add(intrados, name="Intrados", settings=settings_bounds)
     viewer.add(extrados, name="Extrados", settings=settings_bounds)
@@ -243,7 +244,7 @@ def view_solution(form, shape=None, settings_form=None, settings_bounds=None, cr
     if not thickness:
         viewer.add(form, name="FormDiagram", settings=settings_form)
     else:
-        f_range = [form.edge_attribute((u, v), 'f') for u, v in form.edges()]
+        # f_range = [form.edge_attribute((u, v), 'f') for u, v in form.edges()]
         for u, v in form.edges_where({'_is_edge': True}):
             return
             # Figure out how to make this plot.
@@ -291,7 +292,7 @@ def view_bestfit_solution(form, shape=None, settings_form=None, settings_bounds=
             'vertices.on': False,
             'edges.on': True,
             'faces.on': False,
-            }
+        }
 
     if not settings_bounds:
         settings_bounds = {
@@ -302,7 +303,7 @@ def view_bestfit_solution(form, shape=None, settings_form=None, settings_bounds=
             'vertices.on': False,
             'edges.on': False,
             'faces.on': True,
-            }
+        }
 
     viewer.add(middle, name="Target", settings=settings_bounds)
     viewer.add(form, name="FormDiagram", settings=settings_form)

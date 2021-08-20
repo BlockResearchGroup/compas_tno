@@ -20,12 +20,6 @@ from compas_tno.problems.bounds_update import dub_dlb_update
 from compas_tno.problems.bounds_update import db_update
 
 
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
-
-
 __all__ = [
     'd_fobj',
     'd_fconstr',
@@ -75,7 +69,8 @@ def d_fconstr(fconstr, x0, eps, *args):
 
 
 def d_min_thrust(fobj, x0, eps, *args):
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty) = args
 
     f0val = fobj(x0, *args)
     n = len(x0)
@@ -89,7 +84,8 @@ def d_min_thrust(fobj, x0, eps, *args):
 
 
 def d_f_ub_lb(fobj, x0, eps, *args):
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty = args
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty) = args
 
     f0val = fobj(x0, *args)
     n = len(x0)
@@ -99,9 +95,9 @@ def d_f_ub_lb(fobj, x0, eps, *args):
         diff[i] = eps
         df0dx[i] = (fobj(x0 + diff, *args) - f0val)/diff[i]
 
-    B = Edinv.dot(Ei)
-    m_qpos = B.shape[0]
-    qpos_contribution = B
+    # B = Edinv.dot(Ei)
+    # m_qpos = B.shape[0]
+    # qpos_contribution = B
 
     # transpose(vstack([qpos, upper_limit, lower_limit]))[0]
 
@@ -110,7 +106,8 @@ def d_f_ub_lb(fobj, x0, eps, *args):
 
 def sensitivities_wrapper(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
 
     if 'ind' in variables:  # Not yet deal with all-q
         q[ind] = xopt[:k].reshape(-1, 1)
@@ -151,7 +148,7 @@ def sensitivities_wrapper(xopt, *args):
             dz = hstack([dz, dz_zb])
         if 't' in variables or 's' in variables or 'n' in variables:
             dub, dlb = dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables)
-            dzub = hstack([-dz, dub])
+            dzub = hstack([-1 * dz, dub])
             dzlb = hstack([dz, - dlb])
             deriv = vstack([deriv, dzub[ub_ind], dzlb[lb_ind]])  # dz IN ub_ind / lb_ind  # ind=indices
         else:
@@ -229,7 +226,8 @@ def sensitivities_wrapper_inequalities(xopt, *args):
     """
     This computes the sensitivities considering only inequality constraints.
     """
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
     deriv = sensitivities_wrapper(xopt, *args)
     if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in dict_constr):
         if len(variables) == 3:
@@ -368,8 +366,8 @@ def sensitivities_wrapper_general(variables, M):
         for i in range(len(M.fixed)):
             i_ = len(M.fixed) + i
             zbi = M.X[M.fixed, 2][i]
-            px0i = M.P[M.fixed, 0][i]
-            py0i = M.P[M.fixed, 1][i]
+            # px0i = M.P[M.fixed, 0][i]
+            # py0i = M.P[M.fixed, 1][i]
 
             signe_x = 1.0
             signe_y = 1.0
@@ -450,7 +448,8 @@ def sensitivities_wrapper_general(variables, M):
 
 def gradient_fmin(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape_data = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
 
     if 'ind' in variables:
         q[ind] = xopt[:k].reshape(-1, 1)
@@ -521,7 +520,8 @@ def gradient_wrapper(xopt, *args):
 
 def gradient_bestfit(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
 
     q[ind] = xopt[:k].reshape(-1, 1)
     if 'zb' in variables:
@@ -555,7 +555,8 @@ def gradient_bestfit(xopt, *args):
 
 def gradient_loadpath(xopt, *args):
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub, free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape = args[:50]
+    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
+     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
 
     q[ind] = xopt[:k].reshape(-1, 1)
     if 'zb' in variables:

@@ -1,9 +1,6 @@
-from compas_tna.diagrams import FormDiagram
-from compas_tna.diagrams import ForceDiagram
 from compas.datastructures import Mesh
 from compas_view2 import app
 import time
-import compas
 import json
 
 
@@ -68,4 +65,3 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
     viewer.run()
 
     return
-

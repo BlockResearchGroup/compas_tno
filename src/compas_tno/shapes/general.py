@@ -104,6 +104,7 @@ def general_db_with_t_middle_variable(s, middle):
 
     return dub, dlb
 
+
 def general_ub_lb_update_with_t_intrados(thk, lb, intrados, t):
 
     ub_update = zeros((len(lb), 1))
