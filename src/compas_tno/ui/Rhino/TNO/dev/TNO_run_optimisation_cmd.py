@@ -55,7 +55,11 @@ def RunCommand(is_interactive):
     message = optimiser.optimiser.message + ' fopt: ' + str(round(optimiser.optimiser.fopt, 2))
     compas_rhino.display_message(message)
 
+    # modify the basic visualisation after analysis
+    form.settings['show.reactionvectors'] = True
     form.settings['show.cracks'] = True
+    form.settings['show.forcepipes'] = True
+    form.settings['show.reactionlabels'] = True
 
     scene.update()
     scene.save()

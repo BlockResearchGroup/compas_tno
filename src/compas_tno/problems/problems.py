@@ -454,7 +454,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
 
 
 def initialise_problem_general(form, printout=None, tol=0.001):
-    """ Initialise the problem for a given Form-Diagram building the main matrices used in the subsequente analysis.
+    """ Initialise the problem for a given Form-Diagram building the main matrices used in the subsequent analysis.
 
     Parameters
     ----------
@@ -582,6 +582,7 @@ def initialise_problem_general(form, printout=None, tol=0.001):
     problem.P = hstack([px, py, pz])
     problem.free = free
     problem.fixed = fixed
+    problem.phfree = hstack([px[free], py[free]])
     problem.lb = lb
     problem.ub = ub
     problem.s = s

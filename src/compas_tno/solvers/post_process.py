@@ -103,7 +103,7 @@ def post_process_general(analysis):
             shape = Shape.from_library(shape.datashape)
             apply_envelope_from_shape(form, shape)  # Check if this is ok for adapted pattern
             i = 0
-            for key in form.vertices():  # this resolver the problem due to the adapted pattern
+            for key in form.vertices():  # this resolve the problem due to the adapted pattern
                 form.vertex_attribute(key, 'ub', float(M.ub[i]))
                 form.vertex_attribute(key, 'lb', float(M.lb[i]))
                 i += 1
@@ -130,6 +130,7 @@ def post_process_general(analysis):
 
     analysis.form = form
     analysis.optimiser = optimiser
+    analysis.shape = shape
 
     if printout or summary:
         print('\n' + '-' * 50)

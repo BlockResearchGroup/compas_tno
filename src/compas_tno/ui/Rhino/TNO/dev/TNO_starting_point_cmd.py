@@ -32,12 +32,18 @@ def RunCommand(is_interactive):
         compas_rhino.display_message("There is no Shape in the scene.")
         return
 
-    # add check to see if loads are applied and if bounds on q are set
+    # add check to see if loads and
 
     proxy.package = 'compas_tno.problems'
 
     formdata = form.diagram.to_data()
     form.diagram.data, output = proxy.initialize_loadpath_proxy(formdata)
+
+    # modify the basic visualisation after analysis
+    form.settings['show.reactionvectors'] = True
+    form.settings['show.cracks'] = True
+    form.settings['show.forcepipes'] = True
+    form.settings['show.reactionlabels'] = True
 
     message = output['status'] + ' - LP: ' + str(round(output['fopt'], 1)) + ' kN.m'
 

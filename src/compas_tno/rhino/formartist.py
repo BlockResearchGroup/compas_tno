@@ -5,9 +5,13 @@ from __future__ import division
 import compas_rhino
 
 from functools import partial
-from math import fabs
+from math import sqrt
+from math import pi
 from compas_tno.rhino.diagramartist import DiagramArtist
 from compas.utilities import color_to_colordict
+from compas.geometry import add_vectors
+from compas.geometry import scale_vector
+from compas.geometry import length_vector
 
 colordict = partial(color_to_colordict, colorformat='rgb', normalize=False)
 
@@ -84,47 +88,11 @@ class FormArtist(DiagramArtist):
     #             'name': "{}.edge.{}-{}".format(self.diagram.name, *edge)})
     #     return compas_rhino.draw_lines(lines, layer=layer, clear=False, redraw=False)
 
-    def draw_forcepipes(self, color_compression=None, color_tension=None, scale=None, tol=None, displacement=None, layer='Pipes'):
-        """Draw the forces in the internal edges as pipes with color and thickness matching the force value.
+    def redraw(self):
 
-        Parameters
-        ----------
-        color_compression
-        color_tension
-        scale
-        tol
+        compas_rhino.rs.EnableRedraw(True)
 
-        Returns
-        -------
-        list
-            The GUIDs of the created Rhino objects.
-        """
-        color_compression = color_compression or self.color_compression
-        color_tension = color_tension or self.color_tension
-        scale = scale or self.scale_forces
-        tol = tol or self.tol_forces
-        vertex_xyz = self.vertex_xyz
-        if displacement:
-            for key in vertex_xyz:
-                vertex_xyz[key][0] += displacement[0]
-                vertex_xyz[key][1] += displacement[1]
-        edges = []
-        pipes = []
-        for edge in self.diagram.edges():
-            length = self.diagram.edge_length(*edge)
-            q = self.diagram.edge_attribute(edge, 'q')
-            force = q * length
-            if force > tol:
-                radius = fabs(scale * force)
-            else:
-                continue
-            edges.append(edge)
-            color = color_compression
-            pipes.append({'points': [vertex_xyz[edge[0]], vertex_xyz[edge[1]]],
-                          'color': color,
-                          'radius': radius,
-                          'name': "{}.force.{}-{}".format(self.diagram.name, *edge)})
-        return compas_rhino.draw_pipes(pipes, layer=layer, clear=False, redraw=False)
+        return
 
     def draw_thrust(self, displacement=None):
         """Draw a mesh for the thrust network.
@@ -146,7 +114,7 @@ class FormArtist(DiagramArtist):
         vertices, faces = self.diagram.to_vertices_and_faces()
         return compas_rhino.draw_mesh(vertices, faces, name="Thrust", color=self.color_mesh_thrust, disjoint=True, layer="Thrust-Mesh")
 
-    def draw_cracks(self, vertices=None, displacement=None, tol_cracks=10e-5, layer='Cracks', spheres=False):
+    def draw_cracks(self, color_intrados=(0, 0, 200), color_extrados=(0, 200, 0), layer=None, tol=10e-5):
         """Draw the intersection of the thrust network with intrados and extrados.
 
         Parameters
@@ -156,57 +124,68 @@ class FormArtist(DiagramArtist):
             The default is ``None``, in which case all vertices are drawn.
         displacement : list, optional
             A displacement to add mesh to the scene.
-        tol_cracks : float, optional
+        tol : float, optional
             Acceptable error to find an intersection.
 
         Returns
         -------
-        list
-            The GUIDs of the created Rhino object.
+        tuple with 2 lists
+            List of the GUIDs of the created Rhino object, and the keys associated to it in the form diagram.
 
         """
         layer = layer or self.layer
         form = self.diagram
         intra_vertices = []
         extra_vertices = []
+        intra_keys = []
+        extra_keys = []
         for key in form.vertices():
             x, y, z = form.vertex_coordinates(key)
-            if displacement:
-                x += displacement[0]
-                y += displacement[1]
             lb = form.vertex_attribute(key, 'lb')
             ub = form.vertex_attribute(key, 'ub')
-            if isinstance(lb, list):
-                lb = lb[0]
-                ub = ub[0]
             if lb:
-                if abs(z - lb) < tol_cracks:
-                    if spheres:
-                        sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
-                        compas_rhino.rs.ObjectColor(sphere, self.color_vertex_intrados)
-                        compas_rhino.rs.ObjectLayer(sphere, layer)
-                    else:
-                        intra_vertices.append({
-                            'pos': [x, y, z],
-                            'name': "{}.vertex.{}".format("Intrados", key),
-                            'color': self.color_vertex_intrados})
+                if abs(z - lb) < tol:
+                    intra_keys.append(key)
+                    intra_vertices.append({
+                        'pos': [x, y, z],
+                        'name': "{}.vertex.{}".format("Intrados", key),
+                        'color': self.color_vertex_intrados})
             if ub:
-                if abs(z - ub) < tol_cracks:
-                    if spheres:
-                        sphere = compas_rhino.rs.AddSphere([x, y, z], self.radius_sphere)
-                        compas_rhino.rs.ObjectColor(sphere, self.color_vertex_extrados)
-                        compas_rhino.rs.ObjectLayer(sphere, layer)
-                    else:
-                        extra_vertices.append({
-                            'pos': [x, y, z],
-                            'name': "{}.vertex.{}".format("Extrados", key),
-                            'color': self.color_vertex_extrados})
+                if abs(z - ub) < tol:
+                    extra_keys.append(key)
+                    extra_vertices.append({
+                        'pos': [x, y, z],
+                        'name': "{}.vertex.{}".format("Extrados", key),
+                        'color': self.color_vertex_extrados})
 
-        compas_rhino.draw_points(intra_vertices, layer=layer, clear=False, redraw=False)
-        compas_rhino.draw_points(extra_vertices, layer=layer, clear=False, redraw=False)
-        return
+        guids_intra = compas_rhino.draw_points(intra_vertices, layer=layer + 'Intrados', color=color_intrados, clear=False, redraw=False)
+        guids_extra = compas_rhino.draw_points(extra_vertices, layer=layer + 'Extrados', color=color_extrados, clear=False, redraw=False)
+        return (guids_intra + guids_extra, intra_keys + extra_keys)
 
+    # update this function
     def draw_from_attributes(self, attribute='target', name='mesh', displacement=None, color=None, join_faces=True, layer=None):
+        """Draw a copy mesh of the form diagram whose height is defined based on the a given attribure.
+
+        Parameters
+        ----------
+        attribute : str
+            Attribute to base the heights of the network on.
+        scale : float, optional
+            The scaling factor for the load force vectors.
+            The default value is ``0.01``
+        layer : str, optional
+            The layer to draw the output.
+
+        Returns
+        -------
+        list
+            A list with the guid of the corresponding load force vectors in Rhino.
+
+        Notes
+        -----
+        The magnitude of the externally applied load at a vetex the attribute  `pz`.
+
+        """
 
         faces = list(self.diagram.faces())
         layer = layer or self.layer
@@ -236,57 +215,117 @@ class FormArtist(DiagramArtist):
             compas_rhino.rs.ObjectColor(guid, color)
         return
 
-    # def draw_intrados(self, displacement=None, layer='Intrados'):
+    def draw_loads(self, color=(255, 0, 0), scale=0.01, layer=None, tol=1e-3):
+        """Draw the externally applied loads at all vertices of the diagram.
 
-    #     self.draw_from_attributes(attribute='lb', name='Intrados', color=self.color_mesh_intrados, displacement=displacement, layer=layer)
+        Parameters
+        ----------
+        color : list or tuple, optional
+            The RGB color specification for load forces.
+            The specification must be in integer format, with each component between 0 and 255.
+        scale : float, optional
+            The scaling factor for the load force vectors.
+            The default value is ``0.01``
+        layer : str, optional
+            The layer to draw the output.
 
-    #     return
+        Returns
+        -------
+        list
+            A list with the guid of the corresponding load force vectors in Rhino.
 
-    # def draw_extrados(self, displacement=None, layer='Extrados'):
+        Notes
+        -----
+        The magnitude of the externally applied load at a vetex the attribute  `pz`.
 
-    #     self.draw_from_attributes(attribute='ub', name='Extrados', color=self.color_mesh_extrados, displacement=displacement, layer=layer)
+        """
+        vertex_xyz = self.vertex_xyz
+        lines = []
 
-    #     return
+        for vertex in self.diagram.vertices():
+            a = vertex_xyz[vertex]
+            pz = -1 * self.diagram.vertex_attribute(vertex, 'pz')
+            load = scale_vector((0, 0, 1), scale * pz)
+            b = add_vectors(a, load)
+            lines.append({'start': a, 'end': b, 'color': color, 'arrow': "start"})
 
-    # def draw_middle(self, displacement=None, layer='Middle'):
+        return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
 
-    #     self.draw_from_attributes(attribute='target', name='Middle', color=self.color_mesh_middle, displacement=displacement, layer=layer)
+    def draw_reactions(self, color=(255, 0, 0), scale=0.1, layer=None, tol=1e-3):
+        """Draw the reaction forces.
 
-    #     return
+        Parameters
+        ----------
+        color : list or tuple
+            The RGB color specification for load forces.
+            The specification must be in integer format, with each component between 0 and 255.
+        scale : float, optional
+            The scaling factor for the load force vectors.
+            The default value is ``0.01``
+        layer : str, optional
+            The layer to draw the output.
 
-    def draw_reactions(self, layer='Reactions', displacement=None, TextDot=False):
+        Returns
+        -------
+        list
+            A list with the guid of the corresponding load force vectors in Rhino.
 
+        Notes
+        -----
+        The magnitude of the externally applied load at a vetex the attribute  `pz`.
+
+        """
         layer = layer or self.layer
-        # compas_rhino.rs.CurrentLayer(layer)
+        vertex_xyz = self.vertex_xyz
+        lines = []
         for key in self.diagram.vertices_where({'is_fixed': True}):
-            xb, yb, zb = self.diagram.vertex_coordinates(key)
-            if displacement:
-                xb += displacement[0]
-                yb += displacement[1]
-            rx = self.diagram.vertex_attribute(key, '_rx')
-            ry = self.diagram.vertex_attribute(key, '_ry')
-            rz = self.diagram.vertex_attribute(key, '_rz')
-            norm = (rx ** 2 + ry ** 2 + rz ** 2) ** (1/2)
-            if rz < 0.0 and norm > 0.0:
-                sp = [xb, yb, zb]
-                dz = rz/norm
-                mult = zb/dz
-                dz *= mult
-                dx_ = mult * rx/norm
-                dy_ = mult * ry/norm
-                ep = [xb - dx_, yb - dy_, zb - dz]
-                id = compas_rhino.rs.AddLine(sp, ep)
-                compas_rhino.rs.ObjectName(id, str(norm))
-                compas_rhino.rs.ObjectLayer(id, layer)
-                # compas_rhino.rs.CurrentLayer(reac_val)
-                if TextDot:
-                    compas_rhino.rs.AddTextDot('({0:.1f};{1:.1f})'.format(rx, ry), sp, layer=layer)
-                # compas_rhino.rs.CurrentLayer(reac_layer)
+            a = vertex_xyz[key]
+            r = self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz'])
+            if not any(r):  # If receives null vector or None
+                continue
+            r = scale_vector(r, -1 * scale)
+            if length_vector(r) < tol:
+                continue
 
-        return
+            b = add_vectors(a, r)
+            lines.append({'start': a, 'end': b, 'color': color, 'arrow': "start"})
 
-    def redraw(self):
+        return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
 
-        compas_rhino.rs.EnableRedraw(True)
+    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255), scale=0.01, tol=1e-3, layer=None):
+        """Draw the forces in the internal edges as pipes with color and thickness matching the force value.
 
-        return
+        Parameters
+        ----------
+        color_compression
+        color_tension
+        scale
+        tol
+
+        Returns
+        -------
+        list
+            The GUIDs of the created Rhino objects.
+        """
+        layer = layer or self.layer
+        vertex_xyz = self.vertex_xyz
+        cylinders = []
+        for edge in self.diagram.edges_where({'_is_edge': True}):
+            u, v = edge
+            start = vertex_xyz[u]
+            end = vertex_xyz[v]
+            length = self.diagram.edge_length(*edge)
+            q = self.diagram.edge_attribute(edge, 'q')
+            force = q * length
+            force = scale * force
+            if abs(force) < tol:
+                continue
+            radius = sqrt(abs(force)/pi)
+            pipe_color = color_compression if force < 0 else color_tension
+            cylinders.append({
+                'start': start,
+                'end': end,
+                'radius': radius,
+                'color': pipe_color
+            })
+        return compas_rhino.draw_cylinders(cylinders, layer=layer, clear=False, redraw=False)

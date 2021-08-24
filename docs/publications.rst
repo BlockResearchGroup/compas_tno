@@ -9,12 +9,12 @@ Publications
         title   = "Assessing the safety of vaulted masonry structures using Thrust Network Analysis",
         journal = "Computers and Structures",
         year    = "2021",
-        volume  = "",
+        volume  = "257",
         number  = "",
-        pages   = "",
+        pages   = "106647",
         month   = "",
-        doi     = "",
-        note    = "accepted",
+        doi     = "10.1016/j.compstruc.2021.106647",
+        note    = "",
     }
 
 .. code-block:: none
@@ -28,7 +28,7 @@ Publications
         number  = "8",
         pages   = "3560",
         month   = "April",
-        doi     = "10.3390/app11083560",
+        doi     = "https://doi.org/10.3390/app11083560",
         note    = "Special Issue 'Theory and Modelling of Historic Masonry Architecture', Eds. C. Cennamo and C. Cusano",
     }
 

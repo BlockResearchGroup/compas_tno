@@ -27,7 +27,7 @@ class ShapeObject(BaseObject):
     def __init__(self, shape, scene=None, name=None, layer=None, visible=True, settings=None):
         super(ShapeObject, self).__init__(shape, scene, name, layer, visible)
         self.settings.update(ShapeObject.SETTINGS)
-        self.shape = shape
+        self._shape = shape
         self._guids = []
         self._guid_intrados = {}
         self._guid_extrados = {}
@@ -42,19 +42,14 @@ class ShapeObject(BaseObject):
         if settings:
             self.settings.update(settings)
 
-    # @property
-    # def shape(self):
-    #     """The diagram associated with the object."""
-    #     print('ha')
-    #     return self._shape
+    @property
+    def shape(self):
+        """The shape associated with the object."""
+        return self._shape
 
-    # @shape.setter
-    # def shape(self, shape):
-    #     print('hi')
-    #     # self._shape = shape
-    #     self.intrados = shape.intrados
-    #     self.extrados = shape.extrados
-    #     self.middle = shape.middle
+    @shape.setter
+    def shape(self, shape):
+        self._shape = shape
 
     @property
     def location(self):
@@ -108,7 +103,7 @@ class ShapeObject(BaseObject):
 
     @anchor.setter
     def anchor(self, vertex):
-        if self.middle.has_vertex(vertex):
+        if self.shape.middle.has_vertex(vertex):
             self._anchor = vertex
 
     # @property  # See if this property makes sense or it needs to be vertex_xyz_intrados ...
@@ -199,6 +194,8 @@ class ShapeObject(BaseObject):
 
         """
         self.clear()
+
+        self.artist.shape = self.shape
 
         if not self.visible:
             return

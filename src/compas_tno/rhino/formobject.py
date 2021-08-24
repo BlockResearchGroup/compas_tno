@@ -4,6 +4,10 @@ from __future__ import division
 
 import compas_rhino
 from compas_tno.rhino.diagramobject import DiagramObject
+from compas.geometry import add_vectors
+from compas.geometry import scale_vector
+from compas.geometry import norm_vector
+from compas.geometry import centroid_points
 
 
 __all__ = ['FormObject']
@@ -20,27 +24,34 @@ class FormObject(DiagramObject):
         'show.vertexlabels': False,
         'show.vertexloads': False,
         'show.edgelabels': False,
+        'show.reactionlabels': False,
         'show.cracks': False,
+        'show.vertices_bound': False,
         'show.forcecolors': False,
         'show.forcelabels': False,
         'show.forcepipes': False,
-        'show.vertices_bound': False,
+        'show.loadvectors': False,
+        'show.reactionvectors': False,
 
         'color.vertices': (0, 0, 0),
         'color.vertexlabels': (255, 255, 255),
         'color.vertexloads': (255, 255, 255),
         'color.vertices:is_fixed': (255, 0, 0),
-        'color.vertices:upper_bound': (0, 255, 0),
-        'color.vertices:lower_bound': (0, 0, 255),
+        'color.vertices:upper_bound': (0, 200, 0),
+        'color.vertices:lower_bound': (0, 0, 200),
         'color.edges': (0, 0, 0),
         'color.edges:is_ind': (0, 0, 0),
         'color.edges:is_external': (0, 255, 0),
         'color.edges:is_reaction': (0, 255, 0),
         'color.edges:is_load': (0, 255, 0),
+        'color.reactionvectors': (255, 0, 0),
+        'color.loadvectors': (0, 200, 200),
         'color.faces': (210, 210, 210),
         'color.compression': (255, 0, 0),
         'color.tension': (0, 0, 255),
-        'scale.forces': None,
+
+        'scale.forcepipes': 0.001,
+        'scale.vectors': 0.01,
 
         'tol.edges': 1e-3,
         'tol.forces': 1e-3,
@@ -52,27 +63,63 @@ class FormObject(DiagramObject):
         settings = kwargs.get('settings') or {}
         if settings:
             self.settings.update(settings)
-        self._guid_force = {}
+        self._guid_pipes = {}
+        self._guid_cracks = {}
+        self._guid_vectors = {}
+        self._guid_reactions = {}
 
     @property
     def guids(self):
         guids = super(FormObject, self).guids
-        guids += list(self.guid_force.keys())
+        guids += list(self.guid_pipes.keys())
+        guids += list(self.guid_cracks.keys())
+        guids += list(self.guid_vectors.keys())
+        guids += list(self.guid_reactions.keys())
         return guids
 
     @property
-    def guid_force(self):
+    def guid_pipes(self):
         """Map between Rhino object GUIDs and form diagram edge force identifiers."""
-        return self._guid_force
+        return self._guid_pipes
 
-    @guid_force.setter
-    def guid_force(self, values):
-        self._guid_force = dict(values)
+    @guid_pipes.setter
+    def guid_pipes(self, values):
+        self._guid_pipes = dict(values)
+
+    @property
+    def guid_cracks(self):
+        """Map between Rhino object GUIDs and thrust network cracks."""
+        return self._guid_cracks
+
+    @guid_cracks.setter
+    def guid_cracks(self, values):
+        self._guid_cracks = dict(values)
+
+    @property
+    def guid_vectors(self):
+        """Map between Rhino object GUIDs and thrust network vectors to represent loads."""
+        return self._guid_vectors
+
+    @guid_vectors.setter
+    def guid_vectors(self, values):
+        self._guid_vectors = dict(values)
+
+    @property
+    def guid_reactions(self):
+        """Map between Rhino object GUIDs and thrust network vectors to represent reactions."""
+        return self._guid_reactions
+
+    @guid_reactions.setter
+    def guid_reactions(self, values):
+        self._guid_reactions = dict(values)
 
     def clear(self):
         super(FormObject, self).clear()
         compas_rhino.delete_objects(self.guids, purge=True)
-        self._guid_force = {}
+        self._guid_pipes = {}
+        self._guid_cracks = {}
+        self._guid_vectors = {}
+        self._guid_reactions = {}
 
     def draw(self):
         """Draw the form diagram.
@@ -130,59 +177,35 @@ class FormObject(DiagramObject):
 
         # upper and lower bounds
         if self.settings['show.vertices_bound']:
-            points_bounds = []
-            vertices_bounds = []
+            points = []
+            vertices = []
             for key in self.diagram.vertices():
                 lb = self.diagram.vertex_attribute(key, 'lb')
                 ub = self.diagram.vertex_attribute(key, 'ub')
                 x, y, z = self.diagram.vertex_coordinates(key)
                 if lb:
-                    vertices_bounds.append(key)
-                    points_bounds.append({
+                    vertices.append(key)
+                    points.append({
                         'pos': [x, y, lb],
                         'color': self.settings['color.vertices:lower_bound']
                     })
                 if ub:
-                    vertices_bounds.append(key)
-                    points_bounds.append({
+                    vertices.append(key)
+                    points.append({
                         'pos': [x, y, ub],
                         'color': self.settings['color.vertices:upper_bound']
                     })
 
-            if points_bounds:
-                guids_bounds = compas_rhino.draw_points(points_bounds, layer="TNO::Shape::Bounds", clear=False, redraw=False)
-                guids = guids + guids_bounds
-                vertices = vertices + vertices_bounds
-                self.guid_vertex = zip(guids, vertices)
+            guids = compas_rhino.draw_points(points, layer="TNO::Shape::Bounds", clear=False, redraw=False)
+            self.guid_cracks = zip(guids, vertices)
 
         if self.settings['show.cracks']:
-            points_cracks = []
-            vertices_cracks = []
-            for key in self.diagram.vertices():
-                lb = self.diagram.vertex_attribute(key, 'lb')
-                ub = self.diagram.vertex_attribute(key, 'ub')
-                x, y, z = self.diagram.vertex_coordinates(key)
-                if ub is not None and lb is not None:
-                    if abs(ub - z) < 10e-4:
-                        vertices_cracks.append(key)
-                        points_cracks.append({
-                            'pos': [x, y, ub],
-                            'color': self.settings['color.vertices:upper_bound']
-                        })
-                    elif abs(lb - z) < 10e-4:
-                        vertices_cracks.append(key)
-                        points_cracks.append({
-                            'pos': [x, y, lb],
-                            'color': self.settings['color.vertices:lower_bound']
-                        })
-                    else:
-                        pass
-
-            if points_cracks:
-                guids_cracks = compas_rhino.draw_points(points_cracks, layer="TNO::Shape::Cracks", clear=False, redraw=False)
-                guids = guids + guids_cracks
-                vertices = vertices + vertices_cracks
-                self.guid_vertex = zip(guids, vertices)
+            guids, vertices = self.artist.draw_cracks(
+                color_intrados=self.settings['color.vertices:lower_bound'],
+                color_extrados=self.settings['color.vertices:upper_bound'],
+                layer='TNO::Shape::Bounds'
+            )
+            self.guid_cracks = zip(guids, vertices)
 
         # vertex loads
         if self.settings['show.vertexloads']:
@@ -257,16 +280,64 @@ class FormObject(DiagramObject):
                 guids = self.artist.draw_edgelabels(text=text, color=color)
                 guid_edgelabel += zip(guids, edges)
 
+            # reaction labels
+            if self.settings['show.reactionlabels']:
+                vertices = list(self.diagram.vertices_where({'is_fixed': True}))
+                labels = []
+                for vertex in vertices:
+                    a = self.vertex_xyz[vertex]
+                    r = self.diagram.vertex_attributes(vertex, ['_rx', '_ry', '_rz'])
+                    if not any(r):  # If receives null vector or None
+                        text = "0.0 kN"
+                        b = a
+                    else:
+                        text = "{:.4g}kN".format(norm_vector(r))
+                        r = scale_vector(r, -1 * self.settings['scale.vectors'])
+                        b = add_vectors(a, r)
+                    labels.append({
+                        'pos': centroid_points([a, b]),
+                        'name': "{}.reactionlabel.{}".format(self.diagram.name, vertex),
+                        'color': self.settings['color.reactionvectors'],
+                        'text': text})
+
+                guids = compas_rhino.draw_labels(labels, layer=self.layer, clear=False, redraw=False)
+                guid_edgelabel += zip(guids, vertices)
+
             self.guid_edgelabel = guid_edgelabel
 
         # force pipes
         if self.settings['show.forcepipes']:
+            edges = list(self.diagram.edges_where({'_is_edge': True}))
             guids = self.artist.draw_forcepipes(
                 color_compression=self.settings['color.compression'],
                 color_tension=self.settings['color.tension'],
-                scale=self.settings['scale.forces'],
+                scale=self.settings['scale.forcepipes'],
                 tol=self.settings['tol.forces'])
 
-            self.guid_force = zip(guids, edges)
+            self.guid_pipes = zip(guids, edges)
+
+        # load vectors
+        if self.settings['show.loadvectors']:
+            vertices = list(self.diagram.vertices())
+            guids = self.artist.draw_loads(
+                color=self.settings['color.loadvectors'],
+                scale=self.settings['scale.vectors'],
+                layer="TNO::Loads",
+                tol=self.settings['tol.forces']
+            )
+
+            self.guid_vectors = zip(guids, edges)
+
+        # reaction vectors
+        if self.settings['show.reactionvectors']:
+            vertices = list(self.diagram.vertices_where({'is_fixed': True}))
+            guids = self.artist.draw_reactions(
+                color=self.settings['color.reactionvectors'],
+                scale=self.settings['scale.vectors'],
+                layer="TNO::Reactions",
+                tol=self.settings['tol.forces']
+            )
+
+            self.guid_reactions = zip(guids, edges)
 
         self.redraw()

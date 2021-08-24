@@ -48,6 +48,7 @@ from compas_tno.utilities import apply_bounds_on_q
 from numpy import append
 from numpy import array
 
+
 __all__ = [
     'set_up_general_optimisation',
     'set_up_convex_optimisation',
@@ -85,7 +86,7 @@ def set_up_general_optimisation(analysis):
     save_iterations = optimiser.settings.get('save_iterations', False)
 
     if shape:
-        thk = optimiser.settings.get('thk', shape.datashape['thk'])
+        thk = shape.datashape['thk']
     else:
         thk = 0.20
 
@@ -230,6 +231,7 @@ def set_up_general_optimisation(analysis):
     if 't' in variables:
         min_thk = optimiser.settings.get('min_thk', 0.001)
         max_thk = optimiser.settings.get('max_thk', thk)
+        print('max thickness', max_thk)
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, max_thk]]
 

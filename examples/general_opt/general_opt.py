@@ -6,8 +6,8 @@ from compas_tno.viewers import view_solution
 from compas_tno.utilities import apply_envelope_on_xy
 from compas_tno.utilities import apply_horizontal_multiplier
 
-from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.analysis.analysis import Analysis
+from compas_tno.optimisers import Optimiser
+from compas_tno.analysis import Analysis
 
 span = 10.0
 k = 1.0
@@ -26,7 +26,7 @@ c = 0.1
 lambd = 0.1
 
 objective = 'min'
-solver = 'SLSQP'
+solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
 features = ['fixed']
@@ -35,10 +35,10 @@ axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 starting_point = 'loadpath'
 gradients = True
 
-if objective == ['t']:
-    variables.append(objective[0])
-if objective == ['lambd']:
-    variables.append(objective[0])
+if objective == 't':
+    variables.append(objective)
+if objective == 'lambd':
+    variables.append(objective)
 
 # Create form diagram
 
@@ -97,7 +97,6 @@ optimiser.settings['plot'] = False
 optimiser.settings['find_inds'] = False
 optimiser.settings['printout'] = True
 optimiser.settings['starting_point'] = starting_point
-# optimiser.settings['qmax'] = 1000.0
 optimiser.settings['gradient'] = True
 optimiser.settings['jacobian'] = True
 optimiser.settings['derivative_test'] = False
@@ -115,12 +114,20 @@ analysis.run()
 data = optimiser.to_data()
 optimiser = Optimiser.from_data(data)
 
-weight = 0
-for key in form.vertices():
-    weight += form.vertex_attribute(key, 'pz')
+if objective in ['min', 'max']:
+    weight = 0
+    for key in form.vertices():
+        weight += form.vertex_attribute(key, 'pz')
 
-thrust = abs(optimiser.fopt)
-print('Ratio Thrust/Weight:', thrust/weight)
+    thrust = abs(optimiser.fopt)
+    print('Ratio Thrust/Weight:', thrust/weight)
+
+import compas_tno
+json_form = compas_tno.get('form.json')
+json_shape = compas_tno.get('shape.json')
+
+form.to_json(json_form)
+vault.to_json(json_shape)
 
 # Viewing
 plot_form(form, show_q=False, cracks=True).show()

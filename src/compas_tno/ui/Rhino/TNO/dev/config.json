@@ -29,7 +29,8 @@
             {"name": "TNO_run_optimisation",        "menu_text": "Run Optimisation",            "tooltip": "Run Optimisation"},
             {"name": "TNO_shape_from_library",      "menu_text": "Shape from Library",          "tooltip": "Create Shape from Library"},
             {"name": "TNO_shape_from_meshes",       "menu_text": "Shape from Meshes",           "tooltip": "Create Shape from Meshes"},
-            {"name": "TNO_startubg_point",          "menu_text": "Find Starting Point",         "tooltip": "Find Starting Point"},
+            {"name": "TNO_starting_point",          "menu_text": "Find Starting Point",         "tooltip": "Find Starting Point"},
+            {"name": "TNO_scene_redraw",            "menu_text": "Redraw the scene",            "tooltip": "Redraw the scene"},
             {"name": "TNO__restart",                "menu_text": "Restart the Session",         "tooltip": "Restart the Session"}
 
         ],

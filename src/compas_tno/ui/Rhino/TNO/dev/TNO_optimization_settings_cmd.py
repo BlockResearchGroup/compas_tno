@@ -30,9 +30,9 @@ def RunCommand(is_interactive):
     data['objective'] = obj
 
     # variables
-    options = ['q', 'zb', 'xyb']
-    items = ("ForceDensitiesQ", "False", "True"), ("HeightSupportsZb", "False", "True"), ("PlanarSupportsXyb", "False", "True")
-    results = compas_rhino.rs.GetBoolean("Select Variables", items, (True, True, False))
+    options = ['q', 'zb', 'xyb', 't']
+    items = ("ForceDensitiesQ", "False", "True"), ("HeightSupportsZb", "False", "True"), ("PlanarSupportsXyb", "False", "True"), ("Thickness", "False", "True")
+    results = compas_rhino.rs.GetBoolean("Select Variables", items, (True, True, False, False))
     if not results:
         return
     data['variables'] = [i for indx, i in enumerate(options) if results[indx]]
