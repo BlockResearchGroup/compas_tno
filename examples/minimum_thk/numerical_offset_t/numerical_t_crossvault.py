@@ -95,7 +95,7 @@ vault = Shape.from_middle_pointcloud(points_central, topology=form, thk=thk, tre
 # Initialise
 # --------------------
 
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 form.selfweight_from_shape(vault)
 form.envelope_from_shape(vault)
 form.initialise_loadpath()

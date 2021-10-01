@@ -65,7 +65,7 @@ print(form)
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 form.selfweight_from_shape(vault)
 
 keys_diagonal = [2, 61, 121, 181, 241, 301, 361, 392, 362, 302, 242, 182, 122, 62, 4]

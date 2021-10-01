@@ -128,7 +128,7 @@ for hc in hc_list:
     form.selfweight_from_shape(vault)
 
     if starting_point == 'tna':
-        form = form.initialise_tna(plot=False)
+        form = form.form_update_with_parallelisation(plot=False)
     elif starting_point == 'loadpath':
         form = form.initialise_loadpath()
     else:

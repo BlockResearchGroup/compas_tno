@@ -71,7 +71,7 @@ form.selfweight_from_shape(dome)
 form.initialise_loadpath()
 form.overview_forces()
 
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 # plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------

@@ -59,9 +59,9 @@ print(form)
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 form.selfweight_from_shape(dome)
-orm = form.initialise_tna(plot=False)
+orm = form.form_update_with_parallelisation(plot=False)
 # form = form.initialise_loadpath()
 plot_form(form).show()
 

@@ -134,7 +134,7 @@ for discretisation in discretisations:
 
         # --------------------- 3. Create Starting point with TNA ---------------------
 
-        # form = form.initialise_tna(plot=False)
+        # form = form.form_update_with_parallelisation(plot=False)
         # if j == 0:
         try:
             form = FormDiagram.from_json(save_form + '_lp_' + '.json')

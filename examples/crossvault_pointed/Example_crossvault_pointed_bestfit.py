@@ -119,7 +119,7 @@ for hc in hc_list:
 
     print('Calculating SWT')
     form.selfweight_from_shape(vault)
-    # form = form.initialise_tna(plot=False)
+    # form = form.form_update_with_parallelisation(plot=False)
     form = form.initialise_loadpath()
     # plot_form(form, show_q=False).show()
 

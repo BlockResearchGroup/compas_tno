@@ -49,7 +49,7 @@ form.overview_forces()
 print('Form Diagram Created!')
 print(form)
 
-form = form.initialise_tna(plot=False)
+form = form.form_update_with_parallelisation(plot=False)
 
 # --------------------- 3.1 Create Minimisation for minimum thrust ---------------------
 

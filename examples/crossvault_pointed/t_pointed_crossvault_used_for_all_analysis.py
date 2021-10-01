@@ -312,7 +312,7 @@ for type_formdiagram in diagrams:
                 # file_pattern = os.path.join('/Users/mricardo/compas_dev/me', 'shape_comparison', 'pointed_crossvault', 'topology-crosssmooth2', 'FormDiagram-crosssmooth2.json')
                 # form_pattern = FormDiagram.from_json(file_pattern)
 
-                # form.initialise_tna()
+                # form.form_update_with_parallelisation()
 
                 # plot_form(form, show_q=False).show()
 

@@ -64,7 +64,7 @@ plot_form(form, show_q=False, fix_width=False).show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
+form = form.form_update_with_parallelisation(plot=False)
 plot_form(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------

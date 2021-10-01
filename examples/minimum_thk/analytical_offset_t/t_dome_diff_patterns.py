@@ -89,7 +89,7 @@ for x_discr in [20]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
         form.envelope_from_shape(dome)
         form.selfweight_from_shape(dome)
         form.initialise_loadpath()
-        # form = form.initialise_tna(plot=False)
+        # form = form.form_update_with_parallelisation(plot=False)
         plot_form(form).show()
 
         print('number edges', form.number_of_edges())

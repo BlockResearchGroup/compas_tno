@@ -80,7 +80,7 @@ for hc in hc_list:
     # --------------------- Create Initial point with TNA ---------------------
 
     form.selfweight_from_shape(vault)
-    form = form.initialise_tna(plot=False)
+    form = form.form_update_with_parallelisation(plot=False)
     swt0 = vault.compute_selfweight()
     print('Initial Selfweight:', swt0)
     r_x = horizontal_force_x * (span * 1.0)

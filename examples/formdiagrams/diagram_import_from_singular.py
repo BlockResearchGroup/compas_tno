@@ -14,7 +14,7 @@ form.delete_boundary_edges()
 
 plot_form(form, show_q=False, fix_width=True).show()
 
-form = form.initialise_tna(plot=True, alpha=90.0)
+form = form.form_update_with_parallelisation(plot=True, alpha=90.0)
 plot_form(form, show_q=False).show()
 
 form.to_json('/Users/mricardo/compas_dev/compas_tno/data/dome/singular/form1.json')

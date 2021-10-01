@@ -91,7 +91,7 @@ print('SWT Calculated')
 
 # --------------------- Create Initial point with TNA ---------------------
 
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 form = form.initialise_loadpath()
 # view_thrust(form).show()
 

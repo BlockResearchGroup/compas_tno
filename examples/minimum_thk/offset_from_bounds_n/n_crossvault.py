@@ -81,7 +81,7 @@ print('Area is:', area)
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-# form.initialise_tna(plot=False)
+# form.form_update_with_parallelisation(plot=False)
 form.initialise_loadpath()
 # plot_form(form).show()
 

@@ -110,7 +110,7 @@ for discretisation in [14, 16, 18, 20]:
 
     # --------------------- 3. Create Starting point with TNA ---------------------
 
-    # form = form.initialise_tna(plot=False)
+    # form = form.form_update_with_parallelisation(plot=False)
     form.initialise_loadpath()
     # plot_form(form).show()
 

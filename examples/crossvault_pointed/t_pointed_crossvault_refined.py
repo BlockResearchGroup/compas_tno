@@ -290,7 +290,7 @@ for type_formdiagram in ['topology-crossbraced']:  # THIS CAN ONLY WORK IF WE AD
                         print(address_lp)
                         # form.selfweight_from_shape(vault)
                         # form.envelope_from_shape(vault)
-                        # form = form.initialise_tna(plot=False)
+                        # form = form.form_update_with_parallelisation(plot=False)
                         form.initialise_loadpath()
                         # plot_form(form, show_q=False).show()
                         address_lp = forms_address + '_' + 'lp' + '_thk_' + str(100*thk) + '.json'

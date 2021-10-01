@@ -81,7 +81,7 @@ plot_form(form, show_q=False).show()
 
 #--- If using TNA
 
-form = form.initialise_tna(plot=False)
+form = form.form_update_with_parallelisation(plot=False)
 plot_form(form).show()
 
 #--- If using LOADPATH

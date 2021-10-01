@@ -89,7 +89,7 @@ for x_discr in [20, 24]:
         save_form = os.path.join(folder, title)
         form.to_json(save_form + '_min_thk_diagonal_' + type_diagonal + '_' + 'lp' + '_' + str(thk) + '.json')
 
-        # form = form.initialise_tna(plot=False)
+        # form = form.form_update_with_parallelisation(plot=False)
         # plot_form(form).show()
 
         # plot_form(form, show_q=False, fix_width=False).show()
@@ -99,7 +99,7 @@ for x_discr in [20, 24]:
         # form.selfweight_from_shape(dome)
         # form.envelope_from_shape(dome)
         # form.initialise_loadpath()
-        # # form = form.initialise_tna(plot=False)
+        # # form = form.form_update_with_parallelisation(plot=False)
         # plot_form(form).show()
 
         # # Print of UB at Nodes
