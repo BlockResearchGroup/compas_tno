@@ -2,33 +2,35 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import view_solution2
+
+from compas_tno.utilities import apply_envelope_from_shape
+from compas_tno.utilities import apply_selfweight_from_shape
+from compas_tno.utilities import apply_envelope_on_xy
+from compas_tno.utilities import apply_horizontal_multiplier
+from compas_tno.utilities import apply_bounds_on_q
 
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
-from compas_tno.plotters import save_csv
-from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
-discretisation = 14
+discretisation = 10
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
-discretisation_shape = 10 * discretisation
+discretisation_shape = 2 * discretisation
 hc = None
 he = None
 
-c = 0.1
-
-save = False
+save = True
 solutions = {}
 
-objective = ['t']
+objective = ['Ec']
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
-variables = ['q', 'zb', 't']
+variables = ['q', 'zb']
 features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
@@ -38,6 +40,7 @@ if objective == ['t']:
     variables.append(objective[0])
 if objective == ['lambd']:
     variables.append(objective[0])
+    lambd = 0.1
 
 for c in [0.1]:  # set the distance that the nodes can move
     solutions[c] = {}
@@ -82,12 +85,6 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             # Apply Selfweight and Envelope
 
-            from compas_tno.utilities import apply_envelope_from_shape
-            from compas_tno.utilities import apply_selfweight_from_shape
-            from compas_tno.utilities import apply_envelope_on_xy
-            from compas_tno.utilities import apply_horizontal_multiplier
-            from compas_tno.utilities import apply_bounds_on_q
-
             apply_envelope_from_shape(form, vault)
             apply_selfweight_from_shape(form, vault)
             if 'lambd' in variables:
@@ -115,7 +112,6 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['max_iter'] = 500
             optimiser.settings['gradient'] = True
             optimiser.settings['jacobian'] = True
-            # optimiser.settings['starting_point'] = 'loadpath'
             optimiser.settings['printout'] = True
             optimiser.settings['jacobian'] = True
             optimiser.settings['derivative_test'] = True
@@ -155,7 +151,9 @@ for c in [0.1]:  # set the distance that the nodes can move
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
             plot_superimposed_diagrams(form, form_base).show()
-            view_solution(form).show()
+            # view_solution(form).show()
+
+            print('Optimiser exitflag:', optimiser.exitflag)
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
@@ -167,10 +165,10 @@ for c in [0.1]:  # set the distance that the nodes can move
                     plot_form(form, show_q=False, cracks=True).show()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
-                view_solution(form).show()
+                view_solution2(form).show()
                 break
 
-    view_solution(form).show()
+    view_solution2(form).show()
 
 
 print(solutions)
@@ -179,21 +177,3 @@ print('\n')
 for key in solutions:
     for key2 in solutions[key]:
         print(key, key2, solutions[key][key2])
-
-# ----------------------- 5. Create Analysis loop on limit analysis --------------------------
-
-# folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'mov_c_' + str(c))
-# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-# save_form = os.path.join(folder, title)
-
-# analysis = Analysis.from_elements(vault, form, optimiser)
-# results = analysis.limit_analysis_GSF(thk, thk_reduction, span, save_forms=save_form)
-# thicknesses, size_parameters, solutions_min, solutions_max = results
-
-# # ----------------------- 6. Save output data --------------------------
-
-# csv_file = os.path.join(folder, title + '_data.csv')
-# save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
-
-# img_graph = os.path.join(folder, title + '_diagram.pdf')
-# diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()

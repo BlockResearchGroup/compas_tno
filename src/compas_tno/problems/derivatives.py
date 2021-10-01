@@ -38,6 +38,7 @@ __all__ = [
     'gradient_bestfit_general',
     'gradient_horprojection_general',
     'gradient_loadpath_general',
+    'gradient_complementary_energy'
 ]
 
 
@@ -788,6 +789,10 @@ def gradient_horprojection_general(variables, M):
 
     return gradient
 
+
+def gradient_complementary_energy(variables, M):
+
+    return
 
 def gradient_loadpath_general(variables, M):
 

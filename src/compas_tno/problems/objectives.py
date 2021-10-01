@@ -31,7 +31,8 @@ __all__ = [
     'f_max_thrust_general',
     'f_bestfit_general',
     'f_horprojection_general',
-    'f_loadpath_general'
+    'f_loadpath_general',
+    'f_complementary_energy'
 ]
 
 
@@ -212,6 +213,13 @@ def f_loadpath_general(variables, M):
     f = (abs(M.q.transpose()).dot(l2)).item()
 
     return f
+
+
+def f_complementary_energy(variables, M):
+
+    print('WIP')
+
+    return
 
 
 def f_constant(xopt, *args):

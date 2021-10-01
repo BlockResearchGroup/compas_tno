@@ -10,12 +10,14 @@ from compas_tno.problems import f_max_thrust_general
 from compas_tno.problems import f_bestfit_general
 from compas_tno.problems import f_horprojection_general
 from compas_tno.problems import f_loadpath_general
+from compas_tno.problems import f_complementary_energy
 
 from compas_tno.problems import gradient_fmin_general
 from compas_tno.problems import gradient_fmax_general
 from compas_tno.problems import gradient_bestfit_general
 from compas_tno.problems import gradient_horprojection_general
 from compas_tno.problems import gradient_loadpath_general
+from compas_tno.problems import gradient_complementary_energy
 
 from compas_tno.problems import f_constant
 from compas_tno.problems import f_reduce_thk
@@ -193,6 +195,9 @@ def set_up_general_optimisation(analysis):
     elif objective == 'lambd':  # vector lambda as hor multiplier larger the better (higher GSF)
         fobj = f_tight_crosssection
         fgrad = gradient_tight_crosssection
+    elif objective == 'Ec':  # vector lambda as hor multiplier larger the better (higher GSF)
+        fobj = f_complementary_energy
+        fgrad = gradient_omplementary_energy
     else:
         print('Please, provide a valid objective for the optimisation')
         raise NotImplementedError
