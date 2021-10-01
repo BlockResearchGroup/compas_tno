@@ -1,20 +1,4 @@
-from compas_tna.diagrams import FormDiagram
 
-from compas_tno.diagrams.form import overview_forces
-from compas_tno.diagrams.form import create_cross_form
-from compas_tno.diagrams.form import create_fan_form
-from compas_tno.diagrams.form import delete_boundary_edges
-
-from compas_tno.utilities.constraints import set_pavillion_vault_heights
-
-from compas_tno.algorithms.equilibrium import reactions
-
-from compas_tno.algorithms import optimise_general
-from compas_tno.algorithms import optimise_convex
-
-from compas_tno.plotters import plot_form
-
-import math
 import csv
 
 
@@ -115,6 +99,6 @@ if __name__ == "__main__":
     ax.grid(color='silver', linestyle='-', linewidth=0.5)
     ax.legend(loc='center left', bbox_to_anchor=(1.03, 0.5), fontsize=size_legend)    #, bbox_to_anchor(0.1, 0.1), ncol=1)
 
-    plt.savefig(file_save, transparent=True)
+    # plt.savefig(file_save, transparent=True)
     plt.show()
 

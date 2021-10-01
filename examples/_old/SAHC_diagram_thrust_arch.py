@@ -87,6 +87,6 @@ if __name__ == "__main__":
     ax.grid(color='silver', linestyle='-', linewidth=0.5)
     ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), fontsize=size_legend)    #, bbox_to_anchor(0.1, 0.1), ncol=1)
 
-    plt.savefig(file_save, transparent=True)
+    # plt.savefig(file_save, transparent=True)
     plt.show()
 
