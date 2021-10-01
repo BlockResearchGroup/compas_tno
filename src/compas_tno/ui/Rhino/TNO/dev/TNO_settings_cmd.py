@@ -5,12 +5,15 @@ from __future__ import division
 import scriptcontext as sc
 
 import compas_rhino
-from compas_tno.optimisers import Optimiser
-from compas_tno.rhino import OptimiserObject
+
 from compas_tno.rhino import SettingsForm
+from compas_tno.rhino import FormObject
+from compas_tno.rhino import ShapeObject
+from compas_tno.rhino import OptimiserObject
+from compas_tno.rhino import ForceObject
 
 
-__commandname__ = "TNO_optimization_settings"
+__commandname__ = "TNO_settings"
 
 
 def RunCommand(is_interactive):
@@ -20,19 +23,10 @@ def RunCommand(is_interactive):
         return
 
     scene = sc.sticky['TNO']['scene']
+    if not scene:
+        return
 
-    objects = scene.find_by_name('Optimiser')
-    if not objects:
-        optimiser = Optimiser()
-        scene.add(optimiser, name='Optimiser', layer=None)
-        objects = scene.find_by_name('Optimiser')
-        optimiserobject = objects[0]
-        optimiserobject.update_object_from_optimiser()
-
-    SettingsForm.from_scene(scene, object_types=[OptimiserObject])
-
-    scene.update()
-    scene.save()
+    SettingsForm.from_scene(scene, object_types=[FormObject, ForceObject, ShapeObject, OptimiserObject], global_settings=['TNO'])
 
 
 # ==============================================================================

@@ -30,7 +30,7 @@ CWD = HERE or HOME
 
 SETTINGS = {
     'TNO': {
-        'solver': 'SLSQP',
+        'autoupdate': True,
     }
 }
 

@@ -98,9 +98,17 @@ def RunCommand(is_interactive):
             return
         data['fix'] = fix
 
+    scene.clear()
+
     form = FormDiagram.from_library(data)
 
-    scene.add(form, name='Form', layer='TNO::FormDiagram')
+    objects = scene.find_by_name('Form')
+    if not objects:
+        scene.add(form, name='Form', layer='TNO::FormDiagram')
+    else:
+        formobject = objects[0]
+        formobject.diagram = form
+
     scene.update()
     scene.save()
 

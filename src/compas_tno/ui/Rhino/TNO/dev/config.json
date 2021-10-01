@@ -25,11 +25,13 @@
             {"name": "TNO_form_assign_supports",    "menu_text": "Form assign Supports",        "tooltip": "Form assign Supports"},
             {"name": "TNO_apply_envelope",          "menu_text": "Apply Envelope to Shape",     "tooltip": "Apply Envelope to Shape"},
             {"name": "TNO_apply_selfweight",        "menu_text": "Apply Selfweight",            "tooltip": "Apply Selfweight from Shape"},
-            {"name": "TNO_optimization_settings",   "menu_text": "Optimisation Settings",       "tooltip": "Optimisation Settings"},
+            {"name": "TNO_optimization_settings",   "menu_text": "Optimization Settings",       "tooltip": "Optimisation Settings"},
             {"name": "TNO_run_optimisation",        "menu_text": "Run Optimisation",            "tooltip": "Run Optimisation"},
+            {"name": "TNO_optimization_form",       "menu_text": "Optimization Form",           "tooltip": "Optimisation Form"},
             {"name": "TNO_shape_from_library",      "menu_text": "Shape from Library",          "tooltip": "Create Shape from Library"},
             {"name": "TNO_shape_from_meshes",       "menu_text": "Shape from Meshes",           "tooltip": "Create Shape from Meshes"},
             {"name": "TNO_starting_point",          "menu_text": "Find Starting Point",         "tooltip": "Find Starting Point"},
+            {"name": "TNO_settings",                "menu_text": "Modify Settings",             "tooltip": "Modify Settings"},
             {"name": "TNO_scene_redraw",            "menu_text": "Redraw the scene",            "tooltip": "Redraw the scene"},
             {"name": "TNO__restart",                "menu_text": "Restart the Session",         "tooltip": "Restart the Session"}
 

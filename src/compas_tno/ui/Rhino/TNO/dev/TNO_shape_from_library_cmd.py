@@ -121,9 +121,17 @@ def RunCommand(is_interactive):
                 data['hm'] = None
                 data['he'] = None
 
+    scene.clear()
+
     shape = Shape.from_library_proxy(data)
 
-    scene.add(shape, name='Shape', layer='TNO::Shape')
+    objects = scene.find_by_name('Shape')
+    if not objects:
+        scene.add(shape, name='Shape', layer='TNO::Shape')
+    else:
+        shapeobject = objects[0]
+        shapeobject.shape = shape
+
     scene.update()
     scene.save()
 
