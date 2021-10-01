@@ -3,13 +3,13 @@ import compas_rhino
 import json
 
 # Modify Parameters
-title = 'amiens_internet'
-layers = ['UB', 'LB']
+title = 'sangelo'
+layers = ['FormDiagram-Extrados', 'FormDiagram-Intrados']
 
 # Create dictionary and save as .json
 points_UB = []
 points_LB = []
-UBLB = ['UB', 'LB'] 
+UBLB = ['UB', 'LB']
 data = {UBLB[0]:{}, UBLB[1]:{}}
 
 for j in range(len(layers)):
@@ -19,7 +19,7 @@ for j in range(len(layers)):
         data[UBLB[j]][i] = list(point)
         i += 1
     print('Found {0} points in layer {1}'.format(i, layers[j]))
-        
 
-with open('/Users/mricardo/compas_dev/me/min_thk/pointcloud/' + title + '.json', 'w') as outfile:
+
+with open('/Users/mricardo/compas_dev/me/anagni/' + title + '.json', 'w') as outfile:
     json.dump(data, outfile)

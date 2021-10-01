@@ -124,6 +124,22 @@ plt.show()
 # fig.colorbar(surf2, shrink=0.5, aspect=5)
 # plt.show()
 
+# # # ------------------- Plot One specific result DEG
+
+labels =[r'fan-like | $\beta=20^{\circ}$', r'orthogonal | $\beta=20^{\circ}$']
+fig = plt.figure(figsize=(12, 5))  # try 12, 4
+ax = plt.subplot(111)
+
+ax.plot(fan_min_x[2], fan_min_results[2], label=labels[0])
+ax.plot(cross_min_x[2], cross_min_results[2], label=labels[1])
+
+ax.set_xlabel(r'radius over length $(r/l_0)$', size=size_axis_label, labelpad=8)
+ax.set_ylabel(r'minimum thickness over span $(t_{min}/s)$', size=size_axis_label, labelpad=8)
+ax.set_ylim(0, 0.06)
+ax.set_xticks([0.50, 0.75, 1.0, 1.25, 1.5])
+ax.legend()
+plt.show()
+
 # # # ------------------- Plot Fan and Cross 20 DEG
 
 labels =[r'fan-like | $\beta=20^{\circ}$', r'orthogonal | $\beta=20^{\circ}$']

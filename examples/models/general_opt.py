@@ -12,7 +12,7 @@ from compas_tno.analysis import Analysis
 span = 10.0
 k = 1.0
 lamd = None
-discretisation = 10
+discretisation = 14
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
@@ -25,7 +25,7 @@ c = 0.1
 
 lambd = 0.1
 
-objective = 'min'
+objective = 't'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
@@ -125,6 +125,10 @@ if objective in ['min', 'max']:
 import compas_tno
 json_form = compas_tno.get('form.json')
 json_shape = compas_tno.get('shape.json')
+
+print('Saving problem data to:')
+print(json_form)
+print(json_shape)
 
 form.to_json(json_form)
 vault.to_json(json_shape)

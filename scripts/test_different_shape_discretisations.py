@@ -67,7 +67,7 @@ if plot_init:
 
 form.selfweight_from_shape(dome)
 form.initialise_loadpath()
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 form.envelope_from_shape(dome)
 # plot_form(form).show()
 

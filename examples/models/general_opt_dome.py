@@ -5,7 +5,7 @@ from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import view_solution
 
 from compas_tno.optimisers import Optimiser
-from compas_tno.analysis.analysis import Analysis
+from compas_tno.analysis import Analysis
 import os
 
 from compas_tno.utilities import apply_envelope_from_shape
@@ -26,7 +26,7 @@ radius = 5.0
 span = radius * 2
 n = 2
 
-discretisation = [8, 12]
+discretisation = [12, 12]
 
 hc = None
 he = None
@@ -104,6 +104,13 @@ for c in [c]:  # set the distance that the nodes can move
 
             form_base = form.copy()
 
+            from compas_tno.problems import initialize_loadpath
+            import compas_tno
+
+            initialize_loadpath(form)
+            form.to_json(compas_tno.get('form-dome.json'))
+            plot_form(form).show()
+
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
             # ------------------------------------------------------------
@@ -116,7 +123,7 @@ for c in [c]:  # set the distance that the nodes can move
             optimiser.settings['features'] = features
             optimiser.settings['axis_symmetry'] = axis_sym
             optimiser.settings['objective'] = obj
-            optimiser.settings['plot'] = True
+            optimiser.settings['plot'] = False
             optimiser.settings['find_inds'] = False
             optimiser.settings['printout'] = True
             optimiser.settings['max_iter'] = 2000
@@ -181,8 +188,14 @@ for c in [c]:  # set the distance that the nodes can move
                 view_solution(form).show()
                 break
 
-# form.to_json(address)
-# print('Saved to: ', address)
+import compas_tno
+form_json = compas_tno.get('form-dome.json')
+shape_json = compas_tno.get('shape-dome.json')
+
+vault.to_json(shape_json)
+form.to_json(form_json)
+print('Vault / Form saved to: ', shape_json, form_json)
+
 from compas_tno.plotters.form import plot_form_semicirculararch_xz
 from compas_tno.algorithms import reactions
 reactions(form)

@@ -147,7 +147,7 @@ form.selfweight_from_shape(vault)
 swt0 = vault.compute_selfweight()
 
 # INITIALISE OR NOT
-# form = form.initialise_tna(plot=False)
+# form = form.form_update_with_parallelisation(plot=False)
 
 # for key in form.vertices_where({'is_fixed': True}):
 #     form.vertex_attribute(key, 'z', 0.5)

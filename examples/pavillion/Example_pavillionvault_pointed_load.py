@@ -94,7 +94,7 @@ forms_max = []
 
 # --------------------- 3. Create Initial point with TNA ---------------------
 
-form = form.initialise_tna(plot=False)
+form = form.form_update_with_parallelisation(plot=False)
 # plot_form(form).show()
 
 

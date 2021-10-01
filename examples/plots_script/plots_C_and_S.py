@@ -124,8 +124,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     if fill:
         ax.fill(append(xmin_, xmax_[::-1]), append(fmin_, fmax_[::-1]), color="grey", alpha=0.2)
 
-    ax1 = plt.axes()
-    ax2 = ax1.twiny()
+    ax2 = ax.twiny()
 
     # ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
     # ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF], size=size_axis_data)
@@ -133,18 +132,18 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=False, xy_l
     ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF] + [''], size=size_axis_data)
 
     if x_label:
-        ax1.set_xlabel(x_label, size=size_axis_label, labelpad=8)
+        ax.set_xlabel(x_label, size=size_axis_label, labelpad=8)
     else:
-        ax1.set_xlabel(r'thickness ($t$)', size=size_axis_label, labelpad=8)
+        ax.set_xlabel(r'thickness ($t$)', size=size_axis_label, labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, labelpad=8)
-    ax1.set_ylabel(r'thrust-over-weight ($T_i/W_i$) [%]', size=size_axis_label, labelpad=8)
+    ax.set_ylabel(r'thrust-over-weight ($T_i/W_i$) [%]', size=size_axis_label, labelpad=8)
     # ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))  # Check if this is necessary
-    ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-    ax1.set_xlim(max_x, min_x)
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax.set_xlim(max_x, min_x)
     ax.set_ylim(min_y, max_y)
     # ax1.set_xticks(arange(max_x, min_x - interval_x, -interval_x))
-    ax1.set_yticks(arange(min_y, max_y + interval_y, interval_y))
-    ax1.tick_params(axis='both', which='major', labelsize=size_axis_data)
+    ax.set_yticks(arange(min_y, max_y + interval_y, interval_y))
+    ax.tick_params(axis='both', which='major', labelsize=size_axis_data)
 
     box = ax.get_position()
     ax.set_position([box.x0*0.6, box.y0*1.5, box.width * 0.90, box.height*0.90])
@@ -265,23 +264,22 @@ def diagram_of_multiple_thrust(thicknesses, solutions, legends, simplified=True,
             # ax.fill_between(xmin, fmin, fmax, color=colors[i], alpha=0.2)
             # ax.fill_between(extrapolation_minx, extrapolation_miny, extrapolation_maxy, color=colors[i], alpha=0.2)
 
-    ax1 = plt.axes()
-    ax2 = ax1.twiny()
+    ax2 = ax.twiny()
     print([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
     print(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF])
 
     ax2.set_xticks([0] + [100*(max_x-tck_x)/(max_x-min_x) for tck_x in ticks_x] + [100])
     ax2.set_xticklabels(['1.0'] + [str(round(tck_GSF, 2)) for tck_GSF in ticks_GSF] + [''], size=size_axis_data)
-    ax1.set_xlabel(r'thickness-over-span ($t/s$)', size=size_axis_label, labelpad=8)
+    ax.set_xlabel(r'thickness-over-span ($t/s$)', size=size_axis_label, labelpad=8)
     ax2.set_xlabel('GSF', size=size_axis_label, labelpad=8)
-    ax1.set_ylabel(r'thrust/weight ($T_i/W_i$) [%]', size=size_axis_label, labelpad=8)
-    ax1.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
-    ax1.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
-    ax1.set_xlim(max_x, min_x)
+    ax.set_ylabel(r'thrust/weight ($T_i/W_i$) [%]', size=size_axis_label, labelpad=8)
+    ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax.set_xlim(max_x, min_x)
     ax.set_ylim(min_y, max_y)
     # ax1.set_xticks(arange(max_x, min_x - interval_x, -interval_x))
-    ax1.set_yticks(arange(min_y, max_y + interval_y, interval_y))
-    ax1.tick_params(axis='both', which='major', labelsize=size_axis_data)
+    ax.set_yticks(arange(min_y, max_y + interval_y, interval_y))
+    ax.tick_params(axis='both', which='major', labelsize=size_axis_data)
 
     # plt.axvline(x=(x_ - max_x)/(min_x - max_x)*100, ls='--', color='black') # add    ymin=(max_y-y_)/(max_y-min_y)
 
@@ -366,41 +364,42 @@ plt.show()
 
 # ------------------- Plot of Dome
 
-# type_structure = 'dome'
-# type_formdiagram = 'radial_fd'
-# discretisation = [20, 16]
+type_structure = 'dome'
+type_formdiagram = 'radial_fd'
+discretisation = [20, 16]
 
-# folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'min_max')
-# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+folder = os.path.join('/Users/mricardo/compas_dev/me', 'min_thk', type_structure, type_formdiagram, 'min_max')
+title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
+
+csv_file = os.path.join(folder, title + '_data.csv')
+print(csv_file)
+thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
+thickness_over_radius = [[],[]]
+for el in thicknesses[0]:
+    thickness_over_radius[0].append(el/radius)
+    thickness_over_radius[1].append(el/radius)
+
+img_graph = os.path.join(folder, title + '_diagram.pdf')
+diagram_of_thrust(thickness_over_radius, solutions, save=img_graph, fill=True, limit_state=False, x_label=r'thickness-over-radius ($t/r$)', GSF_ticks=[1.5, 2.0, 2.5, 3.0]).show()
+
+# # ------------------- Plot of Amiens solution
+
+# type_structure = 'crossvault'
+# type_formdiagram = 'fan_fd'
+# discretisation = 14
+# file_name = 'amiens_internet'
+
+# folder = os.path.join('/Users/mricardo/compas_dev/me', 'max_n', file_name, type_structure, type_formdiagram, 'min_max')
+# os.makedirs(folder, exist_ok=True)
+# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method'
 
 # csv_file = os.path.join(folder, title + '_data.csv')
 # thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
 # print(thicknesses)
-# thickness_over_radius = [[],[]]
-# for el in thicknesses[0]:
-#     thickness_over_radius[0].append(el/radius)
-#     thickness_over_radius[1].append(el/radius)
 
 # img_graph = os.path.join(folder, title + '_diagram.pdf')
-# diagram_of_thrust(thickness_over_radius, solutions, save=img_graph, fill=True, limit_state=False, x_label=r'thickness-over-radius ($t/r$)', GSF_ticks=[1.5, 2.0, 2.5, 3.0]).show()
-
-# # ------------------- Plot of Amiens solution
-
-type_structure = 'crossvault'
-type_formdiagram = 'fan_fd'
-discretisation = 14
-file_name = 'amiens_internet'
-
-folder = os.path.join('/Users/mricardo/compas_dev/me', 'max_n', file_name, type_structure, type_formdiagram, 'min_max')
-os.makedirs(folder, exist_ok=True)
-title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation) + '_offset-method'
-
-csv_file = os.path.join(folder, title + '_data.csv')
-thicknesses, solutions = open_csv_row(csv_file, cut_last=False)
-print(thicknesses)
-
-img_graph = os.path.join(folder, title + '_diagram.pdf')
-diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False, GSF_ticks=[1.2, 1.4, 1.6]).show()
+# img_graph = False
+# diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state=False, GSF_ticks=[1.2, 1.4, 1.6]).show()
 
 # ------------------- Plot of Crossvault graph
 
@@ -470,84 +469,84 @@ diagram_of_thrust(thicknesses, solutions, save=img_graph, fill=True, limit_state
 
 # # --------------------------   Plot spring angle interms of deg (discretisation n=14)
 
-# can plot in terms of A reading the file study_crossvault_A
-path = '/Users/mricardo/compas_dev/me/min_thk/crossvault/study_crossvault_deg_D=14_minthk.csv'
+# # can plot in terms of A reading the file study_crossvault_A
+# path = '/Users/mricardo/compas_dev/me/min_thk/crossvault/study_crossvault_deg_D=14_minthk.csv'
 
-A = []
-cross_fd = [[], [], [], []]
-fan_fd = [[], [], [], []]
-radius = 10.0
-series = ['analytical', 'strategy A', 'strategy B']
+# A = []
+# cross_fd = [[], [], [], []]
+# fan_fd = [[], [], [], []]
+# radius = 10.0
+# series = ['analytical', 'strategy A', 'strategy B']
 
-with open(path) as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
-    line = 0
-    for row in csv_reader:
-        if line > 0:
-            A.append(float(row[0]))
-            for i in range(4):
-                cross_fd[i].append(float(row[1 + 2*i])/radius)
-                fan_fd[i].append(float(row[2 + 2*i])/radius)
-        line += 1
+# with open(path) as csv_file:
+#     csv_reader = csv.reader(csv_file, delimiter=',')
+#     line = 0
+#     for row in csv_reader:
+#         if line > 0:
+#             A.append(float(row[0]))
+#             for i in range(4):
+#                 cross_fd[i].append(float(row[1 + 2*i])/radius)
+#                 fan_fd[i].append(float(row[2 + 2*i])/radius)
+#         line += 1
 
-lines = []
-fig = plt.figure(figsize=size_plots)
-ax = plt.subplot(111)
-lines += ax.plot(A, cross_fd[0], 'o-', label='Orthogonal Form Diagram', color='C0')
-lines += ax.plot(A, fan_fd[0], 'o-', label='Fan-like Form Diagram', color='C1')
+# lines = []
+# fig = plt.figure(figsize=size_plots)
+# ax = plt.subplot(111)
+# lines += ax.plot(A, cross_fd[0], 'o-', label='Orthogonal Form Diagram', color='C0')
+# lines += ax.plot(A, fan_fd[0], 'o-', label='Fan-like Form Diagram', color='C1')
 
-ax.legend(fontsize=size_legend)
-ax.tick_params(labelsize=size_axis_data)
-box = ax.get_position()
-ax.set_position(box_limits(box))
+# ax.legend(fontsize=size_legend)
+# ax.tick_params(labelsize=size_axis_data)
+# box = ax.get_position()
+# ax.set_position(box_limits(box))
 
-ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
-ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-ax.set_xlim(A[0]-1, A[-1]+1)
-ax.set_ylim(0, 0.05)
-ax.set_xticks(A)
-plt.show()
+# ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
+# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
+# ax.set_xlim(A[0]-1, A[-1]+1)
+# ax.set_ylim(0, 0.05)
+# ax.set_xticks(A)
+# plt.show()
 
-lines = []
-fig = plt.figure(figsize=size_plots)  # try 12, 4
-ax = plt.subplot(111)
-lines += ax.plot(A, cross_fd[0], 'o-', label=series[0], color='C0')
-lines += ax.plot(A, cross_fd[1], 's--', label=series[1], color='C2')
-lines += ax.plot(A, cross_fd[2], 'x--', label=series[2], color='C3')
-# lines += ax.plot(A[-6:], cross_fd[3][-6:], '.--', label=series[3], color='C4')
+# lines = []
+# fig = plt.figure(figsize=size_plots)  # try 12, 4
+# ax = plt.subplot(111)
+# lines += ax.plot(A, cross_fd[0], 'o-', label=series[0], color='C0')
+# lines += ax.plot(A, cross_fd[1], 's--', label=series[1], color='C2')
+# lines += ax.plot(A, cross_fd[2], 'x--', label=series[2], color='C3')
+# # lines += ax.plot(A[-6:], cross_fd[3][-6:], '.--', label=series[3], color='C4')
 
-ax.legend(fontsize=size_legend)
-ax.tick_params(labelsize=size_axis_data)
-box = ax.get_position()
-ax.set_position(box_limits(box))
+# ax.legend(fontsize=size_legend)
+# ax.tick_params(labelsize=size_axis_data)
+# box = ax.get_position()
+# ax.set_position(box_limits(box))
 
-ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
-ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-ax.set_xlim(A[0]-1, A[-1]+1)
-ax.set_ylim(0, 0.10)
-ax.set_xticks(A)
-plt.show()
+# ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
+# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
+# ax.set_xlim(A[0]-1, A[-1]+1)
+# ax.set_ylim(0, 0.10)
+# ax.set_xticks(A)
+# plt.show()
 
 
-lines = []
-fig = plt.figure(figsize=size_plots)  # try 12, 4
-ax = plt.subplot(111)
-lines += ax.plot(A, fan_fd[0], 'o-', label=series[0], color='C1')
-lines += ax.plot(A, fan_fd[1], 's--', label=series[1], color='C2')
-lines += ax.plot(A, fan_fd[2], 'x--', label=series[2], color='C3')
-# lines += ax.plot(A[-6:], fan_fd[3][-6:], '.--', label=series[3], color='C4')
+# lines = []
+# fig = plt.figure(figsize=size_plots)  # try 12, 4
+# ax = plt.subplot(111)
+# lines += ax.plot(A, fan_fd[0], 'o-', label=series[0], color='C1')
+# lines += ax.plot(A, fan_fd[1], 's--', label=series[1], color='C2')
+# lines += ax.plot(A, fan_fd[2], 'x--', label=series[2], color='C3')
+# # lines += ax.plot(A[-6:], fan_fd[3][-6:], '.--', label=series[3], color='C4')
 
-ax.legend(fontsize=size_legend)
-ax.tick_params(labelsize=size_axis_data)
-box = ax.get_position()
-ax.set_position(box_limits(box))
+# ax.legend(fontsize=size_legend)
+# ax.tick_params(labelsize=size_axis_data)
+# box = ax.get_position()
+# ax.set_position(box_limits(box))
 
-ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
-ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
-ax.set_xlim(A[0]-1, A[-1]+1)
-ax.set_ylim(0, 0.10)
-ax.set_xticks(A)
-plt.show()
+# ax.set_xlabel(r'springing angle ($\beta$) [$^{\circ}$]', size=size_axis_label, labelpad=8)
+# ax.set_ylabel(r'thickness-over-span $(t/s)$', size=size_axis_label, labelpad=8)
+# ax.set_xlim(A[0]-1, A[-1]+1)
+# ax.set_ylim(0, 0.10)
+# ax.set_xticks(A)
+# plt.show()
 
 # ------------- plot of the diagrams of thrust
 
@@ -587,5 +586,6 @@ for type_formdiagram in ['cross_fd', 'fan_fd']:
             thickness_over_span[i][0].append(el/span)
             thickness_over_span[i][1].append(el/span)
 
+    img_graph = None
     diagram_of_multiple_thrust(thickness_over_span, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
     # diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()

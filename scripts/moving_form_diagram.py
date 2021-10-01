@@ -160,7 +160,7 @@ updater = create_load_and_target_updater(XY0, form, shape)
 zt, pz = updater(XY0)
 
 objective = 'target'
-form = form.initialise_tna(remove_feet=False)
+form = form.form_update_with_parallelisation(remove_feet=False)
 internal_nodes = [not form.vertex_attribute(key, '_is_external') for key in form.vertices()]
 print(internal_nodes)
 print(len(internal_nodes))

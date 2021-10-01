@@ -49,7 +49,7 @@ form = z_from_form(form)
 
 # form = form.delete_boundary_edges()
 # plot_form(form, show_q=False).show()
-# form = form.initialise_tna(plot=True, method='normal', kmax=10, display=True)
+# form = form.form_update_with_parallelisation(plot=True, method='normal', kmax=10, display=True)
 form = initialise_form(form)
 # plot_independents(form, number_ind=False).show()
 plot_form(form, show_q=True).show()

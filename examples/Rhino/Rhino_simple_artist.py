@@ -7,10 +7,15 @@ address_shape = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvau
 
 address_shape = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/tributary_area/R=5.0/deg=0/dual_pointed_crossvault_cross_fd_discr_14.json'
 
+address_shape = '/Users/mricardo/compas_dev/me/minmax/dome/radial_spaced/radial_spaced_discr_8_20_min_t=207.json'
+
+
 form = FormDiagram.from_json(address_shape)
 artist = FormArtist(form)
 
-artist.draw_edges(layer='cross::R=5::dual')
+artist.draw()
+
+#artist.draw_edges()
 #artist.draw_intrados()
 #artist.draw_middle()
 #artist.draw_extrados()

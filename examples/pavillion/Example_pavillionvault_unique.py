@@ -96,7 +96,7 @@ if thk_:
     plot_form(form, show_q=False, fix_width=False, cracks=True).show()
 else:
     form.selfweight_from_shape(vault)
-    # form = form.initialise_tna(plot=False)
+    # form = form.form_update_with_parallelisation(plot=False)
     form = form.initialise_loadpath()
     plot_form(form, show_q=False, fix_width=True).show()
 
