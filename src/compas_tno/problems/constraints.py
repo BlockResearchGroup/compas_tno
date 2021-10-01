@@ -89,7 +89,7 @@ def constr_wrapper_general(variables, M):
         zb = variables[check: check + nb]
         check = check + nb
         M.X[M.fixed, [2]] = zb.flatten()
-    if 't' in M.variables:
+    if 't' in M.variables or 'n' in M.variables:
         thk = variables[check: check + 1]
         check = check + 1
     if 'lambd' in M.variables:
@@ -122,8 +122,8 @@ def constr_wrapper_general(variables, M):
         # constraints in z
         if 'adapted-envelope' in M.features:
             M.ub, M.lb = ub_lb_update(M.X[:, 0], M.X[:, 1], thk, t, M.shape, None, None, M.s, M.variables)
-        elif 't' in M.variables:
-            M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, t, M.shape, None, None, M.s, M.variables)
+        elif 't' in M.variables or 'n' in M.variables:
+            M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)
         else:
             pass
         zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)

@@ -15,19 +15,17 @@ from compas_plotters import MeshPlotter
 
 
 __all__ = [
+    'z_from_form',
+    'z_update',
     'zlq_from_qid',
-    'zlq_from_q',
     'zq_from_qid',
     'q_from_qid',
-    'z_update',
     'xyz_from_q',
-    'z_from_form',
     'reactions',
-    'apply_sag'
 ]
 
 
-def z_from_form(mesh):
+def z_from_form(form):
     """ Relaxation of Form-Diagram. FDM with 'q's stored in the form (All coordinates can change).
 
     Parameters
@@ -44,29 +42,86 @@ def z_from_form(mesh):
 
     # preprocess
 
-    k_i = mesh.key_index()
-    xyz = mesh.vertices_attributes(('x', 'y', 'z'))
-    loads = mesh.vertices_attributes(('px', 'py', 'pz'))
-    q = mesh.edges_attribute('q')
-    fixed = mesh.vertices_where({'is_fixed': True})
+    k_i = form.key_index()
+    xyz = form.vertices_attributes(('x', 'y', 'z'))
+    loads = form.vertices_attributes(('px', 'py', 'pz'))
+    q = form.edges_attribute('q')
+    fixed = form.vertices_where({'is_fixed': True})
     fixed = [k_i[k] for k in fixed]
-    edges = [(k_i[u], k_i[v]) for u, v in mesh.edges()]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
 
     # compute equilibrium
     # update the mesh geometry
 
     xyz, q, f, l, r = fd_numpy(xyz, edges, fixed, q, loads)
 
-    for key, attr in mesh.vertices(True):
+    for key, attr in form.vertices(True):
         index = k_i[key]
         attr['x'] = xyz[index, 0]
         attr['y'] = xyz[index, 1]
         attr['z'] = xyz[index, 2]
 
-    return mesh
+    return form
 
 
-def zlq_from_qid(qid, args):
+def z_update(form, zmax=None):
+    """ Built-in update of the heights in the Form-Diagram (only z-coordinates can change).
+
+    Parameters
+    ----------
+    form : obj
+        The FormDiagram.
+    zmax : float, optional
+        The maximum height of the diagram.
+        By default no maximum is set.
+
+    Returns
+    -------
+    form : obj
+        The scaled form diagram.
+
+    """
+
+    k_i = form.key_index()
+    vcount = len(form.vertex)
+    anchors = list(form.anchors())
+    fixed = list(form.fixed())
+    fixed = set(anchors + fixed)
+    fixed = [k_i[key] for key in fixed]
+    free = list(set(range(vcount)) - set(fixed))
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
+    xyz = array(form.vertices_attributes('xyz'), dtype=float64)
+    p = array(form.vertices_attributes(('px', 'py', 'pz')), dtype=float64)
+    q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
+    q = array(q, dtype=float64).reshape((-1, 1))
+    C = connectivity_matrix(edges, 'csr')
+    Ci = C[:, free]
+    Cf = C[:, fixed]
+    Cit = Ci.transpose()
+
+    Q = diags([q.ravel()], [0])
+
+    A = Cit.dot(Q).dot(Ci)
+    B = Cit.dot(Q).dot(Cf)
+
+    xyz[free, 2] = spsolve(A, p[free, 2] - B.dot(xyz[fixed, 2]))
+
+    if zmax:
+        factor = max(xyz[free, 2])/zmax
+        q = q * factor
+        xyz[free, 2] = xyz[free, 2]/factor
+
+        for index, edge in enumerate(form.edges_where({'_is_edge': True})):
+            form.edge_attribute(edge, 'q', q[index].item())
+
+    for key, attr in form.vertices(True):
+        index = k_i[key]
+        attr['z'] = xyz[index, 2]
+
+    return form
+
+
+def zlq_from_qid(qid, args):  # deprecated remove on next clean up
     """ Calculate z's from independent edges.
 
     Parameters
@@ -103,7 +158,7 @@ def zlq_from_qid(qid, args):
     return z, l2, q, q_
 
 
-def zq_from_qid(qid, args):
+def zq_from_qid(qid, args):  # deprecated remove on next clean up
     """ Calculate z's from independent edges.
 
     Parameters
@@ -131,7 +186,7 @@ def zq_from_qid(qid, args):
     return z, q
 
 
-def q_from_qid(qid, args):
+def q_from_qid(qid, args):  # deprecated remove on next clean up
     """ Calculate q's from all qid's.
 
     Parameters
@@ -154,39 +209,6 @@ def q_from_qid(qid, args):
     q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
 
     return q
-
-
-def zlq_from_q(q, args):
-    """ Calculate z's from all q's.
-
-    Parameters
-    ----------
-    q : array
-        Force densities of all edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    l2 : array
-        Lenghts squared
-    q : array
-        Force densities without symetrical edges (q[sym] = 0)
-    q_ : array
-        Force densities with symetrical edges
-
-    """
-
-    q_old, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
-    q_ = 1 * q
-    q[sym] *= 0
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-    l2 = lh + C.dot(z)**2
-
-    return z, l2, q, q_
 
 
 def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
@@ -222,181 +244,6 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
     return Xfree
 
 
-def z_update(form):
-    """ Built-in update of the heights in the Form-Diagram (only z-coordinates can change).
-
-    Parameters
-    ----------
-    form : obj
-        The FormDiagram.
-
-    Returns
-    -------
-    form : obj
-        The scaled form diagram.
-
-    """
-
-    k_i = form.key_index()
-    vcount = len(form.vertex)
-    anchors = list(form.anchors())
-    fixed = list(form.fixed())
-    fixed = set(anchors + fixed)
-    fixed = [k_i[key] for key in fixed]
-    free = list(set(range(vcount)) - set(fixed))
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
-    xyz = array(form.get_vertices_attributes('xyz'), dtype=float64)
-    p = array(form.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-    q = [attr.get('q', 1.0) for u, v, attr in form.edges_where({'_is_edge': True}, True)]
-    q = array(q, dtype=float64).reshape((-1, 1))
-    C = connectivity_matrix(edges, 'csr')
-    Ci = C[:, free]
-    Cf = C[:, fixed]
-    Cit = Ci.transpose()
-
-    Q = diags([q.ravel()], [0])
-
-    A = Cit.dot(Q).dot(Ci)
-    B = Cit.dot(Q).dot(Cf)
-
-    xyz[free, 2] = spsolve(A, p[free, 2] - B.dot(xyz[fixed, 2]))
-
-    for key, attr in form.vertices(True):
-        index = k_i[key]
-        attr['z'] = xyz[index, 2]
-
-    return form
-
-
-def scale_fdm(form, r):
-    """ scale the FormDiagram of a factor r using FDM (all coordinates can change).
-
-    Parameters
-    ----------
-    form : obj
-        The FormDiagram.
-    r : float
-        The scaling factor on force densities.
-
-    Returns
-    -------
-    form : obj
-        The scaled form diagram.
-
-    """
-
-    uv_i = form.uv_index()
-    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True, '_is_external': False})])[:, newaxis]
-    q = q * r
-
-    for u, v in form.edges_where({'_is_external': False}):
-        if form.edge_attribute((u, v), '_is_edge') is True:
-            i = uv_i[(u, v)]
-            [qi] = q[i]
-            form.edge_attribute((u, v), 'q', value=qi)
-
-    form = z_from_form(form)
-
-    return form
-
-
-def scale_form(form, r):
-    """ Scale the FormDiagram of a factor r using built-in FDM (only z-coordinates can change).
-
-    Parameters
-    ----------
-    form : obj
-        The FormDiagram.
-    r : float
-        The scaling factor on force densities.
-
-    Returns
-    -------
-    form : obj
-        The scaled form diagram.
-
-    """
-
-    from numpy import float64
-    from scipy.sparse import diags
-    from scipy.sparse.linalg import spsolve
-
-    k_i = form.key_index()
-    vcount = len(form.vertex)
-    anchors = list(form.anchors())
-    fixed = list(form.fixed())
-    fixed = set(anchors + fixed)
-    fixed = [k_i[key] for key in fixed]
-    free = list(set(range(vcount)) - set(fixed))
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
-    xyz = array(form.vertices_attributes('xyz'), dtype=float64)
-    p = array(form.vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-    q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
-    q = array(q, dtype=float64).reshape((-1, 1))
-    C = connectivity_matrix(edges, 'csr')
-    Ci = C[:, free]
-    Cf = C[:, fixed]
-    Cit = Ci.transpose()
-
-    # TODO: Change to use function zq_from_qid
-
-    q = q * r
-    Q = diags([q.ravel()], [0])
-
-    A = Cit.dot(Q).dot(Ci)
-    B = Cit.dot(Q).dot(Cf)
-
-    xyz[free, 2] = spsolve(A, p[free, 2] - B.dot(xyz[fixed, 2]))
-
-    i = 0
-    for key in form.vertices():
-        form.vertex_attribute(key, 'z', xyz[i, 2])
-        i = i + 1
-
-    i = 0
-    for u, v in form.edges_where({'_is_edge': True}):
-        form.edge_attribute((u, v), 'q', q[i, 0])
-        i = i + 1
-
-    return
-
-
-def update_form(form, q):
-
-    k_i = form.key_index()
-    uv_i = form.uv_index()
-    vcount = len(form.vertex)
-    anchors = list(form.anchors())
-    fixed = list(form.fixed())
-    fixed = set(anchors + fixed)
-    fixed = [k_i[key] for key in fixed]
-    free = list(set(range(vcount)) - set(fixed))
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
-    xyz = array(form.get_vertices_attributes('xyz'), dtype=float64)
-    p = array(form.get_vertices_attributes(('px', 'py', 'pz')), dtype=float64)
-    q = array(q, dtype=float64).reshape((-1, 1))
-    C = connectivity_matrix(edges, 'csr')
-    Ci = C[:, free]
-    Cf = C[:, fixed]
-    Cit = Ci.transpose()
-    Q = diags([q.ravel()], [0])
-
-    A = Cit.dot(Q).dot(Ci)
-    B = Cit.dot(Q).dot(Cf)
-
-    xyz[free, 2] = spsolve(A, p[free, 2] - B.dot(xyz[fixed, 2]))
-
-    for key, attr in form.vertices(True):
-        index = k_i[key]
-        attr['z'] = xyz[index, 2]
-
-    for u, v, attr in form.edges_where({'_is_edge': True}, True):
-        index = uv_i[(u, v)]
-        attr['q'] = q[index, 0]
-
-    return form
-
-
 def reactions(form, plot=False):
     """ Compute and plot the reaction on the supports.
 
@@ -410,6 +257,8 @@ def reactions(form, plot=False):
 
     Returns
     -------
+    None
+        Form Diagram is modified in place.
 
     """
 
@@ -489,19 +338,3 @@ def reactions(form, plot=False):
         plotter.show()
 
     return
-
-
-def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):
-
-    for u, v in form.edges():
-        form.edge_attribute((u, v), 'q', signe_compression*1.0)
-
-    for u, v in form.edges_on_boundary():
-        form.edge_attribute((u, v), 'q', signe_compression*boundary_force)
-
-    z_from_form(form)
-
-    for key in form.vertices():
-        form.vertex_attribute(key, 'z', 0.0)
-
-    return form

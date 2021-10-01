@@ -11,15 +11,22 @@ from compas_tno.shapes import rectangular_topology
 import math
 
 
-__all__ = ['pavillion_vault_highfields',
-           'pavillionvault_ub_lb_update',
-           'pavillionvault_dub_dlb',
-           'pavillionvault_b_update',
-           'pavillionvault_db'
-           ]
+__all__ = [
+    'pavillion_vault_highfields_proxy',
+    'pavillion_vault_highfields',
+    'pavillionvault_ub_lb_update',
+    'pavillionvault_dub_dlb',
+    'pavillionvault_b_update',
+    'pavillionvault_db'
+    ]
 
 
-def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=10.0, discretisation=[100, 100]):
+def pavillion_vault_highfields_proxy(xy_span, thk=0.5, discretisation=10, t=0.0):
+    intrados, extrados, middle = pavillion_vault_highfields(xy_span=xy_span, thk=thk, discretisation=discretisation, t=t)
+    return intrados.to_data(), extrados.to_data(), middle.to_data()
+
+
+def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=0.0, discretisation=[100, 100]):
     """ Set Pavillion-Vault heights.
 
     Parameters
@@ -73,7 +80,7 @@ def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol
 
     xi, yi, faces_i = rectangular_topology(x, y)
 
-    zt = pavillionvault_middle_update(xi, yi, t, xy_span=xy_span, tol=1e-6)
+    zt = pavillionvault_middle_update(xi, yi, xy_span=xy_span, tol=1e-6)
     xyzt = array([xi, yi, zt.flatten()]).transpose()
     middle = MeshDos.from_vertices_and_faces(xyzt, faces_i)
 

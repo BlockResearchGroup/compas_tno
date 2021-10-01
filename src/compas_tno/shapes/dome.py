@@ -28,7 +28,7 @@ def dome_heightfields_proxy(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, disc
     return intrados.to_data(), extrados.to_data(), middle.to_data()
 
 
-def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], expanded=False):
+def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=0.0, discretisation=[8, 20], expanded=False):
 
     tol = 10e-3
     xc = center[0]
@@ -162,26 +162,6 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discreti
     mesh_delete_duplicate_vertices(middle)  # this is a hack. Do it better
     mesh_delete_duplicate_vertices(intrados)
     mesh_delete_duplicate_vertices(extrados)
-
-    # Print of KEY at Nodes
-    # from compas_plotters import MeshPlotter
-    # plotter = MeshPlotter(middle, figsize=(10, 10))
-    # plotter.draw_edges()
-    # plotter.draw_vertices(radius=0.10)
-    # plotter.draw_vertices(text={key: key for key in middle.vertices()}, radius=0.10)
-    # plotter.show()
-
-    # plotter = MeshPlotter(intrados, figsize=(10, 10))
-    # plotter.draw_edges()
-    # plotter.draw_vertices(radius=0.10)
-    # plotter.draw_vertices(text={key: key for key in intrados.vertices()}, radius=0.10)
-    # plotter.show()
-
-    # plotter = MeshPlotter(extrados, figsize=(10, 10))
-    # plotter.draw_edges()
-    # plotter.draw_vertices(radius=0.10)
-    # plotter.draw_vertices(text={key: key for key in extrados.vertices()}, radius=0.10)
-    # plotter.show()
 
     return intrados, extrados, middle
 

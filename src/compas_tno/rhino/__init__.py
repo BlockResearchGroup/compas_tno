@@ -33,6 +33,8 @@ from .optimiserobject import OptimiserObject  # noqa: F401
 
 from .scene import Scene  # noqa: F401
 from .settings import SettingsForm  # noqa: F401
+from .forms import AttributesForm  # noqa: F401
+from .forms import Browser  # noqa: F401
 
 if compas.IPY:
 

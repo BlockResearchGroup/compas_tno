@@ -585,6 +585,8 @@ def initialise_problem_general(form, printout=None, tol=0.001):
     problem.phfree = hstack([px[free], py[free]])
     problem.lb = lb
     problem.ub = ub
+    problem.lb0 = lb
+    problem.ub0 = ub
     problem.s = s
     problem.X = hstack([x, y, z])
     problem.x0 = x

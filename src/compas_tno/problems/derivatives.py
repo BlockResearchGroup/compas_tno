@@ -276,7 +276,7 @@ def sensitivities_wrapper_general(variables, M):
         check = check + nb
         M.X[M.fixed, [2]] = zb.flatten()
         nbz = nb
-    if 't' in M.variables:
+    if 't' in M.variables or 'n' in M.variables:
         thk = variables[check: check + 1]
         check = check + 1
     elif 'lambd' in M.variables:
@@ -413,11 +413,11 @@ def sensitivities_wrapper_general(variables, M):
                 addcolumn = vstack([addcolumn, dslope_dzb])
             deriv = hstack([deriv, addcolumn])
 
-    if 't' in M.variables:  # add a column to the derivatives to count the variable t (thickness)
+    if 't' in M.variables or 'n' in M.variables:  # add a column to the derivatives to count the variable t (thickness)
         if 'adapted-envelope' in M.features:
             pass
         else:
-            dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, None, None, M.s, M.variables)[:2]
+            dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)[:2]
 
         dXdt = vstack([zeros((nlin_fun + nlin_limitxy, 1)), -dzmindt, +dzmaxdt, db_column])
         deriv = hstack([deriv, dXdt])

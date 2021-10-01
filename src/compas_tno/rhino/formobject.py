@@ -203,7 +203,7 @@ class FormObject(DiagramObject):
             guids, vertices = self.artist.draw_cracks(
                 color_intrados=self.settings['color.vertices:lower_bound'],
                 color_extrados=self.settings['color.vertices:upper_bound'],
-                layer='TNO::Shape::Bounds'
+                layer='TNO::Shape'
             )
             self.guid_cracks = zip(guids, vertices)
 

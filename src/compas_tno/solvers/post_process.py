@@ -45,6 +45,8 @@ def post_process_general(analysis):
         M.X[M.fixed, [2]] = zb.flatten()
     if 't' in variables:
         thk = xopt[-1]
+    if 'n' in variables:
+        n = xopt[-1]
     if 'lambd' in variables:
         lambd = xopt[-1]
         M.P[:, [0]] = lambd * M.px0
@@ -122,11 +124,12 @@ def post_process_general(analysis):
     #         form.vertex_attribute(key, 'ub', ub - s * (ub - lb))
     #         form.vertex_attribute(key, 'lb', lb + s * (ub - lb))
 
-    # if 'n' in variables:
-    #     n = -1 * fopt
-    #     shape.intrados = shape.intrados.offset_mesh(n=n, direction='up')
-    #     shape.extrados = shape.extrados.offset_mesh(n=n, direction='down')
-    #     form.envelope_from_shape(shape)
+    if 'n' in variables:
+        print('Value of N:', n)
+        n = -1 * fopt
+        shape.intrados = shape.intrados.offset_mesh(n=n, direction='up')
+        shape.extrados = shape.extrados.offset_mesh(n=n, direction='down')
+        apply_envelope_from_shape(form, shape)
 
     analysis.form = form
     analysis.optimiser = optimiser

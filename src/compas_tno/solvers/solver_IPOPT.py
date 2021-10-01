@@ -193,7 +193,7 @@ def run_optimisation_ipopt(analysis):
         cu[-nsym:] = [0.0]*nsym
         cl[-nsym:] = [0.0]*nsym
 
-    nlp = cyipopt.problem(
+    nlp = cyipopt.Problem(
         n=len(x0),
         m=len(g0),
         problem_obj=problem_obj,
@@ -238,28 +238,28 @@ def _nlp_options(nlp, optimiser):
 
     # Link to instructions: https://coin-or.github.io/Ipopt/OPTIONS.html
 
-    # nlp.addOption(b'hessian_approximation', b'limited-memory')
-    # nlp.addOption('tol', 1e-4)              # Default 1e-8
-    # nlp.addOption('max_iter', 500)        # Default 3000
+    # nlp.add_option(b'hessian_approximation', b'limited-memory')
+    # nlp.add_option('tol', 1e-4)              # Default 1e-8
+    # nlp.add_option('max_iter', 500)        # Default 3000
 
-    # nlp.addOption('dual_inf_tol', 100.0)  # Default 1.0
-    # nlp.addOption('constr_viol_tol', 0.1) # Default 1e-4
-    # nlp.addOption('compl_inf_tol', 0.1)   # Default 1e-4
+    # nlp.add_option('dual_inf_tol', 100.0)  # Default 1.0
+    # nlp.add_option('constr_viol_tol', 0.1) # Default 1e-4
+    # nlp.add_option('compl_inf_tol', 0.1)   # Default 1e-4
 
-    # nlp.addOption('acceptable_iter', 10)
-    # nlp.addOption('acceptable_tol', 1e-3)
-    # nlp.addOption('acceptable_constr_viol_tol', 1e-4)  # Default 1e-2
-    # nlp.addOption('acceptable_dual_inf_tol', 10e10)  # Default 10e10
-    # nlp.addOption('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
-    # nlp.addOption('max_iter', 500)
+    # nlp.add_option('acceptable_iter', 10)
+    # nlp.add_option('acceptable_tol', 1e-3)
+    # nlp.add_option('acceptable_constr_viol_tol', 1e-4)  # Default 1e-2
+    # nlp.add_option('acceptable_dual_inf_tol', 10e10)  # Default 10e10
+    # nlp.add_option('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
+    # nlp.add_option('max_iter', 500)
 
     if not optimiser.settings['printout']:
-        nlp.addOption('print_level', 0)
+        nlp.add_option('print_level', 0)
     if optimiser.settings.get('derivative_test', None):
-        nlp.addOption('derivative_test', 'first-order')
-        # nlp.addOption('derivative_test_perturbation') #, 10e-8
-        # nlp.addOption('derivative_test_print_all', 'yes')
+        nlp.add_option('derivative_test', 'first-order')
+        # nlp.add_option('derivative_test_perturbation') #, 10e-8
+        # nlp.add_option('derivative_test_print_all', 'yes')
     if optimiser.settings.get('max_iter', None):
-        nlp.addOption('max_iter', optimiser.settings['max_iter'])
+        nlp.add_option('max_iter', optimiser.settings['max_iter'])
 
     return nlp

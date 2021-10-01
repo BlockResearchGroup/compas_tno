@@ -263,8 +263,8 @@ class ForceDiagram(ForceDiagram):
             return {edge: index for index, edge in enumerate(self.edges())}
             # return {edge: index for index, edge in enumerate(form.edges_where({'_is_edge': True}))}
         edge_index = dict()
-        for index, (u, v) in enumerate(form.edges()):
-            # for index, (u, v) in enumerate(form.edges_where({'_is_edge': True})):
+        # for index, (u, v) in enumerate(form.edges()):
+        for index, (u, v) in enumerate(form.edges_where({'_is_edge': True})):
             f1 = form.halfedge[u][v]
             f2 = form.halfedge[v][u]
             edge_index[f1, f2] = index

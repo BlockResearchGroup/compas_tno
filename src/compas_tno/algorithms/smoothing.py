@@ -5,8 +5,11 @@ from compas.datastructures import mesh_smooth_centerofmass
 
 from compas.geometry import closest_point_on_line
 
+from compas_tno.algorithms.equilibrium import z_from_form
+
 __all__ = [
-    'constrained_smoothing'
+    'constrained_smoothing',
+    'apply_sag'
 ]
 
 
@@ -51,3 +54,19 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
         algorithm = 'centroid'
 
     func[algorithm](mesh, kmax=kmax, damping=damping, callback=callback, callback_args=[mesh, constraints])
+
+
+def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):  # probably move location
+
+    for u, v in form.edges():
+        form.edge_attribute((u, v), 'q', signe_compression*1.0)
+
+    for u, v in form.edges_on_boundary():
+        form.edge_attribute((u, v), 'q', signe_compression*boundary_force)
+
+    z_from_form(form)
+
+    for key in form.vertices():
+        form.vertex_attribute(key, 'z', 0.0)
+
+    return form

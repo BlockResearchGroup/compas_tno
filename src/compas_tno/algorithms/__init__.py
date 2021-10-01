@@ -17,7 +17,6 @@ Equilibrium
     z_update
     xyz_from_q
     reactions
-    apply_sag
 
 
 Independents
@@ -42,6 +41,7 @@ Smoothing
     :nosignatures:
 
     constrained_smoothing
+    apply_sag
 
 
 Graphic Statics
@@ -51,11 +51,9 @@ Graphic Statics
     :toctree: generated/
     :nosignatures:
 
+    form_update_with_parallelisation
     force_update_from_form
     reciprocal_from_form
-    update_tna
-    paralelise_form
-    initialise_tna
 
 
 """

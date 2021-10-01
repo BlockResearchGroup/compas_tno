@@ -18,7 +18,7 @@ __all__ = ['cross_vault_highfields_proxy',
            ]
 
 
-def cross_vault_highfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, tol=10e-6, t=0.0, discretisation=[100, 100], expanded=False, *args, **kwargs):
+def cross_vault_highfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, tol=10e-6, t=0.0, discretisation=[100, 100], *args, **kwargs):
     intrados, extrados, middle = cross_vault_highfields(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation, expanded=False)
     return intrados.to_data(), extrados.to_data(), middle.to_data()
 

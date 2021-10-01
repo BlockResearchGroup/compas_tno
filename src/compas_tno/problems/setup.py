@@ -114,7 +114,7 @@ def set_up_general_optimisation(analysis):
     elif starting_point == 'relax':
         z_from_form(form)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
-    elif starting_point == 'tna':
+    elif starting_point == 'tna' or starting_point == 'TNA':
         initialize_tna(form)
     else:
         print('Warning: define starting point')
@@ -250,12 +250,13 @@ def set_up_general_optimisation(analysis):
     #     x0 = append(x0, 0.0).reshape(-1, 1)
     #     bounds = bounds + [[-1.0, 0.5]]
 
-    # if 'n' in variables:
-    #     thk0_approx = min(ub - lb)
-    #     print('Thickness approximate:', thk0_approx)
-    #     x0 = append(x0, 0.0).reshape(-1, 1)
-    #     min_limit = - thk0_approx  # /2  # 0.0
-    #     bounds = bounds + [[min_limit, thk0_approx/2]]
+    if 'n' in variables:
+        thk0_approx = thk  # shape.datashape['thk']
+        print('Thickness approximate:', thk0_approx)
+        x0 = append(x0, 0.0).reshape(-1, 1)
+        min_limit = 0.0  # /2  # 0.0
+        bounds = bounds + [[min_limit, thk0_approx/2]]
+        # bounds = bounds + [[min_limit, thk0_approx/2]]
 
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)

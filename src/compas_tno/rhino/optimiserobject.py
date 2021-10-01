@@ -15,21 +15,18 @@ class OptimiserObject(BaseObject):
     """
 
     SETTINGS = {
-        'optimiser.library': 'SLSQP',
-        'optimiser.solver': 'SLSQP',
-        'optimiser.constraints': [],
-        'optimiser.variables': [],
-        'optimiser.objective': 'min',
-        'optimiser.printout': False,
-        'optimiser.max_iter': 500,
-        'optimiser.qmin': -1e+4,
-        'optimiser.qmax': +1e-8,
-        'optimiser.gradient': True,
-        'optimiser.jacobian': True,
-        'optimiser.derivative_test': True,
-        'optimiser.features': [],
-        'axis_symmetry': None,
-        'optimiser.starting_point': 'loadpath'
+        'SolverSelection.library': 'SLSQP',
+        'SolverSelection.solver': 'SLSQP',
+        'optimisation.constraints': ['funicular', 'envelope'],
+        'optimisation.variables': ['q', 'zb'],
+        'optimisation.features': ['fixed'],
+        'optimisation.objective': 'min',
+        'optimisation.gradient': True,
+        'optimisation.jacobian': True,
+        'optimisation.starting_point': 'current',
+        'parameters.qmin': -1e+4,
+        'parameters.qmax': + 1e-8,
+        'parameters.max_iter': 500,
     }
 
     def __init__(self, optimiser, scene=None, name=None, layer=None, visible=True, settings=None):
@@ -42,10 +39,35 @@ class OptimiserObject(BaseObject):
         self._rotation = None
         self._anchor = None
         self.layer = layer
-        # TODO: add more guid labeles that are relevant to the shape object
         self.settings.update(type(self).SETTINGS)
         if settings:
             self.settings.update(settings)
+
+    def update_object_from_optimiser(self):
+        """Update the settings of the object based on the optimiser settings.
+        """
+
+        if not self.optimiser:
+            return
+
+        keys = self.settings.keys()
+
+        for key in keys:
+            key_end = key.split('.')[1]
+            self.settings[key] = self.optimiser.settings[key_end]
+
+    def update_optimiser_from_object(self):
+        """Update the settings of the optimiser based on the object settings.
+        """
+
+        if not self.optimiser:
+            return
+
+        keys = self.settings.keys()
+
+        for key in keys:
+            key_end = key.split('.')[1]
+            self.optimiser.settings[key_end] = self.settings[key]
 
     @property
     def location(self):
@@ -133,6 +155,8 @@ class OptimiserObject(BaseObject):
         None
 
         """
+        self.update_optimiser_from_object()
+
         self.clear()
 
         if not self.visible:

@@ -75,7 +75,7 @@ class Shape(Datastructure):
         self.area = 0.0
         self.ro = 20.0
         self.fill = False
-        self.fill_ro = 20.0
+        self.fill_ro = 14.0
 
     @property
     def data(self):
@@ -244,14 +244,14 @@ class Shape(Datastructure):
         thk = data['thk']
         discretisation = data['discretisation']
         t = data.get('t', 0.0)
-        expanded = data.get('expanded', False)
+        # expanded = data.get('expanded', False)
 
         if typevault == 'crossvault':
             xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+            intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t)
         elif typevault == 'pavillionvault':
             xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.pavillion_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+            intra_data, extra_data, middle_data = proxy.pavillion_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t)
         elif typevault == 'pointed_crossvault':
             xy_span = data['xy_span']
             hc = data['hc']
@@ -261,7 +261,7 @@ class Shape(Datastructure):
         elif typevault == 'dome':
             center = data['center']
             radius = data['radius']
-            intrados, extrados, middle = proxy.set_dome_heighfield_proxy(center, radius=radius, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+            intra_data, extra_data, middle_data = proxy.dome_heightfields_proxy(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
 
         intrados = MeshDos.from_data(intra_data)
         extrados = MeshDos.from_data(extra_data)
@@ -322,17 +322,18 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_pointcloud(cls, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
+    def from_pointcloud(cls, intrados_pts, extrados_pts, middle_pts=None, data={'type': 'general', 't': 0.0}):
         """Construct a Shape from a pointcloud.
 
         Parameters
         ----------
         intrados_pts : list
             List of points collected in the intrados.
-        extrados : mesh
+        extrados_pts : list
             List of points collected in the extrados.
-        middle : mesh (None)
-            Mesh for middle.
+        middle_pts : list, optional
+            List of points collected in the middle.
+            The default value is ``None``, in which case no middle surface is connstructed
         data : dict (None)
             Dictionary with the data in required.
 
@@ -343,9 +344,14 @@ class Shape(Datastructure):
 
         """
 
-        intrados_mesh = MeshDos.from_points_delaunay(intrados_pts)
-        extrados_mesh = MeshDos.from_points_delaunay(extrados_pts)
-        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+        from compas_tno.utilities import mesh_from_pointcloud
+
+        mesh_extrados = mesh_from_pointcloud(extrados_pts)
+        mesh_intrados = mesh_from_pointcloud(intrados_pts)
+        mesh_middle = None
+        if middle_pts:
+            mesh_middle = mesh_from_pointcloud(middle_pts)
+        shape = cls().from_meshes(mesh_intrados, mesh_extrados, middle=mesh_middle, data=data)
 
         return shape
 
@@ -416,35 +422,47 @@ class Shape(Datastructure):
 
     #     return shape
 
-    # @classmethod
-    # def from_pointcloud_and_formdiagram(cls, form, intrados_pts, extrados_pts, middle=None, data={'type': 'general', 't': 0.0}):
-    #     """Construct a Shape from a pointcloud and a formdiagram that will have its topology copied.
+    @classmethod
+    def from_pointcloud_and_topology(cls, meshtopology, intrados_pts, extrados_pts, middle_pts=None, fill_pts=None, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pointcloud and a given topology.
 
-    #     Parameters
-    #     ----------
-    #     form: FormDiagram
-    #         Form Diagram with the topology to be used.
-    #     intrados_pts : list
-    #         List of points collected in the intrados.
-    #     extrados : mesh
-    #         List of points collected in the extrados.
-    #     middle : mesh (None)
-    #         Mesh for middle.
-    #     data : dict (None)
-    #         Dictionary with the data in required.
+        Parameters
+        ----------
+        meshtopology: mesh
+            Mesh with the topology to be used.
+        intrados_pts : list
+            List of points collected in the intrados.
+        extrados_pts : list
+            List of points collected in the extrados.
+        middle_pts : list, optional
+            List of points collected in the middle.
+            The default value is ``None``, in which case no middle surface is constructed
+        fill_pts : list, optional
+            List of points collected in the fill.
+            The default value is ``None``, in which case no fill surface is constructed
+        data : dict (None)
+            Dictionary with the data in required.
 
-    #     Returns
-    #     -------
-    #     Shape
-    #         A Shape object.
+        Returns
+        -------
+        Shape
+            A Shape object.
 
-    #     """
+        """
 
-    #     intrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(intrados_pts))
-    #     extrados_mesh = MeshDos.from_topology_and_pointcloud(form, array(extrados_pts))
-    #     shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+        from compas_tno.utilities import create_mesh_from_topology_and_pointcloud
 
-    #     return shape
+        intrados_mesh = create_mesh_from_topology_and_pointcloud(meshtopology, intrados_pts)
+        extrados_mesh = create_mesh_from_topology_and_pointcloud(meshtopology, extrados_pts)
+        middle_mesh = None
+        if middle_pts:
+            middle_mesh = create_mesh_from_topology_and_pointcloud(meshtopology, middle_pts)
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle_mesh, data=data)
+        if fill_pts:
+            fill_mesh = create_mesh_from_topology_and_pointcloud(meshtopology, fill_pts)
+            shape.fill = fill_mesh
+
+        return shape
 
     @classmethod
     def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
@@ -477,7 +495,7 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_formdiagram_and_attributes(cls, form, data=None):
+    def from_formdiagram_and_attributes(cls, form, data={'type': 'general', 't': 0.0}):
         """Construct a Shape from the form diagram and its attributes 'ub' and 'lb'.
 
         Parameters

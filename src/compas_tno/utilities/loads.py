@@ -2,6 +2,7 @@
 from compas_tno.shapes.dome import dome_zt_update
 from compas_tno.shapes.crossvault import crossvault_middle_update
 from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
+from compas_tno.utilities.interpolation import get_shape_middle_pattern
 
 
 __all__ = [
@@ -14,7 +15,7 @@ __all__ = [
 ]
 
 
-def apply_selfweight_from_shape_proxy(formdata, shapedata):  # this works only forlibrary shapes
+def apply_selfweight_from_shape_proxy(formdata, shapedata):
 
     from compas_tno.diagrams import FormDiagram
     from compas_tno.shapes import Shape
@@ -45,7 +46,7 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
                                          hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
     else:
         XY = form.vertices_attributes('xy')
-        zt = shape.get_middle_pattern(XY)
+        zt = get_shape_middle_pattern(shape, XY)
 
     i = 0
     for key in form_.vertices():
