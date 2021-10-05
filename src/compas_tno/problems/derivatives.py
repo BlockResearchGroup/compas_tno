@@ -38,7 +38,8 @@ __all__ = [
     'gradient_bestfit_general',
     'gradient_horprojection_general',
     'gradient_loadpath_general',
-    'gradient_complementary_energy'
+    'gradient_complementary_energy',
+    'gradient_complementary_energy_nonlinear'
 ]
 
 
@@ -792,7 +793,110 @@ def gradient_horprojection_general(variables, M):
 
 def gradient_complementary_energy(variables, M):
 
-    return
+    if isinstance(M, list):
+        M = M[0]
+
+    n = M.n
+    k = M.k
+    is_xyb_var = False
+    is_zb_var = False
+
+    k = M.k
+    nb = len(M.fixed)
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        is_xyb_var = True
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+        is_zb_var = True
+
+    # update geometry
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    M.U = diags(M.C.dot(M.X[:, 0]))  # U = diag(Cx)
+    M.V = diags(M.C.dot(M.X[:, 1]))  # V = diag(Cy)
+    M.W = diags(M.C.dot(M.X[:, 2]))  # W = diag(Cz)
+
+    Q = diags(M.q.ravel())
+    CitQCi = M.Cit.dot(Q).dot(M.Ci)
+    SPLU_D = splu(CitQCi)
+
+    dxidq = SPLU_D.solve((-M.Cit.dot(M.U)).toarray()).dot(M.B)
+    dxdq = zeros((n, k))
+    dxdq[M.free] = dxidq
+
+    dyidq = SPLU_D.solve((-M.Cit.dot(M.V)).toarray()).dot(M.B)
+    dydq = zeros((n, k))
+    dydq[M.free] = dyidq
+
+    dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
+    dzdq = zeros((n, k))
+    dzdq[M.free] = dzidq
+
+    CfU = M.Cb.transpose().dot(M.U)
+    CfV = M.Cb.transpose().dot(M.V)
+    CfW = M.Cb.transpose().dot(M.W)
+    dRxdq = CfU.dot(M.B) + M.Cb.transpose().dot(Q).dot(M.C).dot(dxdq)
+    dRydq = CfV.dot(M.B) + M.Cb.transpose().dot(Q).dot(M.C).dot(dydq)
+    dRzdq = CfW.dot(M.B) + M.Cb.transpose().dot(Q).dot(M.C).dot(dzdq)
+
+    gradient = (M.dXb[:, [0]].transpose().dot(dRxdq) + M.dXb[:, [1]].transpose().dot(dRydq) + M.dXb[:, [2]].transpose().dot(dRzdq)).transpose()
+
+    CitQCf = M.Cit.dot(Q).dot(M.Cb).toarray()
+    if is_xyb_var:
+        dxdxb = zeros((n, nb))
+        dxdxb[M.free] = SPLU_D.solve(-CitQCf)
+        dxdxb[M.fixed] = identity(nb)
+        dydyb = dxdxb
+        dRxdxb = M.Cb.transpose().dot(Q).dot(M.C).dot(dxdxb)
+        dRydyb = M.Cb.transpose().dot(Q).dot(M.C).dot(dydyb)
+        gradient_xb = (M.dXb[:, [0]].transpose().dot(dRxdxb)).transpose()
+        gradient_yb = (M.dXb[:, [1]].transpose().dot(dRydyb)).transpose()
+        gradient = vstack([gradient, gradient_xb, gradient_yb])
+    if is_zb_var:
+        dzdzb = zeros((n, nb))
+        dzdzb[M.free] = SPLU_D.solve(-CitQCf)
+        dzdzb[M.fixed] = identity(nb)
+        dRzdzb = M.Cb.transpose().dot(Q).dot(M.C).dot(dzdzb)
+        gradient_zb = (M.dXb[:, [2]].transpose().dot(dRzdzb)).transpose()
+        gradient = vstack([gradient, gradient_zb])
+
+    return -1 * array(gradient).flatten()
+
+
+def gradient_complementary_energy_nonlinear(variables, M):
+
+    is_xyb_var = False
+    is_zb_var = False
+    nb = len(M.fixed)
+
+    if 'xyb' in M.variables:
+        is_xyb_var = True
+    if 'zb' in M.variables:
+        is_zb_var = True
+
+    grad_lin = gradient_complementary_energy(variables, M)
+
+    dEdq_vector = 2 * M.stiff * M.q.reshape(-1, 1)
+    dEdq = diags(dEdq_vector.flatten())
+    dEdqid = dEdq.dot(M.B)
+    grad_quad = npsum(dEdqid, axis=0).reshape(-1, 1)
+
+    if is_xyb_var:
+        grad_quad = vstack([grad_quad, zeros((2*nb, 1))])
+    if is_zb_var:
+        grad_quad = vstack([grad_quad, zeros((nb, 1))])
+
+    fgrad = grad_lin + grad_quad.flatten()
+
+    return fgrad
+
 
 def gradient_loadpath_general(variables, M):
 

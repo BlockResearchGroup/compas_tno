@@ -29,7 +29,23 @@ def apply_selfweight_from_shape_proxy(formdata, shapedata):
 
 
 def apply_selfweight_from_shape(form, shape, pz_negative=True):
-    """Apply selfweight to the nodes of the form diagram based on the shape"""
+    """Apply selfweight to the nodes of the form diagram based on the shape
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        Form diagram to apply the selfweight.
+    shape : ::Shape::
+        Shape of the masonry.
+    pz_negative : bool
+        Wether or not the vertical loads are negative.
+        The default value is ``True``.
+
+    Returns
+    -------
+    None
+        The FormDiagram is modified in place.
+    """
 
     form_ = form.copy()
     total_selfweight = shape.compute_selfweight()
@@ -81,7 +97,29 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
 
 
 def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, tol=10e-4):
-    """Apply selfweight to the nodes considering a different Form Diagram to locate loads. Warning, the base pattern has to coincide with nodes from the original form diagram
+    """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
+    Note: the base pattern has to coincide with nodes from the original form diagram.
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        Form diagram to apply the selfweight.
+    pattern : ::Mesh::
+        Mesh in which the forces should be based.
+    plot : bool
+        Whether or not plot the diagrams and its overlap.
+        The default value is ``False``.
+    pz_negative : bool
+        Wether or not the vertical loads are negative.
+        The default value is ``True``.
+    tol : float
+        Tolerance for the nodal position match of form and pattern.
+        The default value is ``10e-4``.
+
+    Returns
+    -------
+    None
+        The FormDiagram is modified in place.
     """
 
     form_ = pattern
@@ -129,6 +167,24 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
 
 
 def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
+    """Modify the applied loads considering a load multiplier.
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        Form diagram to apply the horizontal multiplier.
+    lambd : float
+        Value of the horizontal multiplier.
+        The default value is ``0.1``.
+    direction : str
+        direction to apply the loads.
+        The default value is ``x``.
+
+    Returns
+    -------
+    None
+        The FormDiagram is modified in place.
+    """
 
     arg = 'p' + direction
 

@@ -11,6 +11,7 @@ from compas_tno.problems import f_bestfit_general
 from compas_tno.problems import f_horprojection_general
 from compas_tno.problems import f_loadpath_general
 from compas_tno.problems import f_complementary_energy
+from compas_tno.problems import f_complementary_energy_nonlinear
 
 from compas_tno.problems import gradient_fmin_general
 from compas_tno.problems import gradient_fmax_general
@@ -18,6 +19,7 @@ from compas_tno.problems import gradient_bestfit_general
 from compas_tno.problems import gradient_horprojection_general
 from compas_tno.problems import gradient_loadpath_general
 from compas_tno.problems import gradient_complementary_energy
+from compas_tno.problems import gradient_complementary_energy_nonlinear
 
 from compas_tno.problems import f_constant
 from compas_tno.problems import f_reduce_thk
@@ -46,9 +48,12 @@ from compas_tno.plotters import plot_independents
 from compas_tno.plotters import plot_form
 
 from compas_tno.utilities import apply_bounds_on_q
+from compas_tno.utilities import compute_form_initial_lengths
+from compas_tno.utilities import compute_edge_stiffness
 
 from numpy import append
 from numpy import array
+from numpy import zeros
 
 
 __all__ = [
@@ -140,6 +145,19 @@ def set_up_general_optimisation(analysis):
 
     apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
 
+    # Specific parameters that depend on the objective:
+
+    if 'Ecomp' in objective.split('-'):
+        M.dXb = optimiser.settings['support_displacement']
+
+    if objective == 'Ecomp-nonlinear':
+        stiff = zeros((M.m, 1))
+        lengths = compute_form_initial_lengths(form)
+        k = compute_edge_stiffness(form, lengths=lengths)
+        for index, edge in enumerate(form.edges()):
+            stiff[index] = 1 / 2 * 1 / k[index] * lengths[index] ** 2
+        M.stiff = stiff
+
     # Set specific constraints
 
     if 'reac_bounds' in constraints:
@@ -195,9 +213,12 @@ def set_up_general_optimisation(analysis):
     elif objective == 'lambd':  # vector lambda as hor multiplier larger the better (higher GSF)
         fobj = f_tight_crosssection
         fgrad = gradient_tight_crosssection
-    elif objective == 'Ec':  # vector lambda as hor multiplier larger the better (higher GSF)
+    elif objective == 'Ecomp-linear':  # vector lambda as hor multiplier larger the better (higher GSF)
         fobj = f_complementary_energy
-        fgrad = gradient_omplementary_energy
+        fgrad = gradient_complementary_energy
+    elif objective == 'Ecomp-nonlinear':
+        fobj = f_complementary_energy_nonlinear
+        fgrad = gradient_complementary_energy_nonlinear
     else:
         print('Please, provide a valid objective for the optimisation')
         raise NotImplementedError
@@ -284,6 +305,8 @@ def set_up_general_optimisation(analysis):
         if fjac:
             print('Shape of jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
+        if objective == 'Ecomp-nonlinear':
+            print('Init. Linear Obj Func: {0}'.format(f_complementary_energy(x0, M)))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         violated = []
         for i in range(len(g0)):

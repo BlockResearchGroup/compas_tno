@@ -30,7 +30,7 @@ he = None
 save = True
 solutions = {}
 
-objective = ['Ecomp-linear']
+objective = ['Ecomp-nonlinear']
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
@@ -104,7 +104,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             # Consider the displacement vector
 
-            if 'Ecomp-linear' in objective:
+            if 'Ecomp' in obj.split('-'):
 
                 lines = []
                 vector_supports = []

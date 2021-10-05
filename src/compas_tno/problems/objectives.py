@@ -32,7 +32,8 @@ __all__ = [
     'f_bestfit_general',
     'f_horprojection_general',
     'f_loadpath_general',
-    'f_complementary_energy'
+    'f_complementary_energy',
+    'f_complementary_energy_nonlinear'
 ]
 
 
@@ -217,9 +218,40 @@ def f_loadpath_general(variables, M):
 
 def f_complementary_energy(variables, M):
 
-    print('WIP')
+    if isinstance(M, list):
+        M = M[0]
 
-    return
+    k = M.k
+    nb = len(M.fixed)
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    CfQC = M.Cb.transpose().dot(diags(M.q.flatten())).dot(M.C)
+    R = CfQC.dot(M.X) - M.P[M.fixed]
+    f = -1 * npsum(R*M.dXb)
+
+    return f
+
+
+def f_complementary_energy_nonlinear(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    flin = f_complementary_energy(variables, M)
+    f = flin + npsum(M.stiff * M.q.reshape(-1, 1) ** 2)  # assuming area and lengths constant - computed in beginning
+
+    return f
 
 
 def f_constant(xopt, *args):

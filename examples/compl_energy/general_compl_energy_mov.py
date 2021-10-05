@@ -30,11 +30,11 @@ he = None
 save = True
 solutions = {}
 
-objective = ['Ecomp-linear']
+objective = ['Ecomp-nonlinear']  # Ecomp-linear
 solver = 'IPOPT'
-constraints = ['funicular', 'envelope']
+constraints = ['funicular', 'envelope', 'envelopexy']
 variables = ['q', 'zb']
-features = ['fixed']
+features = []
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -46,7 +46,6 @@ if objective == ['lambd']:
     lambd = 0.1
 
 Xc = [5.0, 5.0, 0.0]
-
 
 for c in [0.1]:  # set the distance that the nodes can move
     solutions[c] = {}
@@ -104,12 +103,12 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             # Consider the displacement vector
 
-            if 'Ecomp-linear' in objective:
+            if 'Ecomp' in obj.split('-'):
 
                 lines = []
                 vector_supports = []
 
-                sign = -1  # +1 for outwards / -1 for inwards
+                sign = 1  # +1 for outwards / -1 for inwards
 
                 for key in form.vertices_where({'is_fixed': True}):
                     x, y, z = form.vertex_coordinates(key)
@@ -151,7 +150,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['jacobian'] = True
             optimiser.settings['printout'] = True
             optimiser.settings['jacobian'] = True
-            optimiser.settings['derivative_test'] = True
+            optimiser.settings['derivative_test'] = False
             optimiser.settings['starting_point'] = starting_point
             optimiser.settings['support_displacement'] = dXb
 
@@ -175,20 +174,19 @@ for c in [0.1]:  # set the distance that the nodes can move
             thrust = form.thrust()
             print('Ratio Thrust/Weight:', thrust/weight)
 
-            folder = os.path.join('/Users/mricardo/compas_dev/me', 'compl_energy', type_structure, type_formdiagram)
+            folder = os.path.join('/Users/mricardo/compas_dev/me', 'compl_energy', 'diagonal', type_structure, type_formdiagram)
             if 'ind' in optimiser.settings['variables']:
                 folder = os.path.join(folder, 'fixed')
             else:
                 folder = os.path.join(folder, 'mov_c_' + str(c))
             if he:
                 folder = os.path.join(folder, 'hc_' + str(hc) + '_he_' + str(he))
+            if sign:
+                folder = os.path.join(folder, 'sign_' + str(sign))
             os.makedirs(folder, exist_ok=True)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
-
-            plot_superimposed_diagrams(form, form_base).show()
-            # view_solution(form).show()
 
             print('Optimiser exitflag:', optimiser.exitflag)
 

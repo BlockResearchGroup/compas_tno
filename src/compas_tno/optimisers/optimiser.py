@@ -36,6 +36,7 @@ class Optimiser(Datastructure):
             'find_inds': True,
             'printout': False,
             'starting_point': 'current',
+            'support_displacement': None,
             'gradient': True,
             'jacobian': True,
             'solver_options': {},

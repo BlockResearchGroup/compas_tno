@@ -490,6 +490,10 @@ class FormDiagram(FormDiagram):
         """Return the identifiers for the edges selected as independents on the diagram."""
         return list(self.edges_where({'is_ind': True}))
 
+    def number_of_real_edges(self):
+        """Return the identifiers for the edges selected as independents on the diagram."""
+        return len(list(self.edges_where({'_is_edge': True})))
+
     def update_f(self):
         """Update attributes force ``f`` based on force densities ``q``and lengths ``l``."""
 
