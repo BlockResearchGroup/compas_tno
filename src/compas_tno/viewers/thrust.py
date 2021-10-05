@@ -314,9 +314,9 @@ def view_solution2(form, shape=None, cracks=True, show_reactions=True, thickness
         q = form.edge_attribute((u, v), 'q')
         length = form.edge_length(u, v)
         force = abs(q/length)
-        thickness = force/fmax * max_thick
+        thk = force/fmax * max_thick
         if force > 10e-4:
-            viewer.add(line, name=str((u, v)), linewidth=thickness, color=(255, 0, 0))
+            viewer.add(line, name=str((u, v)), linewidth=thk, color=(255, 0, 0))
 
     if show_reactions:
         reaction_scale = 0.001
