@@ -50,6 +50,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
+from compas_tno.utilities import compute_average_edge_stiffness
 
 from numpy import append
 from numpy import array
@@ -151,12 +152,19 @@ def set_up_general_optimisation(analysis):
         M.dXb = optimiser.settings['support_displacement']
 
     if objective == 'Ecomp-nonlinear':
-        stiff = zeros((M.m, 1))
-        lengths = compute_form_initial_lengths(form)
-        k = compute_edge_stiffness(form, lengths=lengths)
-        for index, edge in enumerate(form.edges()):
-            stiff[index] = 1 / 2 * 1 / k[index] * lengths[index] ** 2
-        M.stiff = stiff
+        Ecomp_method = optimiser.settings.get('Ecomp_method', 'simplified')
+        M.Ecomp_method = Ecomp_method
+
+        if Ecomp_method == 'simplified':
+            stiff = zeros((M.m, 1))
+            lengths = compute_form_initial_lengths(form)
+            k = compute_edge_stiffness(form, lengths=lengths)
+            for index, edge in enumerate(form.edges()):
+                stiff[index] = 1 / 2 * 1 / k[index] * lengths[index] ** 2
+            M.stiff = stiff
+        elif Ecomp_method == 'complete':
+            k = compute_average_edge_stiffness(form)
+            M.stiff = 1/2 * 1/k * 1000
 
     # Set specific constraints
 

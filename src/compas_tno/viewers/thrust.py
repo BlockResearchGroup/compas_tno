@@ -300,9 +300,9 @@ def view_solution2(form, shape=None, cracks=True, show_reactions=True, thickness
                 viewer.add(Point(x, y, z), name="Outside - Extra (%s)" % out, color=(0, 0, 0), size=15.0)   # black outside
                 out += 1
 
-    forces = [form.edge_attribute((u, v), 'q')*form.edge_length(u, v) for u, v in form.edges_where({'_is_edge': True})]
+    forces = [form.edge_attribute((u, v), 'q') * form.edge_length(u, v) for u, v in form.edges_where({'_is_edge': True})]
     fmax = max(abs(max(forces)), abs(min(forces)))
-    max_thick = 50.0
+    max_thick = 10.0
 
     for u, v in form.edges_where({'_is_edge': True}):
         Xu = form.vertex_coordinates(u)
@@ -313,13 +313,13 @@ def view_solution2(form, shape=None, cracks=True, show_reactions=True, thickness
             continue
         q = form.edge_attribute((u, v), 'q')
         length = form.edge_length(u, v)
-        force = abs(q/length)
+        force = abs(q*length)
         thk = force/fmax * max_thick
         if force > 10e-4:
             viewer.add(line, name=str((u, v)), linewidth=thk, color=(255, 0, 0))
 
     if show_reactions:
-        reaction_scale = 0.001
+        reaction_scale = 0.005
 
         for key in form.vertices_where({'is_fixed': True}):
             x, y, z = form.vertex_coordinates(key)

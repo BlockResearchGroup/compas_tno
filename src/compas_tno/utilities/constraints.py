@@ -1,179 +1,91 @@
 import math
 
-from compas_tno.plotters import plot_form_xz
-from compas_tna.diagrams import FormDiagram
-from compas.utilities import geometric_key
-from compas_plotters import MeshPlotter
-
 
 __all__ = [
-    'check_constraints',
+    'check_envelope_constraints',
     'distance_target',
-    'replicate_contraints',
-    'interp_surf',
-    'null_edges',
     'rectangular_smoothing_constraints',
+    'assign_cracks',
+    'rollers_on_openings',
 ]
 
 
-def check_constraints(form, show=False, lb_show=False, ub_show=False, tol=1e-6):
+def check_envelope_constraints(form, tol=1e-6):
+    """Check if the envelope constraints are respected and return a ``penalty > 0`` if not.
 
-    try:
-        t = form.attributes['offset']
-    except BaseException:
-        t = 0.0
-    outside = {}
-    lbs = {}
-    ubs = {}
-    penalty = 0
+    Parameters
+    ----------
+    form : compas_tno.diagrams.FormDiagram
+        The form diagram with the envelope as nodal attributes.
+    tol : float
+        Tolerance for verifying the constraints.
+        The default value is ``1e-6``.
 
-    for key, vertex in form.vertex.items():
-        z = form.vertex_coordinates(key)[2] + t
-        if vertex.get('lb', None):
-            lb = vertex['lb']
-            lbs[key] = lb
-            if z < lb - tol:
-                outside[key] = lb - z
-                penalty += (abs(outside[key])+4)**(4)
-        if vertex.get('ub', None):
-            ub = vertex['ub']
-            ubs[key] = ub
-            if z > ub + tol:
-                outside[key] = z - ub
-                penalty += (abs(outside[key])+4)**(4)
+    Returns
+    -------
+    penalty: float
+        The penalty computed as the sum square of the exceeding value at each node.
+
+    """
+    penalty = 0.0
+
+    for key in form.vertices():
+        _, _, z = form.vertex_coordinates(key)
+        lb = form.vertex_attribute(key, 'lb')
+        ub = form.vertex_attribute(key, 'ub')
+        if z < lb - tol:
+            outside = (lb - z)
+            penalty += outside**2
+        if z > ub + tol:
+            outside = (z - ub)
+            penalty += outside**2
 
     print('The penalty in the constraints is {0:.3f}'.format(penalty))
-
-    if penalty > 0.1:
-        if show:
-            plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-            plotter.draw_vertices(text=outside)
-            plotter.draw_edges()
-            plotter.show()
-
-        if lb_show:
-            plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-            plotter.draw_vertices(text=lbs)
-            plotter.draw_edges()
-            plotter.show()
-
-        if ub_show:
-            plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-            plotter.draw_vertices(text=ubs)
-            plotter.draw_edges()
-            plotter.show()
 
     return penalty
 
 
-def distance_target(form, method='least-squares'):
+def distance_target(form):
+    """Returns a measure of the distance among the TN and the target surface.
+
+    Parameters
+    ----------
+    form : compas_tno.diagrams.FormDiagram
+        The form diagram / thrust network to check.
+
+    Returns
+    -------
+    distance: float
+        The square distance is computed.
+
+    """
 
     dist = 0
 
-    if method == 'least-squares':
-
-        for key in form.vertices():
-            _, _, z = form.vertex_coordinates(key)
-            targ = form.vertex_attribute(key, 'target')
-            dist += (z - targ) ** 2
-
-    if method == 'volume':
-
-        for key in form.vertices():
-            _, _, z = form.vertex_coordinates(key)
-            targ = form.vertex_attribute(key, 'target')
-            weight = form.vertex_attribute(key, 'weight')
-            dist += abs(z - targ)*weight
+    for key in form.vertices():
+        _, _, z = form.vertex_coordinates(key)
+        targ = form.vertex_attribute(key, 'target')
+        dist += (z - targ) ** 2
 
     return dist
 
 
-def replicate_contraints(file, file_constraint):
-
-    form = FormDiagram.from_json(file)
-    form_ = FormDiagram.from_json(file_constraint)
-    gkey_planar = {}
-
-    for key_real in form.vertices():
-        coord = form.vertex_coordinates(key_real)
-        gkey_proj = geometric_key([coord[0], coord[1], 0.0])
-        gkey_planar[gkey_proj] = key_real
-
-    for key in form_.vertices():
-        target = form_.vertex[key].get('target', 0.0)
-        lb = form_.vertex[key].get('lb', 0.0)
-        ub = form_.vertex[key].get('ub', 0.0)
-        if target < 10**(-4):
-            target = 0.00
-        gkey = geometric_key([form_.vertex_coordinates(key)[0], form_.vertex_coordinates(key)[1], 0.0])
-        form.vertex_attribute(gkey_planar[gkey], 'target', target)
-        form.vertex_attribute(gkey_planar[gkey], 'lb', lb)
-        form.vertex_attribute(gkey_planar[gkey], 'ub', ub)
-
-    return form
-
-
-def interp_surf(form):
-
-    x = []
-    y = []
-    s = []
-
-    for key, vertex in form.vertex.items():
-        if vertex.get('_is_external') is False:
-            x.append(vertex.get('x'))
-            y.append(vertex.get('y'))
-            s.append(vertex.get('target'))
-
-    from scipy import interpolate
-
-    surf = interpolate.interp2d(x, y, s, kind='linear')
-
-    return surf
-
-
-def null_edges(form, plot=False):
-
-    null_edges = []
-    all_edges = []
-
-    for u, v in form.edges():
-        if form.edge_attribute((u, v), '_is_external') is False and form.edge_attribute((u, v), '_is_edge') is True:
-            activ = 0
-            coord_u = form.vertex_coordinates(u)
-            coord_v = form.vertex_coordinates(v)
-            ux = round(coord_u[0], 3)
-            uy = round(coord_u[1], 3)
-            vx = round(coord_v[0], 3)
-            vy = round(coord_v[1], 3)
-            mid_x, mid_y, _ = form.edge_midpoint(u, v)
-            if uy == vy and ((uy != 10.0 and vy != 10.0) or (uy != 0.0 and vy != 0.0)):
-                if (mid_y > mid_x and mid_y < 10 - mid_x) or (mid_y < mid_x and mid_y > 10 - mid_x):
-                    if uy == 5.0 and vy == 5.0 and ux > 0.01 and vx > 0.01 and ux < 9.99 and vx < 9.99:  # Special for TOP 2
-                        pass
-                    else:
-                        null_edges.append((u, v))
-                        activ += 1
-            if ux == vx and ((ux != 10.0 and vx != 10.0) or (ux != 0.0 and vx != 0.0)):
-                if (mid_y > mid_x and mid_y > 10 - mid_x) or (mid_y < mid_x and mid_y < 10 - mid_x):
-                    if ux == 5.0 and vx == 5.0 and uy > 0.01 and vy > 0.01 and uy < 9.99 and vy < 9.99:  # Special for TOP 2
-                        pass
-                    else:
-                        null_edges.append((u, v))
-                        activ += 1
-            if activ == 0:
-                all_edges.append((u, v))
-
-    if plot:
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges(all_edges)
-        plotter.draw_edges(null_edges, color='ff0000')
-        plotter.show()
-
-    return null_edges
-
-
 def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
+    """Constraint for smoothing the form diagram in a rectangular boundary.
+
+    Parameters
+    ----------
+    form : compas_tno.diagrams.FormDiagram
+        The form diagram / thrust network to check.
+    xy_span: list
+        The rectangular footprint to smooth.
+
+    Returns
+    -------
+    distance: float
+        The square distance is computed.
+
+    """
 
     [[x0, x1], [y0, y1]] = xy_span
     cons = {key: None for key in form.vertices()}
@@ -196,8 +108,8 @@ def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
     return cons
 
 
-def create_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top'], view=False):
-    """ Create cracks on a form diagram to the nodes desired.
+def assign_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top']):
+    """Assign cracks on a form diagram to the nodes desired.
 
     Parameters
     ----------
@@ -234,13 +146,59 @@ def create_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top'], view=
 
     form.attributes['cracks'] = (cracks_lb, cracks_ub)
 
-    if view:
-        plot_form_xz(form, None, radius=0.02, cracks=True).show()
+    return form
+
+
+def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, constraint_directions='all'):
+    """ Apply rollers to the rectangular boundaries of the pattern.
+
+    Parameters
+    ----------
+    form : obj
+        ForceDiagram to constraint.
+    xy_span: list
+        The rectangular footprint of the diagram.
+    max_f : float
+        The maximum force allowed in each roller.
+    constraint_directions : str
+        Define the restriction in ``all`` directions or only ``x``or only ``y``.
+
+    Returns
+    -------
+    form : obj
+        ForceDiagram with the rollers assigned.
+
+    """
+
+    y1 = xy_span[1][1]
+    y0 = xy_span[1][0]
+    x1 = xy_span[0][1]
+    x0 = xy_span[0][0]
+
+    bndr = form.vertices_on_boundary()
+
+    for key in bndr:
+        if form.vertex_attribute(key, 'is_fixed') is False:
+            x, y, _ = form.vertex_coordinates(key)
+            if x == x1 and (constraint_directions in ['all', 'x']):
+                form.vertex_attribute(key, 'rol_x', True)
+                form.vertex_attribute(key, 'max_rx', max_f)
+            if x == x0 and (constraint_directions in ['all', 'x']):
+                form.vertex_attribute(key, 'rol_x', True)
+                form.vertex_attribute(key, 'max_rx', max_f)
+            if y == y1 and (constraint_directions in ['all', 'y']):
+                form.vertex_attribute(key, 'rol_y', True)
+                form.vertex_attribute(key, 'max_ry', max_f)
+            if y == y0 and (constraint_directions in ['all', 'y']):
+                form.vertex_attribute(key, 'rol_y', True)
+                form.vertex_attribute(key, 'max_ry', max_f)
 
     return form
 
 
 def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3):
+    """ Deprecated function to assign constraints in the joints among blocks instead of in the z's.
+    """
 
     k_i = form.key_index()
 
@@ -305,33 +263,5 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
             form.vertex_attribute(key, 'b', value=[thk/2, 0.0])
         if x == x0:
             form.attributes['tmax'] = ze
-
-    return form
-
-
-def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, constraint_directions='all'):
-
-    y1 = xy_span[1][1]
-    y0 = xy_span[1][0]
-    x1 = xy_span[0][1]
-    x0 = xy_span[0][0]
-
-    bndr = form.vertices_on_boundary()
-
-    for key in bndr:
-        if form.vertex_attribute(key, 'is_fixed') is False:
-            x, y, _ = form.vertex_coordinates(key)
-            if x == x1 and (constraint_directions in ['all', 'x']):
-                form.vertex_attribute(key, 'rol_x', True)
-                form.vertex_attribute(key, 'max_rx', max_f)
-            if x == x0 and (constraint_directions in ['all', 'x']):
-                form.vertex_attribute(key, 'rol_x', True)
-                form.vertex_attribute(key, 'max_rx', max_f)
-            if y == y1 and (constraint_directions in ['all', 'y']):
-                form.vertex_attribute(key, 'rol_y', True)
-                form.vertex_attribute(key, 'max_ry', max_f)
-            if y == y0 and (constraint_directions in ['all', 'y']):
-                form.vertex_attribute(key, 'rol_y', True)
-                form.vertex_attribute(key, 'max_ry', max_f)
 
     return form

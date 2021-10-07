@@ -872,33 +872,31 @@ def gradient_complementary_energy(variables, M):
 
 def gradient_complementary_energy_nonlinear(variables, M):
 
-    is_xyb_var = False
-    is_zb_var = False
-    nb = len(M.fixed)
-
-    if 'xyb' in M.variables:
-        is_xyb_var = True
-    if 'zb' in M.variables:
-        is_zb_var = True
-
     grad_lin = gradient_complementary_energy(variables, M)
 
-    dEdq_vector = 2 * M.stiff * M.q.reshape(-1, 1)
-    dEdq = diags(dEdq_vector.flatten())
-    dEdqid = dEdq.dot(M.B)
-    grad_quad = npsum(dEdqid, axis=0).reshape(-1, 1)
+    if M.Ecomp_method == 'simplified':  # assuming area and lengths constant - computed in beginning
 
-    if is_xyb_var:
-        grad_quad = vstack([grad_quad, zeros((2*nb, 1))])
-    if is_zb_var:
-        grad_quad = vstack([grad_quad, zeros((nb, 1))])
+        nb = len(M.fixed)
+
+        dEdq_vector = 2 * M.stiff * M.q.reshape(-1, 1)
+        dEdq = diags(dEdq_vector.flatten())
+        dEdqid = dEdq.dot(M.B)
+        grad_quad = npsum(dEdqid, axis=0).reshape(-1, 1)
+
+        if 'xyb' in M.variables:
+            grad_quad = vstack([grad_quad, zeros((2*nb, 1))])
+        if 'zb' in M.variables:
+            grad_quad = vstack([grad_quad, zeros((nb, 1))])
+
+    elif M.Ecomp_method == 'complete':
+        grad_quad = gradient_loadpath_general(variables, M) * M.stiff
 
     fgrad = grad_lin + grad_quad.flatten()
 
     return fgrad
 
 
-def gradient_loadpath_general(variables, M):
+def gradient_loadpath_general(variables, M):  # check this and make it work!!
 
     if isinstance(M, list):
         M = M[0]
@@ -960,11 +958,6 @@ def gradient_loadpath_general(variables, M):
     dwdq = M.C.dot(dzdq)
 
     dldq_1 = (multiply(sign(M.q).reshape(-1, 1), l2).transpose().dot(M.B)).flatten()
-    # print(sign(M.q).shape)
-    # print(l2.shape)
-    # print(multiply(sign(M.q), l2).transpose().shape)
-    # print(M.B.shape)
-    # print(dldq_1.shape)
 
     # gradient = (multiply(sign(M.q), l2).transpose().dot(M.B) + 2*abs(M.q.transpose()).dot(M.U.dot(M.C.dot(dxdq)) + M.V.dot(M.C.dot(dydq)) + M.W.dot(M.C.dot(dzdq)))).transpose()
     gradient = zeros((k, 1))
@@ -980,7 +973,7 @@ def gradient_loadpath_general(variables, M):
         dz_dzb[M.free] = SPLU_D.solve(-CitQCf)
         dz_dzb[M.fixed] = identity(nb)
 
-        gradient_zb = 2*abs(M.q.transpose()) * (M.W.dot(M.C.dot(dz_dzb)))
+        gradient_zb = (2*abs(M.q.transpose()).dot(M.W.dot(M.C.dot(dz_dzb)))).transpose().reshape(-1, 1)
         gradient = vstack([gradient, gradient_zb])
 
     return gradient

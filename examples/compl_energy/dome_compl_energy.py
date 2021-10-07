@@ -19,23 +19,24 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 10
-type_formdiagram = 'cross_fd'
-type_structure = 'crossvault'
+discretisation = [8, 12]
+type_formdiagram = 'radial_fd'
+type_structure = 'dome'
 thk = 0.50
-discretisation_shape = 2 * discretisation
-hc = None
-he = None
+discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
 
 save = True
 solutions = {}
 
-objective = ['Ecomp-linear']
-solver = 'SLSQP'
-constraints = ['funicular', 'envelope', 'envelopexy']
+objective = ['Ecomp-nonlinear']
+Ecomp_method = 'complete'
+solver = 'IPOPT'
+constraints = ['funicular', 'envelope', 'envelopexy', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb']
-features = []
-axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
+features = ['sym']
+axis_sym = None
+# axis_sym = [[0.0, 5.0], [10.0, 5.0]]
+axis_sym = [[5.0, 0.0], [5.0, 10.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
 
@@ -59,9 +60,9 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             data_diagram = {
                 'type': type_formdiagram,
-                'xy_span': [[0, span], [0, k*span]],
-                'discretisation': discretisation,
-                'fix': 'corners'
+                'center': [5.0, 5.0],
+                'radius': span/2,
+                'discretisation': discretisation
             }
 
             form = FormDiagram.from_library(data_diagram)
@@ -72,10 +73,6 @@ for c in [0.1]:  # set the distance that the nodes can move
                 'type': type_structure,
                 'thk': thk,
                 'discretisation': discretisation_shape,
-                'xy_span': [[0, span], [0, k*span]],
-                'hc': hc,
-                'hm': None,
-                'he': he if he is None else [he, he, he, he],
                 'center': [5.0, 5.0],
                 'radius': span/2,
                 't': 0.0,
@@ -108,12 +105,17 @@ for c in [0.1]:  # set the distance that the nodes can move
                 lines = []
                 vector_supports = []
 
-                sign = 1  # +1 for outwards / -1 for inwards
+                sign = -1  # +1 for outwards / -1 for inwards
 
                 for key in form.vertices_where({'is_fixed': True}):
                     x, y, z = form.vertex_coordinates(key)
 
-                    # dXbi = normalize_vector([sign*(x - Xc[0]), 0, 0])  # vault opening up
+                    # dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])
+
+                    # if abs(Xc[0] - x) > 10e-3:
+                    #     dXbi = normalize_vector([sign*(Xc[0] - x), 0, 0])  # vault opening up
+                    # else:
+                    #     dXbi = [0, 0, 0]
 
                     # dXbi = normalize_vector([1, 0, 0])  # rigid body
 
@@ -127,8 +129,13 @@ for c in [0.1]:  # set the distance that the nodes can move
                     # else:
                     #     dXbi = [0, 0, 0]
 
-                    if x > Xc[0] and y > Xc[1]:             # vertical settlement
-                        dXbi = normalize_vector([0, 0, -1])
+                    # if x > Xc[0] and y > Xc[1]:             # vertical settlement
+                    #     dXbi = normalize_vector([0, 0, -1])
+                    # else:
+                    #     dXbi = [0, 0, 0]
+
+                    if x - Xc[0] > 2.5:
+                        dXbi = normalize_vector([0, 0, -1])  # vertical settlement right end
                     else:
                         dXbi = [0, 0, 0]
 
@@ -164,7 +171,8 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['objective'] = obj
             optimiser.settings['plot'] = False
             optimiser.settings['find_inds'] = False
-            optimiser.settings['max_iter'] = 1500
+            optimiser.settings['axis_symmetry'] = axis_sym
+            optimiser.settings['max_iter'] = 500
             optimiser.settings['gradient'] = True
             optimiser.settings['jacobian'] = True
             optimiser.settings['printout'] = True
@@ -172,14 +180,14 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['derivative_test'] = False
             optimiser.settings['starting_point'] = starting_point
             optimiser.settings['support_displacement'] = dXb
-            optimiser.settings['Ecomp_method'] = 'complete'
+            optimiser.settings['Ecomp_method'] = Ecomp_method
 
             # --------------------- 5. Set up and run analysis ---------------------
 
             analysis = Analysis.from_elements(vault, form, optimiser)
             # analysis.apply_selfweight()
             # analysis.apply_envelope()
-            # analysis.apply_reaction_bounds()
+            analysis.apply_reaction_bounds()
             analysis.set_up_optimiser()
             analysis.run()
 
@@ -198,9 +206,8 @@ for c in [0.1]:  # set the distance that the nodes can move
             if 'ind' in optimiser.settings['variables']:
                 folder = os.path.join(folder, 'fixed')
             else:
-                folder = os.path.join(folder, 'mov_c_' + str(c))
-            if he:
-                folder = os.path.join(folder, 'hc_' + str(hc) + '_he_' + str(he))
+                if 'fixed' not in features:
+                    folder = os.path.join(folder, 'mov_c_' + str(c))
             if sign:
                 folder = os.path.join(folder, 'sign_' + str(sign))
             os.makedirs(folder, exist_ok=True)

@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 
-def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=True, thick='f', heights=False, show_edgeuv=False, cracks=False, save=None, tol_cracks=10e-5):
+def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, thick='f', heights=False, show_edgeuv=False, cracks=True, save=None, tol_cracks=10e-5):
     """ Extended plotting of a FormDiagram
 
     Parameters

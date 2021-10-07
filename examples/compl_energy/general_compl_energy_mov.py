@@ -30,8 +30,8 @@ he = None
 save = True
 solutions = {}
 
-objective = ['Ecomp-nonlinear']  # Ecomp-linear
-solver = 'IPOPT'
+objective = ['Ecomp-linear']  # Ecomp-nonlinear
+solver = 'slsqp'
 constraints = ['funicular', 'envelope', 'envelopexy']
 variables = ['q', 'zb']
 features = []
@@ -82,7 +82,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             }
 
             vault = Shape.from_library(data_shape)
-            vault.ro = 100.0
+            vault.ro = 20.0
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
@@ -108,7 +108,7 @@ for c in [0.1]:  # set the distance that the nodes can move
                 lines = []
                 vector_supports = []
 
-                sign = 1  # +1 for outwards / -1 for inwards
+                sign = -1  # +1 for outwards / -1 for inwards
 
                 for key in form.vertices_where({'is_fixed': True}):
                     x, y, z = form.vertex_coordinates(key)

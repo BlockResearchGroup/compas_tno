@@ -1,14 +1,10 @@
-from compas_tno.shapes.dome import dome_zt_update
-from compas_tno.shapes.crossvault import crossvault_middle_update
-from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
-from compas_tno.utilities.interpolation import get_shape_middle_pattern
-
 from numpy import zeros
 
 
 __all__ = [
     'compute_form_initial_lengths',
-    'compute_edge_stiffness'
+    'compute_edge_stiffness',
+    'compute_average_edge_stiffness'
 ]
 
 
@@ -47,7 +43,7 @@ def compute_form_initial_lengths(form):
 
 
 def compute_edge_stiffness(form, lengths=None, area=0.125, E=20E+6):
-    """Compute the stiffness of each edge based on the initial lengths, constant area and Young Modulus E.
+    r"""Compute the stiffness of each edge based on the initial lengths, constant area and Young Modulus E.
 
     Parameters
     ----------
@@ -70,7 +66,10 @@ def compute_edge_stiffness(form, lengths=None, area=0.125, E=20E+6):
 
     Note
     -------
-    The stiffness is based on a the fo .
+    The stiffness is based on a the formula below:
+
+    $k = \frac{EA}{l_\mathrm{i}}$
+
     """
 
     if lengths is None:
@@ -81,5 +80,32 @@ def compute_edge_stiffness(form, lengths=None, area=0.125, E=20E+6):
     for index, edge in enumerate(list(form.edges_where({'_is_edge': True}))):
         k[index] = E * area / lengths[index]
         form.edge_attribute(edge, 'k', k[index])
+
+    return k
+
+
+def compute_average_edge_stiffness(form, E=20E+6, Ah=10E-4):
+    """Compute the stiffness divided by length of each edge (constant thoughout the form diagram)
+    based on the Young Modulus E and the Axial stress Ah.
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        Form diagram to compute the stiffness.
+    E : float
+        The young modulus of the material.
+        The default value is ``20E+6`` which corresponds to a 20 GPa commonly used for concrete.
+    Ah : float
+        The axial stress which is assumed to be constant throughout the edges.
+        The default value is ``10E-4`` which corresponts to a compressive stress of 10 MPa in the section.
+
+    Returns
+    -------
+    k : float
+        The stiffness divided by length on the edges (constant).
+
+    """
+
+    k = E * Ah
 
     return k

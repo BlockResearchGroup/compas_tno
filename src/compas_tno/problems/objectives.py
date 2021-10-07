@@ -249,7 +249,13 @@ def f_complementary_energy_nonlinear(variables, M):
         M = M[0]
 
     flin = f_complementary_energy(variables, M)
-    f = flin + npsum(M.stiff * M.q.reshape(-1, 1) ** 2)  # assuming area and lengths constant - computed in beginning
+
+    if M.Ecomp_method == 'simplified':
+        fquad = npsum(M.stiff * M.q.reshape(-1, 1) ** 2)  # assuming area and lengths constant - computed in beginning
+    if M.Ecomp_method == 'complete':
+        fquad = f_loadpath_general(variables, M) * M.stiff
+
+    f = flin + fquad
 
     return f
 
