@@ -92,6 +92,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             # Apply Selfweight and Envelope
 
             apply_envelope_from_shape(form, vault)
+            # add something
             apply_selfweight_from_shape(form, vault)
             if 'lambd' in variables:
                 apply_horizontal_multiplier(form, lambd=lambd)
