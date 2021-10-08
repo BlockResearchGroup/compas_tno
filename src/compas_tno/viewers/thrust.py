@@ -4,7 +4,7 @@ from compas.geometry import Point
 
 from compas_tno.shapes import Shape
 
-from compas_viewers.objectviewer import ObjectViewer
+# from compas_viewers.objectviewer import ObjectViewer
 
 from compas_view2 import app
 from compas_view2.shapes import Arrow
