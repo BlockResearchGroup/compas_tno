@@ -1,9 +1,4 @@
 compas>=1.8.1
-compas_ags
 compas_cloud>=0.3.0
-compas_tna>=0.1.5
-compas_triangle>=1.0.2
-compas_skeleton>=1.1.2
-compas_singular>=0.1.5
-cyipopt
-torch
+compas_tna
+compas_ags

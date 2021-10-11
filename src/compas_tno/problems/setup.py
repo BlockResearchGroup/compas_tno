@@ -12,6 +12,7 @@ from compas_tno.problems import f_horprojection_general
 from compas_tno.problems import f_loadpath_general
 from compas_tno.problems import f_complementary_energy
 from compas_tno.problems import f_complementary_energy_nonlinear
+from compas_tno.problems import f_max_section
 
 from compas_tno.problems import gradient_fmin_general
 from compas_tno.problems import gradient_fmax_general
@@ -20,6 +21,7 @@ from compas_tno.problems import gradient_horprojection_general
 from compas_tno.problems import gradient_loadpath_general
 from compas_tno.problems import gradient_complementary_energy
 from compas_tno.problems import gradient_complementary_energy_nonlinear
+from compas_tno.problems import gradient_max_section
 
 from compas_tno.problems import f_constant
 from compas_tno.problems import f_reduce_thk
@@ -55,6 +57,7 @@ from compas_tno.utilities import compute_average_edge_stiffness
 from numpy import append
 from numpy import array
 from numpy import zeros
+from numpy import ones
 
 
 __all__ = [
@@ -86,6 +89,7 @@ def set_up_general_optimisation(analysis):
     plot = optimiser.settings.get('plot', False)
     # thickness_type = optimiser.settings.get('thickness_type', 'constant')
     axis_symmetry = optimiser.settings.get('axis_symmetry', None)
+    sym_loads = optimiser.settings.get('sym_loads', False)
     fjac = optimiser.settings.get('jacobian', False)
     starting_point = optimiser.settings.get('starting_point', 'current')
     qmin = optimiser.settings.get('qmin', -1e+4)
@@ -129,10 +133,10 @@ def set_up_general_optimisation(analysis):
 
     if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
-        adapt_problem_to_sym_and_fixed_diagram(M, form, axis_symmetry=axis_symmetry, printout=printout)
+        adapt_problem_to_sym_and_fixed_diagram(M, form, axis_symmetry=axis_symmetry, correct_loads=sym_loads, printout=printout)
     elif 'sym' in features:
         # print('\n-------- Initialisation with sym form --------')
-        adapt_problem_to_sym_diagram(M, form, axis_symmetry=axis_symmetry, printout=printout)
+        adapt_problem_to_sym_diagram(M, form, axis_symmetry=axis_symmetry, correct_loads=sym_loads, printout=printout)
     elif 'fixed' in features:
         # print('\n-------- Initialisation with fixed form --------')
         adapt_problem_to_fixed_diagram(M, form, printout=printout)
@@ -227,6 +231,9 @@ def set_up_general_optimisation(analysis):
     elif objective == 'Ecomp-nonlinear':
         fobj = f_complementary_energy_nonlinear
         fgrad = gradient_complementary_energy_nonlinear
+    elif objective == 'max_section':
+        fobj = f_max_section
+        fgrad = gradient_max_section
     else:
         print('Please, provide a valid objective for the optimisation')
         raise NotImplementedError
@@ -291,6 +298,14 @@ def set_up_general_optimisation(analysis):
         min_limit = 0.0  # /2  # 0.0
         bounds = bounds + [[min_limit, thk0_approx/2]]
         # bounds = bounds + [[min_limit, thk0_approx/2]]
+
+    if 'tub' in variables:
+        M.tub = zeros((M.n, 1))
+        tubmax = optimiser.settings.get('tubmax', 0.5)
+        M.tubmax = tubmax * ones((M.n, 1))
+        M.tubmin = zeros((M.n, 1))
+        x0 = append(x0, M.tub)
+        bounds = bounds + list(zip(M.tubmin, M.tubmax))
 
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)

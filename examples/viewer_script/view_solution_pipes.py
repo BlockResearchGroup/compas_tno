@@ -1,6 +1,6 @@
 from compas_tno.diagrams import FormDiagram
 
-from compas_tno.viewers import view_solution2
+from compas_tno.viewers import view_solution
 from compas_tno.plotters import plot_form
 from compas_tno.algorithms import reactions
 
@@ -12,4 +12,4 @@ address = '/Users/mricardo/compas_dev/me/compl_energy/assym/dome/radial_fd/mov_c
 form = FormDiagram.from_json(address)
 
 plot_form(form).show()
-view_solution2(form).show()
+view_solution(form).show()

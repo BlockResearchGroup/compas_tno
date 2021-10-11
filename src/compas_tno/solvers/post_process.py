@@ -1,3 +1,4 @@
+from compas.datastructures.mesh.mesh import Mesh
 from compas_tno.algorithms import reactions
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape
@@ -51,6 +52,12 @@ def post_process_general(analysis):
         lambd = xopt[-1]
         M.P[:, [0]] = lambd * M.px0
         M.P[:, [1]] = lambd * M.py0
+    if 'tub' in variables:
+        tub = xopt[check:check + M.n]
+        check = check + M.n
+    if 'tlb' in variables:
+        tlb = xopt[check:check + M.n]
+        check = check + M.n
     # if 's' in variables:
     #     s = xopt[-1]
 
@@ -130,6 +137,18 @@ def post_process_general(analysis):
         shape.intrados = shape.intrados.offset_mesh(n=n, direction='up')
         shape.extrados = shape.extrados.offset_mesh(n=n, direction='down')
         apply_envelope_from_shape(form, shape)
+
+    if 'tub' in variables:
+        for i, key in enumerate(form.vertices()):
+            zub = form.vertex_attribute(key, 'ub')
+            form.vertex_attribute(key, 'tub', tub[i])
+            form.vertex_attribute(key, 'ub', zub + tub[i])
+
+    if 'tlb' in variables:
+        for i, key in enumerate(form.vertices()):
+            zub = form.vertex_attribute(key, 'lb')
+            form.vertex_attribute(key, 'tlb', tlb[i])
+            form.vertex_attribute(key, 'lb', zub - tlb[i])
 
     analysis.form = form
     analysis.optimiser = optimiser

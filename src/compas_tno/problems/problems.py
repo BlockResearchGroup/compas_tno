@@ -664,11 +664,11 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     return
 
 
-def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, printout=False):
+def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, correct_loads=True, printout=False):
 
     start_time = time.time()
 
-    apply_symmetry(form, axis_symmetry=axis_symmetry)
+    apply_symmetry(form, axis_symmetry=axis_symmetry, correct_loads=correct_loads)
 
     Esym = build_symmetry_transformation(form, printout=False)
     mapsym = form.build_symmetry_map()
@@ -696,13 +696,13 @@ def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, printout=Fal
     return
 
 
-def adapt_problem_to_sym_and_fixed_diagram(problem, form, axis_symmetry=None, printout=False):
+def adapt_problem_to_sym_and_fixed_diagram(problem, form, axis_symmetry=None, correct_loads=True, printout=False):
 
     start_time = time.time()
 
     adapt_problem_to_fixed_diagram(problem, form, printout=False)
 
-    apply_symmetry(form, axis_symmetry=axis_symmetry)
+    apply_symmetry(form, axis_symmetry=axis_symmetry, correct_loads=correct_loads)
 
     ind = problem.ind
     k = problem.k

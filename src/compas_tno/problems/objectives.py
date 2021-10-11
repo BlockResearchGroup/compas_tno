@@ -33,7 +33,8 @@ __all__ = [
     'f_horprojection_general',
     'f_loadpath_general',
     'f_complementary_energy',
-    'f_complementary_energy_nonlinear'
+    'f_complementary_energy_nonlinear',
+    'f_max_section'
 ]
 
 
@@ -256,6 +257,35 @@ def f_complementary_energy_nonlinear(variables, M):
         fquad = f_loadpath_general(variables, M) * M.stiff
 
     f = flin + fquad
+
+    return f
+
+
+def f_max_section(variables, M):
+
+    if isinstance(M, list):
+        M = M[0]
+
+    k = M.k
+    nb = len(M.fixed)
+    n = M.X.shape[0]
+
+    qid = variables[:k]
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[k:k + 2*nb]
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+    if 'zb' in M.variables:
+        zb = variables[-nb:]
+        M.X[M.fixed, [2]] = zb.flatten()
+    if 'tub' in M.variables:
+        tub = variables[-n:]
+        M.tub = tub
+
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    f = sum(tub)
 
     return f
 

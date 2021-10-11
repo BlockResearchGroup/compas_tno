@@ -1,4 +1,5 @@
 from numpy import zeros
+from numpy import ones
 from numpy import identity
 from numpy import hstack
 from numpy import vstack
@@ -39,7 +40,8 @@ __all__ = [
     'gradient_horprojection_general',
     'gradient_loadpath_general',
     'gradient_complementary_energy',
-    'gradient_complementary_energy_nonlinear'
+    'gradient_complementary_energy_nonlinear',
+    'gradient_max_section'
 ]
 
 
@@ -286,6 +288,10 @@ def sensitivities_wrapper_general(variables, M):
         M.P[:, [0]] = lambd * M.px0
         M.P[:, [1]] = lambd * M.py0
         check = check + 1
+    if 'tub' in M.variables:
+        tub = variables[check: check + n]
+        M.tub = tub
+        check = check + n
 
     q = M.q
     Xfixed = M.X[M.fixed]
@@ -444,6 +450,21 @@ def sensitivities_wrapper_general(variables, M):
             dXdlambd = vstack([dXdlambd, dslope_dlambd])
 
         deriv = hstack([deriv, dXdlambd])
+
+    if 'tub' in M.variables:  # add a column to the derivatives to count the variable tub (max_section)
+
+        nconst = deriv.shape[0]
+        dXdtub = zeros((nconst, n))
+        startline = nlin_fun + nlin_limitxy
+        endline = startline + nlin_env
+
+        In = identity(n)
+        I0 = 0.0 * In
+        Ctub = vstack([I0, In])
+
+        dXdtub[startline: endline, :] = Ctub  # this variable affects only the
+
+        deriv = hstack([deriv, dXdtub])
 
     return deriv
 
@@ -975,5 +996,23 @@ def gradient_loadpath_general(variables, M):  # check this and make it work!!
 
         gradient_zb = (2*abs(M.q.transpose()).dot(M.W.dot(M.C.dot(dz_dzb)))).transpose().reshape(-1, 1)
         gradient = vstack([gradient, gradient_zb])
+
+    return gradient
+
+
+def gradient_max_section(variables, M):
+
+    k = M.k
+    nb = len(M.fixed)
+    n = M.X.shape[0]
+
+    gradient = zeros((k, 1))
+
+    if 'xyb' in M.variables:
+        gradient = vstack([gradient, zeros((2*nb, 1))])
+    if 'zb' in M.variables:
+        gradient = vstack([gradient, zeros((nb, 1))])
+    if 'tub' in M.variables:
+        gradient = vstack([gradient, ones((n, 1))])
 
     return gradient

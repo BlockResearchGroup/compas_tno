@@ -16,6 +16,7 @@ from compas.utilities import geometric_key
 
 __all__ = [
     'plot_form',
+    'plot_simple_form',
     'plot_superimposed_diagrams',
     'plot_distance_target',
     'plot_form_xz',
@@ -217,6 +218,27 @@ def plot_superimposed_diagrams(form, form_base, show_q=True, thick='f', radius=0
 
     return plotter
 
+
+def plot_simple_form(form):
+    """ Simple plot of the FormDiagram
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    plotter = MeshPlotter(form, figsize=(10, 10), tight=True)
+    plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
+    plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.075, facecolor='000000')
+
+    return plotter
 
 def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', show_edgeuv=False, cracks=False, save=None):
     """ Extended plotting of a FormDiagram

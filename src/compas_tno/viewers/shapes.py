@@ -1,5 +1,5 @@
-from compas_viewers.multimeshviewer import MultiMeshViewer
-from compas_viewers.objectviewer import ObjectViewer
+from compas.datastructures import Mesh
+from compas_view2 import app
 from compas.geometry import Line
 
 
@@ -169,15 +169,16 @@ def view_shapes_pointcloud(shape, settings_bounds=None):
     return viewer
 
 
-def view_shapes(shape, show_middle=True, settings_middle=None, settings_bounds=None):
+def view_shapes(shape, show_middle=False):
     """ Viewer showing the middle (target) surface of a shape
 
     Parameters
     ----------
     shape : obj
         Shape to plot
-    cut_negatives : boll
-        If true, it will hid the negative allowance on the close-to-support points (WIP).
+    show_middle : bool
+        Whether or not the middle surface is shown.
+        The default values is ``False``in which case the middle is not shown.
 
     Returns
     ----------
@@ -186,38 +187,28 @@ def view_shapes(shape, show_middle=True, settings_middle=None, settings_bounds=N
 
     """
 
-    intrados = shape.intrados
-    extrados = shape.extrados
-    middle = shape.middle
+    viewer = app.App()
 
-    viewer = ObjectViewer()
+    # modify default settings - should be improved
+    viewer.view.camera.target = [0, 0, 0]
+    viewer.view.camera.distance = 40
+    viewer.view.camera.rx = -45
+    viewer.view.camera.rz = 45
+    viewer.view.camera.fov = 40
 
-    if not settings_middle:
-        settings_middle = {
-            'color': '#777777',
-            'edges.width': 1,
-            'opacity': 0.8,
-            'vertices.size': 0,
-            'vertices.on': False,
-            'edges.on': True,
-            'faces.on': True,
-        }
+    vertices_intra, faces_intra = shape.intrados.to_vertices_and_faces()
+    mesh_intra = Mesh.from_vertices_and_faces(vertices_intra, faces_intra)
 
-    if not settings_bounds:
-        settings_bounds = {
-            'color': '#999999',
-            'edges.width': 1,
-            'opacity': 0.5,
-            'vertices.size': 0,
-            'vertices.on': False,
-            'edges.on': True,
-            'faces.on': True,
-        }
+    vertices_extra, faces_extra = shape.extrados.to_vertices_and_faces()
+    mesh_extra = Mesh.from_vertices_and_faces(vertices_extra, faces_extra)
+
+    viewer.add(mesh_intra, name="Intrados", show_edges=False, opacity=0.5, color=(0.5, 0.5, 0.5))
+    viewer.add(mesh_extra, name="Extrados", show_edges=False, opacity=0.5, color=(0.5, 0.5, 0.5))
 
     if show_middle:
-        viewer.add(middle, name="Middle/Target", settings=settings_middle)
-    viewer.add(intrados, name="Intrados", settings=settings_bounds)
-    viewer.add(extrados, name="Extrados", settings=settings_bounds)
+        vertices_middle, faces_middle = shape.middle.to_vertices_and_faces()
+        mesh_middle = Mesh.from_vertices_and_faces(vertices_middle, faces_middle)
+        viewer.add(mesh_middle, name="Middle", show_edges=False, opacity=0.5, color=(0.5, 0.5, 0.5))
 
     return viewer
 
