@@ -307,6 +307,14 @@ def set_up_general_optimisation(analysis):
         x0 = append(x0, M.tub)
         bounds = bounds + list(zip(M.tubmin, M.tubmax))
 
+    if 'tlb' in variables:
+        M.tlb = zeros((M.n, 1))
+        tlbmax = optimiser.settings.get('tlbmax', 0.5)
+        M.tlbmax = tlbmax * ones((M.n, 1))
+        M.tlbmin = zeros((M.n, 1))
+        x0 = append(x0, M.tlb)
+        bounds = bounds + list(zip(M.tlbmin, M.tlbmax))
+
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)
 

@@ -1,4 +1,3 @@
-from compas.datastructures.mesh.mesh import Mesh
 from compas_tno.algorithms import reactions
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape

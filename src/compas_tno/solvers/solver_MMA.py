@@ -7,7 +7,7 @@ from .post_process import post_process_general
 
 import time
 
-from compas_tno.problems import sensitivities_wrapper_inequalities
+# from compas_tno.problems import sensitivities_wrapper_inequalities
 from compas_tno.problems import constr_wrapper
 
 try:
@@ -19,11 +19,6 @@ try:
     from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
 except BaseException:
     pass
-
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
 
 
 __all__ = [

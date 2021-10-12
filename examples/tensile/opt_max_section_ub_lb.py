@@ -7,6 +7,7 @@ from compas_tno.viewers import view_shapes
 from compas_plotters import MeshPlotter
 
 from compas.utilities import i_to_red
+from compas.utilities import i_to_blue
 
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
@@ -32,11 +33,12 @@ solutions = {}
 objective = ['max_section']  # try 'max'
 solver = 'IPOPT'  # try SLSQP
 constraints = ['funicular', 'envelope']
-variables = ['q', 'zb', 'tub']  # in the futture add 'tlb' as variables
+variables = ['q', 'zb', 'tlb', 'tub']  # in the futture add 'tlb' as variables
 features = ['fixed', 'sym']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 starting_point = 'loadpath'
-tubmax = 1.0
+tubmax = 0.1
+tlbmax = 0.1
 
 for obj in objective:  # set the objective
 
@@ -99,6 +101,7 @@ for obj in objective:  # set the objective
     optimiser.settings['printout'] = True
     optimiser.settings['starting_point'] = starting_point
     optimiser.settings['tubmax'] = tubmax
+    optimiser.settings['tlbmax'] = tlbmax
     optimiser.settings['sym_loads'] = False
 
     # --------------------- 5. Set up and run analysis ---------------------
@@ -110,12 +113,23 @@ for obj in objective:  # set the objective
     path = compas_tno.get('')
     form.to_json(os.path.join(path, 'form.py'))
 
+    text = {}
+    color = {}
+    for key in form.vertices():
+        tlb = form.vertex_attribute(key, 'tlb')
+        tub = form.vertex_attribute(key, 'tub')
+        if tlb > tub:
+            if tlb > 0.001:
+                text[key] = round(tlb, 2)
+                color[key] = i_to_red(tlb/tlbmax)
+        if tub > tlb:
+            if tub > 0.001:
+                text[key] = round(tub, 2)
+                color[key] = i_to_blue(tub/tubmax)
+
     plotter = MeshPlotter(form)
     plotter.draw_edges()
-    plotter.draw_vertices(
-        text={key: round(form.vertex_attribute(key, 'tub'), 2) for key in form.vertices() if form.vertex_attribute(key, 'tub') > 0.001},
-        facecolor={key: i_to_red(form.vertex_attribute(key, 'tub')/tubmax) for key in form.vertices()}
-        )
+    plotter.draw_vertices(text=text, facecolor=color)
     plotter.show()
 
     plot_form(form).show()

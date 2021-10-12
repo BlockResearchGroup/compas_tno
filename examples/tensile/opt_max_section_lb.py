@@ -30,13 +30,14 @@ save = False
 solutions = {}
 
 objective = ['max_section']  # try 'max'
-solver = 'IPOPT'  # try SLSQP
+solver = 'SLSQP'  # try SLSQP
 constraints = ['funicular', 'envelope']
-variables = ['q', 'zb', 'tub']  # in the futture add 'tlb' as variables
+variables = ['q', 'zb', 'tlb']  # in the futture add 'tlb' as variables
 features = ['fixed', 'sym']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 starting_point = 'loadpath'
-tubmax = 1.0
+tubmax = 0.5
+tlbmax = 0.1
 
 for obj in objective:  # set the objective
 
@@ -99,6 +100,7 @@ for obj in objective:  # set the objective
     optimiser.settings['printout'] = True
     optimiser.settings['starting_point'] = starting_point
     optimiser.settings['tubmax'] = tubmax
+    optimiser.settings['tlbmax'] = tlbmax
     optimiser.settings['sym_loads'] = False
 
     # --------------------- 5. Set up and run analysis ---------------------
@@ -113,8 +115,8 @@ for obj in objective:  # set the objective
     plotter = MeshPlotter(form)
     plotter.draw_edges()
     plotter.draw_vertices(
-        text={key: round(form.vertex_attribute(key, 'tub'), 2) for key in form.vertices() if form.vertex_attribute(key, 'tub') > 0.001},
-        facecolor={key: i_to_red(form.vertex_attribute(key, 'tub')/tubmax) for key in form.vertices()}
+        text={key: round(form.vertex_attribute(key, 'tlb'), 2) for key in form.vertices() if form.vertex_attribute(key, 'tlb') > 0.001},
+        facecolor={key: i_to_red(form.vertex_attribute(key, 'tlb')/tubmax) for key in form.vertices()}
         )
     plotter.show()
 

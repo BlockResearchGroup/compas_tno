@@ -240,6 +240,7 @@ def plot_simple_form(form):
 
     return plotter
 
+
 def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simple=False, show_q=True, thick='q', show_edgeuv=False, cracks=False, save=None):
     """ Extended plotting of a FormDiagram
 

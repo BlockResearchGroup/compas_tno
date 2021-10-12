@@ -45,9 +45,6 @@ def view_thrust(form, settings_form=None, cracks=True, show_reactions=True, thic
 
     reactions(form)
 
-    if not shape:
-        shape = Shape.from_formdiagram_and_attributes(form)
-
     viewer = app.App()
 
     # modify default settings - should be improved

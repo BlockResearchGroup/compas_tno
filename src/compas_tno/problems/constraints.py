@@ -102,6 +102,10 @@ def constr_wrapper_general(variables, M):
         tub = variables[check: check + n].reshape(-1, 1)
         M.tub = tub
         check = check + n
+    if 'tlb' in M.variables:
+        tlb = variables[check: check + n].reshape(-1, 1)
+        M.tlb = tlb
+        check = check + n
 
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
@@ -135,6 +139,8 @@ def constr_wrapper_general(variables, M):
         zmax = (M.ub.flatten() - M.X[:, 2]).reshape(-1, 1)
         if 'tub' in M.variables:
             zmax = zmax + tub
+        if 'tlb' in M.variables:
+            zmin = zmin + tlb
         constraints = vstack([constraints, zmin, zmax])
 
     if 'reac_bounds' in M.constraints:
