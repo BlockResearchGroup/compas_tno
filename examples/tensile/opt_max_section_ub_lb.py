@@ -111,7 +111,9 @@ for obj in objective:  # set the objective
     analysis.run()
 
     path = compas_tno.get('')
-    form.to_json(os.path.join(path, 'form.py'))
+    address = os.path.join(path, 'form.json')
+    form.to_json(address)
+    print('Form Saved to:', address)
 
     text = {}
     color = {}

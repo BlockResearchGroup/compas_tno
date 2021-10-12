@@ -36,7 +36,7 @@ variables = ['q', 'zb', 'tub']  # in the futture add 'tlb' as variables
 features = ['fixed', 'sym']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 starting_point = 'loadpath'
-tubmax = 1.0
+tubmax = 0.5
 
 for obj in objective:  # set the objective
 
@@ -108,7 +108,9 @@ for obj in objective:  # set the objective
     analysis.run()
 
     path = compas_tno.get('')
-    form.to_json(os.path.join(path, 'form.py'))
+    address = os.path.join(path, 'form.json')
+    form.to_json(address)
+    print('Form Saved to:', address)
 
     plotter = MeshPlotter(form)
     plotter.draw_edges()
