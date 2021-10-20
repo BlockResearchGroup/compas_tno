@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   
-  <title>compas_tno - &lt;no title&gt;</title>
+  <title>compas_tno - compas_tno.diagrams</title>
   
 
   <meta charset="utf-8" />
@@ -19,7 +19,7 @@
   <link rel="stylesheet" type="text/css" href="../_static/css/compas-reference.css" />
 
   
-    <link rel="next" title="compas_tno.optimisers" href="compas_tno.optimisers.html" />
+    <link rel="next" title="FormDiagram" href="generated/compas_tno.diagrams.FormDiagram.html" />
   
 
   
@@ -86,14 +86,97 @@
             
               <li class="breadcrumb-item"><a href="compas_tno.html">compas_tno</a></li>
             
-            <li class="breadcrumb-item active" aria-current="page">&lt;no title&gt;</li>
+            <li class="breadcrumb-item active" aria-current="page">compas_tno.diagrams</li>
           </ol>
         </nav>
         
 
         
         
-        
+        <span class="target" id="module-compas_tno.diagrams"></span><section id="compas-tno-diagrams">
+<h1>compas_tno.diagrams</h1>
+<section id="diagrams">
+<h2>Diagrams</h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.FormDiagram.html#compas_tno.diagrams.FormDiagram" title="compas_tno.diagrams.FormDiagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FormDiagram</span></code></a>()</p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> class imports the attributes and set ups from <code class="docutils literal notranslate"><span class="pre">compas_tna.diagrams.FormDiagram</span></code> and include some functionalities useful for the assessment of masonry structures.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.ForceDiagram.html#compas_tno.diagrams.ForceDiagram" title="compas_tno.diagrams.ForceDiagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ForceDiagram</span></code></a>()</p></td>
+<td><p>Mesh-based data structure for force diagrams in TNO.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="rectangular-diagrams">
+<h2>Rectangular diagrams</h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_cross_form.html#compas_tno.diagrams.create_cross_form" title="compas_tno.diagrams.create_cross_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_form</span></code></a>(cls[, xy_span, ...])</p></td>
+<td><p>Helper to construct a FormDiagram based on with an orthogonal arrangement and main diagonal.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_cross_diagonal.html#compas_tno.diagrams.create_cross_diagonal" title="compas_tno.diagrams.create_cross_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_diagonal</span></code></a>(cls[, xy_span, ...])</p></td>
+<td><p>Helper to construct a FormDiagram based on cross discretiastion including diagonals that go along the quads.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_cross_with_diagonal.html#compas_tno.diagrams.create_cross_with_diagonal" title="compas_tno.diagrams.create_cross_with_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_with_diagonal</span></code></a>(cls[, xy_span, ...])</p></td>
+<td><p>Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonals applied to all corners.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_fan_form.html#compas_tno.diagrams.create_fan_form" title="compas_tno.diagrams.create_fan_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_fan_form</span></code></a>(cls[, xy_span, ...])</p></td>
+<td><p>Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_ortho_form.html#compas_tno.diagrams.create_ortho_form" title="compas_tno.diagrams.create_ortho_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ortho_form</span></code></a>(cls[, xy_span, ...])</p></td>
+<td><p>Helper to construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="circular-diagrams">
+<h2>Circular diagrams</h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_circular_radial_form.html#compas_tno.diagrams.create_circular_radial_form" title="compas_tno.diagrams.create_circular_radial_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_radial_form</span></code></a>(cls[, center, ...])</p></td>
+<td><p>Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_circular_radial_spaced_form.html#compas_tno.diagrams.create_circular_radial_spaced_form" title="compas_tno.diagrams.create_circular_radial_spaced_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_radial_spaced_form</span></code></a>(cls[, ...])</p></td>
+<td><p>Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_circular_spiral_form.html#compas_tno.diagrams.create_circular_spiral_form" title="compas_tno.diagrams.create_circular_spiral_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_spiral_form</span></code></a>(cls[, center, ...])</p></td>
+<td><p>Helper to create a spiral Form-diagram and set common attributes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="linear-diagrams">
+<h2>Linear diagrams</h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_arch_form_diagram.html#compas_tno.diagrams.create_arch_form_diagram" title="compas_tno.diagrams.create_arch_form_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_arch_form_diagram</span></code></a>(cls[, H, L, x0, ...])</p></td>
+<td><p>Helper to create a arch linear form-diagram with equaly spaced (in 3D) nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.diagrams.create_linear_form_diagram.html#compas_tno.diagrams.create_linear_form_diagram" title="compas_tno.diagrams.create_linear_form_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_linear_form_diagram</span></code></a>(cls[, L, x0, ...])</p></td>
+<td><p>Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
         
       </main>
       <!-- content -->
@@ -110,12 +193,22 @@
         
         
           <div id="compas-navigation" class="collapse compas-navigation">
-          <ul class="nav flex-column">
+          <ul class="nav flex-column active">
 <li class="nav-item"><a class="nav-link reference internal" href="../index.html">Introduction</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../tutorial.html">Tutorial</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../examples.html">Examples</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="../api.html">API Reference</a></li>
+<li class="nav-item active"><a class="nav-link reference internal" href="../api.html">API Reference</a><ul class="nav flex-column active">
+<li class="nav-item active"><a class="nav-link reference internal" href="compas_tno.html">compas_tno</a><ul class="nav flex-column active">
+<li class="nav-item"><a class="nav-link reference internal" href="compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="nav-item active"><a class="nav-link active current reference internal" href="#">compas_tno.diagrams</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="compas_tno.optimisers.html">compas_tno.optimisers</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="compas_tno.plotters.html">compas_tno.plotters</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="compas_tno.shapes.html">compas_tno.shapes</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="nav-item"><a class="nav-link reference internal" href="../license.html">License</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="../publications.html">Publications</a></li>
 </ul>
@@ -127,7 +220,14 @@
       <!-- toc -->
       <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
         
-        <ul class="simple">
+        <ul class="nav flex-column" id="compas-toc">
+<li class="nav-item"><a class="nav-link reference internal" href="#">compas_tno.diagrams</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#diagrams">Diagrams</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#rectangular-diagrams">Rectangular diagrams</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#circular-diagrams">Circular diagrams</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#linear-diagrams">Linear diagrams</a></li>
+</ul>
+</li>
 </ul>
 
       </div>
@@ -149,10 +249,10 @@
       
 
       
-        <a href="compas_tno.optimisers.html" title="compas_tno.optimisers" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
+        <a href="generated/compas_tno.diagrams.FormDiagram.html" title="FormDiagram" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
           <div class="nav-title footer-link flex-grow-1 align-self-center">
             <div class="nav-direction small font-weight-light">Next</div>
-            compas_tno.optimisers
+            FormDiagram
           </div>
           <div class="nav-button p-2 m-2"><i class="fas fa-arrow-right"></i></div>
         </a>
