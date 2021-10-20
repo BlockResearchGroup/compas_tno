@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.algorithms import apply_sag
 
@@ -102,7 +102,8 @@ for c in [0.1]:
             # form.envelope_on_x_y(c=c)
 
             # plot_form(form, show_q=False, cracks=True).show()
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -154,7 +155,8 @@ for c in [0.1]:
             img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
 
             # plot_superimposed_diagrams(form, form_base).show()
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
@@ -163,13 +165,15 @@ for c in [0.1]:
                     form.to_json(address)
                     print('Saved to: ', address)
                     plot_superimposed_diagrams(form, form_base, save=img_file)
-                    # view_solution(form).show()
+                    # view = Viewer(form)
+view.show_solution()
             else:
                 plot_superimposed_diagrams(form, form_base, save=img_file)
                 # break
 
     # plot_superimposed_diagrams(form, form_base).show()
-    # view_solution(form).show()
+    # view = Viewer(form)
+view.show_solution()
 
 print(solutions)
 print('\n')

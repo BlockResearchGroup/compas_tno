@@ -6,7 +6,7 @@ from compas_tno.optimisers import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_shapes
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.shapes import MeshDos
 
 # ----------------------------------------------------------------------

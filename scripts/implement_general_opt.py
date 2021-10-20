@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.problems import initialise_problem
 from compas_tno.algorithms import zlq_from_q
 from compas_tno.algorithms import xyz_from_q
@@ -125,4 +125,5 @@ for key in form.vertices_where({'is_fixed': True}):
 # Viewing
 plot_superimposed_diagrams(form, form_base).show()
 plot_form(form, show_q=False, cracks=True).show()
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()

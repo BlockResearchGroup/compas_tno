@@ -10,7 +10,7 @@ from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_mesh
 from compas_tno.viewers import view_meshes
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_plotters import MeshPlotter
 import math
 
@@ -329,7 +329,8 @@ for deg in degs:
 
                 plotter.show()
 
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
 print(sols)
 

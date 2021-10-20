@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.algorithms import apply_sag
 
@@ -140,7 +140,8 @@ for c in [0.1]:
             print('Ratio Thrust/Weight:', thrust/weight)
 
             # plot_form(form).show()
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', 'min_thk', type_structure, type_formdiagram)
             if 'ind' in optimiser.settings['variables']:
@@ -163,7 +164,8 @@ for c in [0.1]:
                     plot_superimposed_diagrams(form, form_base, save=img_file)
                 else:
                     plot_superimposed_diagrams(form, form_base).show()
-                    view_solution(form).show()
+                    view = Viewer(form)
+view.show_solution()
             else:
                 plot_superimposed_diagrams(form, form_base)
                 pass

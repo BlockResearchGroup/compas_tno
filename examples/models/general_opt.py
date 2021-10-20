@@ -1,7 +1,7 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.utilities import apply_envelope_on_xy
 from compas_tno.utilities import apply_horizontal_multiplier
@@ -135,4 +135,5 @@ vault.to_json(json_shape)
 
 # Viewing
 plot_form(form, show_q=False, cracks=True).show()
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()

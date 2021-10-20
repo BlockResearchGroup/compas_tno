@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters.form import plot_form_semicirculararch_xz
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.algorithms import reactions
 import os
 

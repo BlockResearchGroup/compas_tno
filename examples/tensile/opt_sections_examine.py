@@ -1,7 +1,7 @@
 import os
 import compas_tno
 from compas_tno.diagrams import FormDiagram
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 path = compas_tno.get('')
 address = os.path.join(path, 'form.json')
@@ -24,4 +24,5 @@ for edge in form.edges():
     print('Edge #:', edge, ' force: ', f)
 
 
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()

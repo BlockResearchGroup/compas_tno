@@ -143,7 +143,8 @@ forms_address = os.path.join(folder, title)
 form_save = forms_address + 'qmax=5' + '.json'
 print(form_save)
 form.to_json(form_save)
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()
 
 # ----------------------- Save output data --------------------------
 

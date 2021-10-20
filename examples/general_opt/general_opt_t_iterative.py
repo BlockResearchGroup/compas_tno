@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 import time
 
@@ -218,7 +218,8 @@ for c in [0.1]:
 
                 plot_superimposed_diagrams(form, form_base).show()
                 # plot_form(form, show_q=False, cracks=True).show()
-                # view_solution(form).show()
+                # view = Viewer(form)
+view.show_solution()
 
                 optimiser.settings['starting_point'] = 'current'
                 optimiser.settings['max_thk'] = min(thk*1.25, 0.5)
@@ -266,4 +267,5 @@ for key in solutions:
 elapsed_time = time.time() - t0
 print('Tipe elapsed in Script:', time)
 
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()

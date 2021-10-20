@@ -6,7 +6,7 @@ from compas_tno.optimisers import Optimiser
 from compas_tno.plotters import plot_form_xz
 from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_shapes
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 # ----------------------------------------------------------------------
 # -----------EXAMPLE OF MIN and MAX THRUST FOR ARCH --------------------

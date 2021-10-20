@@ -20,8 +20,10 @@ compas_tno.viewers
 
 from __future__ import absolute_import
 
-from .shapes import *  # noqa: F401 F403
-from .thrust import *  # noqa: F401 F403
-from .animation import *  # noqa: F401 F403
+# from .shapes import *  # noqa: F401 F403
+# from .thrust import *  # noqa: F401 F403
+# from .animation import *  # noqa: F401 F403
+
+from .viewer import Viewer  # noqa: F401 F403
 
 __all__ = [name for name in dir() if not name.startswith('_')]

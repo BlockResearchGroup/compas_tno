@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
@@ -170,7 +170,8 @@ for c in [0.1]:
 
                 plot_superimposed_diagrams(form, form_base).show()
                 plot_form(form, show_q=False, cracks=True).show()
-                view_solution(form).show()
+                view = Viewer(form)
+view.show_solution()
 
                 vault.data['thk'] = thk
                 form.envelope_from_shape(vault)
@@ -212,7 +213,8 @@ for key in solutions:
     for key2 in solutions[key]:
         print(key, key2, solutions[key][key2])
 
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()
 
 # # # ----------------------- 5. Create Analysis loop on limit analysis --------------------------
 

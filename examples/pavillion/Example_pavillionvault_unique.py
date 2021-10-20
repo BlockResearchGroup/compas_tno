@@ -5,7 +5,7 @@ from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.viewers import view_thrust
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.viewers import view_shapes
 import time
 import compas_tno

@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
@@ -173,7 +173,8 @@ for c in [c]:  # set the distance that the nodes can move
 
             plot_superimposed_diagrams(form, form_base).show()
             plot_form(form, show_q=False, cracks=True).show()
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
@@ -185,7 +186,8 @@ for c in [c]:  # set the distance that the nodes can move
                     plot_form(form, show_q=False, cracks=True).show()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
-                view_solution(form).show()
+                view = Viewer(form)
+view.show_solution()
                 break
 
 import compas_tno
@@ -205,7 +207,8 @@ form.attributes['Ri'] = radius - thk/2
 address_plot_section = os.path.join(folder, title) + '_' + obj + '_thk_' + str(thk) + '_plot_' + 'section' + '.pdf'
 plot_form_semicirculararch_xz(form, radius=0.06, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True, yrange=[radius-tol, radius+tol], save=address_plot_section).show()
 
-view_solution(form).show()
+view = Viewer(form)
+view.show_solution()
 
 print(solutions)
 print('\n')

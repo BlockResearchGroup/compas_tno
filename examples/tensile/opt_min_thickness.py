@@ -1,7 +1,7 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
@@ -94,4 +94,5 @@ for obj in objective:  # set the objective
     analysis.run()
 
     plot_form(form).show()
-    view_solution(form).show()
+    view = Viewer(form)
+view.show_solution()

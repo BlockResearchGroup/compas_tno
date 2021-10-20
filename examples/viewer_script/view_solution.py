@@ -1,5 +1,5 @@
 from compas_tno.diagrams import FormDiagram
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.plotters import plot_form
 import os
 os.environ['QT_MAC_WANTS_LAYER'] = '1'
@@ -25,7 +25,8 @@ os.environ['QT_MAC_WANTS_LAYER'] = '1'
 # address = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/cross_fd/refined/min_thk/deg=40/pointed_crossvault_cross_fd_discr_14_R=5.326621016707531_min_thk_4.984461856922818.json'
 
 # form = FormDiagram.from_json(address)
-# view_solution(form).show()
+# view = Viewer(form)
+view.show_solution()
 
 # address = '/Users/mricardo/compas_dev/me/shape_comparison/pointed_crossvault/fan_fd/refined/min_thk/deg=40/pointed_crossvault_fan_fd_discr_14_R=6.239890208210451_min_thk_11.196091800459316.json'
 address = '/Users/mricardo/compas_dev/me/min_thk/dome/radial_fd/min_max/dome_radial_fd_discr_[20, 16]_max_thk_49.99999999999999.json'
@@ -57,4 +58,5 @@ print('Scale Factor:', scalefac)
 print('Maximum q and f scaled:', scalefac*qmax, scalefac*fmax)
 
 
-# view_solution(form).show()
+# view = Viewer(form)
+view.show_solution()

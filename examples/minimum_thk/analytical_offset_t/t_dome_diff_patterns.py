@@ -144,7 +144,8 @@ for x_discr in [20]:  # More sensible  #[4, 8, 12, 16, 20, 24] # np = 20
             print('Solved:', discretisation, thk_min)
             print('Time:', discretisation, optimiser.time)
 
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
         else:
 

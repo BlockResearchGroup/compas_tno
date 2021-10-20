@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
@@ -20,7 +20,7 @@ import os
 span = 10.0
 k = 1.0
 discretisation = 10
-type_formdiagram = 'cross_fd'
+type_formdiagram = 'fan_fd'
 type_structure = 'crossvault'
 thk = 0.50
 discretisation_shape = 2 * discretisation
@@ -99,7 +99,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             if 'envelopexy' in constraints:
                 apply_envelope_on_xy(form, c=c)
-            apply_bounds_on_q(form, qmax=0.0)
+            apply_bounds_on_q(form)
 
             form_base = form.copy()
 
@@ -189,7 +189,8 @@ for c in [0.1]:  # set the distance that the nodes can move
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
             plot_superimposed_diagrams(form, form_base).show()
-            # view_solution(form).show()
+            # view = Viewer(form)
+view.show_solution()
 
             print('Optimiser exitflag:', optimiser.exitflag)
 
@@ -203,10 +204,12 @@ for c in [0.1]:  # set the distance that the nodes can move
                     plot_form(form, show_q=False, cracks=True).show()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
-                view_solution(form).show()
+                view = Viewer(form)
+view.show_solution()
                 break
 
-    view_solution(form).show()
+    view = Viewer(form)
+view.show_solution()
 
 
 print(solutions)

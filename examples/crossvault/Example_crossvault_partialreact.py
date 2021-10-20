@@ -9,7 +9,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.analysis import Analysis
 from compas_tno.viewers import view_shapes
 from compas_tno.viewers import view_thrust
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.plotters import diagram_of_thrust
 from compas_tno.plotters import diagram_of_multiple_thrust
 from compas_tno.plotters import save_csv

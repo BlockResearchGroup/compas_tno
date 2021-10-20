@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
@@ -155,7 +155,8 @@ for c in [0.1]:  # set the distance that the nodes can move
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
             plot_superimposed_diagrams(form, form_base).show()
-            view_solution(form).show()
+            view = Viewer(form)
+view.show_solution()
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
@@ -167,10 +168,12 @@ for c in [0.1]:  # set the distance that the nodes can move
                     plot_form(form, show_q=False, cracks=True).show()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
-                view_solution(form).show()
+                view = Viewer(form)
+view.show_solution()
                 break
 
-    view_solution(form).show()
+    view = Viewer(form)
+view.show_solution()
 
 
 print(solutions)

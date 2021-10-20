@@ -7,7 +7,7 @@ from compas_tno.plotters import plot_form
 from compas_tno.analysis import Analysis
 from compas_tno.algorithms import apply_sag
 from compas_tno.viewers import view_thrust
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.viewers import view_shapes
 from compas_tno.plotters import diagram_of_thrust
 from compas_tno.plotters import save_csv
@@ -389,7 +389,8 @@ for type_formdiagram in diagrams:
                     plot_form(form, simple=True, show_q=False, cracks=True).show()
                     # plot_form(form, simple=True, show_q=False, cracks=True, save=forms_address + '_' + 'min' + '_thk_' + str(100*thk_min) + '.pdf').show()
                     # view_thrust(form).show()
-                    # view_solution(form).show()
+                    # view = Viewer(form)
+view.show_solution()
 
                 else:
 

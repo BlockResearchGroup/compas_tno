@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_simple_form
-from compas_tno.viewers import view_solution
+from compas_tno.viewers import Viewer
 from compas_tno.viewers import view_shapes
 from compas_plotters import MeshPlotter
 
@@ -77,7 +77,8 @@ for obj in objective:  # set the objective
     apply_selfweight_from_shape(form, vault)
     apply_bounds_on_q(form, qmax=1e-6)
 
-    # view_solution(form).show()
+    # view = Viewer(form)
+view.show_solution()
     # view_shapes(vault).show()
 
     # ------------------------------------------------------------
@@ -121,4 +122,5 @@ for obj in objective:  # set the objective
     plotter.show()
 
     plot_form(form).show()
-    view_solution(form).show()
+    view = Viewer(form)
+view.show_solution()
