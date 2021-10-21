@@ -13,7 +13,7 @@ from compas_tno.utilities import project_mesh_to_middle
 span = 10.0
 k = 1.0
 discretisation = 10
-type_formdiagram = 'fan_fd'
+type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
 discretisation_shape = 2 * discretisation
@@ -42,15 +42,8 @@ vault = Shape.from_library(data_shape)
 apply_envelope_from_shape(form, vault)
 apply_selfweight_from_shape(form, vault)
 
-# dual = form.build_dual()
 dual = form.build_complete_dual()
 project_mesh_to_middle(dual, vault)
-
-# plotter = MeshPlotter(dual)
-# plotter.draw_edges()
-# plotter.draw_faces()
-# plotter.draw_vertices(text={key: key for key in dual.vertices()})
-# plotter.show()
 
 view = Viewer(form, vault)
 view.view_thrust()

@@ -7,7 +7,7 @@ from .post_process import post_process_general
 
 import time
 
-# from compas_tno.problems import sensitivities_wrapper_inequalities
+from compas_tno.problems import sensitivities_wrapper_general
 from compas_tno.problems import constr_wrapper
 
 try:
@@ -186,7 +186,7 @@ def analytical_f_g_df_dg(xopt, *args):
     f0val = fobj(xopt, *args)
     fval = - 1 * constr_wrapper(xopt, *args)
     df0dx = fgrad(xopt, *args)
-    dfdx = -1 * sensitivities_wrapper_inequalities(xopt, *args)
+    dfdx = -1 * sensitivities_wrapper_general(xopt, *args)
     return f0val, df0dx, fval.reshape(-1, 1), dfdx
 
 

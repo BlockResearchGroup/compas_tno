@@ -33,19 +33,9 @@ class FormDiagram(FormDiagram):
     -----
     A ``FormDiagram`` has the following constructor functions
 
-    *   ``from_library`` : Construct the shape from a dictionary with instructions, the library supports the creation of parametric arches, domes, and vaults.
-    *   ``from_rhinomesh`` : Construct Extrados, Intrados and Middle surfaces from RhinoMeshes.
-    *   ``from_rhinosurface`` : Construct Extrados, Intrados and Middle surfaces using the U and V isolines.
-
-    A parametric ``FormDiagram`` contains the following information:
-
-    *   ``data``
-
-        *   ``type``  : The type of the Form Diafram to be constructed.
-        *   ``xy_span``  : Planar range of the structure.
-        *   ``radius``  : In case of a circular diagram.
-        *   ``center``  : In case of a circular diagram.
-        *   ``density``  : Density of the diagram.
+    *   ``from_library`` : Construct the formdiagram from a dictionary with instructions, the library supports the creation of typical topologies.
+    *   ``from_lines`` : Construct the formdiagram from a set of lines.
+    *   ``from_mesh`` : Construct the formdiagram from a given mesh.
 
     """
 
@@ -800,6 +790,11 @@ class FormDiagram(FormDiagram):
         dual
             The middle dual mesh.
 
+        Notes
+        -----
+        Construction of the dual diagram is based on the faces around the inner, free vertices of the form diagram.
+        This means not only the vertices on the boundary are ignored, but also the vertices that are anchored.
+
         """
 
         self.modify_diagram_boundary()
@@ -818,8 +813,8 @@ class FormDiagram(FormDiagram):
 
         Notes
         -----
-        Construction of the dual diagram is based on the faces around the inner, free vertices of the form diagram.
-        This means not only the vertices on the boundary are ignored, but also the vertices that are anchored.
+        Construction of the dual diagram is based on the faces around all edges.
+        The edges in the boundary recieve special tratment and their midpoint is.
 
         """
         dual = Mesh()
@@ -863,7 +858,6 @@ class FormDiagram(FormDiagram):
             if key in fixed:
                 pt = self.vertex_coordinates(key)
                 vertices[j] = pt
-                # facekeys.append(j)
                 facekeys = facekeys[:-1] + [j] + [facekeys[-1]]  # add the support as last element
                 j += 1
 
@@ -879,7 +873,7 @@ class FormDiagram(FormDiagram):
 
     def modify_diagram_boundary(self):
         """
-        Add outer perimeter around the fixed vertices with edges having ``_is_edge`` False.
+        Modify the diagram boundary adding the outer perimeter around the fixed vertices with edges having ``_is_edge`` False.
 
         Parameters
         ----------
@@ -897,5 +891,28 @@ class FormDiagram(FormDiagram):
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
         self.update_boundaries()
+
+        return
+
+    def restore_diagram_boundary(self, tol=1e-3):
+        """
+        Remove faces of the diagram with area zero.
+
+
+        Returns
+        -------
+        None
+            The ``FormDiagram`` is modified in place.
+
+        """
+
+        faces_delete = []
+        for face in self.faces():
+            A = self.face_area(face)
+            if A < tol:
+                faces_delete.append(face)
+
+        for face in faces_delete:
+            self.delete_face(face)
 
         return

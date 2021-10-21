@@ -154,7 +154,7 @@ def apply_bounds_on_q(form, qmin=-1e+4, qmax=1e-8):  # Convention compression ne
     return
 
 
-def project_mesh_to_middle(mesh, shape):
+def project_mesh_to_middle(mesh, shape=None):
     """ Project a mesh to the middle surface of the shape.
 
     Parameters
