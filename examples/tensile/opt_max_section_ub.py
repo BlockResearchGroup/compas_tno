@@ -123,4 +123,4 @@ view.show_solution()
 
     plot_form(form).show()
     view = Viewer(form)
-view.show_solution()
+    view.show_solution()

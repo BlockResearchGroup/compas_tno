@@ -8,8 +8,6 @@ from compas_view2 import app
 from compas_view2.shapes import Arrow
 from compas_view2.shapes import Text
 
-from compas_tno.algorithms import reactions
-
 
 __all__ = ['Viewer']
 
@@ -105,14 +103,14 @@ class Viewer(object):
             Xv = self.thrust.vertex_coordinates(v)
             line = Line(Xu, Xv)
             if not thickness:
-                self.app.add(line, name=str((u, v)), linewidth=base_thick, color=(255, 0, 0))
+                self.app.add(line, name=str((u, v)), linewidth=base_thick, color=_norm(self.settings['color.edges.thrust']))
                 continue
             q = self.thrust.edge_attribute((u, v), 'q')
             length = self.thrust.edge_length(u, v)
             force = abs(q*length)
             thk = force/fmax * max_thick
-            if force > 10e-4:
-                self.app.add(line, name=str((u, v)), linewidth=thk, color=(255, 0, 0))
+            if force > self.settings['tol.forces']:
+                self.app.add(line, name=str((u, v)), linewidth=thk, color=_norm(self.settings['color.edges.thrust']))
 
     def view_cracks(self):
         """ View cracks according to the settings """
@@ -126,10 +124,10 @@ class Viewer(object):
             ub = self.thrust.vertex_attribute(key, 'ub')
             x, y, z = self.thrust.vertex_coordinates(key)
             if self.settings['show.cracks']:
-                if abs(ub - z) < 10e-4:
+                if abs(ub - z) < self.settings['tol.forces']:
                     self.app.add(Point(x, y, z), name="Extrados (%s)" % extrad, color=_norm(self.settings['color.vertex.extrados']), size=self.settings['size.vertex'])
                     extrad += 1
-                elif abs(lb - z) < 10e-4:
+                elif abs(lb - z) < self.settings['tol.forces']:
                     self.app.add(Point(x, y, z), name="Intrados (%s)" % intrad, color=_norm(self.settings['color.vertex.intrados']), size=self.settings['size.vertex'])
                     intrad += 1
             if self.settings['show.vertex.outside']:
@@ -165,7 +163,7 @@ class Viewer(object):
 
         vertices_middle, faces_middle = shape.middle.to_vertices_and_faces()
         mesh_middle = Mesh.from_vertices_and_faces(vertices_middle, faces_middle)
-        self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=0.5, color=(0.5, 0.5, 0.5))
+        self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.middle']))
 
     def view_shape_normals(self):
         """ View the shape normals at intrados and extrados surfaces """
@@ -227,21 +225,8 @@ class Viewer(object):
                 text = Text(reaction, pt, height=self.settings['size.reactionlabel'])
                 self.app.add(text)
 
-    def view_reaction_label(self):
-        """ View the reaction labels (force magnitude) on the supports according to the settings """
-
-        if self.settings['show.reactionlabels']:
-            reaction_scale = self.settings['scale.reactions']
-
-            for key in self.thrust.vertices_where({'is_fixed': True}):
-                x, y, z = self.thrust.vertex_coordinates(key)
-                rx = - self.thrust.vertex_attribute(key, '_rx') * reaction_scale
-                ry = - self.thrust.vertex_attribute(key, '_ry') * reaction_scale
-                rz = - self.thrust.vertex_attribute(key, '_rz') * reaction_scale
-                pt = [x + rx, y + ry, z + rz]
-                reaction = '({0:3g}, {1:3g}, {2:3g})'.format(rx, ry, rz)
-                text = Text(reaction, pt, height=self.settings['size.reactionlabel'])
-                self.app.add(text)
+    def view_fill(self):
+        """ (WIP) View the fill in the shape """
 
 
 def _norm(rgb):

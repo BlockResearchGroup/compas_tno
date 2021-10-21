@@ -79,7 +79,7 @@ for obj in objective:  # set the objective
     apply_bounds_on_q(form, qmax=1e-6)
 
     # view = Viewer(form)
-view.show_solution()
+    # view.show_solution()
     # view_shapes(vault).show()
 
     # ------------------------------------------------------------
@@ -125,4 +125,4 @@ view.show_solution()
 
     plot_form(form).show()
     view = Viewer(form)
-view.show_solution()
+    view.show_solution()

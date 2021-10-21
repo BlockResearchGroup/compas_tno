@@ -101,4 +101,4 @@ for obj in objective:  # set the objective
 
     plot_form(form).show()
     view = Viewer(form)
-view.show_solution()
+    view.show_solution()
