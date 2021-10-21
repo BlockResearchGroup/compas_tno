@@ -12,7 +12,7 @@ from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_bounds_on_q
 
-from compas_tno.optimiser import Optimiser
+from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
 
 import compas_tno

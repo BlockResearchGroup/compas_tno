@@ -14,8 +14,6 @@ address = '/Users/mricardo/compas_dev/me/compl_energy/assym/crossvault/cross_fd/
 form = FormDiagram.from_json(address)
 
 # plot_form(form).show()
-# view = Viewer(form)
-view.show_solution()
 
 view = Viewer(form)
 view.show_solution()

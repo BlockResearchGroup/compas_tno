@@ -10,8 +10,8 @@ from compas_tno.utilities import apply_envelope_on_xy
 from compas_tno.utilities import apply_horizontal_multiplier
 from compas_tno.utilities import apply_bounds_on_q
 
-from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.analysis.analysis import Analysis
+from compas_tno.optimisers import Optimiser
+from compas_tno.analysis import Analysis
 
 from compas.geometry import normalize_vector
 from numpy import array

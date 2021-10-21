@@ -791,9 +791,95 @@ class FormDiagram(FormDiagram):
     # -----------------------TNA-CONECTION--------------------------- #
     # --------------------------------------------------------------- #
 
-    def add_feet_(self, delete_face=False):
+    def build_dual(self):
         """
-        Add feet to the support as in ``compas_tna``.
+        Build the dual of the form diagram.
+
+        Returns
+        -------
+        dual
+            The middle dual mesh.
+
+        """
+
+        self.modify_diagram_boundary()
+        dual = self.__class__.dual(self, Mesh)
+
+        return dual
+
+    def build_complete_dual(self):
+        """
+        Build the dual of the form diagram considering half-faces in the edges on the perimeter.
+
+        Returns
+        -------
+        dual
+            The middle dual mesh.
+
+        Notes
+        -----
+        Construction of the dual diagram is based on the faces around the inner, free vertices of the form diagram.
+        This means not only the vertices on the boundary are ignored, but also the vertices that are anchored.
+
+        """
+        dual = Mesh()
+        fkey_centroid = {fkey: self.face_centroid(fkey) for fkey in self.faces()}
+        midpt_boundary = {(u, v): self.edge_midpoint(u, v) for u, v in self.edges()}
+        fixed = self.fixed()
+        boundary = list(self.vertices_on_boundary())
+        vertices = {}
+        faces = {}
+        i = 0  # face keys
+        j = 0  # vertex keys
+        for key in self.vertices():
+            facekeys = []
+            fkeys = self.vertex_faces(key, ordered=True)
+            for fkey in fkeys:
+                pt = fkey_centroid[fkey]
+                if pt not in vertices.values():
+                    vertices[j] = pt
+                    facekeys.append(j)
+                    j += 1
+                else:
+                    j_back = list(vertices.keys())[list(vertices.values()).index(pt)]
+                    facekeys.append(j_back)
+            if key in boundary:
+                nbrs = self.vertex_neighbors(key, ordered=True)
+                nbrs.reverse()
+                for nbr in nbrs:
+                    if nbr in boundary:
+                        if (key, nbr) in midpt_boundary.keys():
+                            pt = midpt_boundary[(key, nbr)]
+                        else:
+                            pt = midpt_boundary[(nbr, key)]
+
+                        if pt not in vertices.values():
+                            vertices[j] = pt
+                            facekeys.append(j)
+                            j += 1
+                        else:
+                            j_back = list(vertices.keys())[list(vertices.values()).index(pt)]
+                            facekeys.append(j_back)
+            if key in fixed:
+                pt = self.vertex_coordinates(key)
+                vertices[j] = pt
+                # facekeys.append(j)
+                facekeys = facekeys[:-1] + [j] + [facekeys[-1]]  # add the support as last element
+                j += 1
+
+            faces[i] = facekeys
+            i += 1
+
+        for key, (x, y, z) in vertices.items():
+            dual.add_vertex(key, x=x, y=y, z=z)
+        for fkey, vertices in faces.items():
+            dual.add_face(vertices, fkey=fkey)
+
+        return dual
+
+    def modify_diagram_boundary(self):
+        """
+        Add outer perimeter around the fixed vertices with edges having ``_is_edge`` False.
 
         Parameters
         ----------
@@ -808,77 +894,8 @@ class FormDiagram(FormDiagram):
 
         """
 
-        if delete_face:
-            self.delete_face(0)
         corners = list(self.vertices_where({'is_fixed': True}))
         self.vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
         self.update_boundaries()
-        # self.update_boundaries(self, feet=2)
 
         return
-
-    def remove_feet(self, openings=None):
-        """
-        Remove the feet of the support as in ``compas_tna``.
-
-        Parameters
-        ----------
-        openings : bool, optional
-            Whether openings are present.
-            The default value is ``None``.
-
-        Returns
-        -------
-        form_: FormDiagram
-            The new ``FormDiagram``.
-
-        """
-
-        lines = []
-        qs = {}
-
-        for u, v in self.edges_where({'_is_edge': True, '_is_external': False}):
-            s = self.vertex_coordinates(u)
-            e = self.vertex_coordinates(v)
-            lines.append([s, e])
-            qs[geometric_key(self.edge_midpoint(u, v))] = self.edge_attribute((u, v), 'q')
-
-        fixed = [geometric_key(self.vertex_coordinates(key)) for key in self.vertices_where({'is_anchor': True})]
-        zs = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_coordinates(key)[2] for key in self.vertices_where({'_is_external': False})}
-        pz = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'pz') for key in self.vertices()}
-        target = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'target') for key in self.vertices()}
-        lb = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'lb') for key in self.vertices()}
-        ub = {geometric_key(self.vertex_coordinates(key)[:2] + [0]): self.vertex_attribute(key, 'ub') for key in self.vertices()}
-
-        form_ = FormDiagram.from_lines(lines)
-        form_.update_default_edge_attributes({'q': 1, 'is_symmetry': False, '_is_edge': True})
-        form_.update_default_vertex_attributes({'is_roller': False})
-
-        if openings:
-            for key in self.faces():
-                if self.face_area(key) > openings - 1.0 and self.face_area(key) < openings + 1.0:
-                    self.delete_face(key)
-                    print('Deleted area of face {0}'.format(key))
-                    break
-        gkey_key = form_.gkey_key()
-
-        for pt in fixed:
-            form_.vertex_attribute(gkey_key[pt], name='is_fixed', value=True)
-
-        for key, attr in form_.vertices(True):
-            pzi = pz[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
-            zi = zs[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
-            ti = target[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
-            ub_i = ub[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
-            lb_i = lb[geometric_key(form_.vertex_coordinates(key)[:2] + [0])]
-            attr['pz'] = pzi
-            attr['z'] = zi
-            attr['target'] = ti
-            attr['lb'] = lb_i
-            attr['ub'] = ub_i
-
-        for u, v in form_.edges():
-            qi = qs[geometric_key(form_.edge_midpoint(u, v))]
-            form_.edge_attribute((u, v), name='q', value=qi)
-
-        return form_

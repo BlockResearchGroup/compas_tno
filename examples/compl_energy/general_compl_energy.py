@@ -20,7 +20,7 @@ import os
 span = 10.0
 k = 1.0
 discretisation = 10
-type_formdiagram = 'fan_fd'
+type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
 discretisation_shape = 2 * discretisation
@@ -190,7 +190,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             plot_superimposed_diagrams(form, form_base).show()
             # view = Viewer(form)
-view.show_solution()
+            # view.show_solution()
 
             print('Optimiser exitflag:', optimiser.exitflag)
 
@@ -205,12 +205,11 @@ view.show_solution()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
                 view = Viewer(form)
-view.show_solution()
+                view.show_solution()
                 break
 
-    view = Viewer(form)
+view = Viewer(form)
 view.show_solution()
-
 
 print(solutions)
 print('\n')

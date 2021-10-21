@@ -56,7 +56,7 @@ class Viewer(object):
             'color.mesh.intrados': (125, 125, 125),
             'color.mesh.extrados': (125, 125, 125),
             'color.mesh.middle': (125, 125, 125),
-            'color.mesh.general': (125, 125, 125),
+            'color.mesh.general': (0, 0, 0),
 
             'tol.forces': 1e-3,
         }
@@ -193,7 +193,7 @@ class Viewer(object):
         vertices_mesh, faces_mesh = mesh.to_vertices_and_faces()
         mesh = Mesh.from_vertices_and_faces(vertices_mesh, faces_mesh)
 
-        self.app.add(mesh, show_edges=True, color=_norm(self.settings['color.mesh.general']))
+        self.app.add(mesh)
 
     def view_reactions(self):
         """ View the reaction vectors on the supports according to the settings """
