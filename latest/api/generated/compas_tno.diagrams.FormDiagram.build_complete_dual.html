@@ -101,7 +101,7 @@
 <h1>FormDiagram.build_complete_dual</h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="compas_tno.diagrams.FormDiagram.build_complete_dual">
-<span class="sig-prename descclassname"><span class="pre">FormDiagram.</span></span><span class="sig-name descname"><span class="pre">build_complete_dual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/form.py#L810"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<span class="sig-prename descclassname"><span class="pre">FormDiagram.</span></span><span class="sig-name descname"><span class="pre">build_complete_dual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/form.py#L805"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Build the dual of the form diagram considering half-faces in the edges on the perimeter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -109,8 +109,8 @@
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p>Construction of the dual diagram is based on the faces around the inner, free vertices of the form diagram.
-This means not only the vertices on the boundary are ignored, but also the vertices that are anchored.</p>
+<p>Construction of the dual diagram is based on the faces around all edges.
+The edges in the boundary recieve special tratment and their midpoint is.</p>
 </dd></dl>
 
 </section>
