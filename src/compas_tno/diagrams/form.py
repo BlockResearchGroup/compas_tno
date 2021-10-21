@@ -1,5 +1,3 @@
-from compas.utilities import geometric_key
-
 from compas.datastructures import Mesh
 from compas.datastructures import mesh_bounding_box_xy
 
