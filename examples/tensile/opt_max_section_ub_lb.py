@@ -13,8 +13,8 @@ from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_bounds_on_q
 
-from compas_tno.optimisers.optimiser import Optimiser
-from compas_tno.analysis.analysis import Analysis
+from compas_tno.optimisers import Optimiser
+from compas_tno.analysis import Analysis
 
 import compas_tno
 import os
@@ -30,7 +30,7 @@ discretisation_shape = 10 * discretisation
 save = False
 solutions = {}
 
-objective = ['max_section']  # try 'max'
+objective = 'max_section'  # try 'max'
 solver = 'IPOPT'  # try SLSQP
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb', 'tlb', 'tub']  # in the futture add 'tlb' as variables
@@ -40,101 +40,100 @@ starting_point = 'loadpath'
 tubmax = 0.1
 tlbmax = 0.1
 
-for obj in objective:  # set the objective
+# Create form diagram
 
-    # Create form diagram
+data_diagram = {
+    'type': type_formdiagram,
+    'xy_span': [[0, span], [0, k*span]],
+    'discretisation': discretisation,
+    'fix': 'corners'
+}
 
-    data_diagram = {
-        'type': type_formdiagram,
-        'xy_span': [[0, span], [0, k*span]],
-        'discretisation': discretisation,
-        'fix': 'corners'
-    }
+form = FormDiagram.from_library(data_diagram)
+# plot_simple_form(form).show()
 
-    form = FormDiagram.from_library(data_diagram)
-    # plot_simple_form(form).show()
+# Create shape
 
-    # Create shape
+data_shape = {
+    'type': type_structure,
+    'thk': thk,
+    'discretisation': discretisation_shape,
+    'xy_span': [[0, span], [0, k*span]],
+    'center': [5.0, 5.0],
+    'radius': span/2,
+    't': 0.0,
+}
 
-    data_shape = {
-        'type': type_structure,
-        'thk': thk,
-        'discretisation': discretisation_shape,
-        'xy_span': [[0, span], [0, k*span]],
-        'center': [5.0, 5.0],
-        'radius': span/2,
-        't': 0.0,
-    }
+vault = Shape.from_library(data_shape)
+vault.ro = 20.0
 
-    vault = Shape.from_library(data_shape)
-    vault.ro = 20.0
+# ------------------------------------------------------------
+# -----------------------  INITIALISE   ----------------------
+# ------------------------------------------------------------
 
-    # ------------------------------------------------------------
-    # -----------------------  INITIALISE   ----------------------
-    # ------------------------------------------------------------
+# Apply Selfweight and Envelope
 
-    # Apply Selfweight and Envelope
+apply_envelope_from_shape(form, vault)
+apply_selfweight_from_shape(form, vault)
+apply_bounds_on_q(form, qmax=1e-6)
 
-    apply_envelope_from_shape(form, vault)
-    apply_selfweight_from_shape(form, vault)
-    apply_bounds_on_q(form, qmax=1e-6)
+# view = Viewer(form)
+# view.show_solution()
+# view_shapes(vault).show()
 
-    # view = Viewer(form)
+# ------------------------------------------------------------
+# ------------------- Proper Implementation ------------------
+# ------------------------------------------------------------
+
+optimiser = Optimiser()
+optimiser.settings['library'] = solver
+optimiser.settings['solver'] = solver
+optimiser.settings['constraints'] = constraints
+optimiser.settings['variables'] = variables
+optimiser.settings['features'] = features
+optimiser.settings['objective'] = objective
+optimiser.settings['plot'] = False
+optimiser.settings['find_inds'] = False
+optimiser.settings['max_iter'] = 500
+optimiser.settings['gradient'] = True
+optimiser.settings['jacobian'] = True
+optimiser.settings['printout'] = True
+optimiser.settings['starting_point'] = starting_point
+optimiser.settings['tubmax'] = tubmax
+optimiser.settings['tlbmax'] = tlbmax
+optimiser.settings['sym_loads'] = False
+
+# --------------------- 5. Set up and run analysis ---------------------
+
+analysis = Analysis.from_elements(vault, form, optimiser)
+analysis.set_up_optimiser()
+analysis.run()
+
+path = compas_tno.get('')
+address = os.path.join(path, 'form.json')
+form.to_json(address)
+print('Form Saved to:', address)
+
+text = {}
+color = {}
+for key in form.vertices():
+    tlb = form.vertex_attribute(key, 'tlb')
+    tub = form.vertex_attribute(key, 'tub')
+    if tlb > tub:
+        if tlb > 0.001:
+            text[key] = round(tlb, 2)
+            color[key] = i_to_red(tlb/tlbmax)
+    if tub > tlb:
+        if tub > 0.001:
+            text[key] = round(tub, 2)
+            color[key] = i_to_blue(tub/tubmax)
+
+plotter = MeshPlotter(form)
+plotter.draw_edges()
+plotter.draw_vertices(text=text, facecolor=color)
+plotter.show()
+
+plot_form(form).show()
+
+view = Viewer(form)
 view.show_solution()
-    # view_shapes(vault).show()
-
-    # ------------------------------------------------------------
-    # ------------------- Proper Implementation ------------------
-    # ------------------------------------------------------------
-
-    optimiser = Optimiser()
-    optimiser.settings['library'] = solver
-    optimiser.settings['solver'] = solver
-    optimiser.settings['constraints'] = constraints
-    optimiser.settings['variables'] = variables
-    optimiser.settings['features'] = features
-    optimiser.settings['objective'] = obj
-    optimiser.settings['plot'] = False
-    optimiser.settings['find_inds'] = False
-    optimiser.settings['max_iter'] = 500
-    optimiser.settings['gradient'] = True
-    optimiser.settings['jacobian'] = True
-    optimiser.settings['printout'] = True
-    optimiser.settings['starting_point'] = starting_point
-    optimiser.settings['tubmax'] = tubmax
-    optimiser.settings['tlbmax'] = tlbmax
-    optimiser.settings['sym_loads'] = False
-
-    # --------------------- 5. Set up and run analysis ---------------------
-
-    analysis = Analysis.from_elements(vault, form, optimiser)
-    analysis.set_up_optimiser()
-    analysis.run()
-
-    path = compas_tno.get('')
-    address = os.path.join(path, 'form.json')
-    form.to_json(address)
-    print('Form Saved to:', address)
-
-    text = {}
-    color = {}
-    for key in form.vertices():
-        tlb = form.vertex_attribute(key, 'tlb')
-        tub = form.vertex_attribute(key, 'tub')
-        if tlb > tub:
-            if tlb > 0.001:
-                text[key] = round(tlb, 2)
-                color[key] = i_to_red(tlb/tlbmax)
-        if tub > tlb:
-            if tub > 0.001:
-                text[key] = round(tub, 2)
-                color[key] = i_to_blue(tub/tubmax)
-
-    plotter = MeshPlotter(form)
-    plotter.draw_edges()
-    plotter.draw_vertices(text=text, facecolor=color)
-    plotter.show()
-
-    plot_form(form).show()
-    view = Viewer(form)
-    view.show_solution()
