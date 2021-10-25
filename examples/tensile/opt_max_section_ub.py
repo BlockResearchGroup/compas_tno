@@ -1,9 +1,7 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
-from compas_tno.plotters import plot_simple_form
 from compas_tno.viewers import Viewer
-from compas_tno.viewers import view_shapes
 from compas_plotters import MeshPlotter
 
 from compas.utilities import i_to_red
