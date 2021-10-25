@@ -5,6 +5,9 @@ compas_tno.optimisers
 
 .. currentmodule:: compas_tno.optimisers
 
+Optimiser
+========
+
 .. autosummary::
     :toctree: generated/
     :nosignatures:

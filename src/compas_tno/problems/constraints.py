@@ -69,6 +69,21 @@ def constr_wrapper(xopt, *args):
 
 
 def constr_wrapper_general(variables, M):
+    """Wrapper of the constraints available
+
+    Parameters
+    ----------
+    variables: array (n x 1)
+        Vector with the n variables of the optimisation.
+
+    M: object
+        Object storing the parameters of the optimisation.
+
+    Returns
+    ----------
+    constraints: array (m x 1)
+        Vector with the value of the m constraints in the point.
+    """
 
     if isinstance(M, list):
         M = M[0]

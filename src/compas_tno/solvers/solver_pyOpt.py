@@ -8,6 +8,8 @@ __all__ = [
 
 
 def run_optimisation_pyOpt(analysis):
+    """ Run Optimisation using PyOpt (requires installation).
+    """
 
     import pyOpt
 

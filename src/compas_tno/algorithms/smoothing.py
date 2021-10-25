@@ -28,6 +28,11 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
         Dictionary of constraints as vertex keys pointing to fixed points or lines.
     algorithm : string
         Type of smoothing algorithm to apply (classic centroid or area-based). Classic centroid by default.
+
+    Return
+    ----------
+    mesh: Mesh
+        The smoothed mesh.
     """
 
     def callback(k, args):
@@ -55,8 +60,29 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
 
     func[algorithm](mesh, kmax=kmax, damping=damping, callback=callback, callback_args=[mesh, constraints])
 
+    return mesh
+
 
 def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):  # probably move location
+    """Relax the mesh with FDM assuming higher force in the boudary elements.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The formdiagram to apply sag.
+    boundary_force : float
+        Force density in the edges on the boundary.
+        The default value is ``10.0``.
+    signe_compression : float
+        Indicate the default sign for compression.
+        The default value is ``-1.0``.
+
+    Return
+    ----------
+    form: FormDiagram
+        The relaxed form diagram.
+
+    """
 
     for u, v in form.edges():
         form.edge_attribute((u, v), 'q', signe_compression*1.0)

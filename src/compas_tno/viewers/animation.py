@@ -10,6 +10,8 @@ __all__ = [
 
 
 def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, formscaling=None, forcescaling=None, shape=False, densities=False):
+    """Make a 3D animated plot with the optimisation steps.
+    """
 
     viewer = app.App()
 

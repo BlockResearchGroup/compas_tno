@@ -10,6 +10,8 @@ __all__ = [
 
 
 def post_process_general(analysis):
+    """ Post processing of the optimisation.
+    """
 
     form = analysis.form
     optimiser = analysis.optimiser

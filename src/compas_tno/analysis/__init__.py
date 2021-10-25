@@ -5,6 +5,9 @@ compas_tno.analysis
 
 .. currentmodule:: compas_tno.analysis
 
+Analysis
+========
+
 .. autosummary::
     :toctree: generated/
     :nosignatures:

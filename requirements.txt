@@ -1,4 +1,4 @@
-compas>=1.8.1
+compas>=1.9.1
 compas_cloud>=0.3.0
 compas_tna
 compas_ags
