@@ -19,11 +19,11 @@
   <link rel="stylesheet" type="text/css" href="_static/css/compas-reference.css" />
 
   
-    <link rel="next" title="Examples" href="examples.html" />
+    <link rel="next" title="FormDiagram" href="tutorial/form.html" />
   
 
   
-    <link rel="prev" title="Getting Started" href="gettingstarted.html" />
+    <link rel="prev" title="Rhinoceros" href="gettingstarted/rhino.html" />
   
 
   <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
@@ -89,19 +89,30 @@
 
         
         
-        <section id="tutorial">
+        <section id="id1">
 <h1>Tutorial</h1>
-<section id="overview">
-<h2>Overview</h2>
+<section id="datastructure">
+<h2>Datastructure</h2>
 <figure class="figure align-default">
 <img alt="_images/chart.png" class="figure-img img-fluid" src="_images/chart.png" />
 </figure>
-<p>The package interprets the assessment problem with four distinct elements.</p>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">FormDiagram</span></code> element deals with the topology and geometry of the connected graph representing the projection of the path of the forces within the structure.</p>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">Shape</span></code> element deals with the geometrical data acquired from the existing structure’s upper and lower surfaces (extrados and intrados).</p>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">Optimiser</span></code> element deals with the parameters for the optimisation, such as the definition of the solver, the objective function and the constraints to be applied.</p>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code> element manages the information form all of the above and set up and perform the optimisation.</p>
-<p>Now check the Examples to understand how to set up and solve a optimisation problem.</p>
+<p>The datastructure of the package interprets the assessment problem with four distinct elements.</p>
+<p>The <a class="reference internal" href="tutorial/form.html#form"><span class="std std-ref">FormDiagram</span></a> element deals with the topology and geometry of the connected graph representing the projection of the path of the forces within the structure.</p>
+<p>The <a class="reference internal" href="tutorial/shape.html#shape"><span class="std std-ref">Shape</span></a> element deals with the geometrical data acquired from the existing structure’s upper and lower surfaces (extrados and intrados).</p>
+<p>The <a class="reference internal" href="tutorial/optimiser.html#optimiser"><span class="std std-ref">Optimiser</span></a> element deals with the parameters for the optimisation, such as the definition of the solver, the objective function and the constraints to be applied.</p>
+<p>The <a class="reference internal" href="tutorial/analysis.html#analysis"><span class="std std-ref">Analysis</span></a> element manages the information form all of the above and set up and perform the optimisation.</p>
+<p>Each of the elements is explained in detail in this tutorial. A series of <a class="reference internal" href="examples.html#examples"><span class="std std-ref">examples</span></a> are available to showcase possible applications.</p>
+<section id="steps-of-the-tutorial">
+<h3>Steps of the tutorial</h3>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/form.html">FormDiagram</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/shape.html">Shape</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/optimiser.html">Optimiser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/analysis.html">Analysis</a></li>
+</ul>
+</div>
+</section>
 </section>
 </section>
 
@@ -123,8 +134,15 @@
           <div id="compas-navigation" class="collapse compas-navigation">
           <ul class="nav flex-column active">
 <li class="nav-item"><a class="nav-link reference internal" href="index.html">Introduction</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="installation.html">Installation</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="gettingstarted.html">Getting Started</a></li>
-<li class="nav-item active"><a class="nav-link active current reference internal" href="#">Tutorial</a></li>
+<li class="nav-item active"><a class="nav-link active current reference internal" href="#">Tutorial</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="tutorial/form.html">FormDiagram</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="tutorial/shape.html">Shape</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="tutorial/optimiser.html">Optimiser</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="tutorial/analysis.html">Analysis</a></li>
+</ul>
+</li>
 <li class="nav-item"><a class="nav-link reference internal" href="examples.html">Examples</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="api.html">API Reference</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="license.html">License</a></li>
@@ -140,7 +158,10 @@
         
         <ul class="nav flex-column" id="compas-toc">
 <li class="nav-item"><a class="nav-link reference internal" href="#">Tutorial</a><ul class="nav flex-column">
-<li class="nav-item"><a class="nav-link reference internal" href="#overview">Overview</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#datastructure">Datastructure</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#steps-of-the-tutorial">Steps of the tutorial</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -154,20 +175,20 @@
   <footer class="compas-footer">
     <nav class="nav p-2">
       
-        <a href="gettingstarted.html" title="Getting Started" class="nav-link footer-link float-start text-left d-flex w-50" rel="prev">
+        <a href="gettingstarted/rhino.html" title="Rhinoceros" class="nav-link footer-link float-start text-left d-flex w-50" rel="prev">
           <div class="nav-button p-2 m-2"><i class="fas fa-arrow-left"></i></div>
           <div class="nav-title flex-grow-1 align-self-center">
             <div class="nav-direction small font-weight-light">Previous</div>
-            Getting Started
+            Rhinoceros
           </div>
         </a>
       
 
       
-        <a href="examples.html" title="Examples" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
+        <a href="tutorial/form.html" title="FormDiagram" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
           <div class="nav-title footer-link flex-grow-1 align-self-center">
             <div class="nav-direction small font-weight-light">Next</div>
-            Examples
+            FormDiagram
           </div>
           <div class="nav-button p-2 m-2"><i class="fas fa-arrow-right"></i></div>
         </a>

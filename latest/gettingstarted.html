@@ -19,11 +19,11 @@
   <link rel="stylesheet" type="text/css" href="_static/css/compas-reference.css" />
 
   
-    <link rel="next" title="Tutorial" href="tutorial.html" />
+    <link rel="next" title="Solvers" href="gettingstarted/solvers.html" />
   
 
   
-    <link rel="prev" title="Introduction" href="index.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
   
 
   <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
@@ -91,140 +91,14 @@
         
         <section id="getting-started">
 <h1>Getting Started</h1>
-<section id="create-an-environment">
-<h2>Create an environment</h2>
-<p>We highly recommend to install <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> and related packages in a separate conda environment. In this guide, we will create and use an environmenment based on Python 3.7 with the name “tno”, referring to “Thrust Network Optimisation”, but you can use any other name you like (except for “base”, which is the name of the root environment of your conda installation).</p>
-<div class="card">
-    <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs">
-            <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#replace_python_windows">Windows</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#replace_python_osx">OSX</a>
-            </li>
-        </ul>
-    </div>
-    <div class="card-body">
-        <div class="tab-content"><div class="tab-pane active" id="replace_python_windows"><div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda create -n tno -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 COMPAS
-</code></pre></div>
-</div>
-</div>
-<div class="tab-pane" id="replace_python_osx"><div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda create -n tno -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.7 python.app COMPAS
-</code></pre></div>
-</div>
-</div>
-</div>
-</div>
-</div></section>
-<section id="activate-the-environment">
-<h2>Activate the environment</h2>
-<p>The root environment is active by default. Therefore, you should not forget to activate the “tno” environment whenever you want to work with <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> and its related packages.</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda activate tno
-</code></pre></div>
-</div>
-</section>
-<section id="installing-parent-package-compas-tna">
-<h2>Installing parent package compas_tna</h2>
-<p>One of the requisites of <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> is the installation alongside its parent package <code class="docutils literal notranslate"><span class="pre">compas_tna</span></code>.</p>
-<p>With pip, <code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tna</span></code> can be installed directly from the GitHub repo.</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>pip install git+https://github.com/BlockResearchGroup/compas_tna.git#egg<span class="o">=</span>compas_tna
-</code></pre></div>
-</div>
-<p>Or from local source files, you need to navigate to your code folder (folder in which you place you packages) and then do:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>git clone https://github.com/BlockResearchGroup/compas_tna.git
-<span class="nb">cd</span> compas_tna
-pip install -e .
-</code></pre></div>
-</div>
-</section>
-<section id="installing-compas-tno">
-<h2>Installing compas_tno</h2>
-<p>Now the installation of <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> is done in a similar fashion.</p>
-<p>With pip, <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> can be installed directly from the GitHub repo.</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>pip install git+https://github.com/BlockResearchGroup/compas_tno.git#egg<span class="o">=</span>compas_tno
-</code></pre></div>
-</div>
-<p>Or from local source files, you need to navigate to your code folder (folder in which you place you packages) and then do:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>git clone https://github.com/BlockResearchGroup/compas_tno.git
-<span class="nb">cd</span> compas_tno
-pip install -e .
-</code></pre></div>
-</div>
-</section>
-<section id="rhino-configuration">
-<h2>Rhino Configuration</h2>
-<p>Next, let Rhinoceros know that you installed <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a>  by typinng in the terminal the following code line:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>python -m compas_rhino.install -p compas compas_rhino compas_tna compas_tno
-</code></pre></div>
-</div>
-</section>
-<section id="solver-s-dependency">
-<h2>Solver’s dependency</h2>
-<p>Note that with the installation of <code class="docutils literal notranslate"><span class="pre">compas</span></code> and <code class="docutils literal notranslate"><span class="pre">compas_tna</span></code> the packages scipy and numpy are already installed.</p>
-<p>The package scipy contains the nonlinear solver SLSQP that will be the main tool of this package. Therefore, if you got this far you can already test most of the examples using SLSQP as the solver.</p>
-<p>However, to fully use the functionalities of <a class="reference internal" href="api/compas_tno.html#module-compas_tno" title="compas_tno"><code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tno</span></code></a> you should add to your installation a series of optimisation packages and helpers, that are listed here in order of importance.</p>
-</section>
-<section id="pytorch-helper">
-<h2>PyTorch (Helper)</h2>
-<p>The derivatives of many of the constraints on the optimisation are computed by autodifferentiation based on the package PyTorch. So to be able to use MMA and IPOPT you will need PyTorch installed. To install it please run from your terminal:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda install -c pytorch pytorch
-</code></pre></div>
-</div>
-</section>
-<section id="mma-solver">
-<h2>MMA (Solver)</h2>
-<p>The first additional solver MMA already ships with <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code>, so if all went good on the installation of PyTorch, congratulations, you can already use MMA as an option for the solving.</p>
-<p>Learn more about MMA (Method of Moving Asymptotes) by Krister Svanberg:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://people.kth.se/~krille/mmagcmma.pdf">https://people.kth.se/~krille/mmagcmma.pdf</a></p></li>
+<p class="lead">Now that you completed the base installation head to the additional requirements of the package.
+Additional solvers must be installed and a work-in-progress UI is available for Rhino 6+.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted/solvers.html">Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted/rhino.html">Rhinoceros</a></li>
 </ul>
-</section>
-<section id="ipopt-solver">
-<h2>IPOPT (Solver)</h2>
-<p>IPOPT is a well-developed package for nonlinear optimisation. To install just run from your terminal:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda install -c conda-forge cyipopt
-</code></pre></div>
 </div>
-<p>More information about the solver and solver options are available here:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="https://pypi.org/project/ipopt/">https://pypi.org/project/ipopt/</a></p></li>
-</ul>
-</section>
-<section id="sdpt3-solver">
-<h2>SDPT3 (Solver)</h2>
-<p>To perform load-path optimisation the suggestion is to use SDPT3. This solver, however, is only available on the MATLAB package CVX. That means that to perform the optimisaiton you will need to have both: MATLAB and CVX on your computer. The installation of this package is composed of three steps:</p>
-<ol class="arabic simple">
-<li><p>Download and install MATLAB. Version at least R2019b is recommended.</p></li>
-</ol>
-<ul class="simple">
-<li><p><a class="reference external" href="https://www.mathworks.com/products/matlab.html">https://www.mathworks.com/products/matlab.html</a></p></li>
-</ul>
-<ol class="arabic simple" start="2">
-<li><p>Download and install the MATLAB package CVX to perform convex optimisation:</p></li>
-</ol>
-<ul class="simple">
-<li><p><a class="reference external" href="http://cvxr.com/cvx/download/">http://cvxr.com/cvx/download/</a></p></li>
-</ul>
-<ol class="arabic simple" start="3">
-<li><p>Install Python API for MATLAB to control MATLAB direclty from Python scripts:</p></li>
-</ol>
-<ul class="simple">
-<li><p><a class="reference external" href="https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html">https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html</a></p></li>
-</ul>
-<p>If you don’t need to perform load path optimisation you can skipt this installation.</p>
-</section>
-<section id="pyopt-library-of-solvers">
-<h2>PyOpt (Library of solvers)</h2>
-<p>Library with extensive list of solvers, some adequate for nonlinear optimisation. It has its own version of SLSQP and also other solvers including GA and DEVO. To install run:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><code><span></span>conda install -c mutirri pyopt
-</code></pre></div>
-</div>
-<p>More information abobut the library can be found here:</p>
-<ul class="simple">
-<li><p><a class="reference external" href="http://www.pyopt.org/download.html">http://www.pyopt.org/download.html</a></p></li>
-</ul>
-</section>
 </section>
 
         
@@ -245,7 +119,12 @@ pip install -e .
           <div id="compas-navigation" class="collapse compas-navigation">
           <ul class="nav flex-column active">
 <li class="nav-item"><a class="nav-link reference internal" href="index.html">Introduction</a></li>
-<li class="nav-item active"><a class="nav-link active current reference internal" href="#">Getting Started</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="installation.html">Installation</a></li>
+<li class="nav-item active"><a class="nav-link active current reference internal" href="#">Getting Started</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="gettingstarted/solvers.html">Solvers</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="gettingstarted/rhino.html">Rhinoceros</a></li>
+</ul>
+</li>
 <li class="nav-item"><a class="nav-link reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="examples.html">Examples</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="api.html">API Reference</a></li>
@@ -261,20 +140,7 @@ pip install -e .
       <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
         
         <ul class="nav flex-column" id="compas-toc">
-<li class="nav-item"><a class="nav-link reference internal" href="#">Getting Started</a><ul class="nav flex-column">
-<li class="nav-item"><a class="nav-link reference internal" href="#create-an-environment">Create an environment</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#activate-the-environment">Activate the environment</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#installing-parent-package-compas-tna">Installing parent package compas_tna</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#installing-compas-tno">Installing compas_tno</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#rhino-configuration">Rhino Configuration</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#solver-s-dependency">Solver’s dependency</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#pytorch-helper">PyTorch (Helper)</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#mma-solver">MMA (Solver)</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#ipopt-solver">IPOPT (Solver)</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#sdpt3-solver">SDPT3 (Solver)</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#pyopt-library-of-solvers">PyOpt (Library of solvers)</a></li>
-</ul>
-</li>
+<li class="nav-item"><a class="nav-link reference internal" href="#">Getting Started</a></li>
 </ul>
 
       </div>
@@ -286,20 +152,20 @@ pip install -e .
   <footer class="compas-footer">
     <nav class="nav p-2">
       
-        <a href="index.html" title="Introduction" class="nav-link footer-link float-start text-left d-flex w-50" rel="prev">
+        <a href="installation.html" title="Installation" class="nav-link footer-link float-start text-left d-flex w-50" rel="prev">
           <div class="nav-button p-2 m-2"><i class="fas fa-arrow-left"></i></div>
           <div class="nav-title flex-grow-1 align-self-center">
             <div class="nav-direction small font-weight-light">Previous</div>
-            Introduction
+            Installation
           </div>
         </a>
       
 
       
-        <a href="tutorial.html" title="Tutorial" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
+        <a href="gettingstarted/solvers.html" title="Solvers" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
           <div class="nav-title footer-link flex-grow-1 align-self-center">
             <div class="nav-direction small font-weight-light">Next</div>
-            Tutorial
+            Solvers
           </div>
           <div class="nav-button p-2 m-2"><i class="fas fa-arrow-right"></i></div>
         </a>

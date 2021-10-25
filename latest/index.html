@@ -19,7 +19,7 @@
   <link rel="stylesheet" type="text/css" href="_static/css/compas-reference.css" />
 
   
-    <link rel="next" title="Getting Started" href="gettingstarted.html" />
+    <link rel="next" title="Installation" href="installation.html" />
   
 
   
@@ -93,18 +93,29 @@
 <img alt="_images/flow.png" class="figure-img img-fluid" src="_images/flow.png" />
 </figure>
 <p><code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> is a Python package used for assessing masonry structures according to the Safe Theorem of Limit Analysis. It works by finding admissible stress states, which are defined as a path of compressive and equilibrated forces contained within the structural geometry. Therefore, from the Safe theorem, if one admissible stress state is found, the structure is safe under the applied loads. This set of compressive, internal forces corresponds to a lower-bound equilibrium solution (<a class="reference internal" href="#references"><span class="std std-ref">Heyman, 1966</span></a>).</p>
-<p>Block (<a class="reference internal" href="#references"><span class="std std-ref">2009</span></a>) introduced Thrust Network Analysis (TNA) which describes the structure as a network with internal axial forces in the edges and external loads applied to its vertices. Using the principles of graphic statics (<a class="reference internal" href="#references"><span class="std std-ref">Wolfe, 1921</span></a>), this network is defined by its vertical projection in the plan (the <em>form diagram</em>) and the horizontal equilibrium is visualised by a reciprocal graph (the <em>force diagram</em>). TNA has been used as an interactive design tool and is implemented in the open-source Python package <code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tna</span></code>.</p>
-<p>This package provides the necessary infrastructure to frame TNA as an assessment problem. It sets up and runs optimisation problems to find specific networks contained within the bounds of a given masonry structure. With these specific networks, one can assess the level of stability of the structure, which goes beyond merely proving that the structure is safe. Additional information about the package content can be found under <code class="xref py py-mod docutils literal notranslate"><span class="pre">Publications</span></code>.</p>
+<p>Block (<a class="reference internal" href="#references"><span class="std std-ref">2009</span></a>) introduced Thrust Network Analysis (TNA) which describes the structure as a network with internal axial forces in the edges and external loads applied to its vertices. Using the principles of graphic statics (<a class="reference internal" href="#references"><span class="std std-ref">Wolfe, 1921</span></a>), this network is defined by its vertical projection in the plan (the <em>form diagram</em>) and the horizontal equilibrium is visualised by a reciprocal graph (the <em>force diagram</em>). TNA has been used as an interactive design tool and is implemented in the open-source Python package <a href="#id1"><span class="problematic" id="id2">:ref:`compas\_tna &lt;https://github.com/BlockResearchGroup/compas_tna&gt;`_</span></a>.</p>
+<p>This package provides the necessary infrastructure to frame TNA as an assessment problem (<a class="reference internal" href="#references"><span class="std std-ref">Maia Avelino et al., 2021</span></a>). It sets up and runs optimisation problems to find specific networks contained within the bounds of a given masonry structure. With these specific networks, one can assess the level of stability of the structure, which goes beyond merely proving that the structure is safe. Additional information about the package content can be found under <a class="reference internal" href="publications.html#publications"><span class="std std-ref">Publications</span></a>.</p>
 <p>This package is in development by the Block Research Group in a project funded by the Swiss National Science Foundation SNSF (project grant n. 178953). Thus, it has not yet been released to the public. If you wish to download or contribute please an email to (<a class="reference external" href="mailto:maia&#37;&#52;&#48;arch&#46;ethz&#46;ch">maia<span>&#64;</span>arch<span>&#46;</span>ethz<span>&#46;</span>ch</a>).</p>
-<p>Check the installation guide on <code class="xref py py-mod docutils literal notranslate"><span class="pre">Getting</span> <span class="pre">Started</span></code> and the <code class="xref py py-mod docutils literal notranslate"><span class="pre">Tutorial</span></code> for start using <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code>.</p>
+<p>Check the installation guide on the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> and <a class="reference internal" href="gettingstarted.html#gettingstarted"><span class="std std-ref">Getting Started</span></a> pages. Then head to the <a class="reference internal" href="tutorial.html#tutorial"><span class="std std-ref">Tutorial</span></a> for start using <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code>.</p>
 </section>
 <section id="table-of-contents">
 <h1>Table of Contents</h1>
 <div class="toctree-wrapper compound">
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gettingstarted/solvers.html">Solvers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gettingstarted/rhino.html">Rhinoceros</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/form.html">FormDiagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/shape.html">Shape</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/optimiser.html">Optimiser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/analysis.html">Analysis</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="examples/circulararch.html">Circular Arch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/crossvault%28cross%29.html">Cross Vault (cross)</a></li>
@@ -117,10 +128,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/compas_tno.html">compas_tno</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="api/compas_tno.algorithms.html">compas_tno.algorithms</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/compas_tno.diagrams.html">compas_tno.diagrams</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/compas_tno.optimisers.html">compas_tno.optimisers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="api/compas_tno.plotters.html">compas_tno.plotters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="api/compas_tno.shapes.html">compas_tno.shapes</a></li>
 </ul>
 </li>
@@ -131,18 +140,12 @@
 </ul>
 </div>
 </section>
-<section id="indices-and-tables">
-<h1>Indices and tables</h1>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-</ul>
-</section>
 <section id="references">
-<span id="id1"></span><h1>References</h1>
+<span id="id3"></span><h1>References</h1>
 <p>[1] P. Block, “Thrust Network Analysis,” Massachusetts Institute of Technology, 2009.</p>
 <p>[2] J. Heyman, “The stone skeleton,” Int. J. Solids Struct., vol. 2, no. 2, pp. 249–279, Apr. 1966.</p>
 <p>[3] W.S. Wolfe, Graphical analysis: a handbook on graphic statics. New Cork:McGraw-Hill, 1921.</p>
+<p>[4] Maia Avelino et al., “Assessing the safety of vaulted masonry structures using Thrust Network Analysis,” Comp. Struct., vol. 257, pp. 106647, 2021.</p>
 </section>
 
         
@@ -163,6 +166,7 @@
           <div id="compas-navigation" class="collapse compas-navigation">
           <ul class="nav flex-column active">
 <li class="nav-item active"><a class="nav-link active current reference internal" href="#">Introduction</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="installation.html">Installation</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="gettingstarted.html">Getting Started</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="examples.html">Examples</a></li>
@@ -181,7 +185,6 @@
         <ul class="nav flex-column" id="compas-toc">
 <li class="nav-item"><a class="nav-link reference internal" href="#">Introduction</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#table-of-contents">Table of Contents</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#indices-and-tables">Indices and tables</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#references">References</a></li>
 </ul>
 
@@ -196,10 +199,10 @@
       
 
       
-        <a href="gettingstarted.html" title="Getting Started" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
+        <a href="installation.html" title="Installation" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
           <div class="nav-title footer-link flex-grow-1 align-self-center">
             <div class="nav-direction small font-weight-light">Next</div>
-            Getting Started
+            Installation
           </div>
           <div class="nav-button p-2 m-2"><i class="fas fa-arrow-right"></i></div>
         </a>
