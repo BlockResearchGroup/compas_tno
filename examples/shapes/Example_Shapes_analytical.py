@@ -10,13 +10,13 @@ import math
 
 n = 10
 
-# data = {
-#     'type': 'crossvault',
-#     'thk': 0.5,
-#     'discretisation': [n, n],
-#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-#     't': 0.0,
-# }
+data = {
+    'type': 'crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0,
+}
 
 # data = {
 #     'type': 'pointed_crossvault',
@@ -30,16 +30,16 @@ n = 10
 # }
 
 
-data = {
-    'type': 'pointed_crossvault',
-    'thk': 0.5,
-    'discretisation': [n, n],
-    'xy_span': [[0.0, 6.0], [0.0, 10.0]],
-    't': 0.0,
-    'hc': 6.0,
-    'hm': None,
-    'he': [5, 5, 5, 5],
-}
+# data = {
+#     'type': 'pointed_crossvault',
+#     'thk': 0.5,
+#     'discretisation': [n, n],
+#     'xy_span': [[0.0, 6.0], [0.0, 10.0]],
+#     't': 0.0,
+#     'hc': 6.0,
+#     'hm': None,
+#     'he': [5, 5, 5, 5],
+# }
 
 # data = {
 #     'type': 'parabolic_shell',
