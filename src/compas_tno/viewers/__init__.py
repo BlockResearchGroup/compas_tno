@@ -10,6 +10,7 @@ Viewer
 
 .. autosummary::
     :toctree: generated/
+    :nosignatures:
 
     Viewer
 

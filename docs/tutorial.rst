@@ -1,4 +1,5 @@
 .. _tutorial:
+
 ********************************************************************************
 Tutorial
 ********************************************************************************
@@ -21,15 +22,16 @@ The :ref:`Optimiser <optimiser>` element deals with the parameters for the optim
 
 The :ref:`Analysis <analysis>` element manages the information form all of the above and set up and perform the optimisation.
 
-Each of the elements is explained in detail in this tutorial. A series of :ref:`examples <examples>` are available to showcase possible applications.
+These elements are created in the workflow defined :ref:`here <workflow>`. To illustrate the workflow a series of :ref:`examples <examples>` are available to showcase possible applications.
 
 Steps of the tutorial
---------
+---------------------
 
 .. toctree::
     :maxdepth: 1
     :glob:
 
+    tutorial/workflow
     tutorial/form
     tutorial/shape
     tutorial/optimiser

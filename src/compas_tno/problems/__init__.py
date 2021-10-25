@@ -6,7 +6,7 @@ compas_tno.problems
 .. currentmodule:: compas_tno.problems
 
 Set up
-========
+======
 
 .. autosummary::
     :toctree: generated/
@@ -15,7 +15,7 @@ Set up
     set_up_convex_optimisation
 
 Initialisation
-========
+==============
 
 .. autosummary::
     :toctree: generated/
@@ -29,7 +29,7 @@ Initialisation
     adapt_problem_to_sym_and_fixed_diagram
 
 Constraints
-========
+===========
 
 .. autosummary::
     :toctree: generated/
@@ -45,7 +45,7 @@ Jacobian
     sensitivities_wrapper_general
 
 Objectives
-========
+==========
 
 .. autosummary::
     :toctree: generated/
@@ -63,7 +63,7 @@ Objectives
     f_max_section
 
 Gradients
-========
+=========
 
 .. autosummary::
     :toctree: generated/

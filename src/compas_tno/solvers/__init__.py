@@ -10,7 +10,6 @@ Scipy
 
 .. autosummary::
     :toctree: generated/
-    :nosignatures:
 
     run_optimisation_scipy
 
@@ -19,7 +18,6 @@ IPOPT
 
 .. autosummary::
     :toctree: generated/
-    :nosignatures:
 
     run_optimisation_ipopt
 
@@ -28,7 +26,6 @@ MMA
 
 .. autosummary::
     :toctree: generated/
-    :nosignatures:
 
     run_optimisation_MMA
 
@@ -37,7 +34,6 @@ MATLAB
 
 .. autosummary::
     :toctree: generated/
-    :nosignatures:
 
     run_optimisation_MATLAB
 
@@ -46,20 +42,16 @@ PyOpt
 
 .. autosummary::
     :toctree: generated/
-    :nosignatures:
 
     run_optimisation_pyOpt
 
 Post Processing
-========
+===============
 
 .. autosummary::
     :toctree: generated/
-    :nosignatures:
 
     post_process_general
-
-
 
 """
 from __future__ import absolute_import

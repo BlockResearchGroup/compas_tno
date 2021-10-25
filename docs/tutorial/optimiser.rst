@@ -1,4 +1,5 @@
 .. _optimiser:
+
 ********************************************************************************
 Optimiser
 ********************************************************************************
@@ -76,7 +77,7 @@ The objeective functions available are described in the table below. They are sh
       - Minimise the increase in the structural section
 
 Constraints
-=========
+===========
 
 The constraints available are described in the table below. They are should be passed to ``optimiser.settings['constraints']`` as a list of stings.
 
@@ -118,7 +119,7 @@ The features available are described in the table below. They are should be pass
       - Deals with the update on the vertical envelope as nodes move horizontally
 
 Solver Selection
-=========
+================
 
 The solver name and library should be passed as ``optimiser.settings['solver']`` and ``optimiser.settings['library']``.
 
@@ -140,7 +141,7 @@ The solver name and library should be passed as ``optimiser.settings['solver']``
       - Method of moving assymptotes (MMA) is used
 
 Starting Point
-=========
+==============
 
 The starting point should be passed as ``optimiser.settings['starting_point']`` and will execute a preconditioning optimisation before the NLOpt.
 

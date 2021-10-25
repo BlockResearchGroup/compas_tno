@@ -1,4 +1,5 @@
 .. _shape:
+
 ********************************************************************************
 Shape
 ********************************************************************************
@@ -24,7 +25,7 @@ Diagrams Library
 The library is accessed with a dictionary containing infomation about the type, density, fixity etc.
 
 Rectangular shapes
-----------
+-------------------
 
 The data dictionary for rectangular diagrams look like this:
 
@@ -41,7 +42,7 @@ The data dictionary for rectangular diagrams look like this:
 The ``type`` can be changed for one of the layouts depicted in the Figure above. The parameter ``t`` define the lower-bound of nodes that have no projection in the intrados.
 
 Circular shapes
-----------
+----------------
 
 The data dictionary for circular diagrams look like this:
 

@@ -1,4 +1,5 @@
 .. _form:
+
 ********************************************************************************
 FormDiagram
 ********************************************************************************
@@ -24,7 +25,7 @@ Diagrams Library
 The library is accessed with a dictionary containing infomation about the type, density, fixity etc.
 
 Rectangular diagrams
-----------
+--------------------
 
 The data dictionary for rectangular diagrams look like this:
 
@@ -40,7 +41,7 @@ The data dictionary for rectangular diagrams look like this:
 The ``type`` can be changed for one of the layouts depicted in the Figure above. The fixity can be modified to ``all`` or ``corners``.
 
 Circular diagrams
-----------
+-----------------
 
 The data dictionary for circular diagrams look like this:
 
