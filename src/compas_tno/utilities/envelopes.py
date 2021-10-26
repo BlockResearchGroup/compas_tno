@@ -1,3 +1,5 @@
+import math
+
 from compas_tno.shapes.dome import dome_ub_lb_update
 from compas_tno.shapes.dome import dome_zt_update
 
@@ -20,6 +22,7 @@ __all__ = [
     'apply_envelope_on_xy',
     'apply_bounds_on_q',
     'project_mesh_to_middle',
+    'modify_shapedata_with_spr_angle',
     'apply_envelope_from_shape_proxy',
 ]
 
@@ -159,7 +162,7 @@ def project_mesh_to_middle(mesh, shape=None):
 
     Parameters
     ----------
-    meesh : ::Mesh::
+    mesh : ::Mesh::
         The input Mesh.
     shape : ::Shape::
         The input Shape with a middle surface.
@@ -193,3 +196,38 @@ def project_mesh_to_middle(mesh, shape=None):
         i += 1
 
     return
+
+
+def modify_shapedata_with_spr_angle(datashape):
+    """ Modify the Shape data to account for an springing angle.
+    This is done by increasing the ``xy_span`` limits and works exclusivvely for rectandular diagrams.
+
+    Parameters
+    ----------
+    datashape : dict
+        The data to construct the Shape.
+
+    Returns
+    ----------
+    datashape : dict
+        The updated datashape.
+    """
+
+    typevault = datashape.get('type')
+    spr_angle = datashape.get('spr_angle', 0.0)
+
+    if spr_angle:
+        if typevault in ['crossvault', 'pointed_crossvault', 'pavillionvault', ':parabolic_shell', 'domicalvault']:
+            xy_span = datashape['xy_span']
+            span_x = xy_span[0][1] - xy_span[0][0]
+            span_y = xy_span[1][1] - xy_span[1][0]
+
+            A = 1/math.cos(math.radians(spr_angle))
+            print('deg, discretisation:', A, spr_angle)
+            xy_span_enlarged = [[-span_x/2*(A - 1), span_x*(1 + (A - 1)/2)], [-span_y/2*(A - 1), span_y*(1 + (A - 1)/2)]]
+
+            datashape['xy_span'] = xy_span_enlarged
+        else:
+            raise NotImplementedError
+
+    return datashape

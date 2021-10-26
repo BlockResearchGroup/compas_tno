@@ -1,18 +1,16 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
-from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import Viewer
 
 import time
 
-from compas_tno.algorithms import apply_sag
+from compas_tno.utilities.envelopes import modify_shapedata_with_spr_angle
+
 
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
-from compas_tno.plotters import save_csv
-from compas_tno.plotters import diagram_of_thrust
 
 from numpy import array
 
@@ -24,20 +22,17 @@ type_structure = 'crossvault'
 thk0 = 0.50
 discretisation_shape = 10 * discretisation
 
-
+spr_angle = 30.0
 hc = None
 he = None
 plot_comparison = True
 update_loads = True
 lambd = None
 
-c = 0.1
-
-thk_reduction = 0.05
 save = False
 solutions = {}
 
-solver = 'IPOPT'
+solver = 'SLSQP'
 constraints = ['envelope', 'envelopexy']
 variables = ['q', 'zb', 't']
 features = ['sym', 'fixed']
@@ -52,7 +47,6 @@ for c in [0.1]:
     for obj in ['t']:
         solutions[c][obj] = {}
 
-        # for thk in [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1]:
         for thk in [thk0]:
 
             # Create form diagram
@@ -65,7 +59,6 @@ for c in [0.1]:
             }
 
             form = FormDiagram.from_library(data_diagram)
-            # plot_form(form, show_q=False).show()
 
             # Create shape
 
@@ -74,6 +67,7 @@ for c in [0.1]:
                 'thk': thk,
                 'discretisation': discretisation_shape,
                 'xy_span': [[0, span], [0, k*span]],
+                'spr_angle': spr_angle,
                 # 'hc': hc,
                 # 'hm': None,
                 # 'he': [he, he, he, he],
@@ -82,8 +76,10 @@ for c in [0.1]:
                 't': 0.0,
             }
 
+            data_shape = modify_shapedata_with_spr_angle(data_shape)
+
             vault = Shape.from_library(data_shape)
-            # vault.ro = 20.0
+            print(vault.datashape)
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
@@ -108,6 +104,13 @@ for c in [0.1]:
             apply_bounds_on_q(form)
 
             form_base = form.copy()
+
+            # view = Viewer(form)
+            # view.view_thrust()
+            # view.view_shape()
+            # view.show()
+
+            # view.clear()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -145,10 +148,15 @@ for c in [0.1]:
 
             i = 0
 
-            while entropy > 10e-4 or i < 2:
+            while entropy > 10e-4 or i < 3:
 
                 analysis.set_up_optimiser()
                 analysis.run()
+
+                # view.show_solution()
+                # view.clear()
+
+                # plot_superimposed_diagrams(form, form_base).show()
 
                 form.overview_forces()
                 thk = form.attributes['thk']
@@ -167,14 +175,18 @@ for c in [0.1]:
                     folder = os.path.join(folder, 'mov_c_' + str(c))
                 if he:
                     folder = os.path.join(folder, 'hc_' + str(hc) + '_he_' + str(he))
+                if spr_angle:
+                    folder = os.path.join(folder, 'spr_angle_' + str(spr_angle))
 
                 os.makedirs(folder, exist_ok=True)
+
                 title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
                 save_form = os.path.join(folder, title)
                 address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
                 solutions[c][obj][thk] = thrust/weight * 100
                 img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
+
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)
@@ -184,7 +196,10 @@ for c in [0.1]:
 
                 apply_envelope_from_shape(form, vault)
                 if update_loads:  # Update bounds and SWT
+                    print('UPDATE LOADS')
                     apply_selfweight_from_shape(form, vault)
+
+                print(vault.datashape)
 
                 x = array(form.vertices_attribute('x')).reshape(-1, 1)
                 y = array(form.vertices_attribute('y')).reshape(-1, 1)
@@ -216,23 +231,34 @@ for c in [0.1]:
                 errors.append(constr_error)
                 # plot_form(form, show_q=False, cracks=True).show()
 
-                plot_superimposed_diagrams(form, form_base).show()
+                # plot_superimposed_diagrams(form, form_base).show()
                 # plot_form(form, show_q=False, cracks=True).show()
                 # view = Viewer(form)
-view.show_solution()
+                # view.show_solution()
+
+                # view.show_solution()
+                # view.clear()
 
                 optimiser.settings['starting_point'] = 'current'
-                optimiser.settings['max_thk'] = min(thk*1.25, 0.5)
-                apply_bounds_on_q(form, qmax=0.0)
-                optimiser.settings['features'] = ['sym', 'adapted-envelope']
+                # optimiser.settings['solver'] = 'IPOPT'
+                # optimiser.settings['library'] = 'IPOPT'
+                optimiser.settings['max_thk'] = 0.5  # min(0.5, thk*1.5)
+                optimiser.settings['features'] = ['sym']  # , 'adapted-envelope'
                 i += 1
 
 print(solutions)
 print('\n')
 
+form.to_json(address)
+print('Saved last to: ', address)
+
 print(min_thks)
 print(entropies)
 print(errors)
+
+view = Viewer(form)
+view.show_solution()
+view.clear()
 
 if plot_comparison:
     import matplotlib.pyplot as plt
@@ -265,7 +291,7 @@ for key in solutions:
         print(key, key2, solutions[key][key2])
 
 elapsed_time = time.time() - t0
-print('Tipe elapsed in Script:', time)
+print('Tipe elapsed in Script:', elapsed_time)
 
 view = Viewer(form)
 view.show_solution()

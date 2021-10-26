@@ -4,6 +4,8 @@ from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import Viewer
 
+from compas_tno.utilities.envelopes import modify_shapedata_with_spr_angle
+
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
@@ -12,24 +14,23 @@ from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
-discretisation = 14
+discretisation = 10
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
-thk = 0.50
 discretisation_shape = 10 * discretisation
 hc = None
 he = None
 
-c = 0.1
+spr_angle = 30.0
 
 save = False
 solutions = {}
 
 objective = ['t']
-solver = 'IPOPT'
+solver = 'SLSQP'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb', 't']
-features = ['fixed']
+features = ['sym']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -65,6 +66,7 @@ for c in [0.1]:  # set the distance that the nodes can move
                 'thk': thk,
                 'discretisation': discretisation_shape,
                 'xy_span': [[0, span], [0, k*span]],
+                'spr_angle': spr_angle,
                 'hc': hc,
                 'hm': None,
                 'he': he if he is None else [he, he, he, he],
@@ -72,6 +74,8 @@ for c in [0.1]:  # set the distance that the nodes can move
                 'radius': span/2,
                 't': 0.0,
             }
+
+            data_shape = modify_shapedata_with_spr_angle(data_shape)
 
             vault = Shape.from_library(data_shape)
             vault.ro = 100.0
@@ -99,6 +103,9 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             form_base = form.copy()
 
+            view = Viewer(form)
+            view.view_thrust()
+
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
             # ------------------------------------------------------------
@@ -125,9 +132,6 @@ for c in [0.1]:  # set the distance that the nodes can move
             # --------------------- 5. Set up and run analysis ---------------------
 
             analysis = Analysis.from_elements(vault, form, optimiser)
-            # analysis.apply_selfweight()
-            # analysis.apply_envelope()
-            # analysis.apply_reaction_bounds()
             analysis.set_up_optimiser()
             analysis.run()
 
@@ -156,7 +160,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             plot_superimposed_diagrams(form, form_base).show()
             view = Viewer(form)
-view.show_solution()
+            view.show_solution()
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100
@@ -169,11 +173,11 @@ view.show_solution()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
                 view = Viewer(form)
-view.show_solution()
+                view.show_solution()
                 break
 
     view = Viewer(form)
-view.show_solution()
+    view.show_solution()
 
 
 print(solutions)
@@ -182,21 +186,3 @@ print('\n')
 for key in solutions:
     for key2 in solutions[key]:
         print(key, key2, solutions[key][key2])
-
-# ----------------------- 5. Create Analysis loop on limit analysis --------------------------
-
-# folder = os.path.join('/Users/mricardo/compas_dev/me', 'general_opt', type_structure, type_formdiagram, 'mov_c_' + str(c))
-# title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
-# save_form = os.path.join(folder, title)
-
-# analysis = Analysis.from_elements(vault, form, optimiser)
-# results = analysis.limit_analysis_GSF(thk, thk_reduction, span, save_forms=save_form)
-# thicknesses, size_parameters, solutions_min, solutions_max = results
-
-# # ----------------------- 6. Save output data --------------------------
-
-# csv_file = os.path.join(folder, title + '_data.csv')
-# save_csv(size_parameters, solutions_min, solutions_max, path=csv_file, title=title)
-
-# img_graph = os.path.join(folder, title + '_diagram.pdf')
-# diagram_of_thrust(size_parameters, solutions_min, solutions_max, save=img_graph).show()

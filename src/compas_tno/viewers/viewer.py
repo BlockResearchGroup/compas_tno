@@ -87,6 +87,11 @@ class Viewer(object):
 
         self.app.show()
 
+    def clear(self):
+        """ Clear the viewer elements """
+
+        self.app.view.objects = {}
+
     def view_thrust(self):
         """ View thrust network according to the settings """
 

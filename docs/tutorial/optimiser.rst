@@ -40,8 +40,8 @@ The sets of variables available are described in the table below. They are shoul
     * - ``tlb``
       - Additional thickness lower-bound
 
-Objecives
-=========
+Objectives
+==========
 
 The objeective functions available are described in the table below. They are should be passed to ``optimiser.settings['objective']`` as a string.
 

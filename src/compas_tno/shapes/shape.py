@@ -154,6 +154,8 @@ class Shape(Datastructure):
         from compas_tno.shapes import domical_vault
         from compas_tno.shapes import parabolic_shell_highfields
 
+        # from compas_tno.utilities.envelopes import modify_envelope_with_spr_angle
+
         shape = cls()
 
         typevault = data['type']
@@ -161,6 +163,10 @@ class Shape(Datastructure):
         discretisation = data['discretisation']
         t = data.get('t', 0.0)
         expanded = data.get('expanded', False)
+        spr_angle = data.get('spr_angle', 0.0)
+
+        # if spr_angle:
+        #     data = modify_envelope_with_spr_angle(typevault, data, spr_angle)
 
         if typevault == 'crossvault':
             xy_span = data['xy_span']
