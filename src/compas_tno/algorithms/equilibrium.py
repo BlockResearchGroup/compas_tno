@@ -3,9 +3,11 @@ from numpy import array
 from numpy import float64
 from numpy import newaxis
 from numpy import zeros
+from numpy import hstack
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import splu
+from scipy.sparse.linalg import lsqr
 from scipy.sparse import diags
 
 from compas.numerical import fd_numpy
@@ -238,8 +240,20 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
 
     CiQCb = Cit.dot(diags(q.flatten())).dot(Cb)
     CiQCi = Cit.dot(diags(q.flatten())).dot(Ci)
-    SPLU_D = splu(CiQCi)
-    Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
+    try:
+        SPLU_D = splu(CiQCi)
+        Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
+    except BaseException:
+        A = CiQCi
+        b = Pi - CiQCb.dot(Xb)
+        resx = lsqr(A, b[:, 0])
+        resy = lsqr(A, b[:, 1])
+        resz = lsqr(A, b[:, 2])
+        print('* Warning: System might be bad conditioned - recured to LSQR')
+        xfree = resx[0].reshape(-1, 1)
+        yfree = resy[0].reshape(-1, 1)
+        zfree = resz[0].reshape(-1, 1)
+        Xfree = hstack([xfree, yfree, zfree])
 
     return Xfree
 

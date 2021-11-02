@@ -20,7 +20,9 @@ from compas_tno.algorithms import find_independents
 from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import check_horizontal
 
-from compas_tno.utilities import apply_symmetry
+from compas_tno.utilities import apply_radial_symmetry
+from compas_tno.utilities import apply_symmetry_from_axis
+from compas_tno.utilities import find_sym_axis_in_rect_patterns
 from compas_tno.utilities import build_symmetry_transformation
 
 import time
@@ -664,11 +666,11 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     return
 
 
-def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, correct_loads=True, printout=False):
+def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False):
 
     start_time = time.time()
 
-    apply_symmetry(form, axis_symmetry=axis_symmetry, correct_loads=correct_loads)
+    apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
 
     Esym = build_symmetry_transformation(form, printout=False)
     mapsym = form.build_symmetry_map()
@@ -696,13 +698,13 @@ def adapt_problem_to_sym_diagram(problem, form, axis_symmetry=None, correct_load
     return
 
 
-def adapt_problem_to_sym_and_fixed_diagram(problem, form, axis_symmetry=None, correct_loads=True, printout=False):
+def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False):
 
     start_time = time.time()
 
-    adapt_problem_to_fixed_diagram(problem, form, printout=False)
+    adapt_problem_to_fixed_diagram(problem, form, printout)
 
-    apply_symmetry(form, axis_symmetry=axis_symmetry, correct_loads=correct_loads)
+    apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
 
     ind = problem.ind
     k = problem.k
@@ -749,5 +751,23 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, axis_symmetry=None, co
     problem.k = k
     problem.dep = dep
     problem.B = B
+
+    return
+
+
+def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=True):
+
+    if not list_axis_symmetry:
+        data = form.parameters
+        if data['type'] in ['radial_fd', 'radial_spaced_fd', 'spiral_fd']:
+            apply_radial_symmetry(form, center=center, correct_loads=correct_loads)
+        elif data['type'] in ['cross_fd', 'fan_fd', 'cross_diagonal', 'cross_with_diagonal', 'ortho']:
+            list_axis_symmetry = find_sym_axis_in_rect_patterns(data)
+        else:
+            print('Symmetry applied to a unknown form diagram type')
+            raise NotImplementedError
+
+    if list_axis_symmetry:
+        apply_symmetry_from_axis(form, list_axis_symmetry=list_axis_symmetry, correct_loads=correct_loads)
 
     return

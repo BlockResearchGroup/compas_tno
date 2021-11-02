@@ -14,14 +14,14 @@ from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
-discretisation = 10
+discretisation = 14
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 discretisation_shape = 10 * discretisation
 hc = None
 he = None
 
-spr_angle = 30.0
+spr_angle = 0.0
 
 save = False
 solutions = {}
@@ -30,7 +30,7 @@ objective = ['t']
 solver = 'SLSQP'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb', 't']
-features = ['sym']
+features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -78,7 +78,6 @@ for c in [0.1]:  # set the distance that the nodes can move
             data_shape = modify_shapedata_with_spr_angle(data_shape)
 
             vault = Shape.from_library(data_shape)
-            vault.ro = 100.0
 
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
@@ -99,7 +98,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             if 'envelopexy' in constraints:
                 apply_envelope_on_xy(form, c=c)
-            apply_bounds_on_q(form, qmax=0.0)
+            apply_bounds_on_q(form)
 
             form_base = form.copy()
 
@@ -117,7 +116,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['variables'] = variables
             optimiser.settings['features'] = features
             optimiser.settings['objective'] = obj
-            optimiser.settings['plot'] = False
+            optimiser.settings['plot'] = True
             optimiser.settings['find_inds'] = False
             optimiser.settings['max_iter'] = 500
             optimiser.settings['gradient'] = True

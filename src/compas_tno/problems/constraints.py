@@ -122,6 +122,8 @@ def constr_wrapper_general(variables, M):
         M.tlb = tlb
         check = check + n
 
+    # print(M.q)
+
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
     constraints = zeros([0, 1])  # missing compression only constraint

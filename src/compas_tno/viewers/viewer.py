@@ -38,7 +38,7 @@ class Viewer(object):
             'camera.fov': 40,
 
             'size.vertex': 15.0,
-            'size.edge.max_thickness': 10.0,
+            'size.edge.max_thickness': 15.0,
             'size.edge.base_thickness': 1.0,
             'size.edge.normals': 0.5,
             'size.reaction.head_width': 0.1,
@@ -187,9 +187,9 @@ class Viewer(object):
                 pt0 = mesh.vertex_coordinates(key)
                 pt1 = [pt0[0] + n[0]*length, pt0[1] + n[1]*length, pt0[2] + n[2]*length]
                 line = Line(pt0, pt1)
-                self.app(line, name='normal-{}'.format(key))
+                self.app.add(line, name='normal-{}'.format(key))
 
-    def view_mesh(self, mesh=None):
+    def view_mesh(self, mesh=None, show_edges=True, opacity=0.5):
         """ Add a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken """
 
         if not mesh:
@@ -198,7 +198,7 @@ class Viewer(object):
         vertices_mesh, faces_mesh = mesh.to_vertices_and_faces()
         mesh = Mesh.from_vertices_and_faces(vertices_mesh, faces_mesh)
 
-        self.app.add(mesh)
+        self.app.add(mesh, show_edges=show_edges, opacity=opacity)
 
     def view_reactions(self):
         """ View the reaction vectors on the supports according to the settings """

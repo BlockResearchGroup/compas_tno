@@ -22,7 +22,7 @@ type_structure = 'crossvault'
 thk0 = 0.50
 discretisation_shape = 10 * discretisation
 
-spr_angle = None
+spr_angle = 30.0
 hc = None
 he = None
 plot_comparison = True
@@ -32,7 +32,7 @@ lambd = None
 save = False
 solutions = {}
 
-solver = 'IPOPT'
+solver = 'SLSQP'
 constraints = ['envelope', 'envelopexy']
 variables = ['q', 'zb', 't']
 features = ['sym', 'fixed']
@@ -41,7 +41,7 @@ starting_point = 'loadpath'
 t0 = time.time()
 
 # for c in [0.1, 0.25, 0.50]:
-for c in [0.1]:
+for c in [0.25]:
     solutions[c] = {}
 
     for obj in ['t']:
@@ -105,12 +105,23 @@ for c in [0.1]:
 
             form_base = form.copy()
 
-            # view = Viewer(form)
-            # view.view_thrust()
-            # view.view_shape()
-            # view.show()
+            # load the force densities of the previous file
+            json_start = '/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/cross_fd/mov_c_0.1/spr_angle_30.0/crossvault_cross_fd_discr_10_t_thk_14.405627524998769.json'
+            form_ = FormDiagram.from_json(json_start)
+            starting_point = 'current'
+            features = ['sym']
+            thk0 = form_.attributes['thk']
 
-            # view.clear()
+            for edge in form_.edges():
+                qi = form_.edge_attribute(edge, 'q')
+                form.edge_attribute(edge, 'q', qi)
+
+            view = Viewer(form)
+            view.view_thrust()
+            view.view_shape()
+            view.show()
+
+            view.clear()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -193,11 +204,11 @@ for c in [0.1]:
                     print('Saved to: ', address)
                     plot_superimposed_diagrams(form, form_base, save=img_file)
 
+                # vault.data['thk'] = thk
+
                 pzti = vault.compute_selfweight()
                 factor = abs(pzt0/pzti)
                 print(pzti, factor)
-
-                # vault.data['thk'] = thk
 
                 apply_envelope_from_shape(form, vault)
                 if update_loads:  # Update bounds and SWT
@@ -212,8 +223,6 @@ for c in [0.1]:
                 for key in form.vertices():
                     pz_afterupdate += form.vertex_attribute(key, 'pz')
                 print('pz_afterupdate', pz_afterupdate)
-
-                # print(vault.datashape)
 
                 x = array(form.vertices_attribute('x')).reshape(-1, 1)
                 y = array(form.vertices_attribute('y')).reshape(-1, 1)
@@ -256,9 +265,9 @@ for c in [0.1]:
                 optimiser.settings['starting_point'] = 'current'
                 # optimiser.settings['solver'] = 'IPOPT'
                 # optimiser.settings['library'] = 'IPOPT'
-                optimiser.settings['max_thk'] = min(0.5, min_thk*2.0)
+                optimiser.settings['max_thk'] = 0.20  # min(0.5, min_thk*2.0)
                 print('max thk bound', optimiser.settings['max_thk'])
-                optimiser.settings['features'] = ['sym', 'adapted-envelope']  # , 'adapted-envelope'
+                optimiser.settings['features'] = ['sym']  # , 'adapted-envelope'
                 i += 1
 
 print(solutions)

@@ -94,6 +94,7 @@ class MeshDos(Mesh):
                 offset_list.append(t)
             else:
                 deviation = 1/math.sqrt(1/(1 + (normal[0]**2 + normal[1]**2)/normal[2]**2))
+                # print('deviation:', deviation)
                 if direction == 'up':
                     offset_list.append(z + n*deviation*norm_vector(normal))  # Experimenting with this normal norm!
                 else:

@@ -20,6 +20,7 @@ from compas_tno.utilities.interpolation import get_shape_middle_pattern
 __all__ = [
     'apply_envelope_from_shape',
     'apply_envelope_on_xy',
+    'apply_envelope_on_xy_from_base',
     'apply_bounds_on_q',
     'project_mesh_to_middle',
     'modify_shapedata_with_spr_angle',
@@ -119,6 +120,33 @@ def apply_envelope_on_xy(form, c=0.5):
     """
 
     for key, vertex in form.vertex.items():
+        form.vertex_attribute(key, 'xmin', vertex.get('x') - c)
+        form.vertex_attribute(key, 'xmax', vertex.get('x') + c)
+        form.vertex_attribute(key, 'ymin', vertex.get('y') - c)
+        form.vertex_attribute(key, 'ymax', vertex.get('y') + c)
+
+    return
+
+
+def apply_envelope_on_xy_from_base(form, form_base, c=0.5):
+    """ Apply an envelope to the FormDiagram considering a given distance applied to a base form diagram.
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        The input FormDiagram.
+    form_base : ::FormDiagram::
+        The input FormDiagram.
+    c : float
+        The maximum allowed movement of the nodes in ``x`` or ``y``.
+
+    Returns
+    ----------
+    None
+        The formdiagram is updated in place in the attributes
+    """
+
+    for key, vertex in form_base.vertex.items():
         form.vertex_attribute(key, 'xmin', vertex.get('x') - c)
         form.vertex_attribute(key, 'xmax', vertex.get('x') + c)
         form.vertex_attribute(key, 'ymin', vertex.get('y') - c)

@@ -7,15 +7,13 @@ from compas_tno.viewers import Viewer
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
-from compas_tno.plotters import save_csv
-from compas_tno.plotters import diagram_of_thrust
 
 from numpy import array
 
 span = 10.0
 k = 1.0
-discretisation = 20
-type_formdiagram = 'cross_with_diagonal'
+discretisation = 24
+type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
 discretisation_shape = 10 * discretisation

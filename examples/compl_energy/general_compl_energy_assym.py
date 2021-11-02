@@ -19,7 +19,7 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 10
+discretisation = 14
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
@@ -30,11 +30,19 @@ he = None
 save = True
 solutions = {}
 
+fixed_projection = True
+
 objective = ['Ecomp-linear']
 solver = 'SLSQP'
-constraints = ['funicular', 'envelope', 'envelopexy']
 variables = ['q', 'zb']
-features = []
+
+if fixed_projection:
+    constraints = ['funicular', 'envelope']
+    features = ['fixed']
+else:
+    constraints = ['funicular', 'envelope', 'enveleopexy']
+    features = ['sym']
+
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -97,7 +105,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             if 'envelopexy' in constraints:
                 apply_envelope_on_xy(form, c=c)
-            apply_bounds_on_q(form, qmax=0.0)
+            apply_bounds_on_q(form)
 
             form_base = form.copy()
 
@@ -108,10 +116,12 @@ for c in [0.1]:  # set the distance that the nodes can move
                 lines = []
                 vector_supports = []
 
-                sign = 1  # +1 for outwards / -1 for inwards
+                sign = -1  # +1 for outwards / -1 for inwards
 
                 for key in form.vertices_where({'is_fixed': True}):
                     x, y, z = form.vertex_coordinates(key)
+
+                    dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])  # 4 corners
 
                     # dXbi = normalize_vector([sign*(x - Xc[0]), 0, 0])  # vault opening up
 
@@ -127,10 +137,10 @@ for c in [0.1]:  # set the distance that the nodes can move
                     # else:
                     #     dXbi = [0, 0, 0]
 
-                    if x > Xc[0] and y > Xc[1]:             # vertical settlement
-                        dXbi = normalize_vector([0, 0, -1])
-                    else:
-                        dXbi = [0, 0, 0]
+                    # if x > Xc[0] and y > Xc[1]:             # vertical settlement
+                    #     dXbi = normalize_vector([0, 0, -1])
+                    # else:
+                    #     dXbi = [0, 0, 0]
 
                     vector_supports.append(dXbi)
                     lines.append({
@@ -208,9 +218,9 @@ for c in [0.1]:  # set the distance that the nodes can move
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            plot_superimposed_diagrams(form, form_base).show()
-            # view = Viewer(form)
-view.show_solution()
+            # plot_superimposed_diagrams(form, form_base).show()
+            view = Viewer(form)
+            view.show_solution()
 
             print('Optimiser exitflag:', optimiser.exitflag)
 
@@ -225,11 +235,13 @@ view.show_solution()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
                 view = Viewer(form)
-view.show_solution()
+                view.show_solution()
                 break
 
-    view = Viewer(form)
+view = Viewer(form)
 view.show_solution()
+
+plot_form(form, show_q=False, cracks=True).show()
 
 
 print(solutions)

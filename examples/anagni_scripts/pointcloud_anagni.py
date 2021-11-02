@@ -3,9 +3,8 @@ import compas_rhino
 import json
 
 # Modify Parameters
-title = 'sagostino_dome'
-layers = ['Bottom_Vault::Extrados', 'Bottom_Vault::Intrados', 'Bottom_Vault::Fill']
-layers = ['extra_pts', 'intra_pts']
+title = 'sangelo_vault_top_final'
+layers = ['Top_Vault::Extrapts', 'Top_Vault::Intrapts', 'Top_Vault::Fillpts']
 
 # Create dictionary and save as .json
 points_UB = []
@@ -25,3 +24,5 @@ for j in range(len(layers)):
 
 with open('/Users/mricardo/compas_dev/me/anagni/' + title + '.json', 'w') as outfile:
     json.dump(data, outfile)
+    
+print('Saved a .json to:', outfile)

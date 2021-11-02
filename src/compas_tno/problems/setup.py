@@ -53,6 +53,7 @@ from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_average_edge_stiffness
+from compas_tno.utilities import find_sym_axis_in_rect_patterns
 
 from numpy import append
 from numpy import array
@@ -96,6 +97,7 @@ def set_up_general_optimisation(analysis):
     qmax = optimiser.settings.get('qmax', +1e+8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
+    pattern_center = form.parameters.get('center', None)
 
     if shape:
         thk = shape.datashape['thk']
@@ -133,10 +135,10 @@ def set_up_general_optimisation(analysis):
 
     if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
-        adapt_problem_to_sym_and_fixed_diagram(M, form, axis_symmetry=axis_symmetry, correct_loads=sym_loads, printout=printout)
+        adapt_problem_to_sym_and_fixed_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout)
     elif 'sym' in features:
         # print('\n-------- Initialisation with sym form --------')
-        adapt_problem_to_sym_diagram(M, form, axis_symmetry=axis_symmetry, correct_loads=sym_loads, printout=printout)
+        adapt_problem_to_sym_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout)
     elif 'fixed' in features:
         # print('\n-------- Initialisation with fixed form --------')
         adapt_problem_to_fixed_diagram(M, form, printout=printout)
@@ -168,7 +170,7 @@ def set_up_general_optimisation(analysis):
             M.stiff = stiff
         elif Ecomp_method == 'complete':
             k = compute_average_edge_stiffness(form)
-            M.stiff = 1/2 * 1/k * 1000
+            M.stiff = 1/2 * 1/k
 
     # Set specific constraints
 
@@ -315,6 +317,19 @@ def set_up_general_optimisation(analysis):
         x0 = append(x0, M.tlb)
         bounds = bounds + list(zip(M.tlbmin, M.tlbmax))
 
+    # print(M.q)
+
+    # from compas_plotters import MeshPlotter
+    # plotter = MeshPlotter(form)
+    # plotter.draw_edges(text={edge: round(form.edge_attribute(edge, 'q'), 2) for edge in form.edges()})
+    # plotter.show()
+
+    if plot:
+        plot_independents(form).show()
+        if 'sym' in features:
+            plot_symmetry(form).show()
+            plot_symmetry_vertices(form).show()
+
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)
 
@@ -345,12 +360,6 @@ def set_up_general_optimisation(analysis):
                 violated.append(i)
         if violated:
             print('Constraints Violated #:', violated)
-
-    if plot:
-        plot_independents(form).show()
-        if 'sym' in features:
-            plot_symmetry(form).show()
-            plot_symmetry_vertices(form).show()
 
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr

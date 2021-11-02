@@ -1313,7 +1313,7 @@ def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
         i_sym = form.edge_attribute((u, v), 'sym_key')
         colour = colors[i_sym]
         if print_sym:
-            txt = str(i_sym)
+            txt = str(i_sym)  # form.edge_attribute((u, v), 'sym_dict')
 
         lines.append({
             'start': form.vertex_coordinates(u),

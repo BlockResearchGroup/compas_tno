@@ -19,7 +19,7 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 10
+discretisation = 14
 type_formdiagram = 'cross_fd'
 type_structure = 'crossvault'
 thk = 0.50
@@ -31,6 +31,7 @@ save = True
 solutions = {}
 
 objective = ['Ecomp-linear']
+objective = ['max', 'min']
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
@@ -46,15 +47,15 @@ if objective == ['lambd']:
     lambd = 0.1
 
 Xc = [5.0, 5.0, 0.0]
+c = 0.1
 
-
-for c in [0.1]:  # set the distance that the nodes can move
-    solutions[c] = {}
+for sign in [1]:  # get the minimum and maximum
+    solutions[sign] = {}
 
     for obj in objective:  # set the objective
-        solutions[c][obj] = {}
+        solutions[sign][obj] = {}
 
-        for thk in [0.50]:  # thickness of the problem
+        for thk in [0.5, 0.45, 0.40, 0.35, 0.33]:  # thickness of the problem
 
             # Create form diagram
 
@@ -85,6 +86,8 @@ for c in [0.1]:  # set the distance that the nodes can move
             vault = Shape.from_library(data_shape)
             vault.ro = 20.0
 
+            solutions[sign][obj][thk] = {}
+
             # ------------------------------------------------------------
             # -----------------------  INITIALISE   ----------------------
             # ------------------------------------------------------------
@@ -92,10 +95,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             # Apply Selfweight and Envelope
 
             apply_envelope_from_shape(form, vault)
-            # add something
             apply_selfweight_from_shape(form, vault)
-            if 'lambd' in variables:
-                apply_horizontal_multiplier(form, lambd=lambd)
 
             if 'envelopexy' in constraints:
                 apply_envelope_on_xy(form, c=c)
@@ -103,36 +103,34 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             form_base = form.copy()
 
-            # Consider the displacement vector
+            # Consider the displacement vecto
 
-            if 'Ecomp-linear' in objective:
+            lines = []
+            vector_supports = []
 
-                lines = []
-                vector_supports = []
+            # sign = +1  # +1 for outwards / -1 for inwards
 
-                sign = -1  # +1 for outwards / -1 for inwards
+            for key in form.vertices_where({'is_fixed': True}):
+                x, y, z = form.vertex_coordinates(key)
+                dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])
+                vector_supports.append(dXbi)
+                lines.append({
+                    'start': [x, y, z],
+                    'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
+                    'width': 3
+                })
 
-                for key in form.vertices_where({'is_fixed': True}):
-                    x, y, z = form.vertex_coordinates(key)
-                    dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])
-                    vector_supports.append(dXbi)
-                    lines.append({
-                        'start': [x, y, z],
-                        'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
-                        'width': 3
-                    })
+            dXb = array(vector_supports)
+            print(dXb)
 
-                dXb = array(vector_supports)
-                print(dXb)
+            # from compas_plotters import MeshPlotter
 
-                from compas_plotters import MeshPlotter
-
-                key_index = form.key_index()
-                plotter = MeshPlotter(form)
-                plotter.draw_edges()
-                plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
-                plotter.draw_arrows(lines)
-                plotter.show()
+            # key_index = form.key_index()
+            # plotter = MeshPlotter(form)
+            # plotter.draw_edges()
+            # plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
+            # plotter.draw_arrows(lines)
+            # plotter.show()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -159,25 +157,29 @@ for c in [0.1]:  # set the distance that the nodes can move
             # --------------------- 5. Set up and run analysis ---------------------
 
             analysis = Analysis.from_elements(vault, form, optimiser)
-            # analysis.apply_selfweight()
-            # analysis.apply_envelope()
-            # analysis.apply_reaction_bounds()
             analysis.set_up_optimiser()
             analysis.run()
 
             form.overview_forces()
             if obj == 't':
                 thk = form.attributes['thk']
+            # if obj == 'Ecomp-linear':
+            #     Ecomp = sign*optimiser.fopt
 
             weight = 0
             for key in form.vertices():
                 weight += form.vertex_attribute(key, 'pz')
 
             thrust = form.thrust()
-            print('Ratio Thrust/Weight:', thrust/weight)
+
+            T_over_W = abs(thrust/weight)
+            # E_over_W = abs(Ecomp/weight)
+
+            print('Ratio Thrust/Weight:', T_over_W)
+            # print('Ratio Ecomp/Weight:', E_over_W)
 
             folder = os.path.join('/Users/mricardo/compas_dev/me', 'compl_energy', type_structure, type_formdiagram)
-            if 'ind' in optimiser.settings['variables']:
+            if 'fixed' in optimiser.settings['features']:
                 folder = os.path.join(folder, 'fixed')
             else:
                 folder = os.path.join(folder, 'mov_c_' + str(c))
@@ -188,24 +190,25 @@ for c in [0.1]:  # set the distance that the nodes can move
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            plot_superimposed_diagrams(form, form_base).show()
+            # plot_superimposed_diagrams(form, form_base).show()
             # view = Viewer(form)
             # view.show_solution()
 
             print('Optimiser exitflag:', optimiser.exitflag)
 
             if optimiser.exitflag == 0:
-                solutions[c][obj][thk] = thrust/weight * 100
                 img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
+                solutions[sign][obj][thk]['T/W'] = T_over_W
+                # solutions[sign][obj][thk]['E/W'] = E_over_W
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)
-                    plot_superimposed_diagrams(form, form_base, save=img_file).show()
-                    plot_form(form, show_q=False, cracks=True).show()
+                    plot_superimposed_diagrams(form, form_base, save=img_file)#.show()
+                    plot_form(form, show_q=False, cracks=True)#.show()
             else:
-                plot_superimposed_diagrams(form, form_base).show()
-                view = Viewer(form)
-                view.show_solution()
+                # plot_superimposed_diagrams(form, form_base).show()
+                # view = Viewer(form)
+                # view.show_solution()
                 break
 
 view = Viewer(form)

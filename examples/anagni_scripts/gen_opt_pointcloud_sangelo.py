@@ -5,10 +5,6 @@ from compas_tno.optimisers import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis import Analysis
 from compas_tno.viewers import Viewer
-from compas_tno.viewers import view_shapes_pointcloud
-from compas_tno.viewers import view_shapes
-from compas_tno.viewers import view_meshes
-from compas_tno.viewers import view_mesh
 from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 import json
@@ -36,10 +32,11 @@ yf = 18.312
 
 k = 1.0
 n = 2
-ro_fill = 14.0
+ro_fill = 10.0
+fill = False
 
 objective = 'max'
-solver = 'IPOPT'
+solver = 'SLSQP'
 constraints = ['funicular', 'envelope']
 variables = ['ind', 'zb']
 features = ['fixed']  # , 'symmetry']
@@ -48,13 +45,13 @@ axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 starting_point = 'current'
 gradients = True
 max_iter = 500
-help_ = 0.035
+update_ub = True
 
 # ------------------- FormDiagram --------------------
 
 folder = '/Users/mricardo/compas_dev/me/anagni/'
 
-file_formdiagram = os.path.join(folder, 'top_vault_less_discr.json')
+file_formdiagram = os.path.join(folder, 'top_vault_form.json')
 
 mesh = Mesh.from_json(file_formdiagram)
 vertices, faces = mesh.to_vertices_and_faces()
@@ -72,15 +69,15 @@ for key in form.vertices():
     if sum(test) == 2:
         form.vertex_attribute(key, 'is_fixed', True)
 
-plotter = MeshPlotter(form, figsize=(5, 5))
-plotter.draw_edges()
-plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})])
-plotter.draw_faces()
-plotter.show()
+# plotter = MeshPlotter(form, figsize=(5, 5))
+# plotter.draw_edges()
+# plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})])
+# plotter.draw_faces()
+# plotter.show()
 
 # ----------------------- Point Cloud -----------------------
 
-file_name = 'top_vault'  # This point cloud considers the extrados with 25 cm only
+file_name = 'sangelo_vault_top_final'  # This point cloud considers the extrados with 25 cm only
 # Note: The fill loads must be added
 pointcloud = folder + file_name + '.json'
 
@@ -103,22 +100,41 @@ print(points_lb)
 print(points_fill)
 
 # triangulated_shape = Shape.from_pointcloud(points_lb, points_ub)
-# view_shapes_pointcloud(triangulated_shape).show()
+
+# view = Viewer(shape=triangulated_shape)
+# view.view_shape()
+# view.show()
 
 form_base = form
 
 # structured_shape = Shape.from_pointcloud_and_topology(form_base, points_lb, points_ub)
-# view_shapes_pointcloud(structured_shape).show()
 
 # ------- Create shape given a topology and a point cloud --------
 
-# roots - not considering real middle
 vault = Shape.from_pointcloud_and_topology(form, points_lb, points_ub, fill_pts=points_fill, data={'type': 'general', 't': 0.0, 'thk': thk})
 # more improved, considers the real middle
 # # vault = Shape.from_meshes_and_formdiagram(form, structured_shape.intrados, structured_shape.extrados, data={'type': 'general', 't': 0.0, 'thk': thk})
-vault.store_normals(plot=False)
+# vault.store_normals(plot=False)
 # view_shapes_pointcloud(vault).show()
 # view_normals(vault).show()
+
+dist = 0.01
+for key in vault.intrados.vertices():
+    x, y, _ = vault.intrados.vertex_coordinates(key)
+    a = abs(x - x0) < 0.1
+    b = abs(y - y0) < 0.1
+    c = abs(x - xf) < 0.1
+    d = abs(y - yf) < 0.1
+    if a:
+        x = x - dist
+    if b:
+        y = y - dist
+    if c:
+        x = x + dist
+    if d:
+        y = y + dist
+    vault.intrados.vertex_attribute(key, 'x', x)
+    vault.extrados.vertex_attribute(key, 'y', y)
 
 area = vault.middle.area()
 swt = vault.compute_selfweight()
@@ -126,8 +142,6 @@ swt = vault.compute_selfweight()
 print('Interpolated Volume Data:')
 print('Self-weight is: {0:.2f}'.format(swt))
 print('Area is: {0:.2f}'.format(area))
-
-# view_shapes(vault).show()
 
 from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_envelope_from_shape
@@ -142,47 +156,63 @@ for key in form.vertices():
 
 print('Selfweight not considering the fill is:', pzt0)
 
+# Store and Invert the normals
+
+
+# view = Viewer(form, shape=vault)
+# view.view_shape()
+# view.view_shape_normals()
+# view.show()
+
 # Add the fill load to the nodes affected
 
-# kinks = [13, 21, 121, 129]
-# kinks2 = [17, 28, 114, 125]
+if fill:
 
-# plotter = MeshPlotter(form, figsize=(5, 5))
-# plotter.draw_edges()
-# plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 2) for key in form.vertices()})
-# plotter.draw_faces()
-# plotter.show()
+    plotter = MeshPlotter(form, figsize=(5, 5))
+    plotter.draw_edges()
+    plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 2) for key in form.vertices()})
+    plotter.draw_faces()
+    plotter.show()
 
-for key in vault.fill.vertices():
-    pz = form.vertex_attribute(key, 'pz')
-    zub = form.vertex_attribute(key, 'ub')
-    z_fill = vault.fill.vertex_attribute(key, 'z')
-    z_diff = (z_fill - zub)
-    if z_diff > 0.01:
-        print('add load to:', key)
-        ai = vault.middle.vertex_area(key)
-        pz_fill = -1 * ai * z_diff * ro_fill  # downwards loads are negative
-        pzt = pz + pz_fill
-        form.vertex_attribute(key, 'pz', pzt)
-        # print('improve height of:', key)
-        # zubnew = zub + help_
-        # form.vertex_attribute(key, 'ub', zubnew)
+    for key in vault.fill.vertices():
+        pz = form.vertex_attribute(key, 'pz')
+        zub = form.vertex_attribute(key, 'ub')
+        z_fill = vault.fill.vertex_attribute(key, 'z')
+        z_diff = (z_fill - zub)
+        if z_diff > 0.01:
+            ai = vault.middle.vertex_area(key)
+            pz_fill = -1 * ai * z_diff * ro_fill  # downwards loads are negative
+            pzt = pz + pz_fill
+            form.vertex_attribute(key, 'pz', pzt)
 
-# plotter = MeshPlotter(form, figsize=(5, 5))
-# plotter.draw_edges()
-# plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 2) for key in form.vertices()})
-# plotter.draw_faces()
-# plotter.show()
+            # if update_ub:
+            #     form.vertex_attribute(key, 'ub', z_fill)
 
-pztfinal = 0
-for key in form.vertices():
-    pzi = form.vertex_attribute(key, 'pz')
-    pztfinal += pzi
+    plotter = MeshPlotter(form, figsize=(5, 5))
+    plotter.draw_edges()
+    plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 2) for key in form.vertices()})
+    plotter.draw_faces()
+    plotter.show()
 
-print('Selfweight with the considering the fill is:', pztfinal)
-print('Fill weight is:', pztfinal - pzt0)
+    pztfinal = 0
+    for key in form.vertices():
+        pzi = form.vertex_attribute(key, 'pz')
+        pztfinal += pzi
 
-# view_meshes([vault.intrados, vault.extrados, vault.fill]).show()
+    print('Selfweight with the considering the fill is:', pztfinal)
+    print('Fill weight is:', pztfinal - pzt0)
+
+vault.store_normals(plot=False)
+
+for key in vault.intrados.vertices():
+    n = vault.intrados.vertex_attribute(key, 'n')
+    nflip = [-n[0], -n[1], -n[2]]
+    vault.intrados.vertex_attribute(key, 'n', nflip)
+
+for key in vault.extrados.vertices():
+    n = vault.extrados.vertex_attribute(key, 'n')
+    nflip = [-n[0], -n[1], -n[2]]
+    vault.extrados.vertex_attribute(key, 'n', nflip)
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
@@ -200,9 +230,9 @@ initialize_loadpath(form)
 # form = form.form_update_with_parallelisation(plot=False)
 # form.initialise_loadpath()
 # print('back_here')
-form.to_json(form_lp)
-print('Computed and saved LP file:', form_lp)
-plot_form(form, show_q=True).show()
+# form.to_json(form_lp)
+# print('Computed and saved LP file:', form_lp)
+# plot_form(form, show_q=True).show()
 # view_mesh(form).show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
@@ -226,9 +256,6 @@ optimiser.settings['max_iter'] = max_iter
 # --------------------- 5. Set up and run analysis ---------------------
 
 analysis = Analysis.from_elements(vault, form, optimiser)
-# analysis.apply_selfweight()
-# analysis.apply_envelope()
-# analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
@@ -240,10 +267,33 @@ if objective == 't':
 
 plot_form(form, show_q=False, cracks=True).show()
 
-file_solution = os.path.join(folder, file_name + '_less_discr_form_' + objective + '.json')
-form.to_json(file_solution)
+# file_solution = os.path.join(folder, file_name + '_solution_form_' + objective + '.json')
+# form.to_json(file_solution)
 
-file_shape = os.path.join(folder, file_name + '_less_discr_shape_' + objective + '.json')
-vault.to_json(file_shape)
+# file_shape = os.path.join(folder, file_name + '_solution_shape_' + objective + '.json')
+# vault.to_json(file_shape)
 
-view_solution(form, vault).show()
+weight = 0
+for key in form.vertices():
+    weight += form.vertex_attribute(key, 'pz')
+
+thrust = form.thrust()
+
+T_over_W = abs(thrust/weight)
+print('Ratio Thrust/Weight:', T_over_W)
+
+# for key in form.vertices():
+#     ub = form.vertex_attribute(key, 'ub')
+#     lb = form.vertex_attribute(key, 'lb')
+#     print(key, ub, lb)
+
+plotter = MeshPlotter(form, figsize=(5, 5))
+plotter.draw_edges()
+plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'ub'), 2) for key in form.vertices()})
+plotter.draw_faces()
+plotter.show()
+
+view = Viewer(form)
+view.settings['size.edge.max_thickness'] = 15.0
+# view.view_mesh(vault.fill, show_edges=False)
+view.show_solution()
