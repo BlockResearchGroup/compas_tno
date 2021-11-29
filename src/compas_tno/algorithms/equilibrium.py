@@ -188,27 +188,41 @@ def zq_from_qid(qid, args):  # deprecated remove on next clean up
     return z, q
 
 
-def q_from_qid(qid, args):  # deprecated remove on next clean up
-    """ Calculate q's from all qid's.
+def q_from_qid(q, ind, Edinv, Ei, ph):  # deprecated remove on next clean up
+    r""" Calculate q's from all qid's.
 
     Parameters
     ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
+    q : array [mx1]
+        Force density vector.
+    ind : list [k]
+        List with the indices of the k independent edges.
+    Edinv : array [nix(m - k)]
+        Inverse of equilibrium matrix sliced to the dependent edges.
+    Ei : array [nix(m - k)]
+        Equilibrium matrix sliced to the independent edges.
+    ph : array [nix1]
+        Stack of the horizontal loads applied to the free nodes [pxi, pyi].
 
     Returns
     -------
     q : array
         Force densities on all edges.
 
+    Notes
+    -------
+    Solver of thhe following equation:
+    $\mathbf{q}_\mathrm{id} = - mathbf{Ed}_\mathrm{id}$(\mathbf{E}_\mathrm{i} * \mathbf{q}_\mathrm{i} - \mathbf{p}_\mathrm{h})
+
+    Reference
+    -------
+    Block and Lachauer, 2014...
+
     """
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p = args[:14]
-    q[ind] = array(qid).reshape(-1, 1)
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
+    m = len(q)
+    dep = list(set(range(m)) - set(ind))
+    q[dep] = Edinv.dot(- ph + Ei.dot(q[ind]))
 
     return q
 

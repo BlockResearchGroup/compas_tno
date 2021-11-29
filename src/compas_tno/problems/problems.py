@@ -239,36 +239,42 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
     return args
 
 
-def initialise_form(form, indset=None, printout=False, find_inds=True):
-    """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned
+def initialise_form(form, printout=False):
+    """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
     ----------
     form : obj
         The FormDiagram.
+    printout : bool
+        Whether or not printouts with the main resuslts should appear in the screen.
 
     Returns
     -------
-    form : obj
-        The FormDiagram.
+    M : obj
+        The object with all the matrices essential to the analysis.
+
+    Note
+    -------
+    The FormDiagram is updated in place. Check ``initialise_problem_general`` for more info.
 
     """
 
     i_uv = form.index_uv()
 
-    args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
-    # form.attributes['args'] = args
-    q, ind, dep = args[:3]
+    M = initialise_problem_general(form, printout=printout)
+    adapt_problem_to_fixed_diagram(M, form, printout=printout)
+    ind = M.ind
 
     form.update_default_edge_attributes({'is_ind': False})
     gkeys = []
     for i in ind:
         u, v = i_uv[i]
         gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-        form.edge_attribute((u, v), 'is_ind', value=True)
+        form.edge_attribute((u, v), 'is_ind', value=True)
     form.attributes['indset'] = gkeys
 
-    return form
+    return M
 
 
 def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, tol=0.001):
@@ -584,7 +590,8 @@ def initialise_problem_general(form, printout=None, tol=0.001):
     problem.P = hstack([px, py, pz])
     problem.free = free
     problem.fixed = fixed
-    problem.phfree = hstack([px[free], py[free]])
+    problem.phfree = hstack([px[free], py[free]])  # deprecated?
+    problem.ph = vstack([px[free], py[free]])
     problem.lb = lb
     problem.ub = ub
     problem.lb0 = lb

@@ -4,8 +4,7 @@ from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
-from compas_tno.viewers.thrust import view_thrust
-from compas_tno.viewers.thrust import view_solution
+from compas_tno.viewers import Viewer
 
 # ----------------------------------------------------------------------------
 # ---------- EXAMPLE OF MIN THRUST FOR CROSSVAULT WITH CROSS FD --------------
@@ -15,7 +14,7 @@ from compas_tno.viewers.thrust import view_solution
 
 thk = 0.50
 type_structure = 'crossvault'
-type_formdiagram = 'fan_fd'
+type_formdiagram = 'cross_fd'
 discretisation = 10
 
 # ----------------------- 1. Create CrossVault shape ---------------------------
@@ -44,15 +43,15 @@ data_diagram = {
 }
 
 form = FormDiagram.from_library(data_diagram)
-form.overview_forces()
-print('Form Diagram Created!')
-print(form)
-plot_form(form, show_q=False, fix_width=True).show()
 
 # --------------------- 3. Create Initial point with TNA ---------------------
 
-form = form.form_update_with_parallelisation(plot=False)
-plot_form(form).show()
+from compas_tno.algorithms import form_update_with_parallelisation
+form_update_with_parallelisation(form, plot=True)
+
+view = Viewer(form)
+view.view_thrust()
+view.show()
 
 # --------------------- 4. Create Minimisation Optimiser ---------------------
 
@@ -78,7 +77,9 @@ analysis.set_up_optimiser()
 analysis.run()
 
 plot_form(form, show_q=False, simple=True, cracks=True).show()
-view_thrust(form).show()
+
+view = Viewer(form)
+view.show_solution()
 
 # If you wish to visualise the upper and lower bound together
 # view_solution(form, vault).show()

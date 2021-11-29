@@ -32,14 +32,14 @@ he = None
 
 corner = True
 
-save = True
+save = False
 solutions = {}
 
 objective = ['Ecomp-linear']
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'envelopexy']
 variables = ['q', 'zb']
-features = ['sym']  # ['sym', 'adapted-envelope']
+features = ['fixed']  # ['sym', 'adapted-envelope']
 axis_sym = [[[0.0, 0.0], [10.0, 10.0]]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -68,7 +68,7 @@ for phi in phi_list:
         for obj in objective:  # set the objective
             solutions[phi][sign][obj] = {}
 
-            for thk in [0.50]:  # thickness of the problem # [0.50, 0.45, 0.40, 0.35, 0.336]
+            for thk in [0.50, 0.45, 0.40, 0.35, 0.336]:  # thickness of the problem # [0.50, 0.45, 0.40, 0.35, 0.336]
 
                 # Create form diagram
 
@@ -136,6 +136,8 @@ for phi in phi_list:
                             dXbi = [sign * math.cos(math.radians(ro)) * math.cos(math.radians(-phi)),
                                     sign * math.cos(math.radians(ro)) * math.cos(math.radians(-phi)),
                                     sign * math.sin(math.radians(-phi))]
+                            # dXbi = [sign * 1, 0, 0
+                            dXbi = [0, 0, sign * -1]
                             print('Norm of vector:', norm_vector(dXbi))
                         else:
                             dXbi = [0, 0, 0]
@@ -154,8 +156,8 @@ for phi in phi_list:
                     dXb = array(vector_supports)
                     print(dXb)
 
-                    # view.view_shape()
-                    # view.show()
+                    view.view_shape()
+                    view.show()
 
                 else:
                     raise NotImplementedError
@@ -229,8 +231,8 @@ for phi in phi_list:
                 address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
                 # plot_superimposed_diagrams(form, form_base).show()
-                # view = Viewer(form)
-                # view.show_solution()
+                view = Viewer(form)
+                view.show_solution()
 
                 print('Optimiser exitflag:', optimiser.exitflag)
 
@@ -242,7 +244,7 @@ for phi in phi_list:
                         form.to_json(address)
                         print('Saved to: ', address)
                         # plot_superimposed_diagrams(form, form_base, save=img_file)#.show()
-                        plot_form(form, show_q=False, cracks=True, save=img_file)  #.show()
+                        plot_form(form, show_q=False, cracks=True, save=img_file)  # .show()
                         # starting_point = 'current'
                 else:
                     # plot_superimposed_diagrams(form, form_base).show()

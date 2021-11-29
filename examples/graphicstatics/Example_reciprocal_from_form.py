@@ -1,8 +1,7 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.diagrams import ForceDiagram
 from compas_tno.plotters import plot_form
-from compas_tno.viewers.thrust import view_thrust
-from compas_tno.viewers import view_shapes
+from compas_plotters import MeshPlotter
 import compas_tno
 
 from compas_tna.equilibrium import horizontal
@@ -30,7 +29,12 @@ form = FormDiagram.from_json(file_address)
 # plot_form(form, show_q=True, cracks=True).show()
 print(form)
 form.overview_forces()
-plot_form(form, show_q=False).show()
+
+plotter = MeshPlotter(form, figsize=(8, 8))
+plotter.draw_edges()
+plotter.draw_vertices(keys=form.fixed())
+plotter.show()
+# plot_form(form, show_q=False).show()
 
 
 corners = list(form.vertices_where({'is_fixed': True}))
@@ -48,26 +52,29 @@ print('num. edges:', form.number_of_edges())
 print('num. faces:', form.number_of_faces())
 print('num. vertices:', form.number_of_vertices())
 
-# from compas_plotters import MeshPlotter
-# plotter = MeshPlotter(form)
-# # plotter.draw_edges(text={edge: round(form.edge_length(*edge)*form.edge_attribute(edge, 'q'), 1) for edge in form.edges()})
-# plotter.draw_edges()
-# plotter.draw_vertices()
-# # plotter.draw_faces()
-# plotter.draw_faces(text={key: key for key in form.faces()})
-# plotter.show()
+from compas_plotters import MeshPlotter
+plotter = MeshPlotter(form)
+# plotter.draw_edges(text={edge: round(form.edge_length(*edge)*form.edge_attribute(edge, 'q'), 1) for edge in form.edges()})
+plotter.draw_edges()
+plotter.draw_vertices()
+# plotter.draw_faces()
+plotter.draw_faces(text={key: key for key in form.faces()})
+plotter.show()
 
-from compas_tno.algorithms import force_update_from_form
+# from compas_tno.algorithms import force_update_from_form
+from compas_tno.algorithms import reciprocal_from_form
 
-from compas_tno.diagrams import ForceDiagram
-force = ForceDiagram.from_formdiagram(form)
+# from compas_tno.diagrams import ForceDiagram
+# force = ForceDiagram.from_formdiagram(form)
 
 # print('Plot of Dual')
 # force.plot()
 
 # force_update_from_form(force, form)
 
-form, force = form.reciprocal_from_form(plot=False)
+# form, force = form.reciprocal_from_form(plot=False)
+force = reciprocal_from_form(form)
+
 form.overview_forces()
 
 print('Plot of Dual')
@@ -127,7 +134,7 @@ plotter.show()
 
 # plot_form(form).show()
 # form.plot()
-view_thrust(form).show()
+# view_thrust(form).show()
 # view_shapes(form).show()
 
 # file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ objective + '_force.json')

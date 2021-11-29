@@ -19,25 +19,23 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = [20, 16]
-type_formdiagram = 'radial_fd'
-type_structure = 'dome'
-thk = 0.50
-discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
+discretisation = 20
+type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
+type_structure = 'arch'
+thk = 1.0
 
 save = True
 solutions = {}
 
 objective = ['Ecomp-linear']
 Ecomp_method = 'complete'
-solver = 'IPOPT'
+solver = 'SLSQP'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb']
 features = ['fixed']
 axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
 # axis_sym = [[5.0, 0.0], [5.0, 10.0]]
-axis_sym = None
 # qmax = 10e+6
 starting_point = 'loadpath'
 
@@ -47,7 +45,7 @@ if objective == ['lambd']:
     variables.append(objective[0])
     lambd = 0.1
 
-Xc = [5.0, 5.0, 0.0]
+Xc = [0.5, 0.0, 0.0]
 
 for c in [0.1]:  # set the distance that the nodes can move
     solutions[c] = {}
@@ -55,15 +53,16 @@ for c in [0.1]:  # set the distance that the nodes can move
     for obj in objective:  # set the objective
         solutions[c][obj] = {}
 
-        for thk in [0.50]:  # thickness of the problem
+        for thk in [thk]:  # thickness of the problem
 
             # Create form diagram
 
             data_diagram = {
                 'type': type_formdiagram,
-                'center': [5.0, 5.0],
-                'radius': span/2,
-                'discretisation': discretisation
+                'H': span/2,
+                'L': span,
+                'x0': 0,
+                'total_nodes': discretisation,
             }
 
             form = FormDiagram.from_library(data_diagram)
@@ -73,10 +72,12 @@ for c in [0.1]:  # set the distance that the nodes can move
             data_shape = {
                 'type': type_structure,
                 'thk': thk,
-                'discretisation': discretisation_shape,
-                'center': [5.0, 5.0],
-                'radius': span/2,
-                't': 1.0,
+                'H': span/2,
+                'L': span,
+                'x0': 0,
+                'discretisation': discretisation*100,
+                'b': 1.0,
+                't': 0.5,
             }
 
             vault = Shape.from_library(data_shape)
@@ -111,34 +112,10 @@ for c in [0.1]:  # set the distance that the nodes can move
                 for key in form.vertices_where({'is_fixed': True}):
                     x, y, z = form.vertex_coordinates(key)
 
-                    # dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])
-
-                    if abs(Xc[0] - x) > 10e-3:
-                        dXbi = normalize_vector([sign*(Xc[0] - x), 0, 0])  # vault opening up
+                    if x < Xc[0]:
+                        dXbi = [0, 0, -1]  # normalize_vector([-1, 0, -1])  # left support of the arch
                     else:
-                        dXbi = [0, 0, 0]
-
-                    # dXbi = normalize_vector([1, 0, 0])  # rigid body
-
-                    # if x > Xc[0]:         # If else to move 2 supports left
-                    #     dXbi = normalize_vector([1, 0, 0])
-                    # else:
-                    #     dXbi = [0, 0, 0]
-
-                    # if x > Xc[0] and y > Xc[1]:             # 1 corner only
-                    #     dXbi = normalize_vector([1, 1, 0])
-                    # else:
-                    #     dXbi = [0, 0, 0]
-
-                    # if x > Xc[0] and y > Xc[1]:             # vertical settlement
-                    #     dXbi = normalize_vector([0, 0, -1])
-                    # else:
-                    #     dXbi = [0, 0, 0]
-
-                    # if x - Xc[0] > 2.5:
-                    #     dXbi = normalize_vector([0, 0, -1])  # vertical settlement right end
-                    # else:
-                    #     dXbi = [0, 0, 0]
+                        dXbi = [0, 0, 0]  # right support of the arch
 
                     vector_supports.append(dXbi)
                     lines.append({
@@ -216,7 +193,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            plot_superimposed_diagrams(form, form_base).show()
+            # plot_superimposed_diagrams(form, form_base).show()
             # view = Viewer(form)
             # view.show_solution()
 
@@ -228,17 +205,19 @@ for c in [0.1]:  # set the distance that the nodes can move
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)
-                    plot_superimposed_diagrams(form, form_base, save=img_file).show()
-                    plot_form(form, show_q=False, cracks=True).show()
+                    # plot_superimposed_diagrams(form, form_base, save=img_file).show()
+                    # plot_form(form, show_q=False, cracks=True).show()
             else:
                 plot_superimposed_diagrams(form, form_base).show()
-                view = Viewer(form)
-                view.show_solution()
+                # view = Viewer(form)
+                # view.show_solution()
                 break
 
-    view = Viewer(form)
-    view.show_solution()
+    # view = Viewer(form)
+    # view.show_solution()
 
+from compas_tno.plotters import plot_form_xz
+plot_form_xz(form, vault, fix_width=True, max_width=6.0, hide_negative=True, plot_reactions='simple', radius=0.1).show()
 
 print(solutions)
 print('\n')

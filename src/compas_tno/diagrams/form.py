@@ -93,7 +93,7 @@ class FormDiagram(FormDiagram):
         partial_bracing_modules = data.get('partial_bracing_modules')
 
         if form_type == 'arch':
-            form = cls().create_arch_form_diagram(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
+            form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'pointed_arch':
             form = cls().create_pointed_arch(L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
         if form_type == 'cross_fd':

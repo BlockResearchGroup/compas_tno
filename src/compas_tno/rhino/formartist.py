@@ -12,6 +12,7 @@ from compas.utilities import color_to_colordict
 from compas.geometry import add_vectors
 from compas.geometry import scale_vector
 from compas.geometry import length_vector
+from compas.geometry import norm_vector
 
 colordict = partial(color_to_colordict, colorformat='rgb', normalize=False)
 
@@ -51,8 +52,10 @@ class FormArtist(DiagramArtist):
         self.color_vertex_intrados = (0, 0, 255)
         self.color_faces = (0, 0, 0)
         self.scale_forces = 0.001
+        self.pipes_scale = 0.01
         self.tol_forces = 0.001
         self.radius_sphere = 0.15
+        self.layer = 'FormDiagram'
 
     # def draw_edges(self, edges=None, color=None, displacement=None, layer='Thrust'):
     #     """Draw a selection of edges.
@@ -251,7 +254,7 @@ class FormArtist(DiagramArtist):
 
         return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
 
-    def draw_reactions(self, color=(255, 0, 0), scale=0.1, layer=None, tol=1e-3):
+    def draw_reactions(self, color=(255, 0, 0), scale=0.1, draw_as_pipes=False, layer=None, tol=1e-3):
         """Draw the reaction forces.
 
         Parameters
@@ -278,6 +281,7 @@ class FormArtist(DiagramArtist):
         layer = layer or self.layer
         vertex_xyz = self.vertex_xyz
         lines = []
+        cylinders = []
         for key in self.diagram.vertices_where({'is_fixed': True}):
             a = vertex_xyz[key]
             r = self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz'])
@@ -289,10 +293,23 @@ class FormArtist(DiagramArtist):
 
             b = add_vectors(a, r)
             lines.append({'start': a, 'end': b, 'color': color, 'arrow': "start"})
+            if draw_as_pipes:
+                force = self.pipes_scale * norm_vector(self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz']))
+                print(force)
+                cylinders.append({
+                    'start': a,
+                    'end': b,
+                    'radius': sqrt(abs(force)/pi),
+                    'color': color
+                })
 
-        return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
+        if draw_as_pipes:
+            print('ha')
+            return compas_rhino.draw_cylinders(cylinders, self.layer, clear=False, redraw=False)
+        else:
+            return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
 
-    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255), scale=0.01, tol=1e-3, layer=None):
+    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255), tol=1e-3, layer=None):
         """Draw the forces in the internal edges as pipes with color and thickness matching the force value.
 
         Parameters
@@ -309,6 +326,7 @@ class FormArtist(DiagramArtist):
         """
         layer = layer or self.layer
         vertex_xyz = self.vertex_xyz
+        scale = self.pipes_scale
         cylinders = []
         for edge in self.diagram.edges_where({'_is_edge': True}):
             u, v = edge

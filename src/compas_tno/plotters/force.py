@@ -11,6 +11,7 @@ __email__ = 'mricardo@ethz.ch'
 __all__ = [
     'plot_force',
     'plot_dual',
+    'plot_force_independents'
 ]
 
 
@@ -108,5 +109,77 @@ def plot_dual(form):
 
     plotter = MeshPlotter(dual, figsize=(10, 6))
     plotter.draw_lines(lines)
+
+    return plotter
+
+
+def plot_force_independents(force, form, radius=0.05, width=10, number_ind=True, save=False, highlights=None):
+    """ Extended plotting of a ForceDiagram focusing on showing independent edges
+
+    Parameters
+    ----------
+    form : obj
+        FormDiagram to plot.
+    radius : float
+        Radius of vertex markers.
+    fix_width : bool
+        Fix edge widths as constant.
+    width : bool
+        Width of the lines in the plot.
+    max_width : float
+        Maximum edge width.
+    number_ind : bool
+        Show or not the numbering on the independent edges.
+    show_symmetry : bool
+        Show or not the numbering on the symmetrical independent edges.
+    save : str
+        Path to save the figure, if desired.
+
+    Returns
+    ----------
+    obj
+        Plotter object.
+
+    """
+
+    lines = []
+    i = 0
+    force_edges = force.ordered_edges(form)
+
+    for u, v in force_edges:
+        colour = ['66', '66', '66']
+        colour = ['00', '00', '00']
+        text = ''
+        width_plot = width
+
+        print(force.dual)
+
+        if force.is_dual_edge_ind((u, v)):
+            colour = ['F9', '57', '93']
+            colour = ['00', '00', 'FF']
+            width_plot = width_plot * 3
+            if highlights:
+                if i in highlights:
+                    colour = ['FF', '00', '00']
+            if number_ind:
+                text = str(i)
+            i = i + 1
+
+        lines.append({
+            'start': force.vertex_coordinates(u),
+            'end':   force.vertex_coordinates(v),
+            'color': ''.join(colour),
+            'width': width_plot,
+            'text': text,
+        })
+
+    rad_colors = {}
+
+    plotter = MeshPlotter(force, figsize=(8, 8))
+    if radius:
+        plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+    plotter.draw_lines(lines)
+    if save:
+        plotter.save(save)
 
     return plotter

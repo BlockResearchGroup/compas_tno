@@ -1,5 +1,4 @@
-from compas_tna.diagrams import ForceDiagram
-from compas_tno.plotters import plot_form
+from compas_tno.diagrams import ForceDiagram
 
 from compas_tna.equilibrium import horizontal_nodal
 
@@ -7,8 +6,6 @@ from compas_tno.algorithms.equilibrium import z_update
 
 from compas.numerical import connectivity_matrix
 from compas.numerical import spsolve_with_known
-
-from compas_plotters import MeshPlotter
 
 from numpy import array
 from numpy import float64
@@ -72,6 +69,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
     # plot of diagrams @ initial state
     if plot:
         print('Plot of Primal')
+        from compas_plotters import MeshPlotter
         plotter = MeshPlotter(form, figsize=(10, 10))
         plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
         plotter.draw_vertices(radius=0.05)
@@ -84,7 +82,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
     # horizontal equilibrium
     horizontal_nodal(form, force, alpha=alpha, kmax=kmax)
 
-    # change compression to engative (TNO convention)
+    # change compression to negative (TNO convention)
     q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     for index, edge in enumerate(form.edges_where({'_is_edge': True})):
         form.edge_attribute(edge, 'q', -1 * q[index])
@@ -97,7 +95,12 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
         print('Plot of Reciprocal')
         force.plot()
         print('Plot of Form Final')
-        plot_form(form, thick='q').show()
+        from compas_plotters import MeshPlotter
+        plotter = MeshPlotter(form, figsize=(8, 8))
+        plotter.draw_edges()
+        plotter.draw_vertices(keys=form.fixed())
+        plotter.show()
+
 
     return
 
@@ -138,33 +141,22 @@ def reciprocal_from_form(form, plot=False):
             leaves = True
             break
     if leaves is False:
+        print('update boundary')
         form.update_boundaries()
 
     force = ForceDiagram.from_formdiagram(form)
 
     if plot:
         print('Plot of Primal')
-        plotter = MeshPlotter(form, figsize=(10, 10))
+        from compas_plotters import MeshPlotter
+        plotter = MeshPlotter(form, figsize=(8, 8))
         plotter.draw_edges()
-        plotter.draw_vertices(radius=0.05)
-        plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_fixed': True})], radius=0.10, facecolor='000000')
+        plotter.draw_vertices(keys=form.fixed())
         plotter.show()
         print('Plot of Dual')
         force.plot()
 
     force_update_from_form(force, form)
-
-    # for u, v in form.edges():  # TODO: check if this works with new convention (compression negative)
-    #     if form.edge_attribute((u, v), '_is_external') is False:
-    #         qi = form.edge_attribute((u, v), 'q')
-    #         a = form.vertex_coordinates(u)
-    #         b = form.vertex_coordinates(v)
-    #         lh = distance_point_point_xy(a, b)
-    #         form.edge_attribute((u, v), 'fmin', value=qi*lh)
-    #         form.edge_attribute((u, v), 'fmax', value=qi*lh)
-    #         form.edge_attribute((u, v), 'lmin', value=lh)
-    #         form.edge_attribute((u, v), 'lmax', value=lh)
-    # horizontal_nodal(form, force, alpha=alpha, kmax=kmax)
 
     if plot:
         print('Plot of Reciprocal')

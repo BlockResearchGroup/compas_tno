@@ -392,5 +392,7 @@ E_Wmax[-67.5] = [0.131981058905596, 0.136279075950859, 0.140913190361772, 0.1476
 for angle in [0, 22.5, 45, 67.5, 90.0]:
     diagram_of_energy([thk, thk], [E_Wmin[angle], E_Wmax[angle]], xy_limits=xy_limits, show_legend=False).show()
 
+print('Next one')
+
 for angle in [-22.5, -45, -67.5]:
     diagram_of_energy([thk, thk], [E_Wmin[angle], E_Wmax[angle]], xy_limits=xy_limits, show_legend=False).show()

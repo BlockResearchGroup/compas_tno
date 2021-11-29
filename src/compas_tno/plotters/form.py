@@ -122,6 +122,10 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
             ub = form.vertex_attribute(key, 'ub')
             lb = form.vertex_attribute(key, 'lb')
             z = form.vertex_attribute(key, 'z')
+            if ub is None:
+                break
+            if lb is None:
+                break
             if abs(z - ub) < tol_cracks:
                 rad_colors[key] = '#008000'  # Green extrados
             elif abs(z - lb) < tol_cracks:
@@ -134,7 +138,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
     for key in form.vertices_where({'rol_y': True}):
         rad_colors[key] = '#ffb733'
 
-    plotter = MeshPlotter(form, figsize=(10, 10))
+    plotter = MeshPlotter(form, figsize=(8, 8))
     if radius:
         plotter.draw_vertices(keys=rad_colors.keys(), facecolor=rad_colors, radius=radius)
         if heights:
@@ -494,12 +498,13 @@ def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, 
             x, _, z = form.vertex_coordinates(key)
             if z > 0.0:
                 rz = abs(form.vertex_attribute(key, '_rz'))
-                rx = form.vertex_attribute(key, '_rx')
+                rx = -form.vertex_attribute(key, '_rx')
                 reac_line = [x, z, x + z * rx / rz, 0.0]
                 reac_lines.append(reac_line)
 
     for u, v in form.edges():
         qi = form.edge_attribute((u, v), 'q')
+        fi = form.edge_attribute((u, v), 'f')
         width = max_width if fix_width else (qi / qmax) * max_width
         if not hide_negative or (form.vertex_coordinates(u)[2] > -10e-4 and form.vertex_coordinates(v)[2] > -10e-4):
             lines.append({
@@ -1224,9 +1229,13 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
 
     for u, v in form.edges_where({'_is_edge': True}):
         colour = ['66', '66', '66']
+        colour = ['00', '00', '00']
         text = ''
+        width_plot = width
         if form.edge_attribute((u, v), 'is_ind'):
             colour = ['F9', '57', '93']
+            colour = ['00', '00', 'FF']
+            width_plot = width_plot * 3
             if highlights:
                 if i in highlights:
                     colour = ['FF', '00', '00']
@@ -1240,7 +1249,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
             'start': form.vertex_coordinates(u),
             'end':   form.vertex_coordinates(v),
             'color': ''.join(colour),
-            'width': width,
+            'width': width_plot,
             'text': text,
         })
 
@@ -1252,12 +1261,12 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
     for key in form.vertices_where({'rol_y': True}):
         rad_colors[key] = '#ffb733'
 
-    plotter = MeshPlotter(form, figsize=(10, 10))
+    plotter = MeshPlotter(form, figsize=(8, 8))
     if radius:
         if show_symmetry:
             plotter.draw_vertices(facecolor=rad_colors, radius=radius, text={key: form.vertex_attribute(key, 'sym_key') for key in form.vertices_where({'is_fixed': True})})
-        else:
-            plotter.draw_vertices(facecolor=rad_colors, radius=radius)
+
+    plotter.draw_vertices(keys=form.fixed(), facecolor='FF0000')
 
     # plotter.draw_vertices(keys=[key in form.vertices_where({'is_fixed': True})], radius=10*radius)
 
