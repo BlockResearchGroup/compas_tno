@@ -1,5 +1,5 @@
-from compas.datastructures import Mesh
-from compas.utilities import geometric_key
+from compas_tno.shapes import MeshDos
+from compas.datastructures import mesh_weld
 from numpy import ones
 from numpy import zeros
 from numpy import array
@@ -56,7 +56,6 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
     an = tot_angle / (total_nodes - 1)
     zc = radius - H
     xc = L/2
-    gkey_fix = []
     i = 0
 
     xs = []
@@ -94,16 +93,11 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
         faces.append([6*i, 6*i + 1, 6*i + 4, 6*i + 3])
         faces.append([6*i + 1, 6*i + 2, 6*i + 5, 6*i + 4])
 
-        if i == 0:
-            gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))
-        elif i == total_nodes - 2:
-            gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
-
         i = i + 1
 
-    intrados = Mesh.from_vertices_and_faces(array([xs, ys, zis]).transpose(), faces)
-    extrados = Mesh.from_vertices_and_faces(array([xs, ys, zes]).transpose(), faces)
-    middle = Mesh.from_vertices_and_faces(array([xs, ys, zts]).transpose(), faces)
+    intrados = mesh_weld(MeshDos.from_vertices_and_faces(array([xs, ys, zis]).transpose(), faces))
+    extrados = mesh_weld(MeshDos.from_vertices_and_faces(array([xs, ys, zes]).transpose(), faces))
+    middle = mesh_weld(MeshDos.from_vertices_and_faces(array([xs, ys, zts]).transpose(), faces))
 
     return intrados, extrados, middle
 
