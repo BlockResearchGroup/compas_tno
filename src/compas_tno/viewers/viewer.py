@@ -152,11 +152,13 @@ class Viewer(object):
         if not shape:
             shape = Shape.from_formdiagram_and_attributes(self.thrust)
 
-        vertices_intra, faces_intra = shape.intrados.to_vertices_and_faces()
-        mesh_intra = Mesh.from_vertices_and_faces(vertices_intra, faces_intra)
+        # vertices_intra, faces_intra = shape.intrados.to_vertices_and_faces()
+        # mesh_intra = Mesh.from_vertices_and_faces(vertices_intra, faces_intra)
+        mesh_intra = shape.intrados
 
-        vertices_extra, faces_extra = shape.extrados.to_vertices_and_faces()
-        mesh_extra = Mesh.from_vertices_and_faces(vertices_extra, faces_extra)
+        # vertices_extra, faces_extra = shape.extrados.to_vertices_and_faces()
+        # mesh_extra = Mesh.from_vertices_and_faces(vertices_extra, faces_extra)
+        mesh_extra = shape.extrados
 
         self.app.add(mesh_intra, name="Intrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.intrados']))
         self.app.add(mesh_extra, name="Extrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.extrados']))
