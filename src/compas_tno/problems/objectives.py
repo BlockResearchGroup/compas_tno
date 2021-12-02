@@ -200,12 +200,12 @@ def f_max_section(variables, M):
         check = check + nb
     if 'tub' in M.variables:
         tub = variables[check: check + n]
-        f += sum(tub)
+        f += sum(tub**2)
         M.tub = tub
         check = check + n
     if 'tlb' in M.variables:
         tlb = variables[check: check + n]
-        f += sum(tlb)
+        f += sum(tlb**2)
         M.tlb = tlb
         check = check + n
 

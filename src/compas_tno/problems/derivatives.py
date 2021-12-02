@@ -598,15 +598,21 @@ def gradient_max_section(variables, M):
     nb = len(M.fixed)
     n = M.X.shape[0]
 
+    check = k
+
     gradient = zeros((k, 1))
 
     if 'xyb' in M.variables:
+        check = check + 2*nb
         gradient = vstack([gradient, zeros((2*nb, 1))])
     if 'zb' in M.variables:
+        check = check + nb
         gradient = vstack([gradient, zeros((nb, 1))])
     if 'tub' in M.variables:
-        gradient = vstack([gradient, ones((n, 1))])
+        tub = variables[check: check + n].reshape(-1, 1)
+        gradient = vstack([gradient, 2 * tub])
     if 'tlb' in M.variables:
-        gradient = vstack([gradient, ones((n, 1))])
+        tlb = variables[check: check + n].reshape(-1, 1)
+        gradient = vstack([gradient, 2 * tlb])
 
     return gradient

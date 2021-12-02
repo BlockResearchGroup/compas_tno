@@ -27,7 +27,7 @@ type_structure = 'arch'
 thk = 0.1
 discretisation_shape = 10 * discretisation
 
-H = 2
+H = 2.0
 L = 5
 
 save = False
@@ -85,9 +85,9 @@ apply_bounds_on_q(form, qmax=1e-6)
 pz3 = form.vertex_attribute(5, 'pz')
 form.vertex_attribute(5, 'pz', pz3 - 0.5)
 
-view = Viewer(form, vault)
-view.view_shape()
-view.show()
+# view = Viewer(form, vault)
+# view.view_shape()
+# view.show()
 
 # ------------------------------------------------------------
 # ------------------- Proper Implementation ------------------

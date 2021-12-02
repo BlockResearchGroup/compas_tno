@@ -12,7 +12,7 @@ type_structure = 'arch'
 thk = 0.1
 discretisation_shape = discretisation
 
-H = 2
+H = 1.0
 L = 5
 
 save = False

@@ -1,5 +1,6 @@
 from compas.datastructures import Mesh
 from compas.utilities import geometric_key
+from numpy import linspace
 import math
 
 
@@ -112,10 +113,10 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
     return form
 
 
-def linspace(start, stop, n):
-    if n == 1:
-        yield stop
-        return
-    h = (stop - start) / (n - 1)
-    for i in range(n):
-        yield start + h * i
+# def _linspace(start, stop, n):
+#     if n == 1:
+#         yield stop
+#         return
+#     h = (stop - start) / (n - 1)
+#     for i in range(n):
+#         yield start + h * i
