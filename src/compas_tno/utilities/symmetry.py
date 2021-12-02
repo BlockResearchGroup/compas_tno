@@ -151,13 +151,13 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
     if len(list_axis_symmetry) > 1:
         checked_edge = []
         groups_of_edges = []
-        for edge in form.edges():
+        for edge in form.edges_where({'_is_edge': True}):
             if edge in checked_edge:
                 continue
             group = [edge]
             checked_edge.append(edge)
             values = list(form.edge_attribute(edge, 'sym_dict').values())
-            for edge2 in form.edges():
+            for edge2 in form.edges_where({'_is_edge': True}):
                 if edge2 in checked_edge:
                     continue
                 values2 = list(form.edge_attribute(edge2, 'sym_dict').values())

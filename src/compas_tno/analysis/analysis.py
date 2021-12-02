@@ -25,6 +25,7 @@ from compas_tno.utilities import get_shape_lb
 
 from compas_tno.utilities import apply_horizontal_multiplier
 from compas_tno.utilities import apply_envelope_from_shape
+from compas_tno.utilities import apply_bounds_on_q
 
 from numpy import array
 from scipy import interpolate
@@ -144,6 +145,13 @@ class Analysis(Data):
         """Invoke method to apply ub and lb to the nodes based on the shape's intrados and extrados"""
 
         apply_envelope_from_shape(self.form, self.shape)
+
+        return
+
+    def apply_bounds_on_q(self, qmax=0.0, qmin=-10000.0):
+        """Invoke method to apply bounds on the force densities of the pattern (qmax, qmin)"""
+
+        apply_bounds_on_q(self.form, qmax=qmax, qmin=qmin)
 
         return
 

@@ -36,6 +36,8 @@ class Viewer(object):
             'camera.rx': -45,
             'camera.rz': 45,
             'camera.fov': 40,
+            'camera.show.grid': True,
+            'camera.show.axis': True,
 
             'size.vertex': 15.0,
             'size.edge.max_thickness': 15.0,

@@ -121,37 +121,43 @@ for bf in [5.0]:
 
     print(q0[M.ind])
 
-    for j in [2, 6]:  # range(len(M.ind)):
+    for lambd in [0.40]:
 
-        mult = 4.0
+        for i, j in [[2, 6]]:  # range(len(M.ind)):
 
-        M.q[M.ind] = q0[M.ind]
-        M.q[M.ind[j]] = M.q[M.ind[j]]*mult
-        # q[ind[j]] = q[ind[j]] - 1.0
-        print('Modification j=', j)
-        print(M.q[M.ind])
+            mult = 4.0
 
-        update_geometry(form, M)
+            q0 = lambd * q0
 
-        address = '/Users/mricardo/compas_dev/compas_tno/data/form_q={}.json'.format(j)
-        form.to_json(address)
+            M.q[M.ind] = q0[M.ind]
+            M.q[M.ind[i]] = M.q[M.ind[i]]*mult
+            M.q[M.ind[j]] = M.q[M.ind[j]]*mult
+            # q[ind[j]] = q[ind[j]] - 1.0
+            print('Modification j=', j)
+            print(M.q[M.ind])
 
-        force = reciprocal_from_form(form)
+            update_geometry(form, M)
 
-        lines = find_lines(force, d)
+            address = '/Users/mricardo/compas_dev/compas_tno/data/form_q={}_{}-lambda_{}.json'.format(i, j, lambd)
+            form.to_json(address)
 
-        # plot_independents(form, width=1.0, radius=None).show()
-        force_plot = plot_force_independents(force, form, width=1.0, number_ind=number_ind, radius=None)
-        force_plot.draw_lines(lines)
-        force_plot.show()
-        # plot_form(form, show_q=True, thick='q').show()
+            force = reciprocal_from_form(form)
 
-        M.q[M.ind[j]] = M.q[M.ind[j]]/mult
-        # M.q[ind[j]] = M.q[ind[j]] + 1.0
+            lines = find_lines(force, d)
 
-        viewer = Viewer(form)
-        viewer.view_thrust()
-        viewer.show()
+            # plot_independents(form, width=1.0, radius=None).show()
+            force_plot = plot_force_independents(force, form, width=1.0, number_ind=number_ind, radius=None)
+            force_plot.draw_lines(lines)
+            force_plot.show()
+            # plot_form(form, show_q=True, thick='q').show()
+
+            M.q[M.ind[j]] = M.q[M.ind[j]]/mult
+            M.q[M.ind[i]] = M.q[M.ind[i]]/mult
+            # M.q[ind[j]] = M.q[ind[j]] + 1.0
+
+            viewer = Viewer(form)
+            viewer.view_thrust()
+            viewer.show()
 
 
 M.q = q0

@@ -141,10 +141,16 @@ def reciprocal_from_form(form, plot=False):
             leaves = True
             break
     if leaves is False:
-        print('update boundary')
         form.update_boundaries()
 
     force = ForceDiagram.from_formdiagram(form)
+
+    # from compas_plotters import MeshPlotter
+    # plotter = MeshPlotter(form)
+    # plotter.draw_edges()
+    # plotter.draw_vertices(keys=form.fixed(), facecolor='FF0000')
+    # plotter.draw_faces()
+    # plotter.show()
 
     if plot:
         print('Plot of Primal')

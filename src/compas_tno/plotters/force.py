@@ -152,8 +152,6 @@ def plot_force_independents(force, form, radius=0.05, width=10, number_ind=True,
         text = ''
         width_plot = width
 
-        print(force.dual)
-
         if force.is_dual_edge_ind((u, v)):
             colour = ['F9', '57', '93']
             colour = ['00', '00', 'FF']

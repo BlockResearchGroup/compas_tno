@@ -254,7 +254,7 @@ class FormArtist(DiagramArtist):
 
         return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
 
-    def draw_reactions(self, color=(255, 0, 0), scale=0.1, draw_as_pipes=False, layer=None, tol=1e-3):
+    def draw_reactions(self, color=(255, 0, 0), scale=0.01, draw_as_pipes=False, layer=None, tol=1e-3):
         """Draw the reaction forces.
 
         Parameters

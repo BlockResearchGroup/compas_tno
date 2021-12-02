@@ -768,8 +768,9 @@ def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=
         data = form.parameters
         if data['type'] in ['radial_fd', 'radial_spaced_fd', 'spiral_fd']:
             apply_radial_symmetry(form, center=center, correct_loads=correct_loads)
-        elif data['type'] in ['cross_fd', 'fan_fd', 'cross_diagonal', 'cross_with_diagonal', 'ortho']:
+        elif data['type'] in ['cross_fd', 'fan_fd', 'cross_diagonal', 'cross_with_diagonal', 'ortho_fd']:
             list_axis_symmetry = find_sym_axis_in_rect_patterns(data)
+            print('Axis of Symmetry identified:', list_axis_symmetry)
         else:
             print('Symmetry applied to a unknown form diagram type')
             raise NotImplementedError

@@ -493,6 +493,20 @@ def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10,
             form.vertex_attribute(key, 'is_fixed', True)
         form.delete_boundary_edges()
 
+        # Recreate the mesh helps to avoid problems in the future
+
+        vertices, faces = form.to_vertices_and_faces()
+        newmesh = Mesh.from_vertices_and_faces(vertices, faces)
+
+        form = cls.from_mesh(newmesh)
+
+        [bnds] = form.vertices_on_boundaries()
+        for key in bnds:
+            form.vertex_attribute(key, 'is_fixed', True)
+
+        for edge in form.edges_on_boundary():
+            form.edge_attribute(edge, '_is_edge', False)
+
     return form
 
 
@@ -552,6 +566,7 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
     # add edges closing
 
     mesh = Mesh.from_lines(lines, delete_boundary_face=True)
+
     form = cls.from_mesh(mesh)
     gkey_key = form.gkey_key()
 
@@ -564,6 +579,58 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
             form.vertex_attribute(key, 'is_fixed', True)
-        form.delete_boundary_edges()
+
+        for edge in form.edges_on_boundary():
+            form.edge_attribute(edge, '_is_edge', False)
+
+        # from compas_plotters import MeshPlotter
+
+        # plotter = MeshPlotter(form)
+        # plotter.draw_edges()
+        # plotter.draw_vertices()
+        # plotter.draw_faces()
+        # plotter.show()
+
+        for vertex in list(form.vertices_where({'vertex_degree': 2})):
+            nbrs = form.vertex_neighbors(vertex)
+            if all(not form.edge_attribute((vertex, nbr), '_is_edge') for nbr in nbrs):
+                for nbr in nbrs:
+                    face = form.halfedge[vertex][nbr]
+                    if face is not None:
+                        break
+                vertices = form.face_vertices(face)
+                after = nbr
+                before = vertices[vertices.index(after) - 2]
+                form.split_face(face, before, after)
+                form.edge_attribute((before, after), '_is_edge', False)
+                form.delete_vertex(vertex)
+
+        # plotter = MeshPlotter(form)
+        # plotter.draw_edges()
+        # plotter.draw_vertices(keys=form.fixed(), facecolor='FF0000')
+        # plotter.draw_faces()
+        # plotter.show()
+
+        # Recreate the mesh helps to avoid problems in the future
+
+        vertices, faces = form.to_vertices_and_faces()
+        newmesh = Mesh.from_vertices_and_faces(vertices, faces)
+
+        form = cls.from_mesh(newmesh)
+
+        [bnds] = form.vertices_on_boundaries()
+        for key in bnds:
+            form.vertex_attribute(key, 'is_fixed', True)
+
+        for edge in form.edges_on_boundary():
+            form.edge_attribute(edge, '_is_edge', False)
+
+        # plotter = MeshPlotter(form)
+        # plotter.draw_edges()
+        # plotter.draw_vertices(keys=form.fixed(), facecolor='FF0000')
+        # plotter.draw_faces()
+        # plotter.show()
+
+        # form.delete_boundary_edges()
 
     return form

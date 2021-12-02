@@ -50,10 +50,10 @@ for bf in [5.0]:
 
     apply_sag(form, boundary_force=bf)
 
-    # plotter = MeshPlotter(form, figsize=(8, 8))
-    # plotter.draw_edges(width=1.0)
-    # plotter.draw_vertices(keys=form.fixed(), facecolor='000000')
-    # plotter.show()
+    plotter = MeshPlotter(form, figsize=(8, 8))
+    plotter.draw_edges(width=1.0)
+    plotter.draw_vertices(keys=form.fixed(), facecolor='000000')
+    plotter.show()
 
     force = reciprocal_from_form(form)
 
