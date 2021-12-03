@@ -111,7 +111,7 @@
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>None or tuple of <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">compas.datastructures.Mesh</span></code></a> – If the mesh and plane do not intersect,
+<dd class="field-even"><p>None or tuple of <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">compas.datastructures.Mesh</span></code></a> – If the mesh and plane do not intersect,
 or if the intersection is degenerate (point or line),
 the function returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.
 Otherwise, the “positive” and “negative” submeshes are returned.</p>
@@ -284,6 +284,8 @@ Otherwise, the “positive” and “negative” submeshes are returned.</p>
   if (url) {
     $.get(url, res=>{
       var lines = res.match(/[^\r\n]+/g);
+      lines.sort( (a, b) => a.localeCompare(b, undefined, { numeric:true }) );
+      lines.reverse();
       lines.forEach(version => {
         $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
       });

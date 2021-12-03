@@ -939,6 +939,12 @@
           <li><a href="api/generated/compas_tno.diagrams.FormDiagram.halfedge_face.html#compas_tno.diagrams.FormDiagram.halfedge_face">(compas_tno.diagrams.FormDiagram method)</a>
 </li>
         </ul></li>
+        <li><a href="api/generated/compas_tno.diagrams.ForceDiagram.halfedge_loop.html#compas_tno.diagrams.ForceDiagram.halfedge_loop">halfedge_loop() (compas_tno.diagrams.ForceDiagram method)</a>
+
+        <ul>
+          <li><a href="api/generated/compas_tno.diagrams.FormDiagram.halfedge_loop.html#compas_tno.diagrams.FormDiagram.halfedge_loop">(compas_tno.diagrams.FormDiagram method)</a>
+</li>
+        </ul></li>
         <li><a href="api/generated/compas_tno.diagrams.ForceDiagram.halfedge_strip.html#compas_tno.diagrams.ForceDiagram.halfedge_strip">halfedge_strip() (compas_tno.diagrams.ForceDiagram method)</a>
 
         <ul>
@@ -1342,18 +1348,24 @@
           <li><a href="api/generated/compas_tno.diagrams.FormDiagram.smooth_centroid.html#compas_tno.diagrams.FormDiagram.smooth_centroid">(compas_tno.diagrams.FormDiagram method)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td><ul>
         <li><a href="api/generated/compas_tno.diagrams.ForceDiagram.split_edge.html#compas_tno.diagrams.ForceDiagram.split_edge">split_edge() (compas_tno.diagrams.ForceDiagram method)</a>
 
         <ul>
           <li><a href="api/generated/compas_tno.diagrams.FormDiagram.split_edge.html#compas_tno.diagrams.FormDiagram.split_edge">(compas_tno.diagrams.FormDiagram method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td><ul>
         <li><a href="api/generated/compas_tno.diagrams.ForceDiagram.split_face.html#compas_tno.diagrams.ForceDiagram.split_face">split_face() (compas_tno.diagrams.ForceDiagram method)</a>
 
         <ul>
           <li><a href="api/generated/compas_tno.diagrams.FormDiagram.split_face.html#compas_tno.diagrams.FormDiagram.split_face">(compas_tno.diagrams.FormDiagram method)</a>
+</li>
+        </ul></li>
+        <li><a href="api/generated/compas_tno.diagrams.ForceDiagram.split_strip.html#compas_tno.diagrams.ForceDiagram.split_strip">split_strip() (compas_tno.diagrams.ForceDiagram method)</a>
+
+        <ul>
+          <li><a href="api/generated/compas_tno.diagrams.FormDiagram.split_strip.html#compas_tno.diagrams.FormDiagram.split_strip">(compas_tno.diagrams.FormDiagram method)</a>
 </li>
         </ul></li>
         <li><a href="api/generated/compas_tno.shapes.Shape.store_normals.html#compas_tno.shapes.Shape.store_normals">store_normals() (compas_tno.shapes.Shape method)</a>
@@ -1862,6 +1874,8 @@
   if (url) {
     $.get(url, res=>{
       var lines = res.match(/[^\r\n]+/g);
+      lines.sort( (a, b) => a.localeCompare(b, undefined, { numeric:true }) );
+      lines.reverse();
       lines.forEach(version => {
         $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
       });

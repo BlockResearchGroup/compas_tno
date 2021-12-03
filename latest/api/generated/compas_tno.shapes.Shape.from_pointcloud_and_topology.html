@@ -101,7 +101,7 @@
 <h1>Shape.from_pointcloud_and_topology</h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape.from_pointcloud_and_topology">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">from_pointcloud_and_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meshtopology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intrados_pts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrados_pts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">middle_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'t':</span> <span class="pre">0.0,</span> <span class="pre">'type':</span> <span class="pre">'general'}</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">from_pointcloud_and_topology</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meshtopology</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intrados_pts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrados_pts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">middle_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_pts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'t':</span> <span class="pre">0.0,</span> <span class="pre">'type':</span> <span class="pre">'general'}</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Construct a Shape from a pointcloud and a given topology.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -275,6 +275,8 @@ The default value is <code class="docutils literal notranslate"><span class="pre
   if (url) {
     $.get(url, res=>{
       var lines = res.match(/[^\r\n]+/g);
+      lines.sort( (a, b) => a.localeCompare(b, undefined, { numeric:true }) );
+      lines.reverse();
       lines.forEach(version => {
         $("#doc_version_list").append("<a class=\"dropdown-item\" href=\""+ docs_site + version + "\">" + version + "</a>");
       });
