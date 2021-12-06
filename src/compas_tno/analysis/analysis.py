@@ -26,6 +26,7 @@ from compas_tno.utilities import get_shape_lb
 from compas_tno.utilities import apply_horizontal_multiplier
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_bounds_on_q
+from compas_tno.utilities import apply_bounds_reactions
 
 from numpy import array
 from scipy import interpolate
@@ -209,83 +210,10 @@ class Analysis(Data):
 
         return
 
-    def apply_reaction_bounds(self, assume_shape=None):  # TODO: Move this to an appropriate place
+    def apply_reaction_bounds(self, assume_shape=None):
         """Apply limit thk to be respected by the anchor points"""
 
-        form = self.form
-        shape = self.shape
-
-        if assume_shape:
-            data = assume_shape
-        else:
-            data = shape.datashape
-
-        thk = data['thk']
-
-        if data['type'] == 'dome' or data['type'] == 'dome_polar':
-            [x0, y0] = data['center'][:2]
-            for key in form.vertices_where({'is_fixed': True}):
-                x, y, _ = form.vertex_coordinates(key)
-                theta = math.atan2((y - y0), (x - x0))
-                x_ = thk/2*math.cos(theta)
-                y_ = thk/2*math.sin(theta)
-                form.vertex_attribute(key, 'b', [x_, y_])
-
-        b_manual = data.get('b_manual', None)
-        if data['type'] == 'arch':
-            H = data['H']
-            L = data['L']
-            thk = data['thk']
-            radius = H / 2 + (L**2 / (8 * H))
-            zc = radius - H
-            re = radius + thk/2
-            x = math.sqrt(re**2 - zc**2)
-            for key in form.vertices_where({'is_fixed': True}):
-                form.vertex_attribute(key, 'b', [x - L/2, 0.0])
-                if b_manual:
-                    form.vertex_attribute(key, 'b', [b_manual, 0.0])
-                    print('Applied b manual')
-
-        if data['type'] == 'dome_spr':
-            x0 = data['center'][0]
-            y0 = data['center'][1]
-            radius = data['radius']
-            [_, theta_f] = data['theta']
-            r_proj_e = (radius + thk/2) * math.sin(theta_f)
-            r_proj_m = (radius) * math.sin(theta_f)
-            delt = r_proj_e - r_proj_m
-            for key in form.vertices_where({'is_fixed': True}):
-                x, y, _ = form.vertex_coordinates(key)
-                theta = math.atan2((y - y0), (x - x0))
-                x_ = delt*math.cos(theta)
-                y_ = delt*math.sin(theta)
-                form.vertex_attribute(key, 'b', [x_, y_])
-
-        if data['type'] == 'pavillionvault':
-            x0, x1 = data['xy_span'][0]
-            y0, y1 = data['xy_span'][1]
-            for key in form.vertices_where({'is_fixed': True}):
-                x, y, _ = form.vertex_coordinates(key)
-                if x == x0:
-                    form.vertex_attribute(key, 'b', [-thk/2, 0])
-                elif x == x1:
-                    form.vertex_attribute(key, 'b', [+thk/2, 0])
-                if y == y0:
-                    if form.vertex_attribute(key, 'b'):
-                        b = form.vertex_attribute(key, 'b')
-                        b[1] = -thk/2
-                        form.vertex_attribute(key, 'b', b)
-                    else:
-                        form.vertex_attribute(key, 'b', [0, -thk/2])
-                elif y == y1:
-                    if form.vertex_attribute(key, 'b'):
-                        b = form.vertex_attribute(key, 'b')
-                        b[1] = +thk/2
-                        form.vertex_attribute(key, 'b', b)
-                    else:
-                        form.vertex_attribute(key, 'b', [0, +thk/2])
-
-        self.form = form  # With correct 'b'
+        apply_bounds_reactions(self.form, self.shape, assume_shape)
 
         return
 

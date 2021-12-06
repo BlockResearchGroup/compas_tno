@@ -26,6 +26,7 @@ __all__ = [
     'modify_shapedata_with_spr_angle',
     'apply_envelope_from_shape_proxy',
     'apply_bounds_tub_tlb',
+    'apply_bounds_reactions'
 ]
 
 
@@ -186,7 +187,97 @@ def apply_bounds_on_q(form, qmin=-1e+4, qmax=1e-8):  # Convention compression ne
     return
 
 
-def apply_bounds_tub_tlb(form, tubmax=0.5, tlbmax=0.5, tub_reacmax=None):
+def apply_bounds_reactions(form, shape, assume_shape=None):
+    """ Apply bounds on the magnitude of the allowed increase in thickness of the upper-bound (tub), lower-bound (tlb), and of the reaction vector (tub_reacmax).
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        The input FormDiagram
+    shape : ::Shape::
+        The shape of masonry to constraint the form diagram to.
+    assume_shape : dict, optional
+        Whether or not consider the settings of a different shape on the process.
+
+    Returns
+    ----------
+    None
+        The formdiagram is updated in place in the attributes.
+    """
+
+    if assume_shape:
+        data = assume_shape
+    else:
+        data = shape.datashape
+
+    thk = data['thk']
+
+    if data['type'] == 'dome' or data['type'] == 'dome_polar':
+        [x0, y0] = data['center'][:2]
+        for key in form.vertices_where({'is_fixed': True}):
+            x, y, _ = form.vertex_coordinates(key)
+            theta = math.atan2((y - y0), (x - x0))
+            x_ = thk/2*math.cos(theta)
+            y_ = thk/2*math.sin(theta)
+            form.vertex_attribute(key, 'b', [x_, y_])
+
+    b_manual = data.get('b_manual', None)
+    if data['type'] == 'arch':
+        H = data['H']
+        L = data['L']
+        thk = data['thk']
+        radius = H / 2 + (L**2 / (8 * H))
+        zc = radius - H
+        re = radius + thk/2
+        x = math.sqrt(re**2 - zc**2)
+        for key in form.vertices_where({'is_fixed': True}):
+            form.vertex_attribute(key, 'b', [x - L/2, 0.0])
+            if b_manual:
+                form.vertex_attribute(key, 'b', [b_manual, 0.0])
+                print('Applied b manual')
+
+    if data['type'] == 'dome_spr':
+        x0 = data['center'][0]
+        y0 = data['center'][1]
+        radius = data['radius']
+        [_, theta_f] = data['theta']
+        r_proj_e = (radius + thk/2) * math.sin(theta_f)
+        r_proj_m = (radius) * math.sin(theta_f)
+        delt = r_proj_e - r_proj_m
+        for key in form.vertices_where({'is_fixed': True}):
+            x, y, _ = form.vertex_coordinates(key)
+            theta = math.atan2((y - y0), (x - x0))
+            x_ = delt*math.cos(theta)
+            y_ = delt*math.sin(theta)
+            form.vertex_attribute(key, 'b', [x_, y_])
+
+    if data['type'] == 'pavillionvault':
+        x0, x1 = data['xy_span'][0]
+        y0, y1 = data['xy_span'][1]
+        for key in form.vertices_where({'is_fixed': True}):
+            x, y, _ = form.vertex_coordinates(key)
+            if x == x0:
+                form.vertex_attribute(key, 'b', [-thk/2, 0])
+            elif x == x1:
+                form.vertex_attribute(key, 'b', [+thk/2, 0])
+            if y == y0:
+                if form.vertex_attribute(key, 'b'):
+                    b = form.vertex_attribute(key, 'b')
+                    b[1] = -thk/2
+                    form.vertex_attribute(key, 'b', b)
+                else:
+                    form.vertex_attribute(key, 'b', [0, -thk/2])
+            elif y == y1:
+                if form.vertex_attribute(key, 'b'):
+                    b = form.vertex_attribute(key, 'b')
+                    b[1] = +thk/2
+                    form.vertex_attribute(key, 'b', b)
+                else:
+                    form.vertex_attribute(key, 'b', [0, +thk/2])
+
+    return
+
+def apply_bounds_tub_tlb(form, tubmax=0.5, tlbmax=0.5):
     """ Apply bounds on the magnitude of the allowed increase in thickness of the upper-bound (tub), lower-bound (tlb), and of the reaction vector (tub_reacmax).
 
     Parameters
@@ -197,8 +288,6 @@ def apply_bounds_tub_tlb(form, tubmax=0.5, tlbmax=0.5, tub_reacmax=None):
         The maximum increase in thickness of the extrados. The default value is ``0.5``.
     tlbmax : float, optional
         The maximum increase in thickness of the intrados. The default value is ``0.5``.
-    tub_reacmax : float, optional
-        The maximum increase in the reaction direction magnitude. The default value is ``None``.
 
     Returns
     ----------
@@ -209,10 +298,6 @@ def apply_bounds_tub_tlb(form, tubmax=0.5, tlbmax=0.5, tub_reacmax=None):
     for vertex in form.vertices():
         form.vertex_attribute(vertex, 'tubmax', tubmax)
         form.vertex_attribute(vertex, 'tlbmax', tlbmax)
-
-    if tub_reacmax:
-        for vertex in form.vertices():
-            form.vertex_attribute(vertex, 'tub_reacmax', tub_reacmax)
 
     return
 
