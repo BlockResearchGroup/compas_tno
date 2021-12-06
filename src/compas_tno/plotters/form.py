@@ -361,7 +361,7 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
     return plotter
 
 
-def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple=False, show_q=False, plot_reactions=True, cracks=False, stereotomy=False,
+def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, plot_reactions=True, cracks=False, stereotomy=False, extended=False,
                  save=False, hide_negative=False, tol_cracks=10e-5):
     """ Plot a FormDiagram in axis xz
 
@@ -402,6 +402,8 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
     # q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     lines = []
 
+    plotter = MeshPlotter(form, figsize=(10, 10))
+
     if shape.datashape['type'] == 'arch':
 
         lines_arch = _draw_lines_arch(shape, stereotomy=stereotomy)
@@ -413,10 +415,30 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, simple
         lines_form, vertices = lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, fix_width, hide_negative=hide_negative, tol_cracks=tol_cracks)
         lines = lines_form + lines_pointed_arch
 
-    plotter = MeshPlotter(form, figsize=(10, 10))
+    if extended:
+        L = shape.datashape['L']
+        xc = L/2
+        lines_extended = []
+        for key in form.vertices():
+            x, y, z = form.vertex_coordinates(key)
+            ub = form.vertex_attribute(key, 'ub')
+            lb = form.vertex_attribute(key, 'lb')
+            tub = form.vertex_attribute(key, 'tub')
+            tlb = form.vertex_attribute(key, 'tlb')
+            tub_reac = form.vertex_attribute(key, 'tub_reac')
+            b = form.vertex_attribute(key, 'b')
+            if tub and tub > tol_cracks:
+                lines_extended.append({'start': [x, ub - tub], 'end': [x, ub]})
+            if tlb and tlb > tol_cracks:
+                lines_extended.append({'start': [x, lb - tlb], 'end': [x, lb]})
+            if tub_reac:
+                sign = (x - xc)/abs(x - xc)
+                sp = x + sign * b[0]
+                lines_extended.append({'start': [sp, 0], 'end': [sp + sign * tub_reac[0], 0]})
+        plotter.draw_arrows(lines_extended)
+
     plotter.draw_lines(lines)
     plotter.draw_points(vertices)
-    # plotter.draw_points(nodes)
 
     if save:
         plotter.save(save)
