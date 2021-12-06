@@ -59,6 +59,9 @@ def post_process_general(analysis):
     if 'tlb' in variables:
         tlb = xopt[check:check + M.n]
         check = check + M.n
+    if 'tub_reac' in M.variables:
+        tub_reac = xopt[check: check + 2*M.nb]
+        check = check + 2*M.nb
     # if 's' in variables:
     #     s = xopt[-1]
 
@@ -150,6 +153,11 @@ def post_process_general(analysis):
             zub = form.vertex_attribute(key, 'lb')
             form.vertex_attribute(key, 'tlb', tlb[i])
             form.vertex_attribute(key, 'lb', zub - tlb[i])
+
+    if 'tub_reac' in variables:
+        for i, key in enumerate(form.vertices_where({'is_fixed': True})):
+            print(i, key, tub_reac)
+            form.vertex_attribute(key, 'tub_reac', [tub_reac[i], tub_reac[i + M.nb]])
 
     analysis.form = form
     analysis.optimiser = optimiser

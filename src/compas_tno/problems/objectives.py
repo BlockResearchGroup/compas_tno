@@ -208,6 +208,16 @@ def f_max_section(variables, M):
         f += sum(tlb**2)
         M.tlb = tlb
         check = check + n
+    if 'tlb' in M.variables:
+        tlb = variables[check: check + n]
+        f += sum(tlb**2)
+        M.tlb = tlb
+        check = check + n
+    if 'tub_reac' in M.variables:
+        tub_reac = variables[check: check + 2*nb]
+        M.tub_reac = tub_reac
+        f += sum(tub_reac[:nb]**2 + tub_reac[nb:]**2)  # this is not really 100% ok for 3D. x^2 +y^2 != (x + y)^2
+        check = check + 2*nb
 
     return f
 

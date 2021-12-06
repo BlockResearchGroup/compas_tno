@@ -3,6 +3,7 @@ import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.viewers import Viewer
+from compas_tno.plotters import plot_form_xz
 from compas_plotters import MeshPlotter
 
 
@@ -11,11 +12,13 @@ k = 1.0
 discretisation = 10
 type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
 type_structure = 'arch'
-thk = 0.1
+thk = 0.20
 discretisation_shape = discretisation
 
-H = 2.0
+H = 2.5
 L = 5
+x0 = 0.0
+
 
 save = False
 solutions = {}
@@ -42,7 +45,7 @@ data_shape = {
     'thk': thk,
     'H': H,
     'L': L,
-    'x0': 0,
+    'x0': x0,
     'discretisation': discretisation_shape,
     'b': 0.3,
     't': 0.0,
@@ -50,6 +53,8 @@ data_shape = {
 
 vault = Shape.from_library(data_shape)
 vault.ro = 20.0
+
+plot_form_xz(form, vault, max_width=6, radius=0.03, extended=True).show()
 
 # from compas.datastructures import mesh_weld
 # vault.middle = mesh_weld(vault.middle)

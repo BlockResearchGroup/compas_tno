@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-def constr_wrapper(xopt, *args):
+def constr_wrapper(xopt, *args):  # remove
 
     (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
      free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
@@ -65,7 +65,7 @@ def constr_wrapper(xopt, *args):
         A_q = Asym.dot(vstack([q[ind], z[fixed]]))
         constraints = vstack([constraints, A_q])
 
-    return transpose(constraints)[0]  # .reshape(-1, 1)  # Check if this transpose will be a problem for IPOPT
+    return transpose(constraints)[0]
 
 
 def constr_wrapper_general(variables, M):
@@ -121,6 +121,10 @@ def constr_wrapper_general(variables, M):
         tlb = variables[check: check + n].reshape(-1, 1)
         M.tlb = tlb
         check = check + n
+    if 'tub_reac' in M.variables:
+        tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
+        M.tub_reac = tub_reac
+        check = check + 2*nb
 
     # print(M.q)
 
@@ -173,6 +177,10 @@ def constr_wrapper_general(variables, M):
         R = CbQC.dot(M.X) - M.P[M.fixed]
         Rx = abs(M.b[:, [0]].reshape(-1, 1)) - multiply(M.X[:, [2]][M.fixed] - M.s[M.fixed], abs(divide(R[:, [0]], R[:, [2]]).reshape(-1, 1)))  # >= 0
         Ry = abs(M.b[:, [1]].reshape(-1, 1)) - multiply(M.X[:, [2]][M.fixed] - M.s[M.fixed], abs(divide(R[:, [1]], R[:, [2]]).reshape(-1, 1)))  # >= 0
+
+        if 'tub_reac' in M.variables:
+            Rx = Rx + abs(tub_reac[:nb])
+            Ry = Ry + abs(tub_reac[nb:])
 
         constraints = vstack([constraints, Rx, Ry])
 

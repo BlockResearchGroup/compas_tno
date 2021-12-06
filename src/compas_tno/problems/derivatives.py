@@ -611,8 +611,14 @@ def gradient_max_section(variables, M):
     if 'tub' in M.variables:
         tub = variables[check: check + n].reshape(-1, 1)
         gradient = vstack([gradient, 2 * tub])
+        check = check + n
     if 'tlb' in M.variables:
         tlb = variables[check: check + n].reshape(-1, 1)
         gradient = vstack([gradient, 2 * tlb])
+        check = check + n
+    if 'tub_reac' in M.variables:
+        tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
+        gradient = vstack([gradient, 2 * tub_reac])  # check if this changes because of the modulus
+        check = check + 2*nb
 
     return gradient

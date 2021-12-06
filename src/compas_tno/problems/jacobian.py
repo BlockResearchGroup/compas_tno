@@ -86,6 +86,10 @@ def sensitivities_wrapper_general(variables, M):
         tlb = variables[check: check + n]
         M.tlb = tlb
         check = check + n
+    if 'tub_reac' in M.variables:
+        tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
+        M.tub_reac = tub_reac
+        check = check + 2*nb
 
     q = M.q
     Xfixed = M.X[M.fixed]
@@ -274,5 +278,20 @@ def sensitivities_wrapper_general(variables, M):
         dXdtub[startline: endline, :] = Mt
 
         deriv = hstack([deriv, dXdtub])
+
+    if 'tub_reac' in M.variables:  # add a column to the derivatives to count the variable tub (max_section)
+
+        nconst = deriv.shape[0]
+        dXdtreacub = zeros((nconst, 2*nb))
+        startline = nlin_fun + nlin_limitxy + nlin_env
+        endline = startline + nlin_reacbounds
+
+        Inb = identity(nb)  # check if the modulus need to be added here
+        Inb0 = 0.0 * Inb
+        Mt = hstack([vstack([Inb, Inb0]), vstack([Inb0, Inb])])
+
+        dXdtreacub[startline: endline, :] = Mt
+
+        deriv = hstack([deriv, dXdtreacub])
 
     return deriv

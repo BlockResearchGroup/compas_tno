@@ -58,6 +58,7 @@ from compas_tno.utilities import find_sym_axis_in_rect_patterns
 from numpy import append
 from numpy import array
 from numpy import zeros
+from numpy import vstack
 from numpy import ones
 
 
@@ -317,6 +318,17 @@ def set_up_general_optimisation(analysis):
         x0 = append(x0, M.tlb)
         bounds = bounds + list(zip(M.tlbmin, M.tlbmax))
 
+    if 'tub_reac' in variables:
+        tub_reac = []
+        for key in form.vertices_where({'is_fixed': True}):
+            tub_reac.append(form.vertex_attribute(key, 'tub_reacmax'))
+        tub_reac = array(tub_reac)
+        tub_reac = vstack([tub_reac[:, 0].reshape(-1, 1), tub_reac[:, 1].reshape(-1, 1)])
+        M.tub_reac = abs(tub_reac)
+        M.tub_reac_min = zeros((2*M.nb, 1))
+        x0 = append(x0, M.tub_reac_min)
+        bounds = bounds + list(zip(M.tub_reac_min, M.tub_reac))
+
     # print(M.q)
 
     # from compas_plotters import MeshPlotter
@@ -365,7 +377,6 @@ def set_up_general_optimisation(analysis):
     optimiser.fconstr = fconstr
     optimiser.fgrad = fgrad
     optimiser.fjac = fjac
-    # optimiser.args = args
     optimiser.M = M
     optimiser.x0 = x0
     optimiser.bounds = bounds

@@ -2,9 +2,6 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.viewers import Viewer
-from compas_plotters import MeshPlotter
-
-from compas.utilities import i_to_red
 
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
@@ -14,6 +11,7 @@ from compas_tno.utilities import apply_bounds_tub_tlb
 from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
 
+from compas_tno.plotters import plot_form_xz
 
 import compas_tno
 import os
@@ -28,6 +26,7 @@ discretisation_shape = 10 * discretisation
 
 H = 2.5
 L = 5
+x0 = 0.0
 
 save = False
 solutions = {}
@@ -35,7 +34,7 @@ solutions = {}
 objective = 'max_section'  # try 'max'
 solver = 'IPOPT'  # try SLSQP
 constraints = ['funicular', 'envelope', 'reac_bounds']
-variables = ['q', 'zb', 'tub', 'tlb', 'tub_reac']  # in the future add 'tlb' as variables
+variables = ['q', 'zb', 'tub', 'tub_reac']  # in the future add 'tlb' as variables
 features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
 starting_point = 'current'
@@ -43,7 +42,7 @@ starting_point = 'current'
 # Set the maximum allowable increase of each thickness
 tubmax = 0.5
 tlbmax = 0.5
-tub_reacmax = 0.5
+disct_reac_max = 0.5
 
 # Create form diagram
 
@@ -65,7 +64,7 @@ data_shape = {
     'thk': thk,
     'H': H,
     'L': L,
-    'x0': 0,
+    'x0': x0,
     'discretisation': discretisation_shape,
     'b': 0.3,
     't': 0.0,
@@ -83,7 +82,14 @@ vault.ro = 20.0
 apply_envelope_from_shape(form, vault)
 apply_selfweight_from_shape(form, vault)
 apply_bounds_on_q(form, qmax=1e-6)
-apply_bounds_tub_tlb(form, tubmax=tubmax, tlbmax=tlbmax, tub_reacmax=tub_reacmax)
+apply_bounds_tub_tlb(form, tubmax=tubmax, tlbmax=tlbmax)
+
+for key in form.vertices_where({'is_fixed': True}):
+    x = form.vertex_coordinates(key)[0]
+    if abs(x - x0) < 10e-3:
+        form.vertex_attribute(key, 'tub_reacmax', [- disct_reac_max, 0])  # left reaction @ (0, 0)
+    if abs(x - L) < 10e-3:
+        form.vertex_attribute(key, 'tub_reacmax', [+ disct_reac_max, 0])  # right reaction @ (L, 0)
 
 # add point load in vertex 5
 pz3 = form.vertex_attribute(5, 'pz')
@@ -127,8 +133,7 @@ address = os.path.join(path, 'form.json')
 form.to_json(address)
 print('Form Saved to:', address)
 
-from compas_tno.plotters import plot_form_xz
-plot_form_xz(form, vault).show()
+plot_form_xz(form, vault, max_width=6, radius=0.03, extended=True).show()
 
 # plotter = MeshPlotter(form)
 # plotter.draw_edges()
