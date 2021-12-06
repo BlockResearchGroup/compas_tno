@@ -25,6 +25,7 @@ __all__ = [
     'project_mesh_to_middle',
     'modify_shapedata_with_spr_angle',
     'apply_envelope_from_shape_proxy',
+    'apply_bounds_tub_tlb',
 ]
 
 
@@ -181,6 +182,37 @@ def apply_bounds_on_q(form, qmin=-1e+4, qmax=1e-8):  # Convention compression ne
         for u, v in form.edges_where({'_is_edge': True}):
             form.edge_attribute((u, v), 'qmin', qmin)
             form.edge_attribute((u, v), 'qmax', qmax)
+
+    return
+
+
+def apply_bounds_tub_tlb(form, tubmax=0.5, tlbmax=0.5, tub_reacmax=None):
+    """ Apply bounds on the magnitude of the allowed increase in thickness of the upper-bound (tub), lower-bound (tlb), and of the reaction vector (tub_reacmax).
+
+    Parameters
+    ----------
+    form : ::FormDiagram::
+        The input FormDiagram
+    tubmax : float, optional
+        The maximum increase in thickness of the extrados. The default value is ``0.5``.
+    tlbmax : float, optional
+        The maximum increase in thickness of the intrados. The default value is ``0.5``.
+    tub_reacmax : float, optional
+        The maximum increase in the reaction direction magnitude. The default value is ``None``.
+
+    Returns
+    ----------
+    None
+        The formdiagram is updated in place in the attributes.
+    """
+
+    for vertex in form.vertices():
+        form.vertex_attribute(vertex, 'tubmax', tubmax)
+        form.vertex_attribute(vertex, 'tlbmax', tlbmax)
+
+    if tub_reacmax:
+        for vertex in form.vertices():
+            form.vertex_attribute(vertex, 'tub_reacmax', tub_reacmax)
 
     return
 

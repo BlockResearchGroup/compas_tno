@@ -303,16 +303,16 @@ def set_up_general_optimisation(analysis):
 
     if 'tub' in variables:
         M.tub = zeros((M.n, 1))
-        tubmax = optimiser.settings.get('tubmax', 0.5)
-        M.tubmax = tubmax * ones((M.n, 1))
+        tubmax = form.vertices_attribute('tubmax')
+        M.tubmax = array(tubmax).reshape(M.n, 1)
         M.tubmin = zeros((M.n, 1))
         x0 = append(x0, M.tub)
         bounds = bounds + list(zip(M.tubmin, M.tubmax))
 
     if 'tlb' in variables:
         M.tlb = zeros((M.n, 1))
-        tlbmax = optimiser.settings.get('tlbmax', 0.5)
-        M.tlbmax = tlbmax * ones((M.n, 1))
+        tlbmax = form.vertices_attribute('tlbmax')
+        M.tlbmax = array(tlbmax).reshape(M.n, 1)
         M.tlbmin = zeros((M.n, 1))
         x0 = append(x0, M.tlb)
         bounds = bounds + list(zip(M.tlbmin, M.tlbmax))
@@ -389,6 +389,7 @@ def set_b_constraint(form, printout):
     b = array(b)
     if printout:
         print('Reaction bounds active in : {0} joints'.format(len(b)))
+        print(b)
     return b
 
 

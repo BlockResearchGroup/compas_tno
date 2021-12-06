@@ -43,6 +43,9 @@ class FormDiagram(FormDiagram):
         super(FormDiagram, self).__init__()
         self.update_default_vertex_attributes({
             'is_roller': False,
+            'tubmax': None,
+            'tlbmax': None,
+            'tub_reac': None,
         })
         self.update_default_edge_attributes({
             'q': 1.0,

@@ -1,4 +1,3 @@
-from numpy.lib.function_base import blackman
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
@@ -10,11 +9,11 @@ from compas.utilities import i_to_red
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_bounds_on_q
+from compas_tno.utilities import apply_bounds_tub_tlb
 
 from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
 
-from compas.geometry import Polygon
 
 import compas_tno
 import os
@@ -24,10 +23,10 @@ k = 1.0
 discretisation = 10
 type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
 type_structure = 'arch'
-thk = 0.1
+thk = 0.20
 discretisation_shape = 10 * discretisation
 
-H = 2.0
+H = 2.5
 L = 5
 
 save = False
@@ -35,12 +34,16 @@ solutions = {}
 
 objective = 'max_section'  # try 'max'
 solver = 'IPOPT'  # try SLSQP
-constraints = ['funicular', 'envelope']
-variables = ['q', 'zb', 'tub']  # in the futture add 'tlb' as variables
+constraints = ['funicular', 'envelope', 'reac_bounds']
+variables = ['q', 'zb', 'tub', 'tlb', 'tub_reac']  # in the future add 'tlb' as variables
 features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
-starting_point = 'loadpath'
+starting_point = 'current'
+
+# Set the maximum allowable increase of each thickness
 tubmax = 0.5
+tlbmax = 0.5
+tub_reacmax = 0.5
 
 # Create form diagram
 
@@ -80,6 +83,7 @@ vault.ro = 20.0
 apply_envelope_from_shape(form, vault)
 apply_selfweight_from_shape(form, vault)
 apply_bounds_on_q(form, qmax=1e-6)
+apply_bounds_tub_tlb(form, tubmax=tubmax, tlbmax=tlbmax, tub_reacmax=tub_reacmax)
 
 # add point load in vertex 5
 pz3 = form.vertex_attribute(5, 'pz')
@@ -107,12 +111,12 @@ optimiser.settings['gradient'] = True
 optimiser.settings['jacobian'] = True
 optimiser.settings['printout'] = True
 optimiser.settings['starting_point'] = starting_point
-optimiser.settings['tubmax'] = tubmax
 optimiser.settings['sym_loads'] = False
 
 # --------------------- 5. Set up and run analysis ---------------------
 
 analysis = Analysis.from_elements(vault, form, optimiser)
+analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
@@ -136,4 +140,9 @@ plot_form_xz(form, vault).show()
 
 plot_form(form).show()
 view = Viewer(form, vault)
-view.show_solution()
+view.settings['scale.loads'] = 1.0
+view.view_loads()
+view.view_shape()
+view.view_cracks()
+view.view_thrust()
+view.show()
