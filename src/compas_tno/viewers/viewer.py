@@ -47,7 +47,8 @@ class Viewer(object):
             'size.reaction.body_width': 0.01,
             'size.reactionlabel': 20,
 
-            'scale.reactions': 0.0005,
+            'scale.reactions': 0.001,
+            'scale.loads': 0.001,
             'opacity.shapes': 0.5,
 
             'color.edges.thrust': (255, 0, 0),
@@ -216,6 +217,20 @@ class Viewer(object):
                 ry = self.thrust.vertex_attribute(key, '_ry') * reaction_scale
                 rz = self.thrust.vertex_attribute(key, '_rz') * reaction_scale
                 arrow = Arrow([x, y, z], [-rx, -ry, -rz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
+                self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
+
+    def view_loads(self):
+        """ View the externally applied loadss as vectors on the applied nodes """
+
+        if self.settings['show.reactions']:
+            reaction_scale = self.settings['scale.loads']
+
+            for key in self.thrust.vertices():
+                x, y, z = self.thrust.vertex_coordinates(key)
+                px = self.thrust.vertex_attribute(key, 'px') * reaction_scale
+                py = self.thrust.vertex_attribute(key, 'py') * reaction_scale
+                pz = self.thrust.vertex_attribute(key, 'pz') * reaction_scale
+                arrow = Arrow([x - px, y - py, z - pz], [px, py, pz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
                 self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
     def view_reaction_label(self):
