@@ -15,6 +15,7 @@ compas_tno
     compas_tno.optimisers
     compas_tno.plotters
     compas_tno.problems
+    compas_tno.rhino
     compas_tno.shapes
     compas_tno.solvers
     compas_tno.utilities
@@ -25,7 +26,7 @@ compas_tno
 from __future__ import print_function
 
 import os
-os.environ['QT_MAC_WANTS_LAYER'] = '1'
+# os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 __author__ = ["Ricardo Maia Avelino"]
 __copyright__ = "Block Research Group - ETH Zurich"

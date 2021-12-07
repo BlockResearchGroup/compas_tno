@@ -13,11 +13,6 @@ from torch import float64
 from numpy import hstack
 from numpy import zeros
 
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
-
 
 __all__ = [
     'q_from_variables_pytorch',

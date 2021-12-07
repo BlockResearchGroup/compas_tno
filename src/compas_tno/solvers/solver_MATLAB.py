@@ -33,8 +33,8 @@ def run_optimisation_MATLAB(analysis):
 
     # Initiate Matlab Engine
 
-    # future = matlab.engine.connect_matlab(background=True)
-    future = matlab.engine.start_matlab(background=True)
+    future = matlab.engine.connect_matlab(background=True)
+    # future = matlab.engine.start_matlab(background=True)
     eng = future.result()
 
     form = analysis.form
@@ -81,7 +81,8 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
 
     """
 
-    future = matlab.engine.start_matlab(background=True)
+    future = matlab.engine.connect_matlab(background=True)
+    # future = matlab.engine.start_matlab(background=True)
 
     eng = future.result()
 

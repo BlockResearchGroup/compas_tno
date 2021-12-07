@@ -9,12 +9,6 @@ from .post_process import post_process_general
 import time
 
 
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
-
-
 __all__ = [
     'run_optimisation_scipy',
 ]
