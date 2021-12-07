@@ -33,6 +33,7 @@ def run_optimisation_MATLAB(analysis):
 
     # Initiate Matlab Engine
 
+    # future = matlab.engine.connect_matlab(background=True)
     future = matlab.engine.start_matlab(background=True)
     eng = future.result()
 
