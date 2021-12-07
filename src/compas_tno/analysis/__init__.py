@@ -5,8 +5,8 @@ compas_tno.analysis
 
 .. currentmodule:: compas_tno.analysis
 
-Analysis
-========
+Classes
+=======
 
 .. autosummary::
     :toctree: generated/
@@ -17,6 +17,10 @@ Analysis
 """
 from __future__ import absolute_import
 
-from .analysis import *  # noqa: F401 F403
+from .analysis import (
+    Analysis
+)
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [
+    'Analysis'
+]

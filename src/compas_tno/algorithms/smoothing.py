@@ -7,11 +7,6 @@ from compas.geometry import closest_point_on_line
 
 from compas_tno.algorithms.equilibrium import equilibrium_fdm
 
-__all__ = [
-    'constrained_smoothing',
-    'apply_sag'
-]
-
 
 def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorithm='centroid'):
     """Constrained smoothing of a mesh. Constraints can be points and lines.
@@ -33,6 +28,11 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
     ----------
     mesh: Mesh
         The smoothed mesh.
+
+    Reference
+    ----------
+    This function was extracted from ``compas_singular`` developed by Robin Oval.
+
     """
 
     def callback(k, args):

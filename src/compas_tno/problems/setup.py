@@ -5,20 +5,20 @@ from compas_tno.problems import adapt_problem_to_fixed_diagram
 from compas_tno.problems import adapt_problem_to_sym_diagram
 from compas_tno.problems import adapt_problem_to_sym_and_fixed_diagram
 
-from compas_tno.problems import f_min_thrust_general
-from compas_tno.problems import f_max_thrust_general
-from compas_tno.problems import f_bestfit_general
-from compas_tno.problems import f_horprojection_general
+from compas_tno.problems import f_min_thrust
+from compas_tno.problems import f_max_thrust
+from compas_tno.problems import f_bestfit
+from compas_tno.problems import f_horprojection
 from compas_tno.problems import f_loadpath_general
 from compas_tno.problems import f_complementary_energy
 from compas_tno.problems import f_complementary_energy_nonlinear
 from compas_tno.problems import f_max_section
 
-from compas_tno.problems import gradient_fmin_general
-from compas_tno.problems import gradient_fmax_general
-from compas_tno.problems import gradient_bestfit_general
-from compas_tno.problems import gradient_horprojection_general
-from compas_tno.problems import gradient_loadpath_general
+from compas_tno.problems import gradient_fmin
+from compas_tno.problems import gradient_fmax
+from compas_tno.problems import gradient_bestfit
+from compas_tno.problems import gradient_horprojection
+from compas_tno.problems import gradient_loadpath
 from compas_tno.problems import gradient_complementary_energy
 from compas_tno.problems import gradient_complementary_energy_nonlinear
 from compas_tno.problems import gradient_max_section
@@ -40,9 +40,9 @@ from compas_tno.problems import gradient_feasibility
 from compas_tno.problems import gradient_reduce_thk
 from compas_tno.problems import gradient_tight_crosssection
 
-from compas_tno.problems import sensitivities_wrapper_general
+from compas_tno.problems import sensitivities_wrapper
 
-from compas_tno.problems import constr_wrapper_general
+from compas_tno.problems import constr_wrapper
 
 from compas_tno.plotters import plot_symmetry
 from compas_tno.plotters import plot_symmetry_vertices
@@ -58,12 +58,6 @@ from numpy import append
 from numpy import array
 from numpy import zeros
 from numpy import vstack
-
-
-__all__ = [
-    'set_up_general_optimisation',
-    'set_up_convex_optimisation',
-]
 
 
 def set_up_general_optimisation(analysis):
@@ -198,22 +192,22 @@ def set_up_general_optimisation(analysis):
 
     if objective == 'loadpath':
         fobj = f_loadpath_general
-        fgrad = gradient_loadpath_general
+        fgrad = gradient_loadpath
     elif objective == 'target' or objective == 'bestfit':
-        fobj = f_bestfit_general
-        fgrad = gradient_bestfit_general
+        fobj = f_bestfit
+        fgrad = gradient_bestfit
     elif objective == 'min':
-        fobj = f_min_thrust_general
-        fgrad = gradient_fmin_general
+        fobj = f_min_thrust
+        fgrad = gradient_fmin
     elif objective == 'max':
-        fobj = f_max_thrust_general
-        fgrad = gradient_fmax_general
+        fobj = f_max_thrust
+        fgrad = gradient_fmax
     elif objective == 'feasibility':
         fobj = f_constant
         fgrad = gradient_feasibility
     elif objective == 'hor_projection':
-        fobj = f_horprojection_general
-        fgrad = gradient_horprojection_general
+        fobj = f_horprojection
+        fgrad = gradient_horprojection
     elif objective == 't':  # analytical reduce thickness
         fobj = f_reduce_thk
         fgrad = gradient_reduce_thk
@@ -241,9 +235,9 @@ def set_up_general_optimisation(analysis):
 
     # Select Inequality Constraints and Jacobian
 
-    fconstr = constr_wrapper_general
+    fconstr = constr_wrapper
     if fjac:
-        fjac = sensitivities_wrapper_general
+        fjac = sensitivities_wrapper
 
     # Select starting point (x0) and max/min for variables
 
@@ -439,7 +433,7 @@ def set_rollers_constraint(form, printout):
 
 
 def set_up_convex_optimisation(analysis):
-    """ Set up a nonlinear optimisation problem.
+    """ Set up a convex optimisation problem.
 
     Parameters
     ----------

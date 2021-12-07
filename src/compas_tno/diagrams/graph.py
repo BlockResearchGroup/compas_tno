@@ -1,17 +1,19 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-
 import compas
 from compas.datastructures import Network
 from compas.datastructures import network_is_crossed
 
 
-__all__ = ['FormGraph']
-
-
 class FormGraph(Network):
     """A graph representing the geometry and connectivity of the lines of a form diagram.
+
+    Parameters
+    ----------
+
+
+    Attributes
+    ----------
+
+
     """
 
     def __init__(self):

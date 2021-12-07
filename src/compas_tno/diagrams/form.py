@@ -17,27 +17,62 @@ from compas_tna.diagrams import FormDiagram
 import math
 
 
-__all__ = ['FormDiagram']
-
-
 class FormDiagram(FormDiagram):
 
-    """The ``FormDiagram`` class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some functionalities
-    useful for the assessment of masonry structures.
+    """The ``FormDiagram`` represents the projection of the internal force network within the structure.
 
-    It defined the form-diagram that will be the layout of the forces within the structure
+    The class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some
+    functionalities useful for the assessment of masonry structures. Most relevant edge and vertex attributes
+    are listed below:
 
-    Notes
-    -----
-    A ``FormDiagram`` has the following constructor functions
+    Attributes
+    ----------
+    *   Vertex attributes
 
-    *   ``from_library`` : Construct the formdiagram from a dictionary with instructions, the library supports the creation of typical topologies.
-    *   ``from_lines`` : Construct the formdiagram from a set of lines.
-    *   ``from_mesh`` : Construct the formdiagram from a given mesh.
+    x : float
+        x-coordinate of the vertex.
+    y : float
+        y-coordinate of the vertex.
+    z : float
+        z-coordinate of the vertex.
+    is_roller : bool
+        Whether or not the attibute is set to be a roller. Takes only horizontal reaction.
+    tubmax : float
+        Maximum allowable increase in the extrados
+    tlbmax : float
+        Maximum allowable increase in the intradoss
+    tub_reac : float
+        Maximum allowable increase in the horizontal projection of the reaction.
+
+    *   Edge attributes
+
+    q : float
+        Force density of an edge.
+    f : float
+        Force magnitude of an edge.
+    is_ind : bool
+        Whether or not the edge is an independent edge.
+    qmin : float
+        The minimum force density magnitude.
+    qmax : float
+        The maximum force density magnitude.
+
+    Examples
+    --------
+    >>> from compas_tno.diagrams import FormDiagram
+    >>> data = {'type': 'fan_fd', 'xy_span': [[0, 10], [0, 10]], 'discretisation': [10, 10], 'fix': 'corners'}
+    >>> form = FormDiagram.from_library(data)
+    >>> print(form)
+    Form Diagram
+    ============
+    name: FormDiagram
+    number of vertices: 201
+    number of (real) edges: 400
+    number of faces: 200
+    vertex degree: 3/11
+    face degree: 2/4
 
     """
-
-    # __module__ = 'compas_tno.diagrams'
 
     def __init__(self):
         super(FormDiagram, self).__init__()

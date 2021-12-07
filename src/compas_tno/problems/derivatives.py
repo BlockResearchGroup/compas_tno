@@ -7,7 +7,6 @@ from numpy import divide
 from numpy import sum as npsum
 from numpy import multiply
 
-from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import splu
 from scipy.sparse import diags
 
@@ -17,28 +16,8 @@ from numpy import array
 from compas_tno.algorithms import xyz_from_q
 
 
-__all__ = [
-    'd_fobj',
-    'gradient_fmin',
-    'gradient_fmax',
-    'gradient_feasibility',
-    'gradient_reduce_thk',
-    'gradient_bestfit',
-    'gradient_loadpath',
-    'gradient_tight_crosssection',
-    'gradient_fmin_general',
-    'gradient_fmax_general',
-    'gradient_bestfit_general',
-    'gradient_horprojection_general',
-    'gradient_loadpath_general',
-    'gradient_complementary_energy',
-    'gradient_complementary_energy_nonlinear',
-    'gradient_max_section'
-]
-
-
-# Gradient "approximated by hand"
 def d_fobj(fobj, x0, eps, *args):
+    """Gradient approximated by hand using finite differences"""
     f0val = fobj(x0, *args)
     n = len(x0)
     df0dx = zeros((n, 1))
@@ -51,6 +30,7 @@ def d_fobj(fobj, x0, eps, *args):
 
 
 def compute_dQ(q, ind, dep, Edinv, Ei):
+    """Sensitivity of (all) the force densities with regards to the independent force densities"""
 
     dQdep = Edinv.dot(Ei)
     dQ = zeros((len(q), len(ind)))
@@ -60,160 +40,27 @@ def compute_dQ(q, ind, dep, Edinv, Ei):
     return dQ, dQdep
 
 
-def gradient_fmin(xopt, *args):
-
-    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
-     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
-
-    if 'ind' in variables:
-        q[ind] = xopt[:k].reshape(-1, 1)
-    else:
-        q = xopt[:len(q)].reshape(-1, 1)
-    if 'zb' in variables:
-        z[fixed] = xopt[k:k+len(fixed)].reshape(-1, 1)
-
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-
-    dQ, _ = compute_dQ(q, ind, dep, Edinv, Ei)
-    CfU = Cf.transpose().dot(U)
-    CfV = Cf.transpose().dot(V)
-    CfUdQ = CfU.dot(dQ)
-    CfVdQ = CfV.dot(dQ)
-    Rx = CfU.dot(q) - px[fixed]
-    Ry = CfV.dot(q) - py[fixed]
-    R = normrow(hstack([Rx, Ry]))
-    Rx_over_R = divide(Rx, R)
-    Ry_over_R = divide(Ry, R)
-
-    gradient = (Rx_over_R.transpose().dot(CfUdQ) + Ry_over_R.transpose().dot(CfVdQ)).transpose()
-    if 'zb' in variables:
-        gradient = vstack([gradient, zeros((len(fixed), 1))])
-
-    return gradient
+def gradient_feasibility(variables, M):
+    """Sensitivity of the feasibility objective function, which returns a null vector"""
+    return zeros((len(variables), 1))
 
 
-def gradient_fmax(xopt, *args):
-    return -1 * gradient_fmin(xopt, *args)
-
-
-def gradient_feasibility(xopt, *args):
-    return zeros((len(xopt), 1))
-
-
-def gradient_reduce_thk(xopt, *args):
-    grad = zeros((len(xopt), 1))
+def gradient_reduce_thk(variables, M):
+    """Sensitivity of the objective function to minimise the thickness"""
+    grad = zeros((len(variables), 1))
     grad[-1] = 1.0
     return grad
 
 
-def gradient_tight_crosssection(xopt, *args):
-    grad = zeros((len(xopt), 1))
+def gradient_tight_crosssection(variables, M):
+    """Sensitivity of the objective function to tight the cross section"""
+    grad = zeros((len(variables), 1))
     grad[-1] = -1.0
     return grad
 
 
-def gradient_wrapper(xopt, *args):
-    # WIP
-
-    objective = 'min'
-
-    if objective == 'min':
-        grad = gradient_fmin
-    elif objective == 'max':
-        grad = gradient_fmax
-    elif objective == 'feasibility':
-        grad = gradient_feasibility
-    elif objective == 'target' or objective == 'bestfit':
-        grad = gradient_feasibility
-    else:
-        raise NotImplementedError
-
-    return grad
-
-
-def gradient_bestfit(xopt, *args):
-
-    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
-     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
-
-    q[ind] = xopt[:k].reshape(-1, 1)
-    if 'zb' in variables:
-        z[fixed] = xopt[k:k + len(fixed)].reshape(-1, 1)
-
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-
-    f = 2*(z - s)
-    grad = zeros((len(xopt), 1))
-
-    dz = zeros([len(z), len(xopt)])
-    Q = diags(q.ravel())
-    CitQCi = Cit.dot(Q).dot(Ci)
-    SPLU_D = splu(CitQCi)
-    dQ, dQdep = compute_dQ(q, ind, dep, Edinv, Ei)
-    Cz = diags((C.dot(z)).ravel())
-    B = - Cit.dot(Cz)
-    dz[free, :k] = SPLU_D.solve(B.dot(dQ))
-
-    if 'zb' in variables:
-        B = - Cit.dot(Q).dot(Cf).toarray()
-        dz[free, k:] = SPLU_D.solve(B)
-        dz[fixed, k:] = identity(len(fixed))
-
-    for j in range(len(xopt)):
-        grad[j] = f.transpose().dot(dz[:, j].reshape(-1, 1))
-
-    return grad
-
-
-def gradient_loadpath(xopt, *args):
-
-    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
-     free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, dict_constr, max_rol_rx, max_rol_ry, Asym, variables, shape) = args[:50]
-
-    q[ind] = xopt[:k].reshape(-1, 1)
-    if 'zb' in variables:
-        z[fixed] = xopt[k:k + len(fixed)].reshape(-1, 1)
-
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-
-    grad = zeros((len(xopt), 1))
-
-    dZ = zeros((len(z), k))
-
-    Q = diags(q.ravel())
-    CitQCi = Cit.dot(Q).dot(Ci)
-    SPLU_D = splu(CitQCi)
-    dQ, dQdep = compute_dQ(q, ind, dep, Edinv, Ei)
-    Cz = diags((C.dot(z)).ravel())
-    B = - Cit.dot(Cz)
-    dZi = SPLU_D.solve(B.dot(dQ))
-    dZ[free, :] = dZi
-    dW = C.dot(dZ)
-
-    WdW = 2*Cz.dot(dW)
-    l2 = lh + C.dot(z)**2
-
-    for j in range(k):
-        grad[j] = dQ[:, j].reshape(1, -1).dot(l2) + q.transpose().dot(WdW[:, j].reshape(-1, 1))
-
-    if 'zb' in variables:  # This is correct but can lead to unexpected results for symmetric problems, try to constraint to symmetry
-        B = - Cit.dot(Q).dot(Cf).toarray()
-        dZ = zeros((len(z), len(fixed)))
-        dZ[free] = SPLU_D.solve(B)
-        dZ[fixed] = identity(len(fixed))
-        dW = C.dot(dZ)
-        WdW = 2*Cz.dot(dW)
-
-        for i in range(len(fixed)):
-            grad[j+i+1] = q.transpose().dot(WdW[:, i].reshape(-1, 1))
-
-    return grad
-
-
-def gradient_fmin_general(variables, M):
+def gradient_fmin(variables, M):
+    """Sensitivity of the objective function to minimise the thrust"""
 
     if isinstance(M, list):
         M = M[0]
@@ -289,12 +136,14 @@ def gradient_fmin_general(variables, M):
     return array(gradient).flatten()
 
 
-def gradient_fmax_general(variables, M):
+def gradient_fmax(variables, M):
+    """Sensitivity of the objective function to maximise the thrust"""
 
-    return -1 * gradient_fmin_general(variables, M)
+    return -1 * gradient_fmin(variables, M)
 
 
-def gradient_bestfit_general(variables, M):
+def gradient_bestfit(variables, M):
+    """Sensitivity of the objective function to minimise the vertical squared distance to the target"""
 
     if isinstance(M, list):
         M = M[0]
@@ -344,7 +193,8 @@ def gradient_bestfit_general(variables, M):
     return gradient
 
 
-def gradient_horprojection_general(variables, M):
+def gradient_horprojection(variables, M):
+    """Sensitivity of the objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern"""
 
     if isinstance(M, list):
         M = M[0]
@@ -404,6 +254,7 @@ def gradient_horprojection_general(variables, M):
 
 
 def gradient_complementary_energy(variables, M):
+    """Sensitivity of the objective function to minimise the complementary energy"""
 
     if isinstance(M, list):
         M = M[0]
@@ -483,6 +334,7 @@ def gradient_complementary_energy(variables, M):
 
 
 def gradient_complementary_energy_nonlinear(variables, M):
+    """Sensitivity of the objective function to minimise nonlinear complementary energy"""
 
     grad_lin = gradient_complementary_energy(variables, M)
 
@@ -501,14 +353,15 @@ def gradient_complementary_energy_nonlinear(variables, M):
             grad_quad = vstack([grad_quad, zeros((nb, 1))])
 
     elif M.Ecomp_method == 'complete':
-        grad_quad = gradient_loadpath_general(variables, M) * M.stiff
+        grad_quad = gradient_loadpath(variables, M) * M.stiff
 
     fgrad = grad_lin + grad_quad.flatten()
 
     return fgrad
 
 
-def gradient_loadpath_general(variables, M):  # check this and make it work!!
+def gradient_loadpath(variables, M):
+    """Sensitivity of the objective function to minimise the loadpath"""
 
     if isinstance(M, list):
         M = M[0]
@@ -592,6 +445,7 @@ def gradient_loadpath_general(variables, M):  # check this and make it work!!
 
 
 def gradient_max_section(variables, M):
+    """Sensitivity of the objective function to minimise additional thickness required to find a feasible thrust network"""
 
     k = M.k
     nb = len(M.fixed)

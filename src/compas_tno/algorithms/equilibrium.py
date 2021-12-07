@@ -16,15 +16,6 @@ from compas.numerical import connectivity_matrix
 from compas_plotters import MeshPlotter
 
 
-__all__ = [
-    'equilibrium_fdm',
-    'vertical_equilibrium_fdm',
-    'q_from_qid',
-    'xyz_from_q',
-    'compute_reactions',
-]
-
-
 def equilibrium_fdm(form):
     """ Compute equilibrium of the form diagram using the force density method (FDM) with 'q's stored in the form (All coordinates can change).
 
@@ -148,7 +139,7 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
     $\mathbf{q}_\mathrm{id} = - mathbf{Ed}_\mathrm{id}$(\mathbf{E}_\mathrm{i} * \mathbf{q}_\mathrm{i} - \mathbf{p}_\mathrm{h})
 
     Reference
-    -------
+    ---------
     Block and Lachauer, 2014...
 
     """

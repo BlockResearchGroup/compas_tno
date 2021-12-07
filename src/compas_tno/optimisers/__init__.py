@@ -5,8 +5,8 @@ compas_tno.optimisers
 
 .. currentmodule:: compas_tno.optimisers
 
-Optimiser
-=========
+Classes
+=======
 
 .. autosummary::
     :toctree: generated/
@@ -17,6 +17,8 @@ Optimiser
 """
 from __future__ import absolute_import
 
-from .optimiser import *  # noqa: F401 F403
+from .optimiser import Optimiser
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [
+    'Optimiser'
+]

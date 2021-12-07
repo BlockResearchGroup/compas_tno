@@ -51,6 +51,21 @@ extensions = [
 
 # autodoc options
 
+autodoc_mock_imports = [
+    "System",
+    "clr",
+    "Eto",
+    "Rhino",
+    "Eto.Drawing",
+    "Eto.Forms",
+    "Grasshopper",
+    "scriptcontext",
+    "rhinoscriptsyntax",
+    "bpy",
+    "bmesh",
+    "mathutils"
+]
+
 autodoc_default_options = {
     "undoc-members": True,
     "show-inheritance": True,
@@ -71,6 +86,21 @@ def setup(app):
 # autosummary options
 
 autosummary_generate = True
+
+autodoc_mock_imports = [
+    "System",
+    "clr",
+    "Eto",
+    "Rhino",
+    "Eto.Drawing",
+    "Eto.Forms",
+    "Grasshopper",
+    "scriptcontext",
+    "rhinoscriptsyntax",
+    "bpy",
+    "bmesh",
+    "mathutils"
+]
 
 # napoleon options
 

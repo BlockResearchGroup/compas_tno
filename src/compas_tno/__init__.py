@@ -15,7 +15,6 @@ compas_tno
     compas_tno.optimisers
     compas_tno.plotters
     compas_tno.problems
-    compas_tno.rhino
     compas_tno.shapes
     compas_tno.solvers
     compas_tno.utilities

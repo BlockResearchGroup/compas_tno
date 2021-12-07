@@ -2,29 +2,14 @@ from numpy import hstack
 from numpy import array
 from numpy import sum as npsum
 
-# from compas_tno.algorithms import zq_from_qid
 from compas_tno.algorithms import xyz_from_q
 from compas.numerical import normrow
 
 from scipy.sparse import diags
 
 
-__all__ = [
-    'f_constant',
-    'f_tight_crosssection',
-    'f_reduce_thk',
-    'f_min_thrust_general',
-    'f_max_thrust_general',
-    'f_bestfit_general',
-    'f_horprojection_general',
-    'f_loadpath_general',
-    'f_complementary_energy',
-    'f_complementary_energy_nonlinear',
-    'f_max_section'
-]
-
-
-def f_min_thrust_general(variables, M):
+def f_min_thrust(variables, M):
+    """Objective function to minimise the horizontal thrust"""
 
     if isinstance(M, list):
         M = M[0]
@@ -53,12 +38,14 @@ def f_min_thrust_general(variables, M):
     return f
 
 
-def f_max_thrust_general(variables, M):
+def f_max_thrust(variables, M):
+    """Objective function to maximise the horizontal thrust"""
 
-    return -1 * f_min_thrust_general(variables, M)
+    return -1 * f_min_thrust(variables, M)
 
 
-def f_bestfit_general(variables, M):
+def f_bestfit(variables, M):
+    """Objective function to minimise the vertical squared distance to a given target"""
 
     if isinstance(M, list):
         M = M[0]
@@ -83,7 +70,8 @@ def f_bestfit_general(variables, M):
     return f
 
 
-def f_horprojection_general(variables, M):
+def f_horprojection(variables, M):
+    """Objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern"""
 
     if isinstance(M, list):
         M = M[0]
@@ -109,6 +97,7 @@ def f_horprojection_general(variables, M):
 
 
 def f_loadpath_general(variables, M):
+    """Objective function to minimise the loadpath"""
 
     if isinstance(M, list):
         M = M[0]
@@ -138,6 +127,7 @@ def f_loadpath_general(variables, M):
 
 
 def f_complementary_energy(variables, M):
+    """Objective function to minimise the complementary energy to a given applied foundation displacement"""
 
     if isinstance(M, list):
         M = M[0]
@@ -165,6 +155,7 @@ def f_complementary_energy(variables, M):
 
 
 def f_complementary_energy_nonlinear(variables, M):
+    """Objective function to minimise the nonlinear complementary energy to a given applied foundation displacement"""
 
     if isinstance(M, list):
         M = M[0]
@@ -182,6 +173,7 @@ def f_complementary_energy_nonlinear(variables, M):
 
 
 def f_max_section(variables, M):
+    """Objective function to minimise additional thickness required to find a feasible thrust network"""
 
     if isinstance(M, list):
         M = M[0]
@@ -223,6 +215,7 @@ def f_max_section(variables, M):
 
 
 def f_constant(variables, M):
+    """Constant or feasible objective function f=1"""
 
     f = 1.0
 
@@ -230,8 +223,15 @@ def f_constant(variables, M):
 
 
 def f_reduce_thk(variables, M):
+    """Objective function to reduce the thickness of the structure"""
 
     return variables[-1]
+
+
+def f_tight_crosssection(variables, M):
+    """Objective function to tight the cross section using normal vectors"""
+
+    return -1 * variables[-1]
 
 
 def f_min_thrust_pytorch(xopt, *args):
@@ -244,8 +244,3 @@ def f_min_thrust_pytorch(xopt, *args):
     Rh = CfQC.dot(xy) - hstack([px, py])[fixed]
     f = sum(normrow(Rh))
     return f
-
-
-def f_tight_crosssection(variables, M):
-
-    return -1 * variables[-1]

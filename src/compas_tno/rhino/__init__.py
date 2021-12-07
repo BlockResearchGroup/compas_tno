@@ -5,12 +5,10 @@ compas_tno.rhino
 
 .. currentmodule:: compas_tno.rhino
 
-.. autosummary::
-    :toctree: generated/
-    :nosignatures:
-
 
 """
+
+
 from __future__ import absolute_import
 
 import compas

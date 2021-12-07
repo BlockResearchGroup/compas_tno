@@ -39,6 +39,7 @@ from compas_tno.shapes import general_db_with_t_intrados
 
 
 def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
+    """Function to update the ub-lb vertical bounds of the vertices"""
 
     if shape.datashape['type'] == 'arch':
         return arch_ub_lb_update(x, y, thk, t, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
@@ -74,6 +75,7 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
 
 def dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables):
+    """Function to update the derivatives of the ub-lb vertical bounds of the vertices"""
 
     if shape.datashape['type'] == 'arch':
         return arch_dub_dlb(x, y, thk, t, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
@@ -109,6 +111,7 @@ def dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
 
 def b_update(x, y, thk, fixed, shape, b, variables):
+    """Function to update the limits of the extension of the reaction forces on the support vertices"""
 
     if shape.datashape['type'] == 'arch':
         return arch_b_update(x, y, thk, fixed, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
@@ -130,6 +133,7 @@ def b_update(x, y, thk, fixed, shape, b, variables):
 
 
 def db_update(x, y, thk, fixed, shape, b, variables):
+    """Function to update the derrivatives of the limits of the extension of the reaction forces on the support vertices"""
 
     if shape.datashape['type'] == 'arch':
         return arch_db(x, y, thk, fixed, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])

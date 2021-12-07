@@ -6,15 +6,6 @@ from compas.geometry import rotate_points_xy
 from compas.datastructures import Mesh
 
 
-__all__ = [
-    'create_cross_form',
-    'create_cross_diagonal',
-    'create_cross_with_diagonal',
-    'create_fan_form',
-    'create_ortho_form',
-]
-
-
 def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
     """ Helper to construct a FormDiagram based on with an orthogonal arrangement and main diagonal.
 

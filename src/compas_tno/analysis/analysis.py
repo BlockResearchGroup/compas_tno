@@ -33,61 +33,60 @@ from scipy import interpolate
 
 import time
 
-__all__ = ['Analysis']
-
 
 class Analysis(Data):
+    """The ``Analysis`` class unites the ``FormDiagram``, the ``Shape`` and the ``Optimiser`` to compute the optimisarion.
 
-    """The ``Analysis`` class puts together the FormDiagram, the Shape and the Optimiser, assign loads, partial supports, cracks and much more to come...
+    Its metohds include assignment of loads, partial supports, cracks, etc.
 
-    Notes
-    -----
-    A ``Analysis`` has the following constructor functions
+    Parameters
+    ----------
+    name: str, optional
+        The name of the analysis.
+        Defaults to "Analysis".
 
-    *   ``initialise`` : Construct the Analysis for a given FormDiagram, Shape and Optimiser.
+    Attributes
+    ----------
+    node : dict
+        The node dictionary. Each key in the node dictionary
+        represents a node of the network and maps to a dictionary of
+        node attributes.
+    edge : dict of dict
+        The edge dictionary. Each key in the edge dictionary
+        corresponds to a key in the node dictionary, and maps to a dictionary
+        with connected nodes. In the latter, the keys are again references
+        to items in the node dictionary, and the values are dictionaries
+        of edge attributes. For example, an edge between node 1 and node 2 is represented as follows
+        ``Graph.edge[1][2] -> {...}``
+    adjacency : dict of dict
+        The edges of the graph are directed.
+        The undirected connectivity information is represented in the adjacency dict.
+    attributes : dict
+        A dictionary of miscellaneous information about the graph.
+    default_node_attributes : dict
+        A dictionary mapping node attribute names to their default values.
+    default_edge_attributes : dict
+        A dictionary mapping edge attribute names to their default values.
+    data : dict
+        A dictionary representing the essential data of a graph that can be used in serialization
+        processes.
 
-    A ``Analysis`` is composed by the following elements:
-
-    *   ``FormDiagram``
-
-        *   ``FormDiagram``  : Layout for the forces to follow
-
-    *   ``Optimiser``
-
-        *   ``Optimiser``    : Information about the solver and other specificities.
-
-    *   ``Shape``
-
-        *   ``Shape``    : Intrados, Extrados and Middle surface of the structure.
-
-
-    The main methods available with the ``Analysis`` previous to runing the optimisation are:
-
-        *   ``apply_selfweight``        : Apply deadload to the structure based on the shape.
-        *   ``apply_pointed_load``      : Apply pointed load to the structure in a given key, in a direction 'px', 'py', 'pz'.
-        *   ``apply_hor_multiplier``    : Apply horizontal multiplier in a direction 'px', 'py', 'pz'.
-        *   ``apply_envelope``          : Apply Envelope to the nodes' attributes.
-        *   ``aplpy_cracks``            : Create aditional constraints on the cracks.
-        *   ``apply_reaction_bounds``   : Create bounds on the position of the compute_reactions.
-        *   ``apply_partial_reactions`` : Allow for partial compute_reactions to form on the open edges.
-
-
-    To run the optimisation and see results one can use:
-
-        *   ``run``    : Method that will run the specified optimiser in the problem
-        *  ``results_summary``: Work in progress
+    Examples
+    --------
+    >>>
 
     """
 
-    def __init__(self):
+    def __init__(self, name="Analysis"):
         self.settings = {}
         self.shape = None
         self.form = None
         self.optimiser = None
+        self.name = name
 
     @classmethod
     def from_elements(cls, shape, form, optimiser):
-        """Create a analysis from the elements of the problem """
+        """Create a analysis from the elements of the problem (form, shape and optimiser) """
 
         analysis = cls()
         analysis.shape = shape
@@ -98,7 +97,7 @@ class Analysis(Data):
 
     @classmethod
     def from_form_and_optimiser(cls, form, optimiser):
-        """Create a analysis from the elements of the problem """
+        """Create a analysis from the elements of the problem (form and optimiser)"""
 
         analysis = cls()
         analysis.shape = None
@@ -109,7 +108,7 @@ class Analysis(Data):
 
     @classmethod
     def from_form_and_shape(cls, form, shape):
-        """Create a analysis from the elements of the problem """
+        """Create a analysis from the elements of the problem (form and shape) """
 
         analysis = cls()
         analysis.shape = shape
@@ -243,6 +242,9 @@ class Analysis(Data):
 
     def limit_analysis_GSF(self, thk, thk_reduction, span, thk_refined=None, limit_equal=0.01, fill_percentage=None, rollers_ratio=None,
                            rollers_absolute=None, printout=True, plot=False, save_forms=None):
+        """ Routine to compute the succesive max/min optimisation optimisation.
+
+        """
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -381,7 +383,9 @@ class Analysis(Data):
 
     def thk_minmax_GSF(self, thk_max, thk_step=0.05, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False,
                        save_forms=None, jump_minthk=False, swt_from_pattern=False):
+        """ Routine to compute the succesive max/min optimisations starting from the minimum thickness.
 
+        """
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
         thicknesses_min = []
@@ -584,6 +588,9 @@ class Analysis(Data):
         return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
 
     def max_n_minmax_GSF(self, n_step=0.01, fill_percentage=None, rollers_ratio=None, rollers_absolute=None, printout=True, plot=False, save_forms=None):
+        """ Routine to compute max/min thrust optimisation problems for non-analytic surfaces, considering the nomal vectors 'n'.
+
+        """
 
         solutions_min = []  # empty lists to keep track of the solutions for min thrust
         solutions_max = []  # empty lists to keep track of the solutions for max thrust
@@ -781,8 +788,3 @@ class Analysis(Data):
             print(solutions_max)
 
         return [thicknesses_min, thicknesses_max],  [solutions_min, solutions_max]
-
-    def limit_analysis_load_mult(self, load0, load_increase, load_direction, percentual=True):
-        """"" W.I.P. """""
-
-        return

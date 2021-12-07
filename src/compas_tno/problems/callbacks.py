@@ -3,12 +3,6 @@ import json
 import compas_tno
 
 
-__all__ = [
-    'callback_save_json',
-    'callback_create_json',
-]
-
-
 def callback_save_json(xopt):
     """Save the iteration in a json file"""
 
@@ -27,6 +21,7 @@ def callback_save_json(xopt):
 
 
 def callback_create_json():
+    """Create a json to store the iterations of an optimisation"""
 
     data = {'iterations': {}}
 

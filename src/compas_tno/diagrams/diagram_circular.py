@@ -4,13 +4,6 @@ from compas.datastructures import Mesh
 from compas.geometry import intersection_line_line_xy
 
 
-__all__ = [
-    'create_circular_radial_form',
-    'create_circular_radial_spaced_form',
-    'create_circular_spiral_form',
-]
-
-
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
     """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.
 

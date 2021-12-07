@@ -13,13 +13,6 @@ from numpy import float64
 from scipy.sparse import diags
 
 
-__all__ = [
-    'form_update_with_parallelisation',
-    'force_update_from_form',
-    'reciprocal_from_form'
-]
-
-
 def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, kmax=500):
     """Parallelise a TNO form diagram using as starting point the centroidal dual as ForceDiagram.
 
@@ -42,7 +35,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
        Default is ``500``.
 
     Reference
-    ------
+    ---------
     See ``compas_tna`` package.
 
     Returns
@@ -118,7 +111,7 @@ def reciprocal_from_form(form, plot=False):
         The default value is ``False``.
 
     Reference
-    ------
+    ---------
     See ``compas_ags`` package.
 
     Returns
@@ -183,7 +176,7 @@ def force_update_from_form(force, form):
         The form diagram to update.
 
     Reference
-    -------
+    ---------
 
     See ``compas_tna`` package.
 

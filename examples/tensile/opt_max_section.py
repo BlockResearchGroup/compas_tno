@@ -37,7 +37,7 @@ constraints = ['funicular', 'envelope', 'reac_bounds']
 variables = ['q', 'zb', 'tub', 'tub_reac']  # in the future add 'tlb' as variables
 features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
-starting_point = 'loadpath'
+starting_point = 'current'
 
 # Set the maximum allowable increase of each thickness
 tubmax = 0.5

@@ -11,7 +11,6 @@ Symmetry
 .. autosummary::
     :toctree: generated/
 
-    apply_symmetry
     build_symmetry_matrix
     build_symmetry_transformation
     build_vertex_symmetry_transformation

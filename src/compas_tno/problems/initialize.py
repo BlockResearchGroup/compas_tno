@@ -1,11 +1,6 @@
 from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
 
 
-__all__ = ['initialize_loadpath',
-           'initialize_tna'
-           ]
-
-
 def initialize_loadpath(form, problem=None):
     """ Built-in function to optimise the loadpath considering diagram fixed projection
     """

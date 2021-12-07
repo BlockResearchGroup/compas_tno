@@ -7,8 +7,6 @@ from cvxpy import Problem
 from numpy import hstack
 
 from compas_tno.algorithms import equilibrium_fdm
-from compas_tno.algorithms import zlq_from_qid  # removed
-from compas_tno.algorithms import zlq_from_q
 from compas_tno.problems import initialise_problem
 
 from compas.numerical import equilibrium_matrix

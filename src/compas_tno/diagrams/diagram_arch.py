@@ -4,12 +4,6 @@ from numpy import linspace
 import math
 
 
-__all__ = [
-    'create_arch_form_diagram',
-    'create_linear_form_diagram',
-]
-
-
 def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
     """ Helper to create a arch linear form-diagram with equaly spaced (in 3D) nodes.
 
@@ -111,12 +105,3 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
     form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
 
     return form
-
-
-# def _linspace(start, stop, n):
-#     if n == 1:
-#         yield stop
-#         return
-#     h = (stop - start) / (n - 1)
-#     for i in range(n):
-#         yield start + h * i

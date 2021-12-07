@@ -8,16 +8,6 @@ from math import sqrt
 from copy import deepcopy
 
 
-__all__ = [
-    'find_independents',
-    'independents_exclude',
-    'independents_include',
-    'inds_incl_excl',
-    'check_independents',
-    'check_horizontal'
-]
-
-
 def find_independents(E):
     """ Find independent edges in a given equilibrium matrix.
 

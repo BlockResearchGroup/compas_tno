@@ -28,18 +28,104 @@ from compas_tno.utilities import build_symmetry_transformation
 import time
 
 
-__all__ = [
-    'Problem',
-    'initialise_problem',
-    'initialise_form',
-    'initialise_problem_general',
-    'adapt_problem_to_fixed_diagram',
-    'adapt_problem_to_sym_diagram',
-    'adapt_problem_to_sym_and_fixed_diagram'
-]
-
-
 class Problem():
+
+    """
+    The ``Problem`` class stores the matrices used in the optimisation. These are listed as parameters of the class and described below.
+
+    Parameters
+    ----------
+
+    ``q`` : array(m x 1)
+        The vector of force densities
+    m : int
+        The number of edges
+    n : int
+        The number of vertices
+    nb : int
+        The number of fixed vertices
+    E : array(2n x m)
+        The horizontal equilibrium matrix
+    C : array(n x m)
+        The connectivity matrix
+    Ct : array(m x n)
+        The transposed connectivity matrix
+    Ci : array(m x ni)
+        The sliced connectivity matrix with regards to the internal vertices
+    Cit : array(ni x m)
+        The transpose of Ci
+    Cb : array(nb x m)
+        The sliced connectivity matrix with regards to the constrained (support) vertices
+    U : array(m x m)
+        The diagonal matrix of coorrdinate differences in the x-direction
+    V : array(m x m)
+        The diagonal matrix of coorrdinate differences in the y-direction
+    P : array(n x 3)
+        The applied external loads in all nodes
+    free : list
+        The list with the index of the free vertices
+    fixed : list
+        The list with the index of the fixed vertices
+    phfree : array(ni x 2)
+        The applied horizonal loads on the free vertices
+    ph : array(ni x 2)
+        A column vector with the the applied horizonal loads on the free vertices
+    lb : array(n x 1)
+        The lower-bound (intrados) limit for the nodes
+    ub : array(n x 1)
+        The upper-bound (extrados) limit for the nodes
+    lb0 : array(n x 1)
+        The lower-bound (intrados) limit for the nodes at the starting point (can be modified if thickness in the objective)
+    ub0 : array(n x 1)
+        The upper-bound (extrados) limit for the nodes at the starting point (can be modified if thickness in the objective)
+    s : array(n x 1)
+        The middle surface of the nodes
+    X : array(n x 3)
+        The nodal position of the vertices of the network
+    x0 : array(n x 1)
+        The x-position of the vertices in the network
+    y0 : array(n x 1)
+        The y-position of the vertices in the network
+    free_x : list
+        index of the vertices free to move in x
+    free_y : list
+        index of the vertices free to move in y
+    rol_x : list
+        index of the vertices constrained partially on x.
+    rol_y : list
+        index of the vertices constrained partially on y.
+    Citx : array
+        Connectivity matrix sliced transposed on the vertices free on x.
+    City : array
+        Connectivity matrix sliced transposed on the vertices free on y.
+    Cbtx : array
+        Connectivity matrix sliced transposed on the vertices partially fixed on x.
+    Cbty : array
+        Connectivity matrix sliced transposed on the vertices partially fixed on y.
+    xlimits : array(n x 1)
+        Limits on the x-direction in which the nodes can move
+    ylimits : array(n x 1)
+        Limits on the y-direction in which the nodes can move
+    qmin : array(m x 1)
+        Lower-bounds of the force densities in the edges
+    qmax : array(m x 1)
+        Upper-bounds of the force densities in the edges
+    k_i : dict
+        key-index dictionary
+    uv_i : dict
+        uv-index dictionary
+    i_uv : dict
+        index-uv dictionary
+    ind : list
+        List with the index of the independent edges
+    k : int
+        Number of independents in the problem
+    dep : list
+        List with the index of the dependent edges
+    B : array(m x k)
+        Matrix transforming the force densities in the independent edges to all force densities
+
+    """
 
     def __init__(self):
         pass
@@ -624,6 +710,7 @@ def initialise_problem_general(form, printout=None, tol=0.001):
 
 
 def adapt_problem_to_fixed_diagram(problem, form, printout=False):
+    """ Adapt the problem assuming that the form diagram is fixed in plan."""
 
     ind = []
 
@@ -674,6 +761,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
 
 
 def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False):
+    """ Adapt the problem assuming that the form diagram is symmetric."""
 
     start_time = time.time()
 
@@ -706,6 +794,7 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
 
 
 def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False):
+    """ Adapt the problem assuming that the form diagram is symmetric and fixed in plane."""
 
     start_time = time.time()
 
@@ -763,6 +852,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=Non
 
 
 def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=True):
+    """ Apply symmetry to the form diagram."""
 
     if not list_axis_symmetry:
         data = form.parameters

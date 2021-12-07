@@ -11,14 +11,9 @@ from compas_tno.problems.bounds_update import dub_dlb_update
 from compas_tno.problems.bounds_update import db_update
 
 
-__all__ = [
-    'd_fconstr',
-    'sensitivities_wrapper_general'
-]
-
-
-# Jacobian "approximated by hand"
 def d_fconstr(fconstr, x0, eps, *args):
+    """Jacobian matrix approximated by hand using finite differences"""
+
     fval = fconstr(x0, *args).reshape(-1, 1)
     m = len(fval)
     n = len(x0)
@@ -31,17 +26,8 @@ def d_fconstr(fconstr, x0, eps, *args):
     return dfdx
 
 
-def compute_dQ(q, ind, dep, Edinv, Ei):
-
-    dQdep = Edinv.dot(Ei)
-    dQ = zeros((len(q), len(ind)))
-    dQ[ind] = identity(len(ind))
-    dQ[dep] = dQdep[:, :len(ind)]
-
-    return dQ, dQdep
-
-
-def sensitivities_wrapper_general(variables, M):
+def sensitivities_wrapper(variables, M):
+    """Jacobian matrix computed based on the constraints and variables assigned."""
 
     if isinstance(M, list):
         M = M[0]
