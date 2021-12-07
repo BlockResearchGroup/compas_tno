@@ -17,7 +17,6 @@ Viewer
 """
 
 from __future__ import absolute_import
-from compas_tna.diagrams.formdiagram import FormDiagram
 
 from compas_view2.objects import Object
 from compas_view2.objects import MeshObject

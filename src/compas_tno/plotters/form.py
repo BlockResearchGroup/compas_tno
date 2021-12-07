@@ -526,7 +526,6 @@ def lines_and_points_from_form(form, plot_reactions, cracks, radius, max_width, 
 
     for u, v in form.edges():
         qi = form.edge_attribute((u, v), 'q')
-        fi = form.edge_attribute((u, v), 'f')
         width = max_width if fix_width else (qi / qmax) * max_width
         if not hide_negative or (form.vertex_coordinates(u)[2] > -10e-4 and form.vertex_coordinates(v)[2] > -10e-4):
             lines.append({

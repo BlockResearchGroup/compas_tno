@@ -53,13 +53,11 @@ from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_average_edge_stiffness
-from compas_tno.utilities import find_sym_axis_in_rect_patterns
 
 from numpy import append
 from numpy import array
 from numpy import zeros
 from numpy import vstack
-from numpy import ones
 
 
 __all__ = [

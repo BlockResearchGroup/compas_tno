@@ -101,7 +101,6 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
         plotter.draw_vertices(keys=form.fixed())
         plotter.show()
 
-
     return
 
 

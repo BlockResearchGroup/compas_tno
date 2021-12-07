@@ -1,5 +1,4 @@
 from numpy import zeros
-from numpy import ones
 from numpy import identity
 from numpy import hstack
 from numpy import vstack
