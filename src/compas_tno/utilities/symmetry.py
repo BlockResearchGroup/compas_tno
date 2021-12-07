@@ -25,7 +25,7 @@ def apply_radial_symmetry(form, center=[5.0, 5.0, 0.0], correct_loads=True):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     center : list
         The coordinates of the center of the pattern.
@@ -103,7 +103,7 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     list_axis_symmetry : list
         The list of the axis of symmetry.
@@ -270,7 +270,7 @@ def build_symmetry_matrix(form, printout=False):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Whether or not display messages are printed.
@@ -315,7 +315,7 @@ def build_symmetry_transformation(form, printout=False):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Whether or not display messages are printed.
@@ -355,7 +355,7 @@ def build_vertex_symmetry_transformation(form, printout=False):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Whether or not display messages are printed.

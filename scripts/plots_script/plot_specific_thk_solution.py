@@ -3,7 +3,7 @@ from compas_tno.shapes import Shape
 from compas_tno.plotters import plot_form
 from compas_tno.plotters.form import plot_form_semicirculararch_xz
 from compas_tno.viewers import Viewer
-from compas_tno.algorithms import reactions
+from compas_tno.algorithms import compute_reactions
 import os
 
 type_structure = 'dome'
@@ -55,7 +55,7 @@ title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation
 #         pz = form.vertex_attribute(key, 'pz')
 #         form.vertex_attribute(key, 'pz', -pz)
 
-#     reactions(form)
+#     compute_reactions(form)
 
 #     form.attributes['Re'] = radius + thk/2
 #     form.attributes['Ri'] = radius - thk/2
@@ -75,7 +75,7 @@ n = 1
 radius = 5.0
 form.overview_forces()
 
-reactions(form)
+compute_reactions(form)
 
 from compas_tno.viewers import view_thrust_as_lines
 view_thrust_as_lines(form).show()

@@ -184,8 +184,8 @@ view.show_solution()
 # form.to_json(address)
 # print('Saved to: ', address)
 from compas_tno.plotters.form import plot_form_semicirculararch_xz
-from compas_tno.algorithms import reactions
-reactions(form)
+from compas_tno.algorithms import compute_reactions
+compute_reactions(form)
 tol = 10e-3
 form.attributes['Re'] = radius + thk/2
 form.attributes['Ri'] = radius - thk/2

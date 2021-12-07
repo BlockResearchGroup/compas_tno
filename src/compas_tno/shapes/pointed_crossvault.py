@@ -38,9 +38,9 @@ def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, disc
         Height of each quadrant mid-span (see Notes).
     ub_lb : bool (optional)
         If True, the thickness will apply and the limits will be stored as attributes 'ub' and 'lb' on the form-diagram
-    thk : float (optional)
+    thk : float, optional
         Thickness of the vault - perpendicular to the middle surface
-    tol : float (optional)
+    tol : float, optional
         Approximates the equations avoiding negative square-roots.
     set_heights: bool
         If True, the nodes will have the heights 'z' updated to match the pointed arch shape.

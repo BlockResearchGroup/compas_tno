@@ -165,7 +165,7 @@ def constr_wrapper_general(variables, M):
         constraints = vstack([constraints, zmin, zmax])
 
     if 'reac_bounds' in M.constraints:
-        # constraints in reactions
+        # constraints in compute_reactions
         if 't' in M.variables:
             M.b = b_update(M.x0, M.y0, thk, M.fixed, M.shape, M.b, M.variables)
         elif 'n' in M.variables:

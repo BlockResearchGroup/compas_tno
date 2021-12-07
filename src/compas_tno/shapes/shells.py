@@ -23,13 +23,13 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
     ----------
     xy_span : list
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-    thk : float (optional)
+    thk : float, optional
         Thickness of the vault - perpendicular to the middle surface.
-    r : float (optional)
+    r : float, optional
         Radius of the middle surface of the vault. If None, it will be calculated as half diagonal
     center: list
         List with coordinates (x,y) of the center of the sphere [xc,yc]
-    tol : float (optional)
+    tol : float, optional
         Approximates the equations avoiding negative square-roots.
     discretisation: list
         Density of the grid that approximates the surfaces in x- and y- directions.
@@ -151,9 +151,9 @@ def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5
         Height of each quadrant mid-span (see Notes).
     ub_lb : bool (optional)
         If True, the thickness will apply and the limits will be stored as attributes 'ub' and 'lb' on the form-diagram
-    thk : float (optional)
+    thk : float, optional
         Thickness of the vault - perpendicular to the middle surface
-    tol : float (optional)
+    tol : float, optional
         Approximates the equations avoiding negative square-roots.
     set_heights: bool
         If True, the nodes will have the heights 'z' updated to match the pointed arch shape.

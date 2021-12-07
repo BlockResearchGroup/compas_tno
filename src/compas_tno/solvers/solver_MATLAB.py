@@ -5,7 +5,7 @@ import time
 
 from numpy import array
 
-from compas_tno.algorithms import reactions
+from compas_tno.algorithms import compute_reactions
 
 from compas_tno.problems import initialise_problem_general
 from compas_tno.problems import adapt_problem_to_fixed_diagram
@@ -60,7 +60,7 @@ def run_optimisation_MATLAB(analysis):
     optimiser.exitflag = exitflag
     optimiser.fopt = fopt
     analysis.form = form
-    reactions(form, plot=plot)
+    compute_reactions(form, plot=plot)
 
     return analysis
 
@@ -134,7 +134,7 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
     # plotter.show()
 
     form.attributes['loadpath'] = form.loadpath()
-    reactions(form)
+    compute_reactions(form)
 
     summary = True
 

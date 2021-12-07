@@ -17,18 +17,16 @@ from compas_plotters import MeshPlotter
 
 
 __all__ = [
-    'z_from_form',
-    'z_update',
-    'zlq_from_qid',
-    'zq_from_qid',
+    'equilibrium_fdm',
+    'vertical_equilibrium_fdm',
     'q_from_qid',
     'xyz_from_q',
-    'reactions',
+    'compute_reactions',
 ]
 
 
-def z_from_form(form):
-    """ Relaxation of Form-Diagram. FDM with 'q's stored in the form (All coordinates can change).
+def equilibrium_fdm(form):
+    """ Compute equilibrium of the form diagram using the force density method (FDM) with 'q's stored in the form (All coordinates can change).
 
     Parameters
     ----------
@@ -66,12 +64,12 @@ def z_from_form(form):
     return form
 
 
-def z_update(form, zmax=None):
-    """ Built-in update of the heights in the Form-Diagram (only z-coordinates can change).
+def vertical_equilibrium_fdm(form, zmax=None):
+    """ Compute equilibrium of the form diagram using the force density method (FDM) and update only the z-coordinates.
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     zmax : float, optional
         The maximum height of the diagram.
@@ -79,7 +77,7 @@ def z_update(form, zmax=None):
 
     Returns
     -------
-    form : obj
+    form : FormDiagram
         The scaled form diagram.
 
     """
@@ -123,72 +121,7 @@ def z_update(form, zmax=None):
     return form
 
 
-def zlq_from_qid(qid, args):  # deprecated remove on next clean up
-    """ Calculate z's from independent edges.
-
-    Parameters
-    ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    l2 : array
-        Lenghts squared
-    q : array
-        Force densities without symetrical edges (q[sym] = 0)
-    q_ : array
-        Force densities with symetrical edges
-
-    """
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
-    q[ind] = array(qid).reshape(-1, 1)
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    q_ = 1 * q
-    q[sym] *= 0
-
-    # if not planar:
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-    l2 = lh + C.dot(z)**2
-
-    return z, l2, q, q_
-
-
-def zq_from_qid(qid, args):  # deprecated remove on next clean up
-    """ Calculate z's from independent edges.
-
-    Parameters
-    ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    q : array
-        Force densities
-
-    """
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed = args[:20]
-    q[ind] = array(qid).reshape(-1, 1)
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-
-    return z, q
-
-
-def q_from_qid(q, ind, Edinv, Ei, ph):  # deprecated remove on next clean up
+def q_from_qid(q, ind, Edinv, Ei, ph):
     r""" Calculate q's from all qid's.
 
     Parameters
@@ -272,7 +205,7 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
     return Xfree
 
 
-def reactions(form, plot=False):
+def compute_reactions(form, plot=False):
     """ Compute and plot the reaction on the supports.
 
     Parameters

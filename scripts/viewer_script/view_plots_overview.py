@@ -4,7 +4,7 @@ from compas_tno.viewers import Viewer
 
 # from compas_tno.viewers import Viewer
 # from compas_tno.plotters import plot_form
-# from compas_tno.algorithms import reactions
+# from compas_tno.algorithms import compute_reactions
 
 address = '/Users/mricardo/compas_dev/me/compl_energy/assym/dome/radial_fd/sign_-1/dome_radial_fd_discr_[20, 16]_Ecomp-linear_thk_50.0.json'
 

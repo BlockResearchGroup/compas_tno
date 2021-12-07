@@ -12,7 +12,7 @@ from compas_tno.viewers import view_bestfit_solution
 from compas_tno.viewers import view_thrust_as_lines
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.algorithms import z_from_form
+from compas_tno.algorithms import equilibrium_fdm
 import compas
 
 # Load and print useful INFO
@@ -83,7 +83,7 @@ form_base = form.copy()
 
 form_base = form.copy()
 
-# z_from_form(form)
+# equilibrium_fdm(form)
 # plot_superimposed_diagrams(form, form_base, max_width=3.0).show()
 # view_thrust(form).show()
 

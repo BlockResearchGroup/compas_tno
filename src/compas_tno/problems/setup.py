@@ -34,7 +34,7 @@ from compas_tno.problems import initialize_loadpath
 from compas_tno.problems import initialize_tna
 
 from compas_tno.algorithms import apply_sag
-from compas_tno.algorithms import z_from_form
+from compas_tno.algorithms import equilibrium_fdm
 
 from compas_tno.problems import gradient_feasibility
 from compas_tno.problems import gradient_reduce_thk
@@ -125,7 +125,7 @@ def set_up_general_optimisation(analysis):
         initialize_loadpath(form, problem=M)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'relax':
-        z_from_form(form)
+        equilibrium_fdm(form)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'tna' or starting_point == 'TNA':
         initialize_tna(form)

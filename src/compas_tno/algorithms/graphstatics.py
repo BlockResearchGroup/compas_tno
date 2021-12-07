@@ -2,7 +2,7 @@ from compas_tno.diagrams import ForceDiagram
 
 from compas_tna.equilibrium import horizontal_nodal
 
-from compas_tno.algorithms.equilibrium import z_update
+from compas_tno.algorithms.equilibrium import vertical_equilibrium_fdm
 
 from compas.numerical import connectivity_matrix
 from compas.numerical import spsolve_with_known
@@ -88,7 +88,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
         form.edge_attribute(edge, 'q', -1 * q[index])
 
     # update vertical equilibrium (only z coordinates change)
-    z_update(form, zmax=zmax)
+    vertical_equilibrium_fdm(form, zmax=zmax)
 
     # plot of diagrams @ final state
     if plot:

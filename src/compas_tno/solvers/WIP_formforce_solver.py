@@ -10,8 +10,8 @@ from scipy.sparse import diags
 
 from compas.numerical import connectivity_matrix
 
-from compas_tno.algorithms import z_from_form
-from compas_tno.algorithms import z_update
+from compas_tno.algorithms import equilibrium_fdm
+from compas_tno.algorithms import vertical_equilibrium_fdm
 
 # from compas_tno.diagrams.form import evaluate_a
 # from compas_tno.diagrams.form import energy
@@ -132,7 +132,7 @@ def optimise_fdm(form, plot=True, surf=False):
             k += 1
 
             # form_ = update_form(form_, q)
-            z_update(form_)
+            vertical_equilibrium_fdm(form_)
             f = form.loadpath()
 
             if f < f0:
@@ -162,7 +162,7 @@ def optimise_fdm(form, plot=True, surf=False):
                 z[i] = vertex.get('z')
             print('End of Iteration {0} / Stepsize: {1:.5f} / Evergy Var: {2:.1f}% / Energy: {3:.1f}'.format(it, step, (f-f0)/f0*100, f))
 
-            form = z_from_form(form)
+            form = equilibrium_fdm(form)
 
             if surf:
                 for key, vertex in form.vertex.items():

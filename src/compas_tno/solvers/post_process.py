@@ -1,4 +1,4 @@
-from compas_tno.algorithms import reactions
+from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape
 from compas_tno.utilities import apply_envelope_from_shape
@@ -85,7 +85,7 @@ def post_process_general(analysis):
         form.edge_attribute((u, v), 'f', float(qi*li))
 
     form.attributes['loadpath'] = form.loadpath()
-    reactions(form)
+    compute_reactions(form)
 
     if 't' in variables:
         if shape.datashape['type'] == 'general':

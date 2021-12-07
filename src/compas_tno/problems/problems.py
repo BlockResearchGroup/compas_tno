@@ -56,7 +56,7 @@ def initialise_problem(form, indset=None, printout=None, find_inds=True, tol=0.0
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Control output.
@@ -244,7 +244,7 @@ def initialise_form(form, printout=False):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Whether or not printouts with the main resuslts should appear in the screen.
@@ -282,7 +282,7 @@ def initialise_problem_torch(form, indset=None, printout=None, find_inds=True, t
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Control output.
@@ -466,7 +466,7 @@ def initialise_problem_general(form, printout=None, tol=0.001):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     printout : bool
         Control output.

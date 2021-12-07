@@ -34,7 +34,7 @@ def plot_form(form, radius=0.05, fix_width=False, max_width=10, simple=False, sh
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float (0.05)
         Radius of vertex markers.
@@ -228,7 +228,7 @@ def plot_simple_form(form):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
 
     Returns
@@ -250,7 +250,7 @@ def plot_distance_target(form, radius=0.10, fix_width=False, max_width=10, simpl
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float (0.05)
         Radius of vertex markers.
@@ -367,7 +367,7 @@ def plot_form_xz(form, shape, radius=0.05, fix_width=False, max_width=10, plot_r
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     shape: obj
         Shape to plot.
@@ -971,7 +971,7 @@ def plot_form_semicirculararch_xz(form, radius=0.05, fix_width=False, max_width=
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float
         Radius of vertex markers.
@@ -1221,7 +1221,7 @@ def plot_independents(form, radius=0.05, fix_width=True, width=10, number_ind=Tr
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float
         Radius of vertex markers.
@@ -1303,7 +1303,7 @@ def plot_symmetry(form, radius=0.05, print_sym=True, fix_width=True, width=10, s
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float
         Radius of vertex markers.
@@ -1379,7 +1379,7 @@ def plot_symmetry_vertices(form, radius=0.1, print_sym=True, fix_width=True, wid
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float
         Radius of vertex markers.

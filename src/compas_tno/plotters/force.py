@@ -17,7 +17,7 @@ def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_
     ----------
     force : obj
         ForceDiagram to plot.
-    form : obj
+    form : FormDiagram
         FormDiagram realated to plot.
     show_length : bool
         Show the length of edges in the force diagram, that relate to the magnitude of the force in the FormDiagram.
@@ -74,7 +74,7 @@ def plot_dual(form):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot the dual from.
 
     Returns
@@ -113,7 +113,7 @@ def plot_force_independents(force, form, radius=0.05, width=10, number_ind=True,
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float
         Radius of vertex markers.

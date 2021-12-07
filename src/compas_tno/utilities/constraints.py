@@ -113,7 +113,7 @@ def assign_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top']):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         ForceDiagram to constraint.
     dx : list
         List of the range on the x-coordinates of the nodes to be constrained.
@@ -124,7 +124,7 @@ def assign_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top']):
 
     Returns
     -------
-    form : obj
+    form : FormDiagram
         ForceDiagram with the constraints in attribute 'cracks'.
 
     """
@@ -154,7 +154,7 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         ForceDiagram to constraint.
     xy_span: list
         The rectangular footprint of the diagram.
@@ -165,7 +165,7 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
 
     Returns
     -------
-    form : obj
+    form : FormDiagram
         ForceDiagram with the rollers assigned.
 
     """

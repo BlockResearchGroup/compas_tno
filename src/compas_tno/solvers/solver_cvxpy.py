@@ -6,8 +6,8 @@ from cvxpy import Problem
 
 from numpy import hstack
 
-from compas_tno.algorithms import z_from_form
-from compas_tno.algorithms import zlq_from_qid
+from compas_tno.algorithms import equilibrium_fdm
+from compas_tno.algorithms import zlq_from_qid  # removed
 from compas_tno.algorithms import zlq_from_q
 from compas_tno.problems import initialise_problem
 
@@ -20,7 +20,7 @@ from numpy import array
 import matlab.engine
 
 from compas.utilities import geometric_key
-from compas_tno.algorithms.equilibrium import reactions
+from compas_tno.algorithms.equilibrium import compute_reactions
 
 
 __all__ = [
@@ -94,7 +94,7 @@ def optimise_convex(form, qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
 
     form.attributes['iter'] = niter
     form.attributes['exitflag'] = exitflag
-    reactions(form, plot=plot)
+    compute_reactions(form, plot=plot)
 
     if summary:
         print('\n' + '-' * 50)
@@ -251,7 +251,7 @@ def min_loadpath(form, args, printout=False):
         qi = q.value[i]
         form.edge_attribute((u, v), 'q', qi)
 
-    form = z_from_form(form)
+    form = equilibrium_fdm(form)
 
     return form
 
@@ -296,7 +296,7 @@ def min_thrust(form, args, zmin, zmax, printout=False):
         qi = q.value[i]
         form.edge_attribute((u, v), 'q', qi)
 
-    form = z_from_form(form)
+    form = equilibrium_fdm(form)
 
     return form
 

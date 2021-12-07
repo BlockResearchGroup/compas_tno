@@ -4,7 +4,7 @@ from compas_tno.viewers import Viewer
 
 # from compas_tno.viewers import Viewer
 # from compas_tno.plotters import plot_form
-# from compas_tno.algorithms import reactions
+# from compas_tno.algorithms import compute_reactions
 
 # address = '/Users/mricardo/compas_dev/me/general_opt/min_thk/crossvault/cross_fd/mov_c_0.1/crossvault_cross_fd_discr_10_min_thk_50.0.json'
 address = '/Users/mricardo/compas_dev/me/compl_energy/assym/crossvault/cross_fd/mov_c_0.1/sign_1/crossvault_cross_fd_discr_10_Ecomp-nonlinear_thk_50.0.json'

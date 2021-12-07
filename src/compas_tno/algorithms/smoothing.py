@@ -5,7 +5,7 @@ from compas.datastructures import mesh_smooth_centerofmass
 
 from compas.geometry import closest_point_on_line
 
-from compas_tno.algorithms.equilibrium import z_from_form
+from compas_tno.algorithms.equilibrium import equilibrium_fdm
 
 __all__ = [
     'constrained_smoothing',
@@ -90,7 +90,7 @@ def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):  # probably mo
     for u, v in form.edges_on_boundary():
         form.edge_attribute((u, v), 'q', signe_compression*boundary_force)
 
-    z_from_form(form)
+    equilibrium_fdm(form)
 
     for key in form.vertices():
         form.vertex_attribute(key, 'z', 0.0)

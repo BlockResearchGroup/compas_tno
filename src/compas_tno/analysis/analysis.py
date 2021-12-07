@@ -68,8 +68,8 @@ class Analysis(Data):
         *   ``apply_hor_multiplier``    : Apply horizontal multiplier in a direction 'px', 'py', 'pz'.
         *   ``apply_envelope``          : Apply Envelope to the nodes' attributes.
         *   ``aplpy_cracks``            : Create aditional constraints on the cracks.
-        *   ``apply_reaction_bounds``   : Create bounds on the position of the reactions.
-        *   ``apply_partial_reactions`` : Allow for partial reactions to form on the open edges.
+        *   ``apply_reaction_bounds``   : Create bounds on the position of the compute_reactions.
+        *   ``apply_partial_reactions`` : Allow for partial compute_reactions to form on the open edges.
 
 
     To run the optimisation and see results one can use:
@@ -413,7 +413,7 @@ class Analysis(Data):
 
         if exitflag == 0:
             thk_min = self.form.attributes['thk']
-            # reactions(self.form)
+            # compute_reactions(self.form)
             swt = self.form.lumped_swt()
             T = self.form.thrust()
             T_over_swt = T/swt

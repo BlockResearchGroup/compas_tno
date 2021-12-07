@@ -27,7 +27,7 @@ force0fixed = '/Users/mricardo/compas_dev/me/freeform/tom/force0_fixed.json'
 # from compas_tno.viewers import view_thrust_as_lines
 # from compas_tno.plotters import plot_form
 # from compas_tno.plotters import plot_superimposed_diagrams
-# from compas_tno.algorithms import z_from_form
+# from compas_tno.algorithms import equilibrium_fdm
 # import compas
 # import json
 

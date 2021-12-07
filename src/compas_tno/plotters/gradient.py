@@ -12,7 +12,7 @@ def plot_grad(form, radius=0.1, fix_width=False, max_width=10, simple=True):
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         FormDiagram to plot.
     radius : float
         Radius of vertex markers.

@@ -34,10 +34,10 @@ def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol
     xy_span : list
         List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
 
-    thk : float (optional)
+    thk : float, optional
         Thickness of the vault - perpendicular to the middle surface
 
-    tol : float (optional)
+    tol : float, optional
         Approximates the equations avoiding negative square-roots.
 
     discretisation: int
