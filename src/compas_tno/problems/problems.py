@@ -132,6 +132,7 @@ class Problem():
 
     @classmethod
     def from_formdiagram(cls, form, indset=None, printout=False, find_inds=False):
+        """Initialise the problem object form a form diagram."""
         problem = cls()
 
         return problem
