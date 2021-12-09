@@ -1,5 +1,7 @@
 from compas_plotters import Plotter
+from compas.geometry import Vector
 from compas.geometry import Point
+from compas_plotters.artists import VectorArtist
 
 
 __all__ = ['FormPlotter']
@@ -33,6 +35,7 @@ class FormPlotter(object):
         self._shape = shape
         self._formbase = form_base
         self._formartist = None
+        self._otherartists = []
         self.settings = {
             'show.thrust': True,
             'show.shape': True,
@@ -62,7 +65,7 @@ class FormPlotter(object):
             'size.reaction.body_width': 0.01,
             'size.reactionlabel': 20,
 
-            'scale.reactions': 0.001,
+            'scale.reactions': 0.005,
             'scale.loads': 0.001,
             'opacity.shapes': 0.5,
 
@@ -283,7 +286,7 @@ class FormPlotter(object):
                 # vertexsize=self.settings['size.vertex']  # THIS SHOULD BE PASSABLE HERE
             )
 
-    def view_reactions(self):
+    def draw_reactions(self):
         """Add to the plots the vector of the reaction forces.
 
         Returns
@@ -300,6 +303,13 @@ class FormPlotter(object):
                 rx = self.form.vertex_attribute(key, '_rx') * reaction_scale
                 ry = self.form.vertex_attribute(key, '_ry') * reaction_scale
                 rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
+                r = Vector(-rx, -ry, -rz)
+                pt = Point(x, y, z)
+                # self.app.add(r)
+                vectorartist = VectorArtist(r, point=pt)
+                vectorartist.draw()
+                self._otherartists.append(vectorartist)
+                # self.app.add((r, pt))
                 # arrow = Arrow([x, y, z], [-rx, -ry, -rz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
                 # self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
