@@ -32,6 +32,7 @@ class FormPlotter(object):
         self._form = form
         self._shape = shape
         self._formbase = form_base
+        self._formartist = None
         self.settings = {
             'show.thrust': True,
             'show.shape': True,
@@ -107,6 +108,16 @@ class FormPlotter(object):
     def form_base(self, value):
         self._form_base = value
 
+    @property
+    def formartist(self):
+        """The formartist property."""
+        return self._formartist
+
+    @formartist.setter
+    def formartist(self, value):
+        if not self._formartist:
+            self._formartist = value
+
     def initiate_app(self):
         """ Initiate the Plotter with the default camera options
 
@@ -181,7 +192,6 @@ class FormPlotter(object):
 
         if self.settings['show.edges']:
             edges = list(self.form.edges_where({'_is_edge': True}))
-            print(edges)
 
         if self.settings['show.faces']:
             faces = list(self.form.faces())
@@ -189,7 +199,7 @@ class FormPlotter(object):
         if self.settings['show.supports']:
             vertices = list(self.form.fixed())
 
-        self.app.add(
+        formartist = self.app.add(
             self.form,
             vertices=vertices,
             edges=edges,
@@ -199,6 +209,8 @@ class FormPlotter(object):
             vertexcolor=_norm(self.settings['color.vertex.supports']),
             vertexsize=self.settings['size.vertex']
             )
+
+        self.formartist = formartist
 
     def draw_cracks(self):
         """Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados
@@ -212,6 +224,10 @@ class FormPlotter(object):
         intrad = 1
         extrad = 1
         out = 1
+        tol = self.settings['tol.forces']
+        color_intra = _norm(self.settings['color.vertex.intrados'])
+        color_extra = _norm(self.settings['color.vertex.extrados'])
+        color_outside = _norm(self.settings['color.vertex.outside'])
 
         vertices = []
         color = {}
@@ -220,41 +236,51 @@ class FormPlotter(object):
             lb = self.form.vertex_attribute(key, 'lb')
             ub = self.form.vertex_attribute(key, 'ub')
             if not lb:
-                pass
+                continue
             if not ub:
-                pass
+                continue
             x, y, z = self.form.vertex_coordinates(key)
             if self.settings['show.cracks']:
-                if abs(ub - z) < self.settings['tol.forces']:
+                if abs(ub - z) < tol:
                     vertices.append(key)
-                    color[key] = _norm(self.settings['color.vertex.extrados'])
-                    # self.app.add(Point(x, y, z), name="Extrados (%s)" % extrad, facecolor=_norm(self.settings['color.vertex.extrados']), size=self.settings['size.vertex'])
+                    color[key] = color_extra
                     extrad += 1
-                elif abs(lb - z) < self.settings['tol.forces']:
+                    continue
+                elif abs(lb - z) < tol:
                     vertices.append(key)
-                    color[key] = _norm(self.settings['color.vertex.intrados'])
-                    # self.app.add(Point(x, y, z), name="Intrados (%s)" % intrad, facecolor=_norm(self.settings['color.vertex.intrados']), size=self.settings['size.vertex'])
+                    color[key] = color_intra
                     intrad += 1
+                    continue
             if self.settings['show.vertex.outside']:
-                if z > ub:
+                if z - ub > tol:
                     vertices.append(key)
-                    color[key] = _norm(self.settings['color.vertex.outside'])
-                    # self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, facecolor=_norm(self.settings['color.vertex.outside']), size=self.settings['size.vertex'])
+                    color[key] = color_outside
                     out += 1
-                elif z < lb:
+                    continue
+                elif lb - z > tol:
                     vertices.append(key)
-                    color[key] = _norm(self.settings['color.vertex.outside'])
-                    # self.app.add(Point(x, y, z), name="Outside - Extra (%s)" % out, facecolor=_norm(self.settings['color.vertex.outside']), size=self.settings['size.vertex'])
+                    color[key] = color_outside
                     out += 1
+                    continue
 
-        self.app.add(
-            self.form,
-            show_edges=False,
-            show_faces=False,
-            show_vertices=True,
-            vertices=vertices,
-            vertexcolor=color,  # colors does not work
-            vertexsize=self.settings['size.vertex']
+        artist = self.formartist
+
+        if not artist:
+            self.app.add(
+                self.form,
+                show_edges=False,
+                show_faces=False,
+                show_vertices=True,
+                vertices=vertices,
+                vertexcolor=color,
+                vertexsize=self.settings['size.vertex']
+                )
+        else:  # WARNING: this will delete the vertices added before as the base mesh - not good
+            artist.vertex_size = self.settings['size.vertex']  # I think it does not make to have to set this here...
+            artist.draw_vertices(
+                vertices=vertices,
+                color=color,
+                # vertexsize=self.settings['size.vertex']  # THIS SHOULD BE PASSABLE HERE
             )
 
     def view_reactions(self):
