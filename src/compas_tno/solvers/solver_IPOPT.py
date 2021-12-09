@@ -35,31 +35,70 @@ class wrapper_ipopt(object):
         pass
 
     def objective(self, x):
-        #
-        # The callback for calculating the objective
-        #
+        """The callback for calculating the objective
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        fopt : float
+            The objective function value at x.
+        """
+
         variables = tensor(x.reshape(-1, 1))
         return array(self.fobj(variables, *self.args_obj))
 
     def gradient(self, x):
-        #
-        # The callback for calculating the gradient
-        #
+        """The callback for calculating the gradient
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        grad : array
+            The gradient of the objective function at x.
+        """
+
         variables = tensor(x.reshape(-1, 1), requires_grad=True)
         f = self.fobj(variables, *self.args_obj)
         return array(compute_autograd(variables, f))
 
     def constraints(self, x):
-        #
-        # The callback for calculating the constraints
-        #
+        """The callback for calculating the constraints
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        constr : array
+            The constraints of the objective function at x.
+        """
+
         variables = tensor(x.reshape(-1, 1))
         return array(self.fconstr(variables, *self.args_constr))
 
     def jacobian(self, x):
-        #
-        # The callback for calculating the Jacobian
-        #
+        """The callback for calculating the jacobian
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        jac : array
+            The gradient of the jacobian matrix at x.
+        """
         variables = tensor(x.reshape(-1, 1), requires_grad=True)
         constraints = self.fconstr(variables, *self.args_constr)
         return array(compute_autograd_jacobian(variables, constraints)).flatten()

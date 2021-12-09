@@ -36,7 +36,12 @@ class Problem():
     Parameters
     ----------
 
-    ``q`` : array(m x 1)
+    None
+
+    Attributes
+    ----------
+
+    q : array(m x 1)
         The vector of force densities
     m : int
         The number of edges
@@ -128,6 +133,52 @@ class Problem():
     """
 
     def __init__(self):
+
+        self.q = None
+        self.m = None
+        self.n = None
+        self.nb = None
+        self.E = None
+        self.C = None
+        self.Ct = None
+        self.Ci = None
+        self.Cit = None
+        self.Cb = None
+        self.U = None
+        self.V = None
+        self.P = None
+        self.free = None
+        self.fixed = None
+        self.phfree = None
+        self.ph = None
+        self.lb = None
+        self.ub = None
+        self.lb0 = None
+        self.ub0 = None
+        self.s = None
+        self.X = None
+        self.x0 = None
+        self.y0 = None
+        self.free_x = None
+        self.free_y = None
+        self.rol_x = None
+        self.rol_y = None
+        self.Citx = None
+        self.City = None
+        self.Cbtx = None
+        self.Cbty = None
+        self.xlimits = None
+        self.ylimits = None
+        self.qmin = None
+        self.qmax = None
+        self.k_i = None
+        self.uv_i = None
+        self.i_uv = None
+        self.ind = None
+        self.k = None
+        self.dep = None
+        self.B = None
+
         pass
 
     @classmethod

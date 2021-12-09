@@ -20,6 +20,64 @@ class Shape(Datastructure):
 
     """The ``Shape`` class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.
 
+    The class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some
+    functionalities useful for the assessment of masonry structures. Most relevant edge and vertex attributes
+    are listed below:
+
+    Parameters
+    ----------
+    intrados : MeshDos
+        Mesh representing the intrados of the masonry
+    extrados : MeshDos
+        Mesh representing thhe extrados of the masonry
+    middle : MeshDos
+        Mesh representing the midde surface of the masonry
+    name : str
+        The name of the shape
+    total_selfweight : float
+        Total weight of the masonry in kN.
+    area : float
+        Area of the middle surface of the masonry
+    ro : float
+        The density of the masonry
+    fill : bool
+        Whether or not a fill should be considered up to a given elevation
+    fill_ro : float
+        The density of the masonry in the fill
+
+    Attributes
+    ----------
+    type : str
+        The type of the masory. Types include:
+        ['crossvault', 'pavillionvault', 'dome', 'dome_polar', 'dome_spr', 'parabolic_shell', 'arch', 'pointed_arch', 'pointed_crossvault']
+    thk : float
+        The thickness of the masonry
+    discretisation : int
+        The discretisation level
+    xy_span : list
+        The limits of the xy box (for rectangular form diagram)
+    t : float
+        The parameter assumed when no intrados projection is found
+
+    gone 21-29
+    go @20 @29
+
+    Examples
+    --------
+    >>> from compas_tno.diagrams import FormDiagram
+    >>> data = {'type': 'fan_fd', 'xy_span': [[0, 10], [0, 10]], 'discretisation': [10, 10], 'fix': 'corners'}
+    >>> form = FormDiagram.from_library(data)
+    >>> print(form)
+    Form Diagram
+    ============
+    name: FormDiagram
+    number of vertices: 201
+    number of (real) edges: 400
+    number of faces: 200
+    vertex degree: 3/11
+    face degree: 2/4
+
+
     Notes
     -----
     A ``Shape`` has the following constructor functions

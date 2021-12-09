@@ -14,9 +14,23 @@ __all__ = ['Viewer']
 
 class Viewer(object):
     """A Class for view 3D thrust networks and shapes.
+
+    Parameters
+    ----------
+    thrust : FormDiagram, optional
+        The FormDiagram you want to plot, by default None
+    shape : Shape, optional
+        The Shape of masonry to plot, by default None
+
+    Attributes
+    ----------
+
+    None
+
     """
 
     def __init__(self, thrust=None, shape=None, **kwargs):
+
         super().__init__(**kwargs)
         self.title = 'Viewer'
         self.app = None
@@ -66,7 +80,13 @@ class Viewer(object):
         self.initiate_app()
 
     def initiate_app(self):
-        """ Initiate the App with the default camera options """
+        """ Initiate the App with the default camera options
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
 
         self.app = app.App()
 
@@ -77,7 +97,13 @@ class Viewer(object):
         self.app.view.camera.fov = self.settings['camera.fov']
 
     def show_solution(self):
-        """ Show the thrust network, with the shape according to the settings """
+        """ Show the thrust network, with the shape according to the settings
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
 
         self.view_thrust()
         self.view_cracks()
@@ -86,17 +112,35 @@ class Viewer(object):
         self.show()
 
     def show(self):
-        """ Display the viewer in the screen """
+        """ Display the viewer in the screen
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
 
         self.app.show()
 
     def clear(self):
-        """ Clear the viewer elements """
+        """Clear the viewer elements
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
 
         self.app.view.objects = {}
 
     def view_thrust(self):
-        """ View thrust network according to the settings """
+        """View thrust network according to the settings
+
+        Returns
+        -------
+        None
+            The viewer is updated in place
+        """
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
@@ -121,7 +165,13 @@ class Viewer(object):
                 self.app.add(line, name=str((u, v)), linewidth=thk, color=_norm(self.settings['color.edges.thrust']))
 
     def view_cracks(self):
-        """ View cracks according to the settings """
+        """View cracks according to the settings
+
+        Returns
+        -------
+        None
+            The viewer is updated in place.
+        """
 
         intrad = 1
         extrad = 1
@@ -147,25 +197,44 @@ class Viewer(object):
                     out += 1
 
     def view_shape(self):
-        """ View the shape (intrados + extrados) according to the settings """
+        """View the shape (intrados + extrados) according to the settings
+
+        Returns
+        -------
+        None
+            The Viewer object is modified in place
+        """
 
         shape = self.shape
         if not shape:
             shape = Shape.from_formdiagram_and_attributes(self.thrust)
 
-        # vertices_intra, faces_intra = shape.intrados.to_vertices_and_faces()
-        # mesh_intra = Mesh.from_vertices_and_faces(vertices_intra, faces_intra)
-        mesh_intra = shape.intrados
+        datashape = shape.datashape
 
-        # vertices_extra, faces_extra = shape.extrados.to_vertices_and_faces()
-        # mesh_extra = Mesh.from_vertices_and_faces(vertices_extra, faces_extra)
-        mesh_extra = shape.extrados
+        if datashape:
+            type_shape = datashape['type']
 
-        self.app.add(mesh_intra, name="Intrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.intrados']))
-        self.app.add(mesh_extra, name="Extrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.extrados']))
+            if type_shape == 'dome':
+                print('Special Plot for dome')
+
+                return
+
+            if type_shape == 'arch':
+                print('Special Plot for arch')
+
+                return
+
+        self.app.add(shape.intrados, name="Intrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.intrados']))
+        self.app.add(shape.extrados, name="Extrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.extrados']))
 
     def view_middle_shape(self):
-        """ View the middle of the shape according to the settings """
+        """ View the middle of the shape according to the settings
+
+        Returns
+        -------
+        None
+            The Viewer object is modified in place
+        """
 
         shape = self.shape
         if not shape:
@@ -176,7 +245,13 @@ class Viewer(object):
         self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.middle']))
 
     def view_shape_normals(self):
-        """ View the shape normals at intrados and extrados surfaces """
+        """ View the shape normals at intrados and extrados surfaces
+
+        Returns
+        -------
+        None
+            The Viewer object is modified in place
+        """
 
         shape = self.shape
         if not shape:
@@ -195,7 +270,22 @@ class Viewer(object):
                 self.app.add(line, name='normal-{}'.format(key))
 
     def view_mesh(self, mesh=None, show_edges=True, opacity=0.5):
-        """ Add a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken """
+        """Add a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
+
+        Parameters
+        ----------
+        mesh : Mesh, optional
+            Mesh to plot, by default None
+        show_edges : bool, optional
+            Whether or not edges are shown, by default True
+        opacity : float, optional
+            The opacity of the mesh, by default 0.5
+
+        Returns
+        -------
+        None
+            The Viewer is updated in place.
+        """
 
         if not mesh:
             mesh = self.thrust
@@ -206,7 +296,13 @@ class Viewer(object):
         self.app.add(mesh, show_edges=show_edges, opacity=opacity)
 
     def view_reactions(self):
-        """ View the reaction vectors on the supports according to the settings """
+        """View the reaction vectors on the supports according to the settings
+
+        Returns
+        -------
+        None
+            The viewer is updated in place.
+        """
 
         if self.settings['show.reactions']:
             reaction_scale = self.settings['scale.reactions']
@@ -220,7 +316,13 @@ class Viewer(object):
                 self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
     def view_loads(self):
-        """ View the externally applied loadss as vectors on the applied nodes """
+        """View the externally applied loadss as vectors on the applied nodes
+
+        Returns
+        -------
+        None
+            The viewer is updated in place.
+        """
 
         if self.settings['show.reactions']:
             reaction_scale = self.settings['scale.loads']
@@ -234,7 +336,13 @@ class Viewer(object):
                 self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
     def view_reaction_label(self):
-        """ View the reaction labels (force magnitude) on the supports according to the settings """
+        """View the reaction labels (force magnitude) on the supports according to the settings
+
+        Returns
+        -------
+        None
+            The viewer is updated in place.
+        """
 
         if self.settings['show.reactionlabels']:
             reaction_scale = self.settings['scale.reactions']
@@ -249,8 +357,29 @@ class Viewer(object):
                 text = Text(reaction, pt, height=self.settings['size.reactionlabel'])
                 self.app.add(text)
 
-    def view_fill(self):
-        """ (WIP) View the fill in the shape """
+    def view_dome_shape(self, radius=5.0, thickness=0.50, center=[5.0, 5.0, 0.0], spr_angle=0.0):
+        """ 3D display of dome with high discretisation
+
+        Parameters
+        ----------
+        radius : float, optional
+            The radius of the dome, by default 5.0
+        thickness : float, optional
+            The thickness of the dome, by default 0.50
+        center : list, optional
+            List with the coordinated of the dome, by default [5.0, 5.0, 0.0]
+        spr_angle : float, optional
+            The springing angle of the dome, by default 0
+
+        Returns
+        -------
+        [type]
+            [description]
+        """
+
+        # WIP
+
+        return
 
 
 def _norm(rgb):
