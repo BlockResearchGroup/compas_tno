@@ -2,6 +2,8 @@ from compas_plotters import Plotter
 from compas.geometry import Vector
 from compas.geometry import Point
 from compas_plotters.artists import VectorArtist
+from compas.geometry import Rotation
+import math
 
 
 __all__ = ['FormPlotter']
@@ -305,13 +307,9 @@ class FormPlotter(object):
                 rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
                 r = Vector(-rx, -ry, -rz)
                 pt = Point(x, y, z)
-                # self.app.add(r)
                 vectorartist = VectorArtist(r, point=pt)
                 vectorartist.draw()
                 self._otherartists.append(vectorartist)
-                # self.app.add((r, pt))
-                # arrow = Arrow([x, y, z], [-rx, -ry, -rz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
-                # self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
     def draw_form_xz(self):
         """Plot the form diagram rotated 90 degrees.
@@ -322,8 +320,10 @@ class FormPlotter(object):
             The plotter is updated in place.
         """
 
+        axis = Vector(1.0, 0, 0)
+        self.form = self.form.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
+
         self.draw_form()
-        # then rotate
 
     def draw_shape_xz(self):
         """Plot the shape rotated 90 degrees.

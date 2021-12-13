@@ -195,10 +195,13 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
 
     return form
 
-
 def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3):
-    """ Deprecated function to assign constraints in the joints among blocks instead of in the z's.
-    """
+    """"""
+    
+    
+    
+    # """ Deprecated function to assign constraints in the joints among blocks instead of in the z's.
+    # """
 
     k_i = form.key_index()
 
