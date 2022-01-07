@@ -488,6 +488,17 @@ class FormDiagram(FormDiagram):
 
         return form
 
+    # --------------------------------------------------------------------------
+    # Plot
+    # --------------------------------------------------------------------------
+
+    def plot(self):
+        """Plot a form diagram with a plotter with all the default settings."""
+        from compas_plotters import Plotter
+        plotter = Plotter(figsize=(8, 8))
+        plotter.add(self)
+        plotter.show()
+
     # --------------------------------------------------------------- #
     # -----------------------ULTILITIES------------------------------ #
     # --------------------------------------------------------------- #

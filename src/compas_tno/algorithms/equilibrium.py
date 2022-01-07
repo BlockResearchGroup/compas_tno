@@ -13,8 +13,6 @@ from scipy.sparse import diags
 from compas.numerical import fd_numpy
 from compas.numerical import connectivity_matrix
 
-from compas_plotters import MeshPlotter
-
 
 def equilibrium_fdm(form):
     """ Compute equilibrium of the form diagram using the force density method (FDM) with 'q's stored in the form (All coordinates can change).
@@ -282,11 +280,5 @@ def compute_reactions(form, plot=False):
         if plot:
             print('Reactions in Partial Y-Key: {0} :'.format(key))
             print(Ry[i])
-
-    if plot:
-        plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-        plotter.draw_vertices(text=eq_node)
-        plotter.draw_edges()
-        plotter.show()
 
     return

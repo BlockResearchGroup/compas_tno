@@ -323,11 +323,6 @@ def set_up_general_optimisation(analysis):
 
     # print(M.q)
 
-    # from compas_plotters import MeshPlotter
-    # plotter = MeshPlotter(form)
-    # plotter.draw_edges(text={edge: round(form.edge_attribute(edge, 'q'), 2) for edge in form.edges()})
-    # plotter.show()
-
     if plot:
         plot_independents(form).show()
         if 'sym' in features:

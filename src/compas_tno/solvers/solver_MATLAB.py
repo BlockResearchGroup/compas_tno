@@ -127,12 +127,6 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         form.edge_attribute((u, v), 'q', float(qi))
         form.edge_attribute((u, v), 'f', float(qi*li))
 
-    # print(problem.q)
-    # from compas_plotters import MeshPlotter
-    # plotter = MeshPlotter(form)
-    # plotter.draw_edges(text={edge: round(form.edge_attribute(edge, 'q'), 2) for edge in form.edges()})
-    # plotter.show()
-
     form.attributes['loadpath'] = form.loadpath()
     compute_reactions(form)
 

@@ -142,28 +142,11 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
             pz *= -1  # make loads negative
         form.vertex_attribute(key, 'pz', value=pz)
         pzt += pz
-    print('total load applied:', pzt)
 
     if plot:
+        print('total load applied:', pzt)
 
-        from compas_plotters import MeshPlotter
-
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text=key_real_to_key)
-        plotter.show()
-
-        plotter = MeshPlotter(form_, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: key for key in form_.vertices()})
-        plotter.show()
-
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 1) for key in form.vertices()})
-        plotter.show()
-
-        return
+    return
 
 
 def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):

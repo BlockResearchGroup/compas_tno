@@ -334,15 +334,6 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
         for fkey in delete_fkey:
             mesh.delete_face(fkey)
 
-    # from compas_plotters import MeshPlotter
-
-    # for mesh in [middle, intrados, extrados]:
-    #     plotter = MeshPlotter(mesh, figsize=(10, 10))
-    #     plotter.draw_edges()
-    #     plotter.draw_vertices(text={key: key for key in mesh.vertices()}, radius=0.10)
-    #     plotter.draw_faces(text={fkey: fkey for fkey in mesh.faces()})
-    #     plotter.show()
-
     center = center0
 
     return intrados, extrados, middle

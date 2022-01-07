@@ -80,6 +80,17 @@ class ForceDiagram(ForceDiagram):
         return next(self.vertices())
 
     # --------------------------------------------------------------------------
+    # Plot
+    # --------------------------------------------------------------------------
+
+    def plot(self):
+        """Plot a force diagram with a plotter with all the default settings."""
+        from compas_plotters import Plotter
+        plotter = Plotter(figsize=(8, 8))
+        plotter.add(self)
+        plotter.show()
+
+    # --------------------------------------------------------------------------
     # Helpers
     # --------------------------------------------------------------------------
 

@@ -144,6 +144,7 @@ class FormPlotter(object):
         """
 
         self.draw_form()
+        self.draw_supports()
         self.draw_cracks()
         self.show()
 
@@ -192,7 +193,6 @@ class FormPlotter(object):
             edgewidths = base_thick
 
         edges = []
-        vertices = []
         faces = []
 
         if self.settings['show.edges']:
@@ -201,12 +201,9 @@ class FormPlotter(object):
         if self.settings['show.faces']:
             faces = list(self.form.faces())
 
-        if self.settings['show.supports']:
-            vertices = list(self.form.fixed())
-
         formartist = self.app.add(
             self.form,
-            vertices=vertices,
+            vertices=[],
             edges=edges,
             faces=faces,
             edgewidth=edgewidths,
@@ -288,6 +285,24 @@ class FormPlotter(object):
                 # vertexsize=self.settings['size.vertex']  # THIS SHOULD BE PASSABLE HERE
             )
 
+    def draw_supports(self):
+        """Add the supports as points in the mesh.
+
+        Returns
+        -------
+        None
+            The plotter is updated in place.
+        """
+
+        if self.settings['show.supports']:
+            supportcolor = _norm(self.settings['color.vertex.supports'])
+
+            for key in self.form.vertices_where({'is_fixed': True}):
+                x, y, z = self.form.vertex_coordinates(key)
+                pt = Point(x, y, z)
+                pointartist = self.app.add(pt, facecolor=supportcolor)
+                self._otherartists.append(pointartist)
+
     def draw_reactions(self):
         """Add to the plots the vector of the reaction forces.
 
@@ -307,8 +322,7 @@ class FormPlotter(object):
                 rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
                 r = Vector(-rx, -ry, -rz)
                 pt = Point(x, y, z)
-                vectorartist = VectorArtist(r, point=pt)
-                vectorartist.draw()
+                vectorartist = self.app.add(r, point=pt)
                 self._otherartists.append(vectorartist)
 
     def draw_form_xz(self):
