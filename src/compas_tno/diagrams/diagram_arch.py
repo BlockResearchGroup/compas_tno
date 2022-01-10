@@ -1,6 +1,5 @@
 from compas.datastructures import Mesh
 from compas.utilities import geometric_key
-from numpy import linspace
 import math
 
 
@@ -84,7 +83,8 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
 
     """
 
-    x = linspace(x0, x0 + L, total_nodes)  # Continue this
+    from numpy import linspace
+    x = linspace(x0, x0 + L, total_nodes)  # Continue this remove need of numpy in the future
     lines = []
     gkey_fix = []
 

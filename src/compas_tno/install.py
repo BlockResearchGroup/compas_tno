@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     if args.remove_plugins:
         print("\n", "-"*10, "Removing existing plugins", "-"*10)
-        python_plugins_path = compas_rhino._get_python_plugins_path(args.rhino_version)
+        python_plugins_path = compas_rhino._get_rhino_pythonplugins_path(args.rhino_version)
         print("Plugin location: ", python_plugins_path)
         plugins = os.listdir(python_plugins_path)
         for p in plugins:
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     plugin_path = os.path.abspath(plugin_path)
 
     if os.path.exists(plugin_path):
-        python_plugins_path = compas_rhino._get_python_plugins_path(args.rhino_version)
+        python_plugins_path = compas_rhino._get_rhino_pythonplugins_path(args.rhino_version)
         print("Plugin path:", python_plugins_path)
         install_plugin(plugin_path, version=args.rhino_version)
     else:
