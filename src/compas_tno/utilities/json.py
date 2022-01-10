@@ -25,9 +25,6 @@ def update_json(infile):
     file = open(infile)
     data = json.load(file)
 
-    for key in data['data']:
-        print(key)
-
     edge_data = {}
     for key in data['data']['edgedata']:
         a, b = key.split('-')
