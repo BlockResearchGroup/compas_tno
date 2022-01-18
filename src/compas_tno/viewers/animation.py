@@ -19,7 +19,6 @@ def save_geometry_at_iterations(form, optimiser, shape=None, force=None):
     from numpy import array
     from compas_tno.algorithms import xyz_from_xopt
     from compas_tno.algorithms import reciprocal_from_form
-    from compas_tno.diagrams import ForceDiagram
 
     M = optimiser.M  # matrices of the problem
 
@@ -27,16 +26,13 @@ def save_geometry_at_iterations(form, optimiser, shape=None, force=None):
     file_Xform = compas_tno.get('Xform.json')
 
     if force:
-        force = reciprocal_from_form(form)
-        _key_index = force.key_index()
-
-    key_index = form.key_index()
+        file_Xforce = compas_tno.get('Xforce.json')
+        Xforce = {}
 
     with open(file_qs, mode='r', encoding='utf-8') as f:
         data = json.load(f)
 
     Xform = {}
-    Xforce = {}
 
     iterations = len(data['iterations'])
 
@@ -46,15 +42,35 @@ def save_geometry_at_iterations(form, optimiser, shape=None, force=None):
         Xform_i = M.X.tolist()
         Xform[str(i)] = Xform_i
 
+        if force:
+            j = 0
+            for key in form.vertices():
+                form.vertex_attributes(key, 'xyz', M.X[j].tolist())
+                j += 1
+            k = 0
+            for edge in form.edges_where({'_is_edge': True}):
+                form.edge_attribute(edge, 'q', M.q.flatten()[k])
+                k += 1
+
+            force = reciprocal_from_form(form)
+            Xforce_i = force.vertices_attributes('xyz')
+            Xforce[str(i)] = Xforce_i
+
     with open(file_Xform, mode='w', encoding='utf-8') as f:
         json.dump(Xform, f)
 
-    print('Geometry saved @:', file_Xform)
+    print('Form Geometry saved @:', file_Xform)
+
+    if force:
+        with open(file_Xforce, mode='w', encoding='utf-8') as f:
+            json.dump(Xforce, f)
+
+        print('Force Geometry saved @:', file_Xforce)
 
     return
 
 
-def animation_from_optimisation(form, file_Xform, interval=100, force=None, file_Xforce=None, formscaling=None, forcescaling=None, shape=False, densities=False):
+def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, forcescaling=None, forcetranslation=None, shape=False, densities=False, interval=100):
     """ Make a 3D animated plot with the optimisation steps.
     """
 
@@ -68,18 +84,13 @@ def animation_from_optimisation(form, file_Xform, interval=100, force=None, file
         Xform = json.load(f)
 
     if force:
-        v, f = force.to_vertices_and_faces()
-        force = Mesh.from_vertices_and_faces(v, f)
-        _key_index = force.key_index()
-        _obj = viewer.add(force)
-
         with open(file_Xforce, mode='r', encoding='utf-8') as f:
             Xforce = json.load(f)
 
-    if formscaling:
-        print('No form scale available')
     if forcescaling:
-        print('No force scale available')
+        viewer.settings['force.scale'] = forcescaling
+    if forcetranslation:
+        viewer.settings['force.translation'] = forcetranslation
 
     iterations = len(Xform)
     print('number of iterations', iterations)
@@ -89,7 +100,7 @@ def animation_from_optimisation(form, file_Xform, interval=100, force=None, file
 
         print(f)
 
-        if f == 1:
+        if f == 0:
             time.sleep(5)
 
         viewer.clear()
@@ -108,13 +119,13 @@ def animation_from_optimisation(form, file_Xform, interval=100, force=None, file
 
         if force:
             _Xf = Xforce[str(f)]
+            index = 0
             for vertex in force.vertices():
-                index = _key_index[vertex]
                 force.vertex_attribute(vertex, 'x', _Xf[index][0])
                 force.vertex_attribute(vertex, 'y', _Xf[index][1])
                 force.vertex_attribute(vertex, 'z', _Xf[index][2])
-        # Do transformation if forcescale
-            _obj.update()
+                index += 1
+            viewer.view_force(force)
 
     viewer.app.run()
 

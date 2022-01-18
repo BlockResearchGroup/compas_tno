@@ -148,6 +148,7 @@ def set_up_general_optimisation(analysis):
     from compas_tno.viewers import Viewer
     view = Viewer(form)
     view.view_thrust()
+    view.view_force()
     view.show()
 
     # Specific parameters that depend on the objective:
@@ -347,6 +348,7 @@ def set_up_general_optimisation(analysis):
     from compas_tno.viewers import Viewer
     view = Viewer(form)
     view.view_thrust()
+    view.view_force()
     view.show()
 
     if printout:

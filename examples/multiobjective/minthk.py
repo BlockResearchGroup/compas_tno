@@ -9,15 +9,15 @@ span = 10.0
 k = 1.0
 thk = 0.50
 
-# discretisation = [20, 16]
-# type_formdiagram = 'radial_fd'
-# type_structure = 'dome'
-# discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
+discretisation = [20, 16]
+type_formdiagram = 'radial_fd'
+type_structure = 'dome'
+discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
 
-discretisation = 10
-type_formdiagram = 'cross_fd'
-type_structure = 'crossvault'
-discretisation_shape = 10 * discretisation
+# discretisation = 10
+# type_formdiagram = 'cross_fd'
+# type_structure = 'crossvault'
+# discretisation_shape = 10 * discretisation
 
 save = True
 solutions = {}
@@ -31,7 +31,7 @@ axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
 # axis_sym = [[5.0, 0.0], [5.0, 10.0]]
 axis_sym = None
-starting_point = 'TNA'
+starting_point = 'loadpath'
 
 thk = 0.50  # thickness of the problem
 
@@ -116,22 +116,33 @@ print('Ratio Thrust/Weight:', thrust/weight)
 
 print('Optimiser exitflag:', optimiser.exitflag)
 
+# view = Viewer(form)
+# view.show_solution()
+from compas_tno.viewers import Viewer
 view = Viewer(form)
-view.show_solution()
+view.view_thrust()
+view.view_force()
+view.show()
 
 import compas_tno
 location = compas_tno.get('form.json')
 form.to_json(location)
 
+# location = compas_tno.get('optimiser.json')
+# optimiser.to_json(location)
+
 from compas_tno.viewers import save_geometry_at_iterations
-from compas_tno.viewers import animation_from_optimisation
 
-save_geometry_at_iterations(form, optimiser, shape=None, force=None)
+# save_geometry_at_iterations(form, optimiser, shape=None, force=None)
 
-# ---- MAKE THE VIDEO ----
+save_geometry_at_iterations(form, optimiser, shape=None, force=True)
 
-DATA_FORM = compas_tno.get('form.json')
-DATA_XFORM = compas_tno.get('Xform.json')
+# # ---- MAKE THE VIDEO ----
 
-form = FormDiagram.from_json(DATA_FORM)
-animation_from_optimisation(form, DATA_XFORM, interval=150)
+# from compas_tno.viewers import animation_from_optimisation
+
+# DATA_FORM = compas_tno.get('form.json')
+# DATA_XFORM = compas_tno.get('Xform.json')
+
+# form = FormDiagram.from_json(DATA_FORM)
+# animation_from_optimisation(form, DATA_XFORM, interval=150)

@@ -62,7 +62,10 @@ class Viewer(object):
             'size.reaction.body_width': 0.01,
             'size.reactionlabel': 20,
 
-            'scale.reactions': 0.001,
+            'force.scale': 0.05,
+            'force.anchor': [0, -10, 0],
+
+            'scale.reactions': 0.01,
             'scale.loads': 0.001,
             'opacity.shapes': 0.5,
 
@@ -381,6 +384,42 @@ class Viewer(object):
         # WIP
 
         return
+
+    def view_force(self, force=None, show_edges=True, opacity=0.5):
+        """Add the ForceDiagram to the viewer, if no force is given the force diagram is recomputed in place.
+
+        Parameters
+        ----------
+        force : ForceDiagram, optional
+            ForceDiagram to plot, by default ``None``
+        show_edges : bool, optional
+            Whether or not edges are shown, by default ``True``
+        opacity : float, optional
+            The opacity of the mesh, by default 0.5
+
+        Returns
+        -------
+        None
+            The Viewer is updated in place.
+        """
+
+        if not force:
+            from compas_tno.algorithms import reciprocal_from_form  # here to avoid double imports
+            force = reciprocal_from_form(self.thrust)
+
+        from compas.geometry import Translation
+        from compas.geometry import Scale
+
+        scale = self.settings['force.scale']
+        translation = self.settings['force.anchor']
+
+        S = Scale.from_factors(3 * [scale])
+        T = Translation.from_vector(translation)
+
+        force = force.transformed(S)
+        force = force.transformed(T)
+
+        self.app.add(force, show_edges=show_edges, opacity=opacity)
 
 
 def _norm(rgb):
