@@ -29,13 +29,14 @@ class Viewer(object):
 
     """
 
-    def __init__(self, thrust=None, shape=None, **kwargs):
+    def __init__(self, thrust=None, shape=None, force=None, **kwargs):
 
         super().__init__(**kwargs)
         self.title = 'Viewer'
         self.app = None
         self.thrust = thrust
         self.shape = shape
+        self.force = force
         self.settings = {
             'show.thrust': True,
             'show.shape': True,

@@ -17,6 +17,7 @@ Equilibrium
     vertical_equilibrium_fdm
     q_from_qid
     xyz_from_q
+    xyz_from_xopt
     compute_reactions
 
 
@@ -69,7 +70,8 @@ if not compas.IPY:
         vertical_equilibrium_fdm,
         q_from_qid,
         xyz_from_q,
-        compute_reactions
+        compute_reactions,
+        xyz_from_xopt
     )
     from .independents import (
         find_independents,
@@ -97,6 +99,7 @@ __all__ = [
     'q_from_qid',
     'xyz_from_q',
     'compute_reactions',
+    'xyz_from_xopt',
 
     'find_independents',
     'independents_exclude',

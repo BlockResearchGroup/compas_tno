@@ -309,7 +309,7 @@ class FormArtist(DiagramArtist):
         else:
             return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)
 
-    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255), tol=1e-3, layer=None):
+    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255), compression_negative=True, tol=1e-3, layer=None):
         """Draw the forces in the internal edges as pipes with color and thickness matching the force value.
 
         Parameters
@@ -339,7 +339,10 @@ class FormArtist(DiagramArtist):
             if abs(force) < tol:
                 continue
             radius = sqrt(abs(force)/pi)
-            pipe_color = color_compression if force < 0 else color_tension
+            if compression_negative:
+               pipe_color = color_compression if force < 0 else color_tension
+            else:
+                pipe_color = color_tension if force < 0 else color_compression
             cylinders.append({
                 'start': start,
                 'end': end,

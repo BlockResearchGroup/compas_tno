@@ -145,6 +145,11 @@ def set_up_general_optimisation(analysis):
 
     apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
 
+    from compas_tno.viewers import Viewer
+    view = Viewer(form)
+    view.view_thrust()
+    view.show()
+
     # Specific parameters that depend on the objective:
 
     if 'Ecomp' in objective.split('-'):
@@ -338,6 +343,11 @@ def set_up_general_optimisation(analysis):
         grad = fgrad(x0, M)
     if fjac:
         jac = fjac(x0, M)
+
+    from compas_tno.viewers import Viewer
+    view = Viewer(form)
+    view.view_thrust()
+    view.show()
 
     if printout:
         print('-'*20)

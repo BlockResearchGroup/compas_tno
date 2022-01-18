@@ -173,31 +173,3 @@ def post_process_general(analysis):
         print('-' * 50 + '\n')
 
     return analysis
-
-
-def save_geometry_at_iterations(analysis):
-
-    print('WIP')
-    # form = analysis.form
-    # optimiser = analysis.optimiser
-    # shape = analysis.shape
-
-    # M = optimiser.M
-
-    # file_qs = compas_tno.get('output.json')
-
-    # force = ForceDiagram.from_formdiagram(form)
-    # key_index = form.key_index()
-    # _key_index = force.key_index()
-
-    # form, force = form.reciprocal_from_form(plot=False)
-
-    # with open(file_qs, mode='r', encoding='utf-8') as f:
-    #     data = json.load(f)
-
-    # Xform = {}
-    # Xforce = {}
-
-    # iterations = len(data['iterations'])
-
-    return

@@ -282,3 +282,71 @@ def compute_reactions(form, plot=False):
             print(Ry[i])
 
     return
+
+
+def xyz_from_xopt(variables, M):
+    """Compute the nodal position and relevant parameters and from the variables of the optimisation and the class of matrices (M)
+
+    Parameters
+    ----------
+    variables : array
+        The ``n`` variables of the optimisation process
+    M : class
+        The relevant matrices to be stored
+
+    Returns
+    -------
+    M
+        The updated relevant matrices
+    """
+
+    if isinstance(M, list):
+        M = M[0]
+
+    # variables
+    k = M.k  # number of force variables
+    n = M.n  # number of vertices
+    nb = len(M.fixed)  # number of fixed vertices
+    t = M.shape.datashape['t']
+
+    qid = variables[:k]
+    check = k
+    M.q = M.B.dot(qid)
+
+    if 'xyb' in M.variables:
+        xyb = variables[check:check + 2*nb]
+        check = check + 2*nb
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        nbxy = nb
+    if 'zb' in M.variables:
+        zb = variables[check: check + nb]
+        check = check + nb
+        M.X[M.fixed, [2]] = zb.flatten()
+    if 't' in M.variables or 'n' in M.variables:
+        thk = variables[check: check + 1]
+        check = check + 1
+    elif 'lambd' in M.variables:
+        lambd = variables[check: check + 1]
+        M.P[:, [0]] = lambd * M.px0
+        M.P[:, [1]] = lambd * M.py0
+        check = check + 1
+    if 'tub' in M.variables:
+        tub = variables[check: check + n]
+        M.tub = tub
+        check = check + n
+    if 'tlb' in M.variables:
+        tlb = variables[check: check + n]
+        M.tlb = tlb
+        check = check + n
+    if 'tub_reac' in M.variables:
+        tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
+        M.tub_reac = tub_reac
+        check = check + 2*nb
+
+    q = M.q
+    Xfixed = M.X[M.fixed]
+
+    # update geometry
+    M.X[M.free] = xyz_from_q(q, M.P[M.free], Xfixed, M.Ci, M.Cit, M.Cb)
+
+    return M

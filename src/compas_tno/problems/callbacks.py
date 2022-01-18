@@ -6,7 +6,7 @@ import compas_tno
 def callback_save_json(xopt):
     """Save the iteration in a json file"""
 
-    DATA_FILENAME = compas_tno.get('output_fixed.json')
+    DATA_FILENAME = compas_tno.get('output.json')
 
     with open(DATA_FILENAME, mode='r', encoding='utf-8') as f:
         data = json.load(f)
@@ -25,7 +25,7 @@ def callback_create_json():
 
     data = {'iterations': {}}
 
-    DATA_FILENAME = compas_tno.get('output_fixed.json')
+    DATA_FILENAME = compas_tno.get('output.json')
 
     with open(DATA_FILENAME, mode='w', encoding='utf-8') as f:
         json.dump(data, f)
