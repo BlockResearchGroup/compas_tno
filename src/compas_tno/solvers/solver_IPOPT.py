@@ -163,6 +163,7 @@ def run_optimisation_ipopt(analysis):
     printout = optimiser.settings.get('printout', False)
     gradients = optimiser.settings.get('gradient', False)
     variables = optimiser.settings['variables']
+    callback = optimiser.settings.get('callback', None)
 
     bounds = optimiser.bounds
     x0 = optimiser.x0
@@ -220,6 +221,7 @@ def run_optimisation_ipopt(analysis):
         problem_obj.args = args
         problem_obj.fgrad = optimiser.fgrad
         problem_obj.bounds = bounds
+        problem_obj.callback = callback
         problem_obj.x0 = x0
 
         if printout:
@@ -239,7 +241,8 @@ def run_optimisation_ipopt(analysis):
         lb=lower,
         ub=upper,
         cl=cl,
-        cu=cu
+        cu=cu,
+        # intermediate=callback
     )
 
     # Set Options and Time

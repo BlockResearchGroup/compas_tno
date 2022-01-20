@@ -3,7 +3,7 @@ import json
 import compas_tno
 
 
-def callback_save_json(xopt):
+def callback_save_json(xopt, *args, **kwargs):
     """Save the iteration in a json file"""
 
     DATA_FILENAME = compas_tno.get('output.json')

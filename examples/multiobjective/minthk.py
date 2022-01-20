@@ -4,12 +4,12 @@ from compas_tno.viewers import Viewer
 from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
 from compas_tno.utilities import apply_bounds_on_q
+import compas_tno
 
 span = 10.0
 k = 1.0
-thk = 0.50
 
-discretisation = [20, 16]
+discretisation = [10, 8]
 type_formdiagram = 'radial_fd'
 type_structure = 'dome'
 discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
@@ -22,10 +22,10 @@ discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
 save = True
 solutions = {}
 
-obj = 'min'
+obj = 't'
 solver = 'SLSQP'
-constraints = ['funicular', 'envelope']  # , 'envelopexy'
-variables = ['q', 'zb']
+constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
+variables = ['q', 'zb', 't']
 features = ['fixed']
 axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
@@ -62,6 +62,9 @@ data_shape = {
 
 vault = Shape.from_library(data_shape)
 vault.ro = 20.0
+
+location = compas_tno.get('shape.json')
+vault.to_json(location)
 
 # ------------------------------------------------------------
 # -----------------------  INITIALISE   ----------------------
@@ -116,33 +119,43 @@ print('Ratio Thrust/Weight:', thrust/weight)
 
 print('Optimiser exitflag:', optimiser.exitflag)
 
-# view = Viewer(form)
-# view.show_solution()
-from compas_tno.viewers import Viewer
+vertices, faces = form.to_vertices_and_faces()
+print(vertices)
+print(faces)
+
 view = Viewer(form)
-view.view_thrust()
-view.view_force()
-view.show()
+view.show_solution()
 
-import compas_tno
-location = compas_tno.get('form.json')
-form.to_json(location)
+# from compas_tno.viewers import Viewer
+# view = Viewer(form)
+# view.view_thrust()
+# view.view_force()
+# view.show()
 
-# location = compas_tno.get('optimiser.json')
-# optimiser.to_json(location)
+# import compas_tno
+# location = compas_tno.get('form.json')
+# form.to_json(location)
 
-from compas_tno.viewers import save_geometry_at_iterations
+# location = compas_tno.get('shape.json')
+# vault.to_json(location)
 
-# save_geometry_at_iterations(form, optimiser, shape=None, force=None)
+# # location = compas_tno.get('optimiser.json')
+# # optimiser.to_json(location)
 
-save_geometry_at_iterations(form, optimiser, shape=None, force=True)
+# from compas_tno.viewers import save_geometry_at_iterations
 
-# # ---- MAKE THE VIDEO ----
+# # save_geometry_at_iterations(form, optimiser, shape=None, force=None)
+
+# save_geometry_at_iterations(form, optimiser, shape=None, force=True)
+
+# # # ---- MAKE THE VIDEO ----
 
 # from compas_tno.viewers import animation_from_optimisation
+# from compas_tno.algorithms import reciprocal_from_form
 
-# DATA_FORM = compas_tno.get('form.json')
 # DATA_XFORM = compas_tno.get('Xform.json')
+# DATA_XFORCE = compas_tno.get('Xforce.json')
 
-# form = FormDiagram.from_json(DATA_FORM)
-# animation_from_optimisation(form, DATA_XFORM, interval=150)
+# force = reciprocal_from_form(form)
+
+# animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, interval=150)

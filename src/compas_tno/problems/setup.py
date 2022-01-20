@@ -139,17 +139,13 @@ def set_up_general_optimisation(analysis):
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
 
-    if save_iterations:
-        callback_create_json()
-        optimiser.settings['callback'] = callback_save_json
-
     apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
 
-    from compas_tno.viewers import Viewer
-    view = Viewer(form)
-    view.view_thrust()
-    view.view_force()
-    view.show()
+    # from compas_tno.viewers import Viewer
+    # view = Viewer(form)
+    # view.view_thrust()
+    # view.view_force()
+    # view.show()
 
     # Specific parameters that depend on the objective:
 
@@ -327,7 +323,10 @@ def set_up_general_optimisation(analysis):
         x0 = append(x0, M.tub_reac_min)
         bounds = bounds + list(zip(M.tub_reac_min, M.tub_reac))
 
-    # print(M.q)
+    if save_iterations:
+        callback_create_json()
+        optimiser.settings['callback'] = callback_save_json
+        callback_save_json(x0)  # save staring point to file
 
     if plot:
         plot_independents(form).show()
@@ -345,11 +344,11 @@ def set_up_general_optimisation(analysis):
     if fjac:
         jac = fjac(x0, M)
 
-    from compas_tno.viewers import Viewer
-    view = Viewer(form)
-    view.view_thrust()
-    view.view_force()
-    view.show()
+    # from compas_tno.viewers import Viewer
+    # view = Viewer(form)
+    # view.view_thrust()
+    # view.view_force()
+    # view.show()
 
     if printout:
         print('-'*20)

@@ -133,7 +133,9 @@ def reciprocal_from_form(form, plot=False):
             leaves = True
             break
     if leaves is False:
+        init_faces = list(form.faces())
         form.update_boundaries()
+
 
     force = ForceDiagram.from_formdiagram(form)
 
@@ -155,6 +157,11 @@ def reciprocal_from_form(form, plot=False):
         force.plot()
 
     force_update_from_form(force, form)
+
+    end_faces = list(form.faces())
+    new_faces = list(set(end_faces) - set(init_faces))
+    for fkey in new_faces:
+        form.delete_face(fkey)
 
     if plot:
         print('Plot of Reciprocal')

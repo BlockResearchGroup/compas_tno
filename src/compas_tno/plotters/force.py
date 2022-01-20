@@ -1,5 +1,5 @@
 from compas.datastructures import Mesh
-from compas_plotters import MeshPlotter
+# from compas_plotters import MeshPlotter
 from compas_tna.diagrams import FormDiagram
 
 
@@ -39,6 +39,7 @@ def plot_force(force, form, show_length=False, radius=0.1, fix_width=False, max_
 
     """
 
+    from compas_plotters import MeshPlotter
     plotter = MeshPlotter(force, figsize=(12, 8), tight=True)
 
     vertexcolor = {key: (1.0, 0.9, 0.9) for key in force.vertices() if not form.face_attribute(key, '_is_loaded')}

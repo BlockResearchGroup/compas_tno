@@ -1,7 +1,6 @@
 
 from compas_tno.shapes import Shape
-from compas_tno.viewers.shapes import view_shapes
-from compas_tno.viewers.shapes import view_middle
+from compas_tno.viewers import Viewer
 import math
 
 # --------------------------------------------------------------
@@ -10,13 +9,13 @@ import math
 
 n = 10
 
-data = {
-    'type': 'crossvault',
-    'thk': 0.5,
-    'discretisation': [n, n],
-    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-    't': 0.0,
-}
+# data = {
+#     'type': 'crossvault',
+#     'thk': 0.5,
+#     'discretisation': [n, n],
+#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     't': 0.0,
+# }
 
 # data = {
 #     'type': 'pointed_crossvault',
@@ -28,7 +27,6 @@ data = {
 #     'hm': None,
 #     'he': None,
 # }
-
 
 # data = {
 #     'type': 'pointed_crossvault',
@@ -77,7 +75,7 @@ data = {
 #     'discretisation': [25, 50],
 #     'center': [5.0, 5.0],
 #     'radius': 5.0,
-#     'theta': [k1 * pi/2, k2 * pi/2],
+#     'theta': [k1 * math.pi/2, k2 * math.pi/2],
 #     't': 0.0,
 # }
 
@@ -114,16 +112,16 @@ data = {
 # }
 
 
-# n = 2
+n = 2
 
-# data = {
-#     'type': 'dome_polar',
-#     'thk': 0.15,
-#     'discretisation': [8*n, 20*n],
-#     't' : 1.0,
-#     'center': [5.0, 5.0],
-#     'radius': 5.0,
-# }
+data = {
+    'type': 'dome_polar',
+    'thk': 0.50,
+    'discretisation': [8*n, 20*n],
+    't' : 0.0,
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+}
 
 # data = {
 #     'type': 'arch',
@@ -137,6 +135,10 @@ data = {
 # }
 
 vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.view_shape()
+viewer.show()
 
 # print(vault)
 # print(vault.data)

@@ -1,14 +1,19 @@
 from compas.datastructures import Mesh
+from compas_plotters import Plotter
 from compas_view2 import app
 import time
 import json
+import compas_tno
 
 from compas_tno.viewers.viewer import Viewer
+from compas.geometry import centroid_points
+from compas.geometry import subtract_vectors
 
 
 __all__ = [
     'animation_from_optimisation',
-    'save_geometry_at_iterations'
+    'save_geometry_at_iterations',
+    'animation_from_section'
 ]
 
 
@@ -70,15 +75,15 @@ def save_geometry_at_iterations(form, optimiser, shape=None, force=None):
     return
 
 
-def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, forcescaling=None, forcetranslation=None, shape=False, densities=False, interval=100):
+def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, shape=False, settings=None, record=False, interval=100):
     """ Make a 3D animated plot with the optimisation steps.
     """
 
-    viewer = Viewer(form)
+    viewer = Viewer(form, shape=shape)
 
-    v, f = form.to_vertices_and_faces()
-    form = Mesh.from_vertices_and_faces(v, f)
-    key_index = form.key_index()
+    if settings:
+        viewer.settings = settings
+        viewer.initiate_app()
 
     with open(file_Xform, mode='r', encoding='utf-8') as f:
         Xform = json.load(f)
@@ -87,33 +92,32 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
         with open(file_Xforce, mode='r', encoding='utf-8') as f:
             Xforce = json.load(f)
 
-    if forcescaling:
-        viewer.settings['force.scale'] = forcescaling
-    if forcetranslation:
-        viewer.settings['force.translation'] = forcetranslation
-
     iterations = len(Xform)
     print('number of iterations', iterations)
+    out = None
+    if record:
+        out = compas_tno.get('out.gif')
 
-    @viewer.app.on(interval=interval, frames=iterations)
+    @viewer.app.on(interval=interval, frames=iterations, record=record, record_path=out)
     def update(f):
 
         print(f)
 
-        if f == 0:
+        if f == 1:
             time.sleep(5)
 
         viewer.clear()
 
         Xf = Xform[str(f)]
+        index = 0
         for vertex in form.vertices():
-            index = key_index[vertex]
             viewer.thrust.vertex_attribute(vertex, 'x', Xf[index][0])
             viewer.thrust.vertex_attribute(vertex, 'y', Xf[index][1])
             viewer.thrust.vertex_attribute(vertex, 'z', Xf[index][2])
+            index += 1
 
         viewer.view_thrust()
-        viewer.view_cracks()
+        # viewer.view_cracks()
         viewer.view_shape()
         viewer.view_reactions()
 
@@ -123,10 +127,45 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
             for vertex in force.vertices():
                 force.vertex_attribute(vertex, 'x', _Xf[index][0])
                 force.vertex_attribute(vertex, 'y', _Xf[index][1])
-                force.vertex_attribute(vertex, 'z', _Xf[index][2])
+                force.vertex_attribute(vertex, 'z', 0.0)
                 index += 1
+            force_centroid = centroid_points(force.vertices_attributes('xyz'))
+            force_centroid0 = [-6.991104169236619, 66.12107435370979, 0.0]  # by hand because it isn't kept as a variable (it's deleted @ each passage)
+            dc = subtract_vectors(force_centroid, force_centroid0)
+            for vertex in force.vertices():
+                x, y, _ = force.vertex_coordinates(vertex)
+                force.vertex_attribute(vertex, 'x', x - dc[0])
+                force.vertex_attribute(vertex, 'y', y - dc[1])
             viewer.view_force(force)
 
     viewer.app.run()
+
+    return
+
+
+def animation_from_section(form, file_Xform):
+
+    with open(file_Xform, mode='r', encoding='utf-8') as f:
+        Xform = json.load(f)
+
+    iterations = len(Xform)
+    print('number of iterations', iterations)
+
+    for i in range(iterations):
+
+        print('Iteration:', i)
+
+        Xi = Xform[str(i)]
+        index = 0
+        for vertex in form.vertices():
+            form.vertex_attribute(vertex, 'x', Xi[index][0])
+            form.vertex_attribute(vertex, 'y', Xi[index][1])
+            form.vertex_attribute(vertex, 'z', Xi[index][2])
+            index += 1
+
+        plotter = Plotter()
+        meshartist = plotter.add(form)
+        meshartist.draw_edges()
+        plotter.show()
 
     return

@@ -5,7 +5,7 @@ import os
 
 from math import sqrt
 
-from compas_plotters import MeshPlotter
+# from compas_plotters import MeshPlotter
 from compas_plotters import Plotter
 
 from numpy import array

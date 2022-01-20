@@ -1,4 +1,4 @@
-from compas_plotters import MeshPlotter
+# from compas_plotters import MeshPlotter
 from numpy import array
 
 

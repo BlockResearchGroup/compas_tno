@@ -92,7 +92,7 @@ class Viewer(object):
             The objects are updated in place
         """
 
-        self.app = app.App()
+        self.app = app.App(width=1600, height=900, show_grid=self.settings['camera.show.grid'])
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
@@ -125,6 +125,21 @@ class Viewer(object):
         """
 
         self.app.show()
+
+    def save(self, path='temp/fig.png'):
+        """ Save to a path
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
+
+        # self.app.save(path)
+        self.app.view.init()
+        self.app.record = True
+        self.app.view.paint()
+        print(self.app.recorded_frames)
 
     def clear(self):
         """Clear the viewer elements
@@ -209,24 +224,18 @@ class Viewer(object):
             The Viewer object is modified in place
         """
 
-        shape = self.shape
-        if not shape:
+        if self.shape:
+            datashape = self.shape.datashape.copy()
+            if datashape['type'] in ['dome']:
+                datashape['type'] = 'dome_polar'
+                shape = Shape.from_library(datashape)
+            elif datashape['type'] == 'arch':
+                print('WIP = Special Plot for arch')
+            else:
+                shape = self.shape
+
+        else:
             shape = Shape.from_formdiagram_and_attributes(self.thrust)
-
-        datashape = shape.datashape
-
-        if datashape:
-            type_shape = datashape['type']
-
-            if type_shape == 'dome':
-                print('Special Plot for dome')
-
-                return
-
-            if type_shape == 'arch':
-                print('Special Plot for arch')
-
-                return
 
         self.app.add(shape.intrados, name="Intrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.intrados']))
         self.app.add(shape.extrados, name="Extrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.extrados']))
