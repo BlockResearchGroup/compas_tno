@@ -17,7 +17,8 @@ form = FormDiagram.from_json(DATA_FORM)
 shape = Shape.from_library(
     {
         'type': 'dome_polar',
-        'thk': 0.50,
+        # 'thk': 0.50,
+        'thk': 0.205,
         'discretisation': [20, 40],
         't': 0.0,
         'center': [5.0, 5.0],
@@ -26,7 +27,12 @@ shape = Shape.from_library(
 
 force = reciprocal_from_form(form)
 
-viewer = Viewer()
+viewer = Viewer(form, shape=shape)
+viewer.view_thrust()
+viewer.view_force()
+viewer.view_shape()
+viewer.show()
+
 SETTINGS = viewer.settings
 
 # settings dome
@@ -37,8 +43,8 @@ SETTINGS['camera.target'] = [0, 0, 5]
 SETTINGS['force.anchor'] = [10, -6, 0]
 SETTINGS['force.scale'] = 0.04
 
-animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, settings=SETTINGS, record=True, interval=150)
+# animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, settings=SETTINGS, record=True, interval=150)
 
-# animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, shape=shape, settings=SETTINGS, record=True, interval=150)
+animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, shape=shape, settings=SETTINGS, record=False, interval=150)
 
 # animation_from_section(form, DATA_XFORM)

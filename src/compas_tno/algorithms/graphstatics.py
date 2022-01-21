@@ -158,10 +158,11 @@ def reciprocal_from_form(form, plot=False):
 
     force_update_from_form(force, form)
 
-    end_faces = list(form.faces())
-    new_faces = list(set(end_faces) - set(init_faces))
-    for fkey in new_faces:
-        form.delete_face(fkey)
+    if leaves is False:
+        end_faces = list(form.faces())
+        new_faces = list(set(end_faces) - set(init_faces))
+        for fkey in new_faces:
+            form.delete_face(fkey)
 
     if plot:
         print('Plot of Reciprocal')
@@ -224,3 +225,4 @@ def force_update_from_form(force, form):
         index = _vertex_index[vertex]
         attr['x'] = _xy[index, 0]
         attr['y'] = _xy[index, 1]
+        attr['z'] = 0.0

@@ -111,6 +111,7 @@ class wrapper_ipopt_analytical(object):
         self.args = None
         self.fgrad = None
         self.bounds = None
+        self.callback = None
         self.x0 = None
         self.eps = 1e-8
         self.fjac = None
@@ -120,6 +121,8 @@ class wrapper_ipopt_analytical(object):
         #
         # The callback for calculating the objective
         #
+        if self.callback:
+            self.callback(x, *self.args)
         return self.fobj(x, *self.args)
 
     def gradient(self, x):
@@ -241,8 +244,7 @@ def run_optimisation_ipopt(analysis):
         lb=lower,
         ub=upper,
         cl=cl,
-        cu=cu,
-        # intermediate=callback
+        cu=cu
     )
 
     # Set Options and Time

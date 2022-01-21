@@ -9,7 +9,7 @@ import compas_tno
 span = 10.0
 k = 1.0
 
-discretisation = [10, 8]
+discretisation = [20, 16]
 type_formdiagram = 'radial_fd'
 type_structure = 'dome'
 discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
@@ -23,7 +23,7 @@ save = True
 solutions = {}
 
 obj = 't'
-solver = 'SLSQP'
+solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb', 't']
 features = ['fixed']
@@ -33,7 +33,7 @@ axis_sym = None
 axis_sym = None
 starting_point = 'loadpath'
 
-thk = 0.50  # thickness of the problem
+thk = 0.25  # thickness of the problem
 
 # Create form diagram
 
@@ -93,7 +93,7 @@ optimiser.settings['gradient'] = True
 optimiser.settings['jacobian'] = True
 optimiser.settings['printout'] = True
 optimiser.settings['jacobian'] = True
-optimiser.settings['derivative_test'] = False
+optimiser.settings['derivative_test'] = True
 optimiser.settings['starting_point'] = starting_point
 optimiser.settings['save_iterations'] = True
 
@@ -119,36 +119,18 @@ print('Ratio Thrust/Weight:', thrust/weight)
 
 print('Optimiser exitflag:', optimiser.exitflag)
 
-vertices, faces = form.to_vertices_and_faces()
-print(vertices)
-print(faces)
-
 view = Viewer(form)
 view.show_solution()
 
-# from compas_tno.viewers import Viewer
-# view = Viewer(form)
-# view.view_thrust()
-# view.view_force()
-# view.show()
+import compas_tno
+location = compas_tno.get('form.json')
+form.to_json(location)
 
-# import compas_tno
-# location = compas_tno.get('form.json')
-# form.to_json(location)
+from compas_tno.viewers import save_geometry_at_iterations
 
-# location = compas_tno.get('shape.json')
-# vault.to_json(location)
+save_geometry_at_iterations(form, optimiser, shape=None, force=True)
 
-# # location = compas_tno.get('optimiser.json')
-# # optimiser.to_json(location)
-
-# from compas_tno.viewers import save_geometry_at_iterations
-
-# # save_geometry_at_iterations(form, optimiser, shape=None, force=None)
-
-# save_geometry_at_iterations(form, optimiser, shape=None, force=True)
-
-# # # ---- MAKE THE VIDEO ----
+# # ---- MAKE THE VIDEO ----
 
 # from compas_tno.viewers import animation_from_optimisation
 # from compas_tno.algorithms import reciprocal_from_form
