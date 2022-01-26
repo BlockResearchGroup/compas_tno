@@ -173,7 +173,7 @@ def reciprocal_from_form(form, plot=False):
 
 def force_update_from_form(force, form):
     """Update the force diagram after modifying the (force densities of) the form diagram.
-    This is an algebraic solution to the duality. It should work as long as the force densities
+    This is an algebraic solution to the duality. It works as long as the force densities
     in the form diagram are equilibrated.
 
     Parameters
@@ -218,6 +218,12 @@ def force_update_from_form(force, form):
     # compute reciprocal for given q
     # --------------------------------------------------------------------------
     _xy = spsolve_with_known(_Ct.dot(_C), _Ct.dot(Q).dot(uv), _xy, _known)
+    # --------------------------------------------------------------------------
+    # rotate the force diagram 90 degrees in CW direction - Maxwell convention
+    # this way the relation between the two diagrams is easier to read
+    # --------------------------------------------------------------------------
+    _x, _y = zip(*_xy)
+    _xy[:] = [list(item) for item in zip(_y, [-_ for _ in _x])]
     # --------------------------------------------------------------------------
     # update force diagram
     # --------------------------------------------------------------------------
