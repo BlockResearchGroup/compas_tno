@@ -117,6 +117,7 @@ Callbacks
 
     callback_save_json
     callback_create_json
+    save_geometry_at_iterations
 
 """
 
@@ -179,7 +180,8 @@ from .problems import (
 
 from .callbacks import (
     callback_save_json,
-    callback_create_json
+    callback_create_json,
+    save_geometry_at_iterations
 )
 
 from .initialize import (

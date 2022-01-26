@@ -37,18 +37,20 @@ from .forms import Browser  # noqa: F401
 if compas.IPY:
 
     from compas_rhino.objects import BaseObject
-    from compas_rhino.artists import BaseArtist
+    from compas_rhino.artists import RhinoArtist
 
     DiagramObject.register(FormDiagram, FormObject)
-    DiagramArtist.register(FormDiagram, FormArtist)
+    RhinoArtist.register(FormDiagram, FormArtist, context='Rhino')
 
     DiagramObject.register(ForceDiagram, ForceObject)
-    DiagramArtist.register(ForceDiagram, ForceArtist)
+    RhinoArtist.register(ForceDiagram, ForceArtist, context='Rhino')
 
     BaseObject.register(Shape, ShapeObject)
-    BaseArtist.register(Shape, ShapeArtist)
+    RhinoArtist.register(Shape, ShapeArtist, context='Rhino')
 
     BaseObject.register(Optimiser, OptimiserObject)
-    BaseArtist.register(Optimiser, DiagramArtist)
+    RhinoArtist.register(Optimiser, DiagramArtist, context='Rhino')
+
+    print('did my registering')
 
 __all__ = [name for name in dir() if not name.startswith('_')]

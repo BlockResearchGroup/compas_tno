@@ -398,7 +398,6 @@ def set_b_constraint(form, printout):
     b = array(b)
     if printout:
         print('Reaction bounds active in : {0} joints'.format(len(b)))
-        print(b)
     return b
 
 
