@@ -190,7 +190,15 @@ def call_cvx(problem, eng, printout=False):
         eng.cvx_begin(nargout=0)
     else:
         eng.cvx_begin('quiet', nargout=0)
-    
+    # eng.cvx_begin(nargout=0)
+    # eng.eval('cvx_begin', nargout=0)
+
+    # Run the following lines in the terminal if you have trouble
+    # future = matlab.engine.connect_matlab(background=True)
+    # eng = future.result()
+    # eng.cvx_begin(nargout=0)
+    # print(matlab.engine.find_matlab())
+
     eng.variable('q(double(m))', nargout=0)
     # if objective == 'loadpath':
     eng.minimize('matrix_frac(pz, -(transpose(Ci)*diag(q)*Ci)) - xt*transpose(C)*diag(q)*Cb*xb - yt*transpose(C)*diag(q)*Cb*yb', nargout=0)
