@@ -2,7 +2,7 @@ from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.shapes import Shape
 from compas_tno.utilities import apply_envelope_from_shape
-
+from compas_tno.problems import save_geometry_at_iterations
 
 __all__ = [
     'post_process_general'
@@ -23,6 +23,7 @@ def post_process_general(analysis):
     variables = optimiser.settings['variables']
     thickness_type = optimiser.settings.get('thickness_type', 'constant')
     features = optimiser.settings.get('features', [])
+    save_iterations = optimiser.settings.get('save_iterations', False)
 
     fconstr = optimiser.fconstr
     # args = optimiser.args
@@ -163,10 +164,16 @@ def post_process_general(analysis):
     analysis.optimiser = optimiser
     analysis.shape = shape
 
+    if save_iterations:
+        save_geometry_at_iterations(form, optimiser, force=True)
+
     if printout or summary:
         print('\n' + '-' * 50)
         print('Solution  :', message)
-        print('q range : {0:.3f} : {1:.3f}'.format(min(M.q), max(M.q)))
+        try:
+            print('q range : {0:.3f} : {1:.3f}'.format(min(M.q), max(M.q)))
+        except BaseException:
+            print('q range : {0:.3f} : {1:.3f}'.format(min(M.q.flatten()), max(M.q.flatten())))
         print('zb range  : {0:.3f} : {1:.3f}'.format(min(M.X[M.fixed, [2]]), max(M.X[M.fixed, [2]])))
         print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
         print('fopt      : {0:.3f}'.format(fopt))

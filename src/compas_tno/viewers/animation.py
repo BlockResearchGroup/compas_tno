@@ -1,84 +1,43 @@
-from compas.datastructures import Mesh
-from compas_plotters import Plotter
-from compas_view2 import app
 import time
 import json
 import compas_tno
 
-from compas_tno.viewers.viewer import Viewer
 from compas.geometry import centroid_points
 from compas.geometry import subtract_vectors
 
 
 __all__ = [
     'animation_from_optimisation',
-    'save_geometry_at_iterations',
     'animation_from_section'
 ]
 
 
-def save_geometry_at_iterations(form, optimiser, shape=None, force=None):
+def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, shape=None, settings=None, record=False, interval=100, jump_each=1):
+    """Make a 3D animated plot with the optimisation steps.
 
-    import json
-    import compas_tno
-    from numpy import array
-    from compas_tno.algorithms import xyz_from_xopt
-    from compas_tno.algorithms import reciprocal_from_form
-
-    M = optimiser.M  # matrices of the problem
-
-    file_qs = compas_tno.get('output.json')
-    file_Xform = compas_tno.get('Xform.json')
-
-    if force:
-        file_Xforce = compas_tno.get('Xforce.json')
-        Xforce = {}
-
-    with open(file_qs, mode='r', encoding='utf-8') as f:
-        data = json.load(f)
-
-    Xform = {}
-
-    iterations = len(data['iterations'])
-
-    for i in range(iterations):
-        xopt_i = array(data['iterations'][str(i)]).reshape(-1, 1)
-        M = xyz_from_xopt(xopt_i, M)
-        Xform_i = M.X.tolist()
-        Xform[str(i)] = Xform_i
-
-        if force:
-            j = 0
-            for key in form.vertices():
-                form.vertex_attributes(key, 'xyz', M.X[j].tolist())
-                j += 1
-            k = 0
-            for edge in form.edges_where({'_is_edge': True}):
-                form.edge_attribute(edge, 'q', M.q.flatten()[k])
-                k += 1
-
-            force = reciprocal_from_form(form)
-            Xforce_i = force.vertices_attributes('xyz')
-            Xforce[str(i)] = Xforce_i
-
-    with open(file_Xform, mode='w', encoding='utf-8') as f:
-        json.dump(Xform, f)
-
-    print('Form Geometry saved @:', file_Xform)
-
-    if force:
-        with open(file_Xforce, mode='w', encoding='utf-8') as f:
-            json.dump(Xforce, f)
-
-        print('Force Geometry saved @:', file_Xforce)
-
-    return
-
-
-def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, shape=False, settings=None, record=False, interval=100):
-    """ Make a 3D animated plot with the optimisation steps.
+    Parameters
+    ----------
+    form : FormDiagram
+        Form Diagram in which the animation should be based
+    file_Xform : str
+        Path for the ``.json`` file with the notal position of the form diagram during iterations
+    force : ForceDiagram, optional
+        Force diagram in whch the animation should be based, by default None
+    file_Xforce : str, optional
+        Path for the ``.json`` file with the notal position of the form diagram during iterations, by default None
+    shape : Shape, optional
+        The shape to plot in the animation, by default None
+    settings : dict, optional
+        Dictionary with settings to modify the viewer, by default None
+    record : bool, optional
+        Whether or not the animation should be saved as ``.gif``, by default False
+    interval : int, optional
+        Time interval (in ms) among iteration frames, by default 100
+    jump_each : int, optional
+        Interval tot jump among iteration frames, by default 1, in which all frames are shown
     """
 
+    from compas_tno.viewers import Viewer
     viewer = Viewer(form, shape=shape)
 
     if settings:
@@ -92,8 +51,11 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
         with open(file_Xforce, mode='r', encoding='utf-8') as f:
             Xforce = json.load(f)
 
-    iterations = len(Xform)
-    print('number of iterations', iterations)
+    iterations_total = len(Xform)
+    iterations = round(iterations_total / jump_each)
+
+    print('Displaying {0} iterations from a total of {1} iterations'.format(iterations, iterations_total))
+
     out = None
     if record:
         out = compas_tno.get('out.gif')
@@ -108,7 +70,7 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
 
         viewer.clear()
 
-        Xf = Xform[str(f)]
+        Xf = Xform[str(f * jump_each)]
         index = 0
         for vertex in form.vertices():
             viewer.thrust.vertex_attribute(vertex, 'x', Xf[index][0])
@@ -118,11 +80,12 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
 
         viewer.view_thrust()
         # viewer.view_cracks()
+        # viewer.view_reactions()
         viewer.view_shape()
         viewer.view_reactions()
 
         if force:
-            _Xf = Xforce[str(f)]
+            _Xf = Xforce[str(f * jump_each)]
             index = 0
             for vertex in force.vertices():
                 force.vertex_attribute(vertex, 'x', _Xf[index][0])

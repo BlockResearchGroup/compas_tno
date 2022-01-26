@@ -325,6 +325,45 @@ class FormPlotter(object):
                 vectorartist = self.app.add(r, point=pt)
                 self._otherartists.append(vectorartist)
 
+    def draw_vectors(self, vectors=[], bases=[]):
+        """Helper to add vectors to the plotter.
+
+        Parameters
+        ----------
+        vectors : list, optional
+            The list of vectors to plot, by default []
+        bases : list, optional
+            The list with the location of the base of the vectors, by default []
+
+        Returns
+        -------
+        None
+            Plotter app is updated.
+
+        """
+
+        if not(len(vectors) == len(bases)):
+            raise ValueError('Please provide the vector and the bases')
+
+        for i in range(len(vectors)):
+            vector = vectors[i]
+            point = bases[i]
+            vectorartist = self.app.add(vector, point=point)
+            self._otherartists.append(vectorartist)
+
+    def draw_mesh(self, mesh=None):
+        """ Initiate the Plotter with the default camera options
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
+
+        if not mesh:
+            mesh = self.form
+        self.app.add(mesh)
+
     def draw_form_xz(self):
         """Plot the form diagram rotated 90 degrees.
 

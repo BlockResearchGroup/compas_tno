@@ -12,7 +12,7 @@ from compas_view2.shapes import Text
 __all__ = ['Viewer']
 
 
-class Viewer(object):
+class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
     """A Class for view 3D thrust networks and shapes.
 
     Parameters
