@@ -34,6 +34,7 @@ axis_sym = None
 starting_point = 'loadpath'
 
 thk = 0.25  # thickness of the problem
+qmax = 100000.0
 
 # Create form diagram
 
@@ -57,11 +58,11 @@ data_shape = {
     'xy_span': [[0, span], [0, k*span]],
     'center': [5.0, 5.0],
     'radius': span/2,
-    't': 0.0,
+    't': 1.0,
 }
 
 vault = Shape.from_library(data_shape)
-vault.ro = 20.0
+vault.ro = 40.0
 
 location = compas_tno.get('shape.json')
 vault.to_json(location)
@@ -70,7 +71,7 @@ vault.to_json(location)
 # -----------------------  INITIALISE   ----------------------
 # ------------------------------------------------------------
 
-apply_bounds_on_q(form)
+apply_bounds_on_q(form, qmin=-qmax)
 
 form_base = form.copy()
 
@@ -93,6 +94,7 @@ optimiser.settings['gradient'] = True
 optimiser.settings['jacobian'] = True
 optimiser.settings['printout'] = True
 optimiser.settings['jacobian'] = True
+# optimiser.settings['find_inds'] = True
 optimiser.settings['derivative_test'] = True
 optimiser.settings['starting_point'] = starting_point
 optimiser.settings['save_iterations'] = True
@@ -125,10 +127,6 @@ view.show_solution()
 import compas_tno
 location = compas_tno.get('form.json')
 form.to_json(location)
-
-from compas_tno.viewers import save_geometry_at_iterations
-
-save_geometry_at_iterations(form, optimiser, shape=None, force=True)
 
 # # ---- MAKE THE VIDEO ----
 

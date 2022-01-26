@@ -13,6 +13,9 @@ from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
 
+from compas.geometry import Vector
+from compas.geometry import Point
+
 from compas.geometry import normalize_vector
 from numpy import array
 import os
@@ -105,6 +108,8 @@ for c in [0.1]:  # set the distance that the nodes can move
 
                 lines = []
                 vector_supports = []
+                vectors = []
+                bases = []
 
                 sign = -1  # +1 for outwards / -1 for inwards
 
@@ -141,23 +146,30 @@ for c in [0.1]:  # set the distance that the nodes can move
                     #     dXbi = [0, 0, 0]
 
                     vector_supports.append(dXbi)
-                    lines.append({
-                        'start': [x, y, z],
-                        'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
-                        'width': 3
-                    })
+                    vectors.append(Vector(*dXbi))
+                    bases.append(Point(x, y, z))
+                    # lines.append({
+                    #     'start': [x, y, z],
+                    #     'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
+                    #     'width': 3
+                    # })
 
                 dXb = array(vector_supports)
                 print(dXb)
 
-                from compas_plotters import MeshPlotter
+                from compas_tno.plotters2 import FormPlotter
 
-                key_index = form.key_index()
-                plotter = MeshPlotter(form)
-                plotter.draw_edges()
-                plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
-                plotter.draw_arrows(lines)
+                plotter = FormPlotter(form)
+                plotter.draw_mesh()
+                plotter.draw_vectors(vectors, bases)
                 plotter.show()
+
+                # key_index = form.key_index()
+                # plotter = MeshPlotter(form)
+                # plotter.draw_edges()
+                # plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
+                # plotter.draw_arrows(lines)
+                # plotter.show()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -182,6 +194,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['starting_point'] = starting_point
             optimiser.settings['support_displacement'] = dXb
             optimiser.settings['Ecomp_method'] = Ecomp_method
+            optimiser.settings['save_iterations'] = True
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -216,7 +229,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            plot_superimposed_diagrams(form, form_base).show()
+            # plot_superimposed_diagrams(form, form_base).show()
             # view = Viewer(form)
             # view.show_solution()
 
@@ -228,17 +241,25 @@ for c in [0.1]:  # set the distance that the nodes can move
                 if save:
                     form.to_json(address)
                     print('Saved to: ', address)
-                    plot_superimposed_diagrams(form, form_base, save=img_file).show()
-                    plot_form(form, show_q=False, cracks=True).show()
+                    #plot_superimposed_diagrams(form, form_base, save=img_file).show()
+                    #plot_form(form, show_q=False, cracks=True).show()
             else:
-                plot_superimposed_diagrams(form, form_base).show()
+                #plot_superimposed_diagrams(form, form_base).show()
                 view = Viewer(form)
                 view.show_solution()
                 break
 
-    view = Viewer(form)
-    view.show_solution()
+    view = Viewer(form, shape=vault)
+    view.view_thrust()
+    view.view_force()
+    view.view_cracks()
+    view.view_shape()
+    view.view_reactions()
+    view.show()
 
+    import compas_tno
+    location = compas_tno.get('form.json')
+    form.to_json(location)
 
 print(solutions)
 print('\n')

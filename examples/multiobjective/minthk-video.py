@@ -17,8 +17,8 @@ form = FormDiagram.from_json(DATA_FORM)
 shape = Shape.from_library(
     {
         'type': 'dome_polar',
-        # 'thk': 0.50,
-        'thk': 0.205,
+        'thk': 0.50,
+        # 'thk': 0.205,
         'discretisation': [20, 40],
         't': 0.0,
         'center': [5.0, 5.0],
@@ -45,6 +45,6 @@ SETTINGS['force.scale'] = 0.04
 
 # animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, settings=SETTINGS, record=True, interval=150)
 
-animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, shape=shape, settings=SETTINGS, record=False, interval=150)
+animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, shape=shape, settings=SETTINGS, record=True, interval=20)
 
 # animation_from_section(form, DATA_XFORM)
