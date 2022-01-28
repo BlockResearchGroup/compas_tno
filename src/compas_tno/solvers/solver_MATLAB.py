@@ -73,12 +73,17 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     ----------
     form : FormDiagram
         FormDiagram object with form containing full information.
+    problem : Problem, optional
+        The problem with matrices of interest, by default None
+    find_inds : bool, optional
+        Whether or not independents must be computed before the analysis, by default False
+    printout : bool, optional
+        Whether or not print results, by default False
 
     Returns
     -------
     obj : analysis
         Analysis object optimised.
-
     """
 
     future = matlab.engine.connect_matlab(background=True)
@@ -98,6 +103,24 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
 
 
 def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
+    """Call and output the loadpath optimisation with CVX from MATLAB
+
+    Parameters
+    ----------
+    form : ::class:: FormDiagram
+        The form Diagram of the analysis
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors
+    eng : matlab.engine
+        The matlab engine initiated to call the analysis
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    output: dict
+        Dictionary with results.
+    """
 
     if len(problem.ind) < problem.m:
         print('Calling LP-Optimisation via CVX (MATLAB) with independents')
@@ -155,6 +178,31 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
 
 
 def call_cvx(problem, eng, printout=False):
+    """Call matlab with the matrices for the analysis
+
+    Parameters
+    ----------
+    eng : matlab.engine
+        The matlab engine initiated to call the analysis
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+
+    """
 
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, qmax, i_uv, k_i, eng = args_cvx
 

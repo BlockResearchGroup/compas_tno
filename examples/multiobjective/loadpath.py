@@ -8,8 +8,8 @@ from compas_tno.viewers import view_bestfit_solution
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.analysis.analysis import Analysis
 import os
-from compas_tno.plotters import save_csv
-from compas_tno.plotters import diagram_of_thrust
+# from compas_tno.plotters import save_csv
+# from compas_tno.plotters import diagram_of_thrust
 
 span = 10.0
 k = 1.0
@@ -169,8 +169,8 @@ for c in [c]:  # set the distance that the nodes can move
 
             plot_superimposed_diagrams(form, form_base).show()
             plot_form(form, show_q=False, cracks=True).show()
-            # view = Viewer(form)
-view.show_solution()
+            view = Viewer(form)
+            view.show_solution()
 
             if optimiser.exitflag == 0:
                 solutions[c][obj][thk] = thrust/weight * 100

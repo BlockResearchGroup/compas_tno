@@ -220,12 +220,12 @@ from compas_tno.viewers import Viewer
 
 # ---- GOTHIC MIN THK ----
 
-DATA_FORM = '/Users/mricardo/Documents/ETH/Journals/Benvenuto_2022/key_files/gothic-min_thk.json'
-# DATA_FORCE = compas_tno.get('force-compl.json')
+DATA_FORM = '/Users/mricardo/Documents/ETH/Journals/Benvenuto_2022/key_files/gothic-min_thk-form.json'
+DATA_FORCE = '/Users/mricardo/Documents/ETH/Journals/Benvenuto_2022/key_files/gothic-min_thk-force.json'
 
-from compas_tno.utilities import update_json
-DATA_FORM = update_json(DATA_FORM)
-print('Updated JSON:', DATA_FORM)
+# from compas_tno.utilities import update_json
+# DATA_FORM = update_json(DATA_FORM)
+# print('Updated JSON:', DATA_FORM)
 
 form = FormDiagram.from_json(DATA_FORM)
 # shape = Shape.from_library(
@@ -242,7 +242,7 @@ form = FormDiagram.from_json(DATA_FORM)
 pzt = 0
 for key in form.vertices():
     pz = form.vertex_attribute(key, 'pz')
-    # form.vertex_attribute(key, 'pz', 2 * pz)
+    form.vertex_attribute(key, 'pz', -1 * pz)
     pzt += form.vertex_attribute(key, 'pz')
 
 print('Total weight:', pzt)
@@ -250,15 +250,17 @@ print('Total weight:', pzt)
 qt = 0
 for edge in form.edges():
     q = form.edge_attribute(edge, 'q')
-    print(q)
-    # form.edge_attribute(edge, 'q', q/2)
+    # print(q)
+    # form.edge_attribute(edge, 'q', -1 * q)
     qt += form.edge_attribute(edge, 'q')
 
 print('Total qs:', qt)
 
+form.to_json(DATA_FORM)
+
 force = reciprocal_from_form(form)
-# force.to_json(DATA_FORCE)
-# print('Saved Force @:', DATA_FORCE)
+force.to_json(DATA_FORCE)
+print('Saved Force @:', DATA_FORCE)
 
 viewer = Viewer(form, shape=None)
 # viewer = Viewer(form, shape=shape)

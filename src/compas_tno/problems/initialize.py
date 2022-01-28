@@ -1,4 +1,5 @@
 from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
+from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
 
 
 def initialize_loadpath(form, problem=None):
@@ -6,6 +7,17 @@ def initialize_loadpath(form, problem=None):
     """
 
     output = run_loadpath_from_form_MATLAB(form, problem=problem)
+
+    # TODO: add an option here to initialise the loadpath with SLSQP/IPOPT if matlab/cvx can not be reached.
+
+    return output
+
+
+def initialize_loadpath_no_matlab(form, problem=None):
+    """ Built-in function to optimise the loadpath considering diagram fixed projection
+    """
+
+    output = run_loadpath_from_form_CVXPY(form, problem=problem)
 
     # TODO: add an option here to initialise the loadpath with SLSQP/IPOPT if matlab/cvx can not be reached.
 

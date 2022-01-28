@@ -32,6 +32,7 @@ from compas_tno.problems import callback_create_json
 
 from compas_tno.problems import initialize_loadpath
 from compas_tno.problems import initialize_tna
+from compas_tno.problems.initialize import initialize_loadpath_no_matlab
 
 from compas_tno.algorithms import apply_sag
 from compas_tno.algorithms import equilibrium_fdm
@@ -117,6 +118,9 @@ def set_up_general_optimisation(analysis):
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'loadpath':
         initialize_loadpath(form, problem=M)
+        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    elif starting_point == 'loadpath-cvxpy':
+        initialize_loadpath_no_matlab(form, problem=M)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'relax':
         equilibrium_fdm(form)
