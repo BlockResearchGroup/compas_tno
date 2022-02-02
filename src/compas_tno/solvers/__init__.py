@@ -37,6 +37,14 @@ MATLAB
 
     run_optimisation_MATLAB
 
+CVXPY
+========
+
+.. autosummary::
+    :toctree: generated/
+
+    run_loadpath_from_form_CVXPY
+
 PyOpt
 ========
 
@@ -60,6 +68,7 @@ from .mma_numpy import *  # noqa: F401 F403
 from .solver_scipy import *  # noqa: F401 F403
 from .solver_IPOPT import *  # noqa: F401 F403
 from .solver_MATLAB import *  # noqa: F401 F403
+from .solver_cvxpy import *  # noqa: F401 F403
 from .post_process import *  # noqa: F401 F403
 from .solver_MMA import *  # noqa: F401 F403
 from .solver_pyOpt import *  # noqa: F401 F403

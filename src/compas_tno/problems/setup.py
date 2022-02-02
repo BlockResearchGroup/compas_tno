@@ -1,4 +1,3 @@
-from compas_tno.problems import initialise_problem
 from compas_tno.problems import initialise_problem_general
 
 from compas_tno.problems import adapt_problem_to_fixed_diagram
@@ -55,6 +54,8 @@ from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_average_edge_stiffness
 
+from compas_tno.viewers import Viewer
+
 from numpy import append
 from numpy import array
 from numpy import zeros
@@ -87,6 +88,7 @@ def set_up_general_optimisation(analysis):
     sym_loads = optimiser.settings.get('sym_loads', False)
     fjac = optimiser.settings.get('jacobian', False)
     starting_point = optimiser.settings.get('starting_point', 'current')
+    find_inds = optimiser.settings.get('find_inds', False)
     qmin = optimiser.settings.get('qmin', -1e+4)
     qmax = optimiser.settings.get('qmax', +1e+8)
     features = optimiser.settings.get('features', [])
@@ -104,6 +106,8 @@ def set_up_general_optimisation(analysis):
 
     i_k = form.index_key()
 
+    apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+
     M = initialise_problem_general(form)
     M.variables = variables
     M.constraints = constraints
@@ -117,10 +121,10 @@ def set_up_general_optimisation(analysis):
         apply_sag(form)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'loadpath':
-        initialize_loadpath(form, problem=M)
+        initialize_loadpath(form, problem=M, find_inds=find_inds)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'loadpath-cvxpy':
-        initialize_loadpath_no_matlab(form, problem=M)
+        initialize_loadpath_no_matlab(form, problem=M, find_inds=find_inds)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'relax':
         equilibrium_fdm(form)
@@ -129,6 +133,12 @@ def set_up_general_optimisation(analysis):
         initialize_tna(form)
     else:
         print('Warning: define starting point')
+
+    if plot:
+        view = Viewer(form)
+        view.view_thrust()
+        view.view_force()
+        view.show()
 
     if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
@@ -142,14 +152,6 @@ def set_up_general_optimisation(analysis):
     else:
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
-
-    apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
-
-    # from compas_tno.viewers import Viewer
-    # view = Viewer(form)
-    # view.view_thrust()
-    # view.view_force()
-    # view.show()
 
     # Specific parameters that depend on the objective:
 
@@ -189,10 +191,6 @@ def set_up_general_optimisation(analysis):
     #     max_rol_rx, max_rol_ry = None, None
 
     # shape.data['thickness_type'] = thickness_type  # this argument is useful if minimising thickness
-
-    if plot:
-        print('Plot of starting point')
-        plot_form(form, show_q=False).show()
 
     # Select Objetive and Gradient
 
@@ -348,11 +346,11 @@ def set_up_general_optimisation(analysis):
     if fjac:
         jac = fjac(x0, M)
 
-    # from compas_tno.viewers import Viewer
-    # view = Viewer(form)
-    # view.view_thrust()
-    # view.view_force()
-    # view.show()
+    # if plot:
+    #     view = Viewer(form)
+    #     view.view_thrust()
+    #     view.view_force()
+    #     view.show()
 
     if printout:
         print('-'*20)
@@ -441,7 +439,7 @@ def set_rollers_constraint(form, printout):
     return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
 
 
-def set_up_convex_optimisation(analysis):
+def set_up_convex_optimisation(analysis):  # old remove
     """ Set up a convex optimisation problem.
 
     Parameters
@@ -462,43 +460,37 @@ def set_up_convex_optimisation(analysis):
     find_inds = optimiser.settings['find_inds']
     printout = optimiser.settings['printout']
     qmax = optimiser.settings['qmax']
+    qmin = optimiser.settings['qmin']
+    solver = optimiser.settings.get('solver', 'MATLAB')
 
-    k_i = form.key_index()
-    i_uv = form.index_uv()
-
-    args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds)
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y = args[:31]
-
-    # Problem specifities
-
-    args_cvx = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, qmax, i_uv, k_i)
     objective = optimiser.settings['objective']
+    variables = optimiser.settings['variables']
+    constraints = optimiser.settings['constraints']
 
     # Select Objective
 
     if objective == 'loadpath' or objective == 'feasibility':
         pass
     else:
-        print('Error! Non-covex problem for the objective: ', objective, '. Try changing the objective to \'loadpath\' or \'fesibility\'.')
+        print('Warning: Non-convex problem for the objective: ', objective, '. Try changing the objective to \'loadpath\' or \'fesibility\'.')
 
-    # Definition of the Variables and starting point
-
-    variables = optimiser.settings['variables']
-
-    if 'ind' in variables and 'zb' not in variables:
+    if variables == ['q']:
         pass
     else:
-        print('Error! Non-covex problem for the variables: ', variables, '. Try allow for only \'ind\' variables.')
-
-    constraints = optimiser.settings['constraints']
+        print('Warning:  Non-convex problem for the variables: ', variables, '. Considering only \'q\' instead.')
 
     if constraints == ['funicular']:
         pass
     else:
-        print('Error! Non-covex problem for the constraints: ', constraints, '. Try allow for only \'funicular\' variables.')
+        print('Warning:  Non-convex problem for the constraints: ', constraints, '. Considering only \'funicular\' instead.')
 
-    optimiser.args = args_cvx
+    apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+
+    M = initialise_problem_general(form)
+    M.variables = variables
+    M.constraints = constraints
+
+    optimiser.M = M
 
     analysis.form = form
     analysis.optimiser = optimiser

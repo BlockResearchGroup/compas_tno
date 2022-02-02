@@ -17,7 +17,7 @@ __all__ = [
 
 
 def run_optimisation_MATLAB(analysis):
-    """ Run convex optimisation problem with MATLAB.
+    """ Run convex optimisation problem with MATLAB after going through the optimisation set up.
 
     Parameters
     ----------
@@ -31,38 +31,14 @@ def run_optimisation_MATLAB(analysis):
 
     """
 
-    # Initiate Matlab Engine
-
-    future = matlab.engine.connect_matlab(background=True)
-    # future = matlab.engine.start_matlab(background=True)
-    eng = future.result()
-
     form = analysis.form
-    optimiser = analysis.optimiser
-    args_cvx = optimiser.args
-    indset = form.attributes['indset']
-    find_inds = optimiser.settings['find_inds']
-    objective = optimiser.settings['objective']
-    printout = optimiser.settings['printout']
-    plot = optimiser.settings['plot']
+    problem = analysis.optimiser.M
+    find_inds = analysis.optimiser.settings.get('find_inds', False)
+    printout = analysis.optimiser.settings.get('printout', False)
 
-    i_k = form.index_key()
-    i_uv = form.index_uv()
+    run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
 
-    q, ind = args_cvx[:2]
-    args_cvx_ = list(args_cvx)
-    args_cvx_.append(eng)
-    args_cvx = tuple(args_cvx_)
-    args = args_cvx[:22]
-
-    fopt, exitflag = call_and_output_CVX_MATLAB(form, find_inds, indset, printout, plot, objective, args_cvx, args, ind, i_uv, i_k)
-
-    optimiser.exitflag = exitflag
-    optimiser.fopt = fopt
-    analysis.form = form
-    compute_reactions(form, plot=plot)
-
-    return analysis
+    return output
 
 
 def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=False):
@@ -97,7 +73,7 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     if find_inds:
         adapt_problem_to_fixed_diagram(problem, form)
 
-    output = call_and_output_CVX_MATLAB(form, problem, eng)
+    output = call_and_output_CVX_MATLAB(form, problem, eng, printout=printout)
 
     return output
 

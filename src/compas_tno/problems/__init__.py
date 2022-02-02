@@ -19,7 +19,6 @@ Initialisation
 .. autosummary::
     :toctree: generated/
 
-    initialise_problem
     initialise_form
     initialise_problem_general
     adapt_problem_to_fixed_diagram
@@ -169,7 +168,6 @@ from .objectives import (
 
 from .problems import (
     Problem,
-    initialise_problem,
     initialise_form,
     initialise_problem_general,
     adapt_problem_to_fixed_diagram,
@@ -239,7 +237,6 @@ __all__ = [
     'f_tight_crosssection',
 
     'Problem',
-    'initialise_problem',
     'initialise_form',
     'initialise_problem_general',
     'adapt_problem_to_fixed_diagram',
