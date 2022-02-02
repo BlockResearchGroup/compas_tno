@@ -11,6 +11,7 @@ from compas_tno.problems import set_up_general_optimisation
 
 from compas_tno.solvers import run_optimisation_scipy
 from compas_tno.solvers import run_optimisation_MATLAB
+from compas_tno.solvers import run_optimisation_CVXPY
 from compas_tno.solvers import run_optimisation_MMA
 from compas_tno.solvers import run_optimisation_ipopt
 
@@ -219,9 +220,14 @@ class Analysis(Data):
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        if self.optimiser.settings['library'] == 'MATLAB':
-            self = set_up_convex_optimisation(self)
+        objective = self.optimiser.settings['objective']
+        features = self.optimiser.settings['features']
+
+        if objective == 'loadpath' and 'fixed' in features:
+            self.optimiser.settings['type'] = 'convex'
+            set_up_convex_optimisation(self)
         else:
+            self.optimiser.settings['type'] = 'nonlinear'
             self = set_up_general_optimisation(self)
 
         return
@@ -229,11 +235,22 @@ class Analysis(Data):
     def run(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        if self.optimiser.settings['library'] == 'MATLAB':
-            self = run_optimisation_MATLAB(self)
-        elif self.optimiser.settings['library'] == 'MMA':
+        opt_type = self.optimiser.settings['type']
+        solver = self.optimiser.settings['solver']
+        library = self.optimiser.settings['library']
+
+        if opt_type == 'convex':
+            if solver == 'MATLAB':
+                run_optimisation_MATLAB(self)
+            elif solver == 'CVXPY':
+                run_optimisation_CVXPY(self)
+            else:
+                raise NotImplementedError('Only CVXPY and MATLAB are suitable for this optimisation')
+        elif library == 'pyOpt':
             self = run_optimisation_MMA(self)
-        elif self.optimiser.settings['library'] == 'IPOPT':
+        elif solver == 'MMA':
+            self = run_optimisation_MMA(self)
+        elif solver == 'IPOPT':
             self = run_optimisation_ipopt(self)
         else:
             self = run_optimisation_scipy(self)
