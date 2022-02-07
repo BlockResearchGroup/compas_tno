@@ -21,8 +21,32 @@ More information about the solver and solver options are available here:
 
 * https://pypi.org/project/ipopt/
 
+
+Loadpath solvers
+================
+
+MOSEK
+-----
+
+MOSEK is a software package to perform convex optimisation. It is accessed through TNO via CVXPY. To use MOSEK you need to get yourself a license which can be purchased ot obtained for free for scholars. See their website for more information on how to obtain such license and on their installation process see:
+
+* https://www.mosek.com/products/academic-licenses/
+
+Once you have the licensing worked out we will install MOSEK and CVXPY python packages to use it.
+
+The package CVXPY connects to several convex solvers to solve convex problems. You can learn about what it does through their website.
+
+* https://www.cvxpy.org/
+
+We can install both CVXPY and MOSEK together running:
+
+.. code-block:: bash
+
+    conda install cvxpy mosek
+
+
 SDPT3
-=====
+-----
 
 SDPT3 is a solver to perform conical convex optimisation. It is necessary to perform load-path optimisations. This solver is distributed on the MATLAB's package CVX. Both need to be installed: MATLAB and CVX. The installation is broken in three steps:
 
@@ -39,8 +63,8 @@ SDPT3 is a solver to perform conical convex optimisation. It is necessary to per
 * https://www.mathworks.com/help/matlab/matlab_external/install-the-matlab-engine-for-python.html
 
 
-Non-mandatory solvers
-=====================
+Additional solvers
+==================
 
 Additional solvers can be added to ``TNO`` as listed below:
 

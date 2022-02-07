@@ -8,6 +8,7 @@ from compas_tno.problems.bounds_update import ub_lb_update
 from compas_tno.problems.bounds_update import b_update
 
 from compas_tno.algorithms import xyz_from_q
+from compas_tno.algorithms import q_from_qid
 
 
 def constr_wrapper(variables, M):
@@ -36,6 +37,7 @@ def constr_wrapper(variables, M):
     qid = variables[:k]
     check = k
     M.q = M.B.dot(qid)
+    # M.q = q_from_qid(M.q, M.ind, M.Edinv, M.Ei, M.ph)  # wont work if not fixed
     thk = M.thk
     t = M.shape.datashape['t']
 
@@ -68,7 +70,12 @@ def constr_wrapper(variables, M):
         M.tub_reac = tub_reac
         check = check + 2*nb
 
+    # update geometry
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+    # if 'fixed' in M.features:
+    #     M.X[M.free, 2] = X_free[:, 2]
+    # else:
+    #     M.X[M.free] = X_free
 
     constraints = zeros([0, 1])  # missing compression only constraint
 

@@ -1,56 +1,23 @@
 """
 ********************************************************************************
-compas_tno.plotters
+compas_tno.plotters2
 ********************************************************************************
 
-.. currentmodule:: compas_tno.plotters
+.. currentmodule:: compas_tno.plotters2
 
-Form
-====
-
-.. autosummary::
-    :toctree: generated/
-
-    plot_form
-    plot_form_xz
-
-
-Force
-=====
+Plotters2
+=========
 
 .. autosummary::
     :toctree: generated/
+    :nosignatures:
 
-    plot_dual
-    plot_force
-
-
-Gradient
-========
-
-.. autosummary::
-    :toctree: generated/
-
-    plot_grad
-
-
-Data Analysis
-=============
-
-.. autosummary::
-    :toctree: generated/
-
-    diagram_of_thrust
-    diagram_of_multiple_thrust
-
+    TNOPlotter
 
 """
 
-from __future__ import absolute_import
+from .plotter import TNOPlotter
 
-from .form import *  # noqa: F401 F403
-from .gradient import *  # noqa: F401 F403
-from .force import *  # noqa: F401 F403
-from .data_analysis import *  # noqa: F401 F403
-
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [
+    'TNOPlotter'
+]

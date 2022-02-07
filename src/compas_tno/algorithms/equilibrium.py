@@ -144,7 +144,7 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
 
     m = len(q)
     dep = list(set(range(m)) - set(ind))
-    q[dep] = Edinv.dot(- ph + Ei.dot(q[ind]))
+    q[dep] = Edinv.dot(Ei.dot(q[ind]) - ph.reshape(-1, 1))
 
     return q
 

@@ -5,10 +5,12 @@ from numpy import vstack
 
 from scipy.sparse.linalg import splu
 from scipy.sparse import diags
-from compas_tno.algorithms import xyz_from_q
 
 from compas_tno.problems.bounds_update import dub_dlb_update
 from compas_tno.problems.bounds_update import db_update
+
+from compas_tno.algorithms import xyz_from_q
+from compas_tno.algorithms import q_from_qid
 
 
 def d_fconstr(fconstr, x0, eps, *args):
@@ -45,6 +47,7 @@ def sensitivities_wrapper(variables, M):
     qid = variables[:k]
     check = k
     M.q = M.B.dot(qid)
+    # M.q = q_from_qid(M.q, M.ind, M.Edinv, M.Ei, M.ph)  # wont work if not fixed
 
     if 'xyb' in M.variables:
         xyb = variables[check:check + 2*nb]
@@ -77,11 +80,14 @@ def sensitivities_wrapper(variables, M):
         M.tub_reac = tub_reac
         check = check + 2*nb
 
-    q = M.q
-    Xfixed = M.X[M.fixed]
-
     # update geometry
-    M.X[M.free] = xyz_from_q(q, M.P[M.free], Xfixed, M.Ci, M.Cit, M.Cb)
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+    # if 'fixed' in M.features:
+    #     M.X[M.free, 2] = X_free[:, 2]
+    # else:
+    #     M.X[M.free] = X_free
+
+    q = M.q
 
     M.U = diags(M.C.dot(M.X[:, 0]))  # U = diag(Cx)
     M.V = diags(M.C.dot(M.X[:, 1]))  # V = diag(Cy)

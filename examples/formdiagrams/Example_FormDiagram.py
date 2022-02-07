@@ -1,24 +1,26 @@
 from compas_tno.diagrams import FormDiagram
-from compas_tno.plotters import plot_form
+# from compas_tno.plotters import plot_form
+
+from compas_tno.plotters2 import TNOPlotter
 
 # ------------------------------------------------
 # --------- CREATING ARCH FORM DIAGRAM -----------
 # ------------------------------------------------
 
-data = {
-    'type': 'arch',
-    'H': 1.0,
-    'L': 2.0,
-    'total_nodes': 11,
-    'x0': 0.0,
-}
+# data = {
+#     'type': 'arch',
+#     'H': 1.0,
+#     'L': 2.0,
+#     'total_nodes': 11,
+#     'x0': 0.0,
+# }
 
-form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+# form = FormDiagram.from_library(data)
+# print(form)
+# form.overview_forces()
+# plot_form(form, show_q=False).show()
 
-print(form.vertices_attribute('x'))
+# print(form.vertices_attribute('x'))
 
 # ------------------------------------------------
 # --------- CREATING ORTHO FORM DIAGRAM ----------
@@ -32,9 +34,12 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+# print(form)
+# form.overview_forces()
+# plot_form(form, show_q=False).show()
+
+plotter = TNOPlotter(form)
+plotter.show_solution()
 
 # ------------------------------------------------
 # --------- CREATING CROSS FORM DIAGRAM ----------

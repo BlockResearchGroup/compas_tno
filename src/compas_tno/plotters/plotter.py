@@ -1,15 +1,15 @@
 from compas_plotters import Plotter
 from compas.geometry import Vector
 from compas.geometry import Point
-from compas_plotters.artists import VectorArtist
 from compas.geometry import Rotation
+from compas_tno.shapes import Shape
 import math
 
 
-__all__ = ['FormPlotter']
+__all__ = ['TNOPlotter']
 
 
-class FormPlotter(object):
+class TNOPlotter(object):
     """A Class plot 2D forms and shapes.
 
     Parameters
@@ -35,13 +35,14 @@ class FormPlotter(object):
         self.app = None
         self._form = form
         self._shape = shape
-        self._formbase = form_base
+        self._form_base = form_base
         self._formartist = None
         self._otherartists = []
         self.settings = {
             'show.thrust': True,
             'show.shape': True,
             'show.reactions': True,
+            'show.reactions.emerging': True,
             'show.reactionlabels': True,
             'show.supports': True,
             'show.edges': True,
@@ -59,7 +60,7 @@ class FormPlotter(object):
             'camera.show.axis': True,
             'camera.figsize': (8, 8),
 
-            'size.vertex': 10.0,
+            'size.vertex': 5.0,
             'size.edge.max_thickness': 10.0,
             'size.edge.base_thickness': 1.0,
             'size.edge.normals': 0.5,
@@ -67,12 +68,15 @@ class FormPlotter(object):
             'size.reaction.body_width': 0.01,
             'size.reactionlabel': 20,
 
-            'scale.reactions': 0.005,
+            'scale.reactions': 0.05,
             'scale.loads': 0.001,
             'opacity.shapes': 0.5,
 
             'color.edges.form': (255, 0, 0),
-            'color.edges.reactions': (125, 125, 125),
+            'color.edges.reactions': (170, 170, 170),
+            'color.edges.shape': (200, 200, 200),
+            'color.edges.form_base': (200, 200, 200),
+            'color.edges.independent': (255, 0, 120),
             'color.vertex.supports': (170, 170, 170),
             'color.vertex.extrados': (0, 125, 0),
             'color.vertex.intrados': (0, 0, 255),
@@ -124,7 +128,7 @@ class FormPlotter(object):
             self._formartist = value
 
     def initiate_app(self):
-        """ Initiate the Plotter with the default camera options
+        """ Initiate the Plotter with the default camera options.
 
         Returns
         -------
@@ -135,7 +139,7 @@ class FormPlotter(object):
         self.app = Plotter(figsize=self.settings['camera.figsize'])
 
     def show_solution(self):
-        """ Show the thrust network, with the shape according to the settings
+        """ Show the thrust network, with the shape according to the settings.
 
         Returns
         -------
@@ -146,10 +150,22 @@ class FormPlotter(object):
         self.draw_form()
         self.draw_supports()
         self.draw_cracks()
+        self.zoom_extends()
         self.show()
 
+    def zoom_extends(self):
+        """ Wrapper to extend the objects in the active view.
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
+
+        self.app.zoom_extents()
+
     def show(self):
-        """ Display the plotter in the screen
+        """ Display the plotter in the screen.
 
         Returns
         -------
@@ -161,7 +177,7 @@ class FormPlotter(object):
         self.app.show()
 
     def clear(self):
-        """Clear the plotter elements
+        """Clear the plotter elements.
 
         Returns
         -------
@@ -207,15 +223,13 @@ class FormPlotter(object):
             edges=edges,
             faces=faces,
             edgewidth=edgewidths,
-            edgecolor=_norm(self.settings['color.edges.form']),
-            vertexcolor=_norm(self.settings['color.vertex.supports']),
-            vertexsize=self.settings['size.vertex']
-            )
+            edgecolor=_norm(self.settings['color.edges.form'])
+        )
 
         self.formartist = formartist
 
     def draw_cracks(self):
-        """Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados
+        """Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados.
 
         Returns
         -------
@@ -223,67 +237,51 @@ class FormPlotter(object):
             The plotter is updated in place.
         """
 
-        intrad = 1
-        extrad = 1
-        out = 1
         tol = self.settings['tol.forces']
         color_intra = _norm(self.settings['color.vertex.intrados'])
         color_extra = _norm(self.settings['color.vertex.extrados'])
         color_outside = _norm(self.settings['color.vertex.outside'])
 
-        vertices = []
-        color = {}
+        cracks = []
 
         for key in self.form.vertices():
+            x, y, z = self.form.vertex_coordinates(key)
             lb = self.form.vertex_attribute(key, 'lb')
             ub = self.form.vertex_attribute(key, 'ub')
             if not lb:
                 continue
             if not ub:
                 continue
-            x, y, z = self.form.vertex_coordinates(key)
             if self.settings['show.cracks']:
                 if abs(ub - z) < tol:
-                    vertices.append(key)
-                    color[key] = color_extra
-                    extrad += 1
+                    cracks.append({
+                        'key': key,
+                        'xyz': [x, y, z],
+                        'color': color_extra
+                    })
                     continue
                 elif abs(lb - z) < tol:
-                    vertices.append(key)
-                    color[key] = color_intra
-                    intrad += 1
+                    cracks.append({
+                        'key': key,
+                        'xyz': [x, y, z],
+                        'color': color_intra
+                    })
                     continue
             if self.settings['show.vertex.outside']:
-                if z - ub > tol:
-                    vertices.append(key)
-                    color[key] = color_outside
-                    out += 1
-                    continue
-                elif lb - z > tol:
-                    vertices.append(key)
-                    color[key] = color_outside
-                    out += 1
+                if z - ub > tol or lb - z > tol:
+                    cracks.append({
+                        'key': key,
+                        'xyz': [x, y, z],
+                        'color': color_outside
+                    })
                     continue
 
-        artist = self.formartist
-
-        if not artist:
-            self.app.add(
-                self.form,
-                show_edges=False,
-                show_faces=False,
-                show_vertices=True,
-                vertices=vertices,
-                vertexcolor=color,
-                vertexsize=self.settings['size.vertex']
-                )
-        else:  # WARNING: this will delete the vertices added before as the base mesh - not good
-            artist.vertex_size = self.settings['size.vertex']  # I think it does not make to have to set this here...
-            artist.draw_vertices(
-                vertices=vertices,
-                color=color,
-                # vertexsize=self.settings['size.vertex']  # THIS SHOULD BE PASSABLE HERE
-            )
+        for point in cracks:
+            x, y, z = point['xyz']
+            color = point['color']
+            pt = Point(x, y, z)
+            pointartist = self.app.add(pt, facecolor=color, size=self.settings['size.vertex'])
+            self._otherartists.append(pointartist)
 
     def draw_supports(self):
         """Add the supports as points in the mesh.
@@ -300,7 +298,7 @@ class FormPlotter(object):
             for key in self.form.vertices_where({'is_fixed': True}):
                 x, y, z = self.form.vertex_coordinates(key)
                 pt = Point(x, y, z)
-                pointartist = self.app.add(pt, facecolor=supportcolor)
+                pointartist = self.app.add(pt, facecolor=supportcolor, size=self.settings['size.vertex'])
                 self._otherartists.append(pointartist)
 
     def draw_reactions(self):
@@ -320,9 +318,13 @@ class FormPlotter(object):
                 rx = self.form.vertex_attribute(key, '_rx') * reaction_scale
                 ry = self.form.vertex_attribute(key, '_ry') * reaction_scale
                 rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
-                r = Vector(-rx, -ry, -rz)
-                pt = Point(x, y, z)
-                vectorartist = self.app.add(r, point=pt)
+                if self.settings['show.reactions.emerging']:
+                    r = Vector(-rx, -ry, -rz)
+                    pt = Point(x, y, z)
+                else:
+                    r = Vector(rx, ry, rz)
+                    pt = Point(x - rx, y - ry, z - rz)
+                vectorartist = self.app.add(r, point=pt, color=_norm(self.settings['color.edges.reactions']))
                 self._otherartists.append(vectorartist)
 
     def draw_vectors(self, vectors=[], bases=[]):
@@ -351,8 +353,8 @@ class FormPlotter(object):
             vectorartist = self.app.add(vector, point=point)
             self._otherartists.append(vectorartist)
 
-    def draw_mesh(self, mesh=None):
-        """ Initiate the Plotter with the default camera options
+    def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False):
+        """ Initiate the Plotter with the default camera options.
 
         Returns
         -------
@@ -362,7 +364,11 @@ class FormPlotter(object):
 
         if not mesh:
             mesh = self.form
-        self.app.add(mesh)
+        self.app.add(mesh,
+                     show_edges = show_edges,
+                     show_vertices = show_vertices,
+                     show_faces = show_faces
+                     )
 
     def draw_form_xz(self):
         """Plot the form diagram rotated 90 degrees.
@@ -378,6 +384,35 @@ class FormPlotter(object):
 
         self.draw_form()
 
+    def draw_shape(self):
+        """Adds the shape to the plot.
+
+        Returns
+        -------
+        None
+            The plotter is updated in place.
+        """
+
+        if not self.shape:
+            self.shape = Shape.from_formdiagram_and_attributes(self.form)
+
+        intrados = self.shape.intrados
+        extrados = self.shape.extrados
+
+        self.app.add(
+            intrados,
+            opacity=0.5,
+            edgecolor=_norm(self.settings['color.edges.shape']),
+            show_vertices=False
+        )
+
+        self.app.add(
+            extrados,
+            opacity=0.5,
+            edgecolor=_norm(self.settings['color.edges.shape']),
+            show_vertices=False
+        )
+
     def draw_shape_xz(self):
         """Plot the shape rotated 90 degrees.
 
@@ -387,8 +422,14 @@ class FormPlotter(object):
             The plotter is updated in place.
         """
 
-        self.draw_form_xz()
-        # then add the mesh self.shape.intrados and self.shape.extrados to the plot
+        if not self.shape:
+            self.shape = Shape.from_formdiagram_and_attributes(self.form)
+
+        axis = Vector(1.0, 0, 0)
+        self.shape.intrados = self.shape.intrados.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
+        self.shape.extrados = self.shape.extrados.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
+
+        self.draw_shape()
 
     def draw_base_form(self):
         """Adds to the plot the base mesh which is the mesh before the nodes moved horizontally.
@@ -399,16 +440,22 @@ class FormPlotter(object):
             The plotter is updated in place.
         """
 
-        self.draw_form()
-        self.draw_cracks()
-
-
         if not self.form_base:
             return
 
-        # add here the self.form_base as a light gray mesh behind the form...
+        if self.settings['show.edges']:
+            edges = list(self.form_base.edges_where({'_is_edge': True}))
 
-    def draw_form_independents(self):
+        self.app.add(
+            self.form_base,
+            edges=edges,
+            opacity=0.5,
+            edgecolor=_norm(self.settings['color.edges.form_base']),
+            show_vertices=False,
+            show_faces=False
+        )
+
+    def draw_form_independents(self, show_text=True):
         """Draw the form diagram with highlight in the independent edgess.
 
         Returns
@@ -417,8 +464,33 @@ class FormPlotter(object):
             The plotter is updated in place.
         """
 
-        # add here the form diagram withh highlight in the inependent edges
+        edges = list(self.form.edges_where({'_is_edge': True}))
+        base_thick = self.settings['size.edge.base_thickness']
 
+        color = {}
+        width = {}
+        text = {}
+        i = 0
+        for edge in edges:
+            if self.form.edge_attribute(edge, 'is_ind'):
+                color[edge] = _norm(self.settings['color.edges.independent'])
+                width[edge] = base_thick * 3.0
+                if show_text:
+                    text[edge] = str(i)
+                i = i+1
+            else:
+                color[edge] = (0, 0, 0)
+                width[edge] = base_thick
+
+        self.app.add(
+                    self.form,
+                    edges=edges,
+                    edgewidth=width,
+                    edge_text=text,
+                    edgecolor=color,
+                    show_vertices=False,
+                    show_faces=False
+                    )
 
     def draw_form_sym(self):
         """Draw the form diagram symmetry edges with the respective colors.
@@ -429,7 +501,18 @@ class FormPlotter(object):
             The plotter is updated in place.
         """
 
-        # add here the form diagram withh highlight in the inependent edges
+        raise NotImplementedError
+
+    def draw_force(self):
+        """Draw the force diagram associated with the form diagram.
+
+        Returns
+        -------
+        None
+            The plotter is updated in place.
+        """
+
+        raise NotImplementedError
 
 
 def _norm(rgb):
