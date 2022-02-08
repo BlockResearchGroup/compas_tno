@@ -16,9 +16,6 @@ from compas_tno.solvers import run_optimisation_MMA
 from compas_tno.solvers import run_optimisation_ipopt
 
 from compas_tno.diagrams import FormDiagram
-
-from compas_tno.plotters import plot_form
-
 from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import apply_selfweight_from_pattern
 from compas_tno.utilities import get_shape_ub
@@ -328,8 +325,6 @@ class Analysis(Data):
                     setup_time = time.time() - time0
                     self.run()
                     run_time = time.time() - time0 - setup_time
-                    if plot:
-                        plot_form(self.form, show_q=False, cracks=True).show()
                     exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
                     fopt = self.optimiser.fopt  # objective function optimum value
                     fopt_over_weight = fopt/swt  # divide by selfweight
@@ -442,9 +437,6 @@ class Analysis(Data):
             print('Min THK  |   Solved  |   Thrust |   T/W   |  THK incr. |  Setup time  |   Run time')
             print('{0:.5f}  |   True  |   {1:.1f} |   {2:.6f} |   {3:.2f}   | {4:.2f}s  |   {5:.2f}s'.format(thk_min, T, T_over_swt, thk_increase, setup_time, run_time))
 
-            if plot:
-                plot_form(self.form, show_q=False, cracks=True).show()
-
             # STORE
 
             address0 = os.path.join(compas_tno.get('/temp/'), 'form0.json')
@@ -547,8 +539,6 @@ class Analysis(Data):
                 setup_time = time.time() - time0
                 self.run()
                 run_time = time.time() - time0 - setup_time
-                if plot:
-                    plot_form(self.form, show_q=False, cracks=True).show()
                 exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
                 fopt = self.optimiser.fopt  # objective function optimum value
                 fopt_over_weight = fopt/lumped_swt  # divide by selfweight
@@ -651,9 +641,6 @@ class Analysis(Data):
             print('{0:.5f}  | {1:.5f}  |   True  |   {2:.1f} |   {3:.6f} |   {4:.4f}   | {5:.2f}s  |   {6:.2f}s'.format(n, thk_min, T, T_over_swt,
                                                                                                                         n_reduction, setup_time, run_time))
 
-            if plot:
-                plot_form(self.form, show_q=False, cracks=True).show()
-
             # STORE
 
             address0 = os.path.join(compas_tno.get('/temp/'), 'form0.json')
@@ -746,8 +733,6 @@ class Analysis(Data):
                 setup_time = time.time() - time0
                 self.run()
                 run_time = time.time() - time0 - setup_time
-                if plot:
-                    plot_form(self.form, show_q=False, cracks=True).show()
                 exitflag = self.optimiser.exitflag  # get info if optimisation was succeded ot not
                 fopt = self.optimiser.fopt  # objective function optimum value
                 fopt_over_weight = fopt/swt  # divide by selfweight

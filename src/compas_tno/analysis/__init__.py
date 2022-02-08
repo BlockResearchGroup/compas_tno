@@ -14,13 +14,33 @@ Classes
 
     Analysis
 
+Routines
+========
+
+.. autosummary::
+    :toctree: generated/
+    :nosignatures:
+
+    limit_analysis_GSF
+    thk_minmax_GSF
+    max_n_minmax_GSF
+
 """
-from __future__ import absolute_import
 
 from .analysis import (
     Analysis
 )
 
+from.routines import(
+    limit_analysis_GSF,
+    thk_minmax_GSF,
+    max_n_minmax_GSF
+)
+
 __all__ = [
-    'Analysis'
+    'Analysis',
+
+    'limit_analysis_GSF',
+    'thk_minmax_GSF',
+    'max_n_minmax_GSF'
 ]
