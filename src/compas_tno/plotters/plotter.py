@@ -204,7 +204,7 @@ class TNOPlotter(object):
             The plotter is updated in place
         """
 
-        self.app.zoom_extents()
+        # self.app.zoom_extents()
         self.app.show()
 
     def clear(self):

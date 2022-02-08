@@ -4,28 +4,24 @@ import math
 
 
 def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
-    """ Helper to create a arch linear form-diagram with equaly spaced (in 3D) nodes.
+    """Construct a FormDiagram based on an arch linear discretisation.
+    Note: The nodes of the form diagram are spaced following a projection in a semicircular arch.
 
     Parameters
     ----------
     H : float, optional
-        Rise of the arch measured with regards to the center line.
-        The Default value is ``1.0``.
+        Height of the arch, by default 1.00
     L : float, optional
-        Span of the arch considered as center, to center. (L <= 2*H).
-        The Default value is ``2.0``.
-    x0: float, optional
-        Beginning of the linear form diagram.
-        The Default value is ``0.0``.
+        Span of the arch, by default 2.00
+    x0 : float, optional
+        Initial coordiante of the arch, by default 0.0
     total_nodes : int, optional
-        Numbers of nodes to be considered in the form diagram.
-        The Default value is ``100``.
+        Numbers of nodes to be considered in the form diagram, by default 100
 
     Returns
     -------
-    form : FormDiagram
-        FormDiagram generated according to the parameters.
-
+    FormDiagram
+        The FormDiagram created.
     """
 
     # Add option for starting from Hi and Li for a given thk.
@@ -67,14 +63,11 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
     Parameters
     ----------
     L : float, optional
-        Span of the arch considered as center, to center. (L <= 2*H).
-        The Default value is ``2.0``.
-    x0: float, optional
-        Beginning of the linear form diagram.
-        The Default value is ``0.0``.
+        Span of the arch, by default 2.00
+    x0 : float, optional
+        Initial coordiante of the arch, by default 0.0
     total_nodes : int, optional
-        Numbers of nodes to be considered in the form diagram.
-        The Default value is ``100``.
+        Numbers of nodes to be considered in the form diagram, by default 100
 
     Returns
     -------

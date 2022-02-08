@@ -8,10 +8,10 @@ from numpy import array
 try:
     from torch import tensor
 
-    from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
-    from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
-    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
-    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
+    from compas_tno.autodiff.equilibrium_pytorch import f_constraints_pytorch
+    from compas_tno.autodiff.equilibrium_pytorch import f_objective_pytorch
+    from compas_tno.autodiff.equilibrium_pytorch import compute_autograd
+    from compas_tno.autodiff.equilibrium_pytorch import compute_autograd_jacobian
 except BaseException:
     pass  # Module tensor not available
 
