@@ -3,6 +3,7 @@ from compas_tno.diagrams import ForceDiagram
 from compas_tna.equilibrium import horizontal_nodal
 
 from compas_tno.algorithms.equilibrium import vertical_equilibrium_fdm
+from compas_tno.plotters import TNOPlotter
 
 from compas.numerical import connectivity_matrix
 from compas.numerical import spsolve_with_known
@@ -61,16 +62,10 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
 
     # plot of diagrams @ initial state
     if plot:
-        print('Plot of Primal')
-        from compas_plotters import MeshPlotter
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges(keys=[key for key in form.edges_where({'_is_edge': True})])
-        plotter.draw_vertices(radius=0.05)
-        plotter.draw_vertices(keys=[key for key in form.vertices_where({'is_anchor': True})], radius=0.10, facecolor='000000')
-        plotter.draw_faces(text={key: str(key) for key in form.faces()})
+        plotter = TNOPlotter(form=form, force=force, figsize=(16, 8))
+        plotter.draw_mesh()
+        plotter.draw_force()
         plotter.show()
-        print('Plot of Dual')
-        force.plot()
 
     # horizontal equilibrium
     horizontal_nodal(form, force, alpha=alpha, kmax=kmax)
@@ -85,13 +80,9 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
 
     # plot of diagrams @ final state
     if plot:
-        print('Plot of Reciprocal')
-        force.plot()
-        print('Plot of Form Final')
-        from compas_plotters import MeshPlotter
-        plotter = MeshPlotter(form, figsize=(8, 8))
-        plotter.draw_edges()
-        plotter.draw_vertices(keys=form.fixed())
+        plotter = TNOPlotter(form=form, force=force, figsize=(16, 8))
+        plotter.draw_mesh()
+        plotter.draw_force()
         plotter.show()
 
     return
@@ -139,22 +130,11 @@ def reciprocal_from_form(form, plot=False):
 
     force = ForceDiagram.from_formdiagram(form)
 
-    # from compas_plotters import MeshPlotter
-    # plotter = MeshPlotter(form)
-    # plotter.draw_edges()
-    # plotter.draw_vertices(keys=form.fixed(), facecolor='FF0000')
-    # plotter.draw_faces()
-    # plotter.show()
-
     if plot:
-        print('Plot of Primal')
-        from compas_plotters import MeshPlotter
-        plotter = MeshPlotter(form, figsize=(8, 8))
-        plotter.draw_edges()
-        plotter.draw_vertices(keys=form.fixed())
+        plotter = TNOPlotter(form=form, force=force, figsize=(16, 8))
+        plotter.draw_mesh()
+        plotter.draw_force()
         plotter.show()
-        print('Plot of Dual')
-        force.plot()
 
     force_update_from_form(force, form)
 
@@ -219,11 +199,11 @@ def force_update_from_form(force, form):
     # --------------------------------------------------------------------------
     _xy = spsolve_with_known(_Ct.dot(_C), _Ct.dot(Q).dot(uv), _xy, _known)
     # --------------------------------------------------------------------------
-    # rotate the force diagram 90 degrees in CW direction - Maxwell convention
-    # this way the relation between the two diagrams is easier to read
+    # rotate force diagram to make it parallel to the form diagram
+    # use CCW direction (opposite of cycle direction)
     # --------------------------------------------------------------------------
     _x, _y = zip(*_xy)
-    _xy[:] = [list(item) for item in zip(_y, [-_ for _ in _x])]
+    _xy[:] = [list(item) for item in zip([-_ for _ in _y], _x)]
     # --------------------------------------------------------------------------
     # update force diagram
     # --------------------------------------------------------------------------
