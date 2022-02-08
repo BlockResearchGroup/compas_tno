@@ -14,9 +14,6 @@ import matplotlib.pyplot as plt
 import math
 
 
-__all__ = ['TNOPlotter']
-
-
 class TNOPlotter(object):
     """TNO helper to plot forms and shapes
 
