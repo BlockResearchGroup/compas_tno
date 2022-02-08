@@ -2,7 +2,15 @@ from compas_plotters import Plotter
 from compas.geometry import Vector
 from compas.geometry import Point
 from compas.geometry import Rotation
+from compas.geometry import Translation
+from compas.geometry import Scale
+from compas.geometry import Frame
+from compas.geometry import Line
+from compas.geometry import Polygon
 from compas_tno.shapes import Shape
+
+from compas.utilities import rgb_to_hex
+import matplotlib.pyplot as plt
 import math
 
 
@@ -10,16 +18,20 @@ __all__ = ['TNOPlotter']
 
 
 class TNOPlotter(object):
-    """A Class plot 2D forms and shapes.
+    """TNO helper to plot forms and shapes
 
     Parameters
     ----------
     form : FormDiagram, optional
-        The FormDiagram you want to plot, by default None
+        The form diagram to be plotted, by default None
     form_base : FormDiagram, optional
-        The base FormDiagram if the pattern can move, by default None
+        The base form diagram to be visualised if pattern is allowed to move, by default None
     shape : Shape, optional
-        The Shape of masonry to plot, by default None
+        The shape of the masonry constraining the solution, by default None
+    force : ForceDiagram, optional
+        The force diagram associates with the form diagram, by default None
+    figsize : tuple, optional
+        The size of the plot, by default (8, 8)
 
     Attributes
     ----------
@@ -28,7 +40,13 @@ class TNOPlotter(object):
 
     """
 
-    def __init__(self, form=None, form_base=None, shape=None, *args, **kwargs):
+    def __init__(self, form=None,
+                 form_base=None,
+                 shape=None,
+                 force=None,
+                 figsize=(8, 8),
+                 *args,
+                 **kwargs):
 
         super().__init__(*args, **kwargs)
         self.title = 'Plotter'
@@ -36,8 +54,11 @@ class TNOPlotter(object):
         self._form = form
         self._shape = shape
         self._form_base = form_base
+        self._force = force
         self._formartist = None
         self._otherartists = []
+        self.scale_forcediagram = 1.0
+        self.translation_forcediagram = [0.0, 0.0, 0.0]
         self.settings = {
             'show.thrust': True,
             'show.shape': True,
@@ -58,7 +79,6 @@ class TNOPlotter(object):
             'camera.fov': 40,
             'camera.show.grid': True,
             'camera.show.axis': True,
-            'camera.figsize': (8, 8),
 
             'size.vertex': 5.0,
             'size.edge.max_thickness': 10.0,
@@ -88,7 +108,7 @@ class TNOPlotter(object):
 
             'tol.forces': 1e-3,
         }
-        self.initiate_app()
+        self.initiate_app(figsize=figsize)
 
     @property
     def form(self):
@@ -118,6 +138,15 @@ class TNOPlotter(object):
         self._form_base = value
 
     @property
+    def force(self):
+        """The force property."""
+        return self._force
+
+    @force.setter
+    def force(self, value):
+        self._force = value
+
+    @property
     def formartist(self):
         """The formartist property."""
         return self._formartist
@@ -127,24 +156,29 @@ class TNOPlotter(object):
         if not self._formartist:
             self._formartist = value
 
-    def initiate_app(self):
-        """ Initiate the Plotter with the default camera options.
+    def initiate_app(self, figsize=(8, 8)):
+        """Initiate the Plotter with the default camera options.
+
+        Parameters
+        ----------
+        figsize : tuple, optional
+            Size of the plot, by default (8, 8)
 
         Returns
         -------
         None
-            The objects are updated in place
+            The plotter is updated in place
         """
 
-        self.app = Plotter(figsize=self.settings['camera.figsize'])
+        self.app = Plotter(figsize=figsize)
 
     def show_solution(self):
-        """ Show the thrust network, with the shape according to the settings.
+        """Show the thrust network, with the shape according to the settings.
 
         Returns
         -------
         None
-            The objects are updated in place
+            The plotter is updated in place
         """
 
         self.draw_form()
@@ -154,18 +188,18 @@ class TNOPlotter(object):
         self.show()
 
     def zoom_extends(self):
-        """ Wrapper to extend the objects in the active view.
+        """Wrapper to extend the objects in the active view.
 
         Returns
         -------
         None
-            The objects are updated in place
+            The plotter is updated in place
         """
 
         self.app.zoom_extents()
 
     def show(self):
-        """ Display the plotter in the screen.
+        """Display the plotter in the screen.
 
         Returns
         -------
@@ -182,13 +216,18 @@ class TNOPlotter(object):
         Returns
         -------
         None
-            The objects are updated in place
+            The plotter is updated in place
         """
 
         self.app.clear()
 
-    def draw_form(self):
+    def draw_form(self, scale_width=True):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
+
+        Parameters
+        ----------
+        scale_width : bool, optional
+            If the lines of the form diagram should be scaled with regards to the force carried, by default True
 
         Returns
         -------
@@ -199,7 +238,7 @@ class TNOPlotter(object):
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
 
-        if self.settings['show.edge.thickness']:
+        if scale_width:
             forcedensities = self.form.edges_attribute('q')
             lengths = [self.form.edge_length(u, v) for u, v in self.form.edges()]
             forces = [abs(forcedensities[i] * lengths[i]) for i in range(len(lengths))]
@@ -234,7 +273,7 @@ class TNOPlotter(object):
         Returns
         -------
         None
-            The plotter is updated in place.
+            The plotter is updated in place
         """
 
         tol = self.settings['tol.forces']
@@ -289,7 +328,7 @@ class TNOPlotter(object):
         Returns
         -------
         None
-            The plotter is updated in place.
+            The plotter is updated in place
         """
 
         if self.settings['show.supports']:
@@ -307,7 +346,7 @@ class TNOPlotter(object):
         Returns
         -------
         None
-            The plotter is updated in place.
+            The plotter is updated in place
         """
 
         if self.settings['show.reactions']:
@@ -340,8 +379,7 @@ class TNOPlotter(object):
         Returns
         -------
         None
-            Plotter app is updated.
-
+            The plotter is updated in place
         """
 
         if not(len(vectors) == len(bases)):
@@ -354,20 +392,31 @@ class TNOPlotter(object):
             self._otherartists.append(vectorartist)
 
     def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False):
-        """ Initiate the Plotter with the default camera options.
+        """Initiate the Plotter with the default camera options.
+
+        Parameters
+        ----------
+        mesh : Mesh, optional
+            Mesh to plot, by default None, which means that the form diagram is added
+        show_edges : bool, optional
+            If edges are shown, by default True
+        show_vertices : bool, optional
+            If vertices are shown, by default False
+        show_faces : bool, optional
+            If faces are shown, by default False
 
         Returns
         -------
         None
-            The objects are updated in place
+            The plotter is updated in place.
         """
 
         if not mesh:
             mesh = self.form
         self.app.add(mesh,
-                     show_edges = show_edges,
-                     show_vertices = show_vertices,
-                     show_faces = show_faces
+                     show_edges=show_edges,
+                     show_vertices=show_vertices,
+                     show_faces=show_faces
                      )
 
     def draw_form_xz(self):
@@ -414,12 +463,12 @@ class TNOPlotter(object):
         )
 
     def draw_shape_xz(self):
-        """Plot the shape rotated 90 degrees.
+        """Adds the shape to the plot rotated 90 degrees.
 
         Returns
         -------
         None
-            The plotter is updated in place.
+            The plotter is updated in place
         """
 
         if not self.shape:
@@ -437,7 +486,7 @@ class TNOPlotter(object):
         Returns
         -------
         None
-            The plotter is updated in place.
+            The plotter is updated in place
         """
 
         if not self.form_base:
@@ -456,12 +505,17 @@ class TNOPlotter(object):
         )
 
     def draw_form_independents(self, show_text=True):
-        """Draw the form diagram with highlight in the independent edgess.
+        """Draw the form diagram with highlight in the independent edges.
+
+        Parameters
+        ----------
+        show_text : bool, optional
+            If text should be added to the independent edges, by default True
 
         Returns
         -------
         None
-            The plotter is updated in place.
+            The plotter is updated in place
         """
 
         edges = list(self.form.edges_where({'_is_edge': True}))
@@ -483,36 +537,163 @@ class TNOPlotter(object):
                 width[edge] = base_thick
 
         self.app.add(
-                    self.form,
-                    edges=edges,
-                    edgewidth=width,
-                    edge_text=text,
-                    edgecolor=color,
-                    show_vertices=False,
-                    show_faces=False
-                    )
+            self.form,
+            edges=edges,
+            edgewidth=width,
+            edge_text=text,
+            edgecolor=color,
+            show_vertices=False,
+            show_faces=False
+        )
 
-    def draw_form_sym(self):
+    def highlight_vertices(self, vertices, show_forcepolygon=False):
+        """Highlight a vertex in the form diagram and in the force diagram (if they have been previously added to the plotter)
+
+        Parameters
+        ----------
+        vertices : [int]
+            Key of the vertices to highlight
+        show_forcepolygon : bool, optional
+            If force polygons should be also displayed in the force diagram, by default False
+            Note: this requires that the force diagram is already added to the scene.
+
+        Returns
+        -------
+        None
+            The Plotter is updated in place.
+        """
+
+        points = [self.form.vertex_coordinates(vertex) for vertex in vertices]
+        edges = [self.form.vertex_edges(vertex) for vertex in vertices]
+        base_thick = self.settings['size.edge.base_thickness']
+
+        for i, point in enumerate(points):
+            pt = Point(point[0], point[1], point[2])
+            self.app.add(pt, facecolor=(0.8, 0.8, 0.8), size=self.settings['size.vertex'])
+
+            for edge in edges[i]:
+                line = Line(self.form.vertex_coordinates(edge[0]), self.form.vertex_coordinates(edge[1]))
+                self.app.add(line, color=(0, 0, 0), linewidth=base_thick * 3, draw_as_segment=True)
+
+        if show_forcepolygon:
+            if self.force:
+                vertex_index = self.form.vertex_index()
+                for vertex in vertices:
+                    i = vertex_index[vertex]
+                    force_faces = list(self.force.faces())
+                    face = self.force.face_coordinates(force_faces[i])
+                    polygon = Polygon(face)
+                    S = Scale.from_factors(3 * [self.scale_forcediagram])
+                    T = Translation.from_vector(self.translation_forcediagram)
+                    polygon = polygon.transformed(S)
+                    polygon = polygon.transformed(T)
+                    self.app.add(polygon, linewidth=base_thick * 3, facecolor=(0.8, 0.8, 0.8))
+
+    def draw_form_sym(self, print_sym=True):
         """Draw the form diagram symmetry edges with the respective colors.
 
+        Parameters
+        ----------
+        print_sym : bool, optional
+            If text should be added to the symmetry edges, by default True
+
         Returns
         -------
         None
             The plotter is updated in place.
         """
 
-        raise NotImplementedError
+        texts = {}
+        colors = {}
+        edges = []
 
-    def draw_force(self):
+        base_thick = self.settings['size.edge.base_thickness'] * 2
+
+        i_sym_max = 0
+        for edge in self.form.edges_where({'_is_edge': True}):
+            edges.append(edge)
+            i_sym = self.form.edge_attribute(edge, 'sym_key')
+            if i_sym is None:
+                raise NameError('Check if symmetry is applied to to the problem formulation.')
+            if i_sym > i_sym_max:
+                i_sym_max = i_sym
+
+        colormap = plt.cm.get_cmap('hsv')  # gist_ncar nipy_spectral, Set1, Paired coolwarm
+        linspace = [1.0/(i_sym_max) * i for i in range(i_sym_max + 1)]
+        colormaps = [rgb_to_hex(colormap(i)[:3]) for i in linspace]
+
+        for edge in edges:
+            i_sym = self.form.edge_attribute(edge, 'sym_key')
+            colors[edge] = colormaps[i_sym]
+            if print_sym:
+                texts[edge] = str(i_sym)
+
+        self.app.add(
+            self.form,
+            edges=edges,
+            edgewidth=base_thick,
+            edge_text=texts,
+            edgecolor=colors,
+            show_vertices=False,
+            show_faces=False
+        )
+
+    def draw_force(self, show_edges=True, show_vertices=False, show_faces=False):
         """Draw the force diagram associated with the form diagram.
 
+        Parameters
+        ----------
+        show_edges : bool, optional
+            Whether or not edges are shown in the force diagram, by default True
+        show_vertices : bool, optional
+            Whether or not vertices are shown in the force diagram, by default False
+        show_faces : bool, optional
+            Whether or not faces are shown in the force diagram, by default False
+
         Returns
         -------
         None
             The plotter is updated in place.
         """
 
-        raise NotImplementedError
+        if not self.force:
+            from compas_tno.algorithms import reciprocal_from_form
+            self.force = reciprocal_from_form(self.form)
+
+        force = self.force
+
+        force_bbox = self.force.bounding_box_xy()
+        xmin_force, xmax_force = force_bbox[0][0], force_bbox[1][0]
+        ymin_force, ymax_force = force_bbox[0][1], force_bbox[2][1]
+        dx_force, dy_force = (xmax_force - xmin_force), (ymax_force - ymin_force)
+
+        if self.form:
+
+            form_bbox = self.form.bounding_box_xy()
+            xmin_form, xmax_form = form_bbox[0][0], form_bbox[1][0]
+            ymin_form, ymax_form = form_bbox[0][1], form_bbox[2][1]
+            dx_form, dy_form = (xmax_form - xmin_form), (ymax_form - ymin_form)
+
+            scale = min(dy_form/dy_force, dx_form/dx_force)
+            print('Diagram scale factor:', scale)
+
+            tx = dx_form * 1.2 + (xmax_form - xmin_force) * scale
+            ty = (ymin_form - ymin_force) * scale
+
+            frame = Frame([xmin_form, ymin_form, 0.0], (1, 0, 0), (0, 1, 0))
+
+            translation = [tx, ty, 0]
+
+            self.scale_forcediagram = scale
+            self.translation_forcediagram = translation
+
+            S = Scale.from_factors(3 * [scale], frame=frame)
+            T = Translation.from_vector(translation)
+
+            force = force.transformed(S)
+            force = force.transformed(T)
+
+        self.app.add(force, show_edges=show_edges, show_vertices=show_vertices, show_faces=show_faces)
 
 
 def _norm(rgb):

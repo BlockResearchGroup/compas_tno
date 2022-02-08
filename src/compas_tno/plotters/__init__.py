@@ -1,11 +1,11 @@
 """
 ********************************************************************************
-compas_tno.plotters2
+compas_tno.plotters
 ********************************************************************************
 
-.. currentmodule:: compas_tno.plotters2
+.. currentmodule:: compas_tno.plotters
 
-Plotters2
+Plotters
 =========
 
 .. autosummary::
