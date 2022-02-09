@@ -31,7 +31,6 @@ from compas_tno.problems import callback_create_json
 
 from compas_tno.problems import initialize_loadpath
 from compas_tno.problems import initialize_tna
-from compas_tno.problems.initialize import initialize_loadpath_no_matlab
 
 from compas_tno.algorithms import apply_sag
 from compas_tno.algorithms import equilibrium_fdm
@@ -44,15 +43,13 @@ from compas_tno.problems import sensitivities_wrapper
 
 from compas_tno.problems import constr_wrapper
 
-from compas_tno.plotters import plot_symmetry
-from compas_tno.plotters import plot_symmetry_vertices
-from compas_tno.plotters import plot_independents
-from compas_tno.plotters import plot_form
+from compas_tno.plotters import TNOPlotter
 
 from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_average_edge_stiffness
+from compas_tno.utilities import set_b_constraint
 
 from compas_tno.viewers import Viewer
 
@@ -94,6 +91,7 @@ def set_up_general_optimisation(analysis):
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
     pattern_center = form.parameters.get('center', None)
+    solver_convex = form.parameters.get('solver-convex', None)
 
     if shape:
         thk = shape.datashape['thk']
@@ -121,10 +119,7 @@ def set_up_general_optimisation(analysis):
         apply_sag(form)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'loadpath':
-        initialize_loadpath(form, problem=M, find_inds=find_inds)
-        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
-    elif starting_point == 'loadpath-cvxpy':
-        initialize_loadpath_no_matlab(form, problem=M, find_inds=find_inds)
+        initialize_loadpath(form, problem=M, find_inds=find_inds, solver_convex=solver_convex)
         M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'relax':
         equilibrium_fdm(form)
@@ -331,10 +326,13 @@ def set_up_general_optimisation(analysis):
         callback_save_json(x0)  # save staring point to file
 
     if plot:
-        plot_independents(form).show()
+        plotter = TNOPlotter(form)
+        plotter.draw_form_independents()
+        plotter.show()
         if 'sym' in features:
-            plot_symmetry(form).show()
-            plot_symmetry_vertices(form).show()
+            plotter = TNOPlotter(form)
+            plotter.draw_form_sym()
+            plotter.show()
 
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)
@@ -389,57 +387,7 @@ def set_up_general_optimisation(analysis):
     return analysis
 
 
-def set_b_constraint(form, printout):
-    b = []
-    for key in form.vertices_where({'is_fixed': True}):
-        try:
-            [b_] = form.vertex_attributes(key, 'b')
-            b.append(b_)
-        except BaseException:
-            pass
-    b = array(b)
-    if printout:
-        print('Reaction bounds active in : {0} joints'.format(len(b)))
-    return b
-
-
-def set_joints_constraint(form, printout):
-    try:
-        joints = form.attributes['joints']
-    except BaseException:
-        joints = None
-    if printout and joints:
-        print('Constraints on the Joints set for {0} contacts.'.format(len(joints)))
-    return joints
-
-
-def set_cracks_constraint(form, printout):
-    try:
-        cracks_lb, cracks_ub = form.attributes['cracks']
-        if printout:
-            print('Cracks Definition')
-            print(cracks_lb, cracks_ub)
-    except BaseException:
-        cracks_lb = []
-        cracks_ub = []
-    if printout:
-        print('Constraints on cracks activated in {0} lb and {1} ub.'.format(len(cracks_lb), len(cracks_ub)))
-    return cracks_lb, cracks_ub
-
-
-def set_rollers_constraint(form, printout):
-    max_rol_rx = []
-    max_rol_ry = []
-    for key in form.vertices_where({'rol_x': True}):
-        max_rol_rx.append(form.vertex_attribute(key, 'max_rx'))
-    for key in form.vertices_where({'rol_y': True}):
-        max_rol_ry.append(form.vertex_attribute(key, 'max_ry'))
-    if printout:
-        print('Constraints on rollers activated in {0} in x and {1} in y.'.format(len(max_rol_rx), len(max_rol_ry)))
-    return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)
-
-
-def set_up_convex_optimisation(analysis):  # old remove
+def set_up_convex_optimisation(analysis):
     """ Set up a convex optimisation problem.
 
     Parameters
@@ -456,12 +404,8 @@ def set_up_convex_optimisation(analysis):  # old remove
 
     form = analysis.form
     optimiser = analysis.optimiser
-    indset = form.attributes['indset']
-    find_inds = optimiser.settings['find_inds']
-    printout = optimiser.settings['printout']
     qmax = optimiser.settings['qmax']
     qmin = optimiser.settings['qmin']
-    solver = optimiser.settings.get('solver', 'MATLAB')
 
     objective = optimiser.settings['objective']
     variables = optimiser.settings['variables']
@@ -469,9 +413,7 @@ def set_up_convex_optimisation(analysis):  # old remove
 
     # Select Objective
 
-    if objective == 'loadpath' or objective == 'feasibility':
-        pass
-    else:
+    if objective not in ['loadpath', 'feasibility']:
         print('Warning: Non-convex problem for the objective: ', objective, '. Try changing the objective to \'loadpath\' or \'fesibility\'.')
 
     if variables == ['q']:

@@ -7,13 +7,12 @@ from compas_tno.algorithms import reciprocal_from_form
 
 
 def callback_save_json(xopt, *args, **kwargs):
-    """Sabe the variables in the ``output.json`` file created
+    """Save the variables in the ``output.json`` file created.
 
     Parameters
     ----------
     xopt : array
         The variables in one iteration of the optimisation
-
     """
 
     DATA_FILENAME = compas_tno.get('output.json')

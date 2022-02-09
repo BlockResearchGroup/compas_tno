@@ -413,7 +413,17 @@ class FormDiagram(FormDiagram):
 
     @classmethod
     def from_singular(cls, json_path):
-        """ W.I.P create form diagram from singular dense mesh.
+        """Create form diagram from singular dense mesh.
+
+        Parameters
+        ----------
+        json_path : str
+            Path of the mesh saved in JSON format.
+
+        Returns
+        -------
+        FormDiagram
+            The FormDiagram created.
         """
 
         from compas.datastructures import mesh_delete_duplicate_vertices
@@ -427,17 +437,43 @@ class FormDiagram(FormDiagram):
 
     @classmethod
     def from_triangle(cls, boundary_points, area=0.5, angle=30):
-        """ W.I.P create form diagram from triangl dense mesh.
+        """Generates a Form Diagram from triangle
+
+        Parameters
+        ----------
+        boundary_points : [list]
+            Boundary point of pattern
+        area : float, optional
+            Average area of the trangles, by default 0.5
+        angle : int, optional
+            minimum angle in the triangless, by default 30
+
+        Returns
+        -------
+        FormDiagram
+            The FormDiagram created.
         """
+
         from compas_triangle.delaunay import conforming_delaunay_triangulation
         vertices, faces = conforming_delaunay_triangulation(boundary_points + boundary_points[:1], angle=angle, area=area)
         mesh = Mesh.from_vertices_and_faces(vertices, faces)
         form = cls().from_mesh(mesh)
+
         return form
 
     @classmethod
     def from_skeleton(cls, data):
-        """ W.I.P create form diagram from skeleton.
+        """Create form diagram from compas_skeleton
+
+        Parameters
+        ----------
+        data : dict
+            Dictionary with the data for crerating the skeleton mesh.
+
+        Returns
+        -------
+        FormDiagram
+            The FormDiagram created.
         """
 
         from compas_skeleton.datastructure import Skeleton
@@ -560,7 +596,7 @@ class FormDiagram(FormDiagram):
         return
 
     def thrust(self):
-        """Returns the (horizontal) thrust."""
+        """Computes the the (horizontal) thrust"""
 
         thrust = 0
         for key in self.vertices_where({'is_fixed': True}):
@@ -618,15 +654,14 @@ class FormDiagram(FormDiagram):
         """ Compute the number of supports."""
         return len(list(self.vertices_where({'is_fixed': True})))
 
-    def delete_boundary_edges(self, delete_corner_vertex=True):  # WIP: Fix this for a pavillion vault geometry with 'cross_fd' form diagram.
+    def delete_boundary_edges(self, delete_corner_vertex=True):
         """
         Delete boundary edges on a diagram.
 
         Parameters
         ----------
         delete_corner_vertex : bool, optional
-            Delete the corner vertices.
-            The default value is ``True``.
+            Delete the corner vertices. The default value is ``True``.
 
         Returns
         -------
@@ -672,17 +707,13 @@ class FormDiagram(FormDiagram):
         Parameters
         ----------
         max_rx : list, optional
-            Assign the maximum reaction in x to the vertices in the left and right boundary.
-            The default value is ``[0.0, 0.0]``.
+            Assign the maximum reaction in x to the vertices in the left and right boundary. The default value is ``[0.0, 0.0]``.
         max_ry : list, optional
-            Assign the maximum reaction in y to the vertices in the top and bottom boundary.
-            The default value is ``[0.0, 0.0]``.
+            Assign the maximum reaction in y to the vertices in the top and bottom boundary. The default value is ``[0.0, 0.0]``.
         total_rx : list, optional
-            Assign the maximum total reaction in x of the vertices in the right or left boundary.
-            The default value is ``None``, in which the ``max_rx`` is used for all vertices.
+            Assign the maximum total reaction in x of the vertices in the right or left boundary. The default value is ``None``, in which the ``max_rx`` is used for all vertices.
         total_ry : list, optional
-            Assign the maximum total reaction in y of the vertices in the top or bottom boundary.
-            The default value is ``None``, in which the ``max_ry`` is used for all vertices.
+            Assign the maximum total reaction in y of the vertices in the top or bottom boundary.The default value is ``None``, in which the ``max_ry`` is used for all vertices.
 
         Returns
         -------
@@ -746,12 +777,9 @@ class FormDiagram(FormDiagram):
                 i_sym_max = i_sym
         i_sym_max += 1
 
-        if printout:
-            print('Form has {0} unique sym edges'.format(i_sym_max))
-
         return i_sym_max
 
-    def number_of_sym_vertices(self, printout=False):
+    def number_of_sym_vertices(self):
         """ Compute the symmetric vertices."""
 
         i_sym_max = 0
@@ -764,12 +792,9 @@ class FormDiagram(FormDiagram):
                 i_sym_max = i_sym
         i_sym_max += 1
 
-        if printout:
-            print('Form has {0} sym vertices'.format(i_sym_max))
-
         return i_sym_max
 
-    def number_of_sym_supports(self, printout=False):
+    def number_of_sym_supports(self):
         """ Compute the symmetric supports."""
 
         i_sym_max = 0
@@ -781,9 +806,6 @@ class FormDiagram(FormDiagram):
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
         i_sym_max += 1
-
-        if printout:
-            print('Form has {0} unique supports'.format(i_sym_max))
 
         return i_sym_max
 

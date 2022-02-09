@@ -1,4 +1,5 @@
 import math
+from numpy import array
 
 
 __all__ = [
@@ -7,6 +8,8 @@ __all__ = [
     'rectangular_smoothing_constraints',
     'assign_cracks',
     'rollers_on_openings',
+    'set_b_constraint',
+    'set_rollers_constraint'
 ]
 
 
@@ -195,13 +198,9 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
 
     return form
 
+
 def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3):
-    """"""
-    
-    
-    
-    # """ Deprecated function to assign constraints in the joints among blocks instead of in the z's.
-    # """
+    """Deprecated function to assign constraints in the joints among blocks instead of in the z's."""
 
     k_i = form.key_index()
 
@@ -268,3 +267,57 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
             form.attributes['tmax'] = ze
 
     return form
+
+
+def set_b_constraint(form, printout=False):
+    """Helper to set the ``b`` constraint on the reactions of the structure.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram to apply the constraints
+    printout : bool, optional
+        If prints are added to thr screen, by default False
+
+    Returns
+    -------
+    array (nb x 2)
+        The limits for the reaction force.
+    """
+    b = []
+    for key in form.vertices_where({'is_fixed': True}):
+        try:
+            [b_] = form.vertex_attributes(key, 'b')
+            b.append(b_)
+        except BaseException:
+            pass
+    b = array(b)
+    if printout:
+        print('Reaction bounds active in : {0} joints'.format(len(b)))
+    return b
+
+
+def set_rollers_constraint(form, printout=False):
+    """Helper to constraints on rollers.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram to apply the constraints
+    printout : bool, optional
+        If prints are added to thr screen, by default False
+
+    Returns
+    -------
+    array (nb x 2)
+        The limits for the reaction force.
+    """
+    max_rol_rx = []
+    max_rol_ry = []
+    for key in form.vertices_where({'rol_x': True}):
+        max_rol_rx.append(form.vertex_attribute(key, 'max_rx'))
+    for key in form.vertices_where({'rol_y': True}):
+        max_rol_ry.append(form.vertex_attribute(key, 'max_ry'))
+    if printout:
+        print('Constraints on rollers activated in {0} in x and {1} in y.'.format(len(max_rol_rx), len(max_rol_ry)))
+    return array(max_rol_rx).reshape(-1, 1), array(max_rol_ry).reshape(-1, 1)

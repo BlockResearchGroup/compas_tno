@@ -1,5 +1,3 @@
-from numpy import hstack
-from numpy import array
 from numpy import sum as npsum
 
 from compas_tno.algorithms import xyz_from_q
@@ -9,7 +7,20 @@ from scipy.sparse import diags
 
 
 def f_min_thrust(variables, M):
-    """Objective function to minimise the horizontal thrust"""
+    """Objective function to minimise the horizontal thrust
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -39,13 +50,39 @@ def f_min_thrust(variables, M):
 
 
 def f_max_thrust(variables, M):
-    """Objective function to maximise the horizontal thrust"""
+    """Objective function to maximise the horizontal thrust
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     return -1 * f_min_thrust(variables, M)
 
 
 def f_bestfit(variables, M):
-    """Objective function to minimise the vertical squared distance to a given target"""
+    """Objective function to minimise the vertical squared distance to a given target
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -71,7 +108,20 @@ def f_bestfit(variables, M):
 
 
 def f_horprojection(variables, M):
-    """Objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern"""
+    """Objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -97,7 +147,20 @@ def f_horprojection(variables, M):
 
 
 def f_loadpath_general(variables, M):
-    """Objective function to minimise the loadpath"""
+    """Objective function to minimise the loadpath
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -127,7 +190,20 @@ def f_loadpath_general(variables, M):
 
 
 def f_complementary_energy(variables, M):
-    """Objective function to minimise the complementary energy to a given applied foundation displacement"""
+    """Objective function to minimise the complementary energy to a given applied foundation displacement
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -155,7 +231,20 @@ def f_complementary_energy(variables, M):
 
 
 def f_complementary_energy_nonlinear(variables, M):
-    """Objective function to minimise the nonlinear complementary energy to a given applied foundation displacement"""
+    """Objective function to minimise the nonlinear complementary energy to a given applied foundation displacement
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -173,7 +262,20 @@ def f_complementary_energy_nonlinear(variables, M):
 
 
 def f_max_section(variables, M):
-    """Objective function to minimise additional thickness required to find a feasible thrust network"""
+    """Objective function to minimise additional thickness required to find a feasible thrust network
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -215,7 +317,20 @@ def f_max_section(variables, M):
 
 
 def f_constant(variables, M):
-    """Constant or feasible objective function f=1"""
+    """Constant or feasible objective function f=1
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     f = 1.0
 
@@ -223,24 +338,42 @@ def f_constant(variables, M):
 
 
 def f_reduce_thk(variables, M):
-    """Objective function to reduce the thickness of the structure"""
+    """Objective function to reduce the thickness of the structure
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+
+    Note
+    ----
+        Please respect the order of the variables.
+    """
 
     return variables[-1]
 
 
 def f_tight_crosssection(variables, M):
-    """Objective function to tight the cross section using normal vectors"""
+    """Objective function to tight the cross section using normal vectors
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    f : float
+        The value of the objective function.
+    """
 
     return -1 * variables[-1]
-
-
-def f_min_thrust_pytorch(xopt, *args):
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i = args[:35]
-    qid = xopt[:k].reshape(-1, 1)
-    q[ind] = array(qid).reshape(-1, 1)
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    CfQC = Cf.transpose().dot(diags(q.flatten())).dot(C)
-    xy = hstack([x, y])
-    Rh = CfQC.dot(xy) - hstack([px, py])[fixed]
-    f = sum(normrow(Rh))
-    return f

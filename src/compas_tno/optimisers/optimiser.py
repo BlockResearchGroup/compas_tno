@@ -52,8 +52,6 @@ class Optimiser(Datastructure):
 
     """
 
-    # __module__ = 'compas_tno.optimisers'
-
     def __init__(self):
         self.settings = {
             'library': 'Scipy',
@@ -65,6 +63,7 @@ class Optimiser(Datastructure):
             'find_inds': True,
             'printout': False,
             'starting_point': 'current',
+            'solver-convex': 'CVX',
             'support_displacement': None,
             'gradient': True,
             'jacobian': True,

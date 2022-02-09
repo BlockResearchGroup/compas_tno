@@ -2,7 +2,22 @@ from compas_tno.problems import initialize_loadpath
 
 
 def initialize_loadpath_proxy(formdata, problem=None):
-    """ Initialise loadpath using the proxy."""
+    """ Initialise loadpath using the proxy.
+
+    Parameters
+    ----------
+    formdata : dict
+        Data of the form diagram
+    problem : Problem, optional
+        Class with matrices of the problem, by default None
+
+    Returns
+    -------
+    formdata : dict
+        Data of the optimised form diagram
+    output : dict
+        Dictionary with the values of the optimisation
+    """
 
     from compas_tno.diagrams import FormDiagram
 
@@ -15,7 +30,26 @@ def initialize_loadpath_proxy(formdata, problem=None):
 
 
 def run_NLP_proxy(shapedata, formdata, optimiserdata):
-    """ Run nonlinear multiobjective optimisations using the proxy."""
+    """Run nonlinear multiobjective optimisations using the proxy
+
+    Parameters
+    ----------
+    shapedata : dict
+        Data of the Shape object
+    formdata : dict
+        Data of the Form object
+    optimiserdata : dict
+        Data of the Optimiser object
+
+    Returns
+    -------
+    shapedata : dict
+        Data of the Shape object
+    formdata : dict
+        Data of the optimised form diagram.
+    optimiserdata : dict
+        Data of the Optimiser object.
+    """
 
     from compas_tno.diagrams import FormDiagram
     from compas_tno.analysis import Analysis

@@ -8,22 +8,20 @@ from compas_tno.problems.bounds_update import ub_lb_update
 from compas_tno.problems.bounds_update import b_update
 
 from compas_tno.algorithms import xyz_from_q
-from compas_tno.algorithms import q_from_qid
 
 
 def constr_wrapper(variables, M):
-    """Wrapper of the constraints available
+    """Wrapper of the constraints assigned.
 
     Parameters
     ----------
-    variables: array (n x 1)
-        Vector with the n variables of the optimisation.
-
-    M: object
-        Object storing the parameters of the optimisation.
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
-    ----------
+    -------
     constraints: array (m x 1)
         Vector with the value of the m constraints in the point.
     """

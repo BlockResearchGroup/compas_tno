@@ -39,7 +39,34 @@ from compas_tno.shapes import general_db_with_t_intrados
 
 
 def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
-    """Function to update the ub-lb vertical bounds of the vertices"""
+    """Function to update the ub-lb vertical bounds of the vertices.
+
+    Parameters
+    ----------
+    x : array
+        xcoordinates of the pattern
+    y : array
+        y-coordinates of the pattern
+    thk : float
+        thickness to update the bounds to
+    t : float
+        thickness considered to the outer vertices
+    shape : Shape
+        Shape object to be updated
+    ub : array
+        Current upper-bound limits
+    lb : array
+        Current lower-bound limits
+    s : aray
+        Original level of the supports
+    variables : list
+        List with the variables passed
+
+    Returns
+    -------
+    ub, lb
+        New position of the bounds in the point analysed
+    """
 
     if shape.datashape['type'] == 'arch':
         return arch_ub_lb_update(x, y, thk, t, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
@@ -75,7 +102,34 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
 
 def dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables):
-    """Function to update the derivatives of the ub-lb vertical bounds of the vertices"""
+    """Function to update the derivatives of the ub-lb vertical bounds of the vertices.
+
+    Parameters
+    ----------
+    x : array
+        xcoordinates of the pattern
+    y : array
+        y-coordinates of the pattern
+    thk : float
+        thickness to update the bounds to
+    t : float
+        thickness considered to the outer vertices
+    shape : Shape
+        Shape object to be updated
+    ub : array
+        Current upper-bound limits
+    lb : array
+        Current lower-bound limits
+    s : aray
+        Original level of the supports
+    variables : list
+        List with the variables passed
+
+    Returns
+    -------
+    dub, dlb
+        New sensitivities of the bounds in the point analysed
+    """
 
     if shape.datashape['type'] == 'arch':
         return arch_dub_dlb(x, y, thk, t, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
@@ -111,7 +165,28 @@ def dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
 
 def b_update(x, y, thk, fixed, shape, b, variables):
-    """Function to update the limits of the extension of the reaction forces on the support vertices"""
+    """Function to update the limits of the extension of the reaction forces on the support vertices.
+
+    Parameters
+    ----------
+    x : array
+        xcoordinates of the pattern
+    y : array
+        y-coordinates of the pattern
+    thk : float
+        thickness to update the bounds to
+    fixed : list
+        LIst with the indices of the fixed vertices
+    shape : Shape
+        Shape object to be updated
+    b : array
+        Current ``b`` limits
+
+    Returns
+    -------
+    b
+        New ``b`` limits
+    """
 
     if shape.datashape['type'] == 'arch':
         return arch_b_update(x, y, thk, fixed, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
@@ -133,7 +208,28 @@ def b_update(x, y, thk, fixed, shape, b, variables):
 
 
 def db_update(x, y, thk, fixed, shape, b, variables):
-    """Function to update the derrivatives of the limits of the extension of the reaction forces on the support vertices"""
+    """Function to update the derrivatives of the limits of the extension of the reaction forces on the support vertices.
+
+    Parameters
+    ----------
+    x : array
+        xcoordinates of the pattern
+    y : array
+        y-coordinates of the pattern
+    thk : float
+        thickness to update the bounds to
+    fixed : list
+        LIst with the indices of the fixed vertices
+    shape : Shape
+        Shape object to be updated
+    b : array
+        Current ``b`` limits
+
+    Returns
+    -------
+    db
+        Sensitivities of the ``b`` limits in the point
+    """
 
     if shape.datashape['type'] == 'arch':
         return arch_db(x, y, thk, fixed, H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])

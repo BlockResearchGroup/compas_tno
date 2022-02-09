@@ -10,11 +10,25 @@ from compas_tno.problems.bounds_update import dub_dlb_update
 from compas_tno.problems.bounds_update import db_update
 
 from compas_tno.algorithms import xyz_from_q
-from compas_tno.algorithms import q_from_qid
 
 
 def d_fconstr(fconstr, x0, eps, *args):
-    """Jacobian matrix approximated by hand using finite differences"""
+    """Jacobian matrix approximated using finite differences.
+
+    Parameters
+    ----------
+    fconstr : callable
+        Function with the constraints
+    x0 : array
+        Point to compute the pertubation
+    eps : float
+        Size of the pertubations
+
+    Returns
+    -------
+    dfdx : array
+        Jacobian of the constraints computed using finite diferences
+    """
 
     fval = fconstr(x0, *args).reshape(-1, 1)
     m = len(fval)
@@ -29,7 +43,24 @@ def d_fconstr(fconstr, x0, eps, *args):
 
 
 def sensitivities_wrapper(variables, M):
-    """Jacobian matrix computed based on the constraints and variables assigned."""
+    """Jacobian matrix computed analytically based on the constraints and variables assigned.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Notes
+    -----
+        Observe the order in which variables are added.
+    """
 
     if isinstance(M, list):
         M = M[0]

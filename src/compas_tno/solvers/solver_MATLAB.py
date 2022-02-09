@@ -26,8 +26,8 @@ def run_optimisation_MATLAB(analysis):
 
     Returns
     -------
-    obj : analysis
-        Analysis object optimised.
+    obj : dict
+        Dictionary with the returned values from the convex optimisation.
 
     """
 
@@ -36,7 +36,7 @@ def run_optimisation_MATLAB(analysis):
     find_inds = analysis.optimiser.settings.get('find_inds', False)
     printout = analysis.optimiser.settings.get('printout', False)
 
-    run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
+    output = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
 
     return output
 
@@ -58,8 +58,8 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
 
     Returns
     -------
-    obj : analysis
-        Analysis object optimised.
+    obj : dict
+        Dictionary with the returned values from the convex optimisation.
     """
 
     future = matlab.engine.connect_matlab(background=True)
@@ -94,8 +94,8 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
 
     Returns
     -------
-    output: dict
-        Dictionary with results.
+    obj : dict
+        Dictionary with the returned values from the convex optimisation.
     """
 
     if len(problem.ind) < problem.m:
@@ -191,10 +191,6 @@ def call_cvx(problem, eng, printout=False):
     eng.workspace['Cb'] = matlab.double(problem.Cb.toarray().tolist())
     eng.workspace['E'] = matlab.double(problem.E.tolist())
 
-    # load_csr_matrix_to_matlab(problem.E, 'E', eng)
-
-    # print(problem.qmin.shape, problem.qmax.shape, problem.q.shape)
-
     eng.workspace['xt'] = matlab.double(problem.X[:, 0].reshape(-1, 1).transpose().tolist())
     eng.workspace['yt'] = matlab.double(problem.X[:, 1].reshape(-1, 1).transpose().tolist())
     eng.workspace['xb'] = matlab.double(problem.X[:, 0][problem.fixed].reshape(-1, 1).tolist())
@@ -252,6 +248,31 @@ def call_cvx(problem, eng, printout=False):
 
 
 def call_cvx_ind(problem, eng, printout=True):
+    """Call matlab considering independent edges.
+
+    Parameters
+    ----------
+    eng : matlab.engine
+        The matlab engine initiated to call the analysis
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Independent Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+
+    """
 
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, qmax, i_uv, k_i, eng = args_cvx
 
@@ -259,12 +280,6 @@ def call_cvx_ind(problem, eng, printout=True):
     dep_ = [x+1 for x in problem.dep]
 
     start_time = time.time()
-
-    # load_csr_matrix_to_matlab(problem.C, 'C', eng)
-    # load_csr_matrix_to_matlab(problem.Ci, 'Ci', eng)
-    # load_csr_matrix_to_matlab(problem.Cb, 'Cb', eng)
-    # load_csr_matrix_to_matlab(problem.Edinv, 'Edinv', eng)
-    # load_csr_matrix_to_matlab(problem.Ei, 'Ei', eng)
 
     eng.workspace['C'] = matlab.double(problem.C.toarray().tolist())
     eng.workspace['Ci'] = matlab.double(problem.Ci.toarray().tolist())
@@ -317,24 +332,3 @@ def call_cvx_ind(problem, eng, printout=True):
         exitflag = 1
 
     return fopt, qopt, exitflag, niter, status, sol_time
-
-
-def load_csr_matrix_to_matlab(mat, name, eng):
-
-    (m, n) = mat.shape
-    s = mat.data
-    i = mat.tocoo().row
-    j = mat.indices
-
-    i_ = [x+1 for x in i]
-    j_ = [x+1 for x in j]
-
-    eng.workspace['m_'] = matlab.double([m])
-    eng.workspace['n_'] = matlab.double([n])
-    eng.workspace['s'] = matlab.double(s.tolist())
-    eng.workspace['i_'] = matlab.double(i_)
-    eng.workspace['j_'] = matlab.double(j_)
-
-    eng.eval(name + ' = sparse(i_, j_, s, m_, n_, m_*n_);', nargout=0)
-
-    return

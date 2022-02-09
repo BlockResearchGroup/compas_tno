@@ -1,4 +1,3 @@
-
 import math
 from compas.utilities import geometric_key
 from compas.geometry import mirror_points_line

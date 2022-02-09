@@ -184,27 +184,37 @@ class TNOPlotter(object):
         self.zoom_extends()
         self.show()
 
-    def zoom_extends(self):
+    def zoom_extends(self, padding=0.1):
         """Wrapper to extend the objects in the active view.
 
+        Parameters
+        ----------
+        padding : int, optional
+            Additional white space surrounding the object, by default 0.1.
+
         Returns
         -------
         None
             The plotter is updated in place
         """
 
-        self.app.zoom_extents()
+        self.app.zoom_extents(padding=padding)
 
-    def show(self):
+    def show(self, padding=0.1):
         """Display the plotter in the screen.
 
+        Parameters
+        ----------
+        padding : int, optional
+            Additional white space surrounding the object, by default 0.1.
+
         Returns
         -------
         None
             The plotter is updated in place
         """
 
-        # self.app.zoom_extents()
+        self.app.zoom_extents(padding=padding)
         self.app.show()
 
     def clear(self):

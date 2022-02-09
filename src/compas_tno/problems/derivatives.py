@@ -17,7 +17,23 @@ from compas_tno.algorithms import xyz_from_q
 
 
 def d_fobj(fobj, x0, eps, *args):
-    """Gradient approximated by hand using finite differences"""
+    """Gradient approximated by hand using finite differences.
+
+    Parameters
+    ----------
+    fconstr : callable
+        Function with the constraints
+    x0 : array
+        Point to compute the pertubation
+    eps : float
+        Size of the pertubations
+
+    Returns
+    -------
+    df0dx : array
+        Gradient of the function computed using finite diferences
+    """
+
     f0val = fobj(x0, *args)
     n = len(x0)
     df0dx = zeros((n, 1))
@@ -30,7 +46,28 @@ def d_fobj(fobj, x0, eps, *args):
 
 
 def compute_dQ(q, ind, dep, Edinv, Ei):
-    """Sensitivity of (all) the force densities with regards to the independent force densities"""
+    """Sensitivity of (all) the force densities with regards to the independent force densities.
+
+    Parameters
+    ----------
+    q : array
+        Force densities
+    ind : list
+        Indices of the independent edges
+    dep : list
+        Indices of the dependent edges
+    Edinv : array-2d
+        Equilibrium matrix of the dependents inverted
+    Ei : array-2d
+        Equilibrum matrix of the independents
+
+    Returns
+    -------
+    dQ : array-2d
+        Sensitivities of all q's with respect to the independents
+    dQdep : array-2d
+        Sensitivities of dependent q's with respect to the independents
+    """
 
     dQdep = Edinv.dot(Ei)
     dQ = zeros((len(q), len(ind)))
@@ -41,26 +78,78 @@ def compute_dQ(q, ind, dep, Edinv, Ei):
 
 
 def gradient_feasibility(variables, M):
-    """Sensitivity of the feasibility objective function, which returns a null vector"""
+    """Sensitivity of the feasibility objective function, which returns a null vector.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
     return zeros((len(variables), 1))
 
 
 def gradient_reduce_thk(variables, M):
-    """Sensitivity of the objective function to minimise the thickness"""
+    """Sensitivity of the objective function to minimise the thickness.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
     grad = zeros((len(variables), 1))
     grad[-1] = 1.0
     return grad
 
 
 def gradient_tight_crosssection(variables, M):
-    """Sensitivity of the objective function to tight the cross section"""
+    """Sensitivity of the objective function to tight the cross section.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
     grad = zeros((len(variables), 1))
     grad[-1] = -1.0
     return grad
 
 
 def gradient_fmin(variables, M):
-    """Sensitivity of the objective function to minimise the thrust"""
+    """Sensitivity of the objective function to minimise the thrust.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -137,13 +226,39 @@ def gradient_fmin(variables, M):
 
 
 def gradient_fmax(variables, M):
-    """Sensitivity of the objective function to maximise the thrust"""
+    """Sensitivity of the objective function to maximise the thrust.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     return -1 * gradient_fmin(variables, M)
 
 
 def gradient_bestfit(variables, M):
-    """Sensitivity of the objective function to minimise the vertical squared distance to the target"""
+    """Sensitivity of the objective function to minimise the vertical squared distance to the target.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -194,7 +309,20 @@ def gradient_bestfit(variables, M):
 
 
 def gradient_horprojection(variables, M):
-    """Sensitivity of the objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern"""
+    """Sensitivity of the objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -254,7 +382,20 @@ def gradient_horprojection(variables, M):
 
 
 def gradient_complementary_energy(variables, M):
-    """Sensitivity of the objective function to minimise the complementary energy"""
+    """Sensitivity of the objective function to minimise the complementary energy.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -334,7 +475,20 @@ def gradient_complementary_energy(variables, M):
 
 
 def gradient_complementary_energy_nonlinear(variables, M):
-    """Sensitivity of the objective function to minimise nonlinear complementary energy"""
+    """Sensitivity of the objective function to minimise nonlinear complementary energy.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     grad_lin = gradient_complementary_energy(variables, M)
 
@@ -361,7 +515,20 @@ def gradient_complementary_energy_nonlinear(variables, M):
 
 
 def gradient_loadpath(variables, M):
-    """Sensitivity of the objective function to minimise the loadpath"""
+    """Sensitivity of the objective function to minimise the loadpath.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     if isinstance(M, list):
         M = M[0]
@@ -445,7 +612,20 @@ def gradient_loadpath(variables, M):
 
 
 def gradient_max_section(variables, M):
-    """Sensitivity of the objective function to minimise additional thickness required to find a feasible thrust network"""
+    """Sensitivity of the objective function to minimise additional thickness required to find a feasible thrust network.
+
+    Parameters
+    ----------
+    variables : array (k x 1)
+        Variables to pass to the function.
+    M : Problem
+        The class with necessary matrices, or arguments, to compute the objective function
+
+    Returns
+    -------
+    grad : array (k x 1)
+        The gradient of the objective function in the point. Represents the sensitivity of each variable in the objective function value.
+    """
 
     k = M.k
     nb = len(M.fixed)
