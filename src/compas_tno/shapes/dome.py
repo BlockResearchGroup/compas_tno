@@ -24,11 +24,61 @@ __all__ = [
 
 
 def dome_heightfields_proxy(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], *args, **kwargs):
+    """Function that computes the highfield of a dome through the proxy
+
+    Parameters
+    ----------
+    center : [float, float], optional
+        xy-span of the pattern, by default [[0.0, 10.0], [0.0, 10.0]]
+    thk : float, optional
+        The thickness of the vault, by default 0.5
+    tol : float, optional
+        Tolerance, by default 10e-6
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+    discretisation : list|int, optional
+        LEvel of discretisation of the shape, by default [100, 100]
+
+    Returns
+    -------
+    intradosdata
+        Data to a Mesh for the intrados of the pattern
+    extradosdata
+        Data to a Mesh for the extrados of the pattern
+    middledata
+        Data to a Mesh for the middle of the pattern
+    """
     intrados, extrados, middle = set_dome_heighfield(center=center, radius=radius, thk=thk, t=t, discretisation=discretisation)
     return intrados.to_data(), extrados.to_data(), middle.to_data()
 
 
 def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=0.0, discretisation=[8, 20], expanded=False):
+    """Height of the dome heighfield
+
+    Parameters
+    ----------
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+    thk : float, optional
+        The thickness of the dome, by default 0.30
+    t : float, optional
+        Parameter to the lowerbound of the nodes in the boundary, by default 0.0
+    discretisation : [float, float], optional
+        Discretisation level for the dome (hoops and meridians), by default [8, 20]
+    expanded : bool, optional
+        If should expand 1 row to "close" the dome, by default False
+
+    Returns
+    -------
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
+    """
 
     tol = 10e-3
     xc = center[0]
@@ -167,6 +217,32 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=0.0, discreti
 
 
 def set_dome_with_spr(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi/2], t=5.0, discretisation=[8, 20]):
+    """Height of the dome heighfield with spring angle
+
+    Parameters
+    ----------
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+    thk : float, optional
+        The thickness of the dome, by default 0.30
+    theta : [float, float], optional
+        The range to cover, by default [0, pi/2] which is a hemispheric dome
+    t : float, optional
+        Parameter to the lowerbound of the nodes in the boundary, by default 0.0
+    discretisation : [float, float], optional
+        Discretisation level for the dome (hoops and meridians), by default [8, 20]
+
+    Returns
+    -------
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
+    """
 
     center.append(0.0)
     ri = radius - thk/2
@@ -245,6 +321,32 @@ def set_dome_with_spr(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi
 
 
 def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi/2], t=0.0, discretisation=[8, 20]):
+    """Height of the dome heighfield assuming polar coordinates
+
+    Parameters
+    ----------
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+    thk : float, optional
+        The thickness of the dome, by default 0.30
+    theta : [float, float], optional
+        The range to cover, by default [0, pi/2] which is a hemispheric dome
+    t : float, optional
+        Parameter to the lowerbound of the nodes in the boundary, by default 0.0
+    discretisation : [float, float], optional
+        Discretisation level for the dome (hoops and meridians), by default [8, 20]
+
+    Returns
+    -------
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
+    """
 
     center0 = center
     center.append(0.0)
@@ -340,6 +442,24 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
 
 
 def geom_dome(p0, ro, theta, phi):
+    """Geometry of the dome in polar coordinates
+
+    Parameters
+    ----------
+    p0 : list
+        center of the dome
+    ro : float
+        ro parameter
+    theta : float
+        theta parameter
+    phi : float
+        phi parameter
+
+    Returns
+    -------
+    point : list
+        List of cartesian coordinates
+    """
     x = ro * math.sin(theta) * math.cos(phi)
     y = ro * math.sin(theta) * math.sin(phi)
     z = ro * math.cos(theta)
@@ -348,6 +468,28 @@ def geom_dome(p0, ro, theta, phi):
 
 
 def dome_zt_update(x, y, radius, t, center=[5.0, 5.0]):
+    """Update middle of the dome based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    radius : float, optional
+        The radius of the dome, by default 5.0
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
+    """
 
     xc = center[0]
     yc = center[1]
@@ -364,6 +506,30 @@ def dome_zt_update(x, y, radius, t, center=[5.0, 5.0]):
 
 
 def dome_ub_lb_update(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
+    """Update upper and lower bounds of the dome based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the dome
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
+    """
 
     xc = center[0]
     yc = center[1]
@@ -383,6 +549,30 @@ def dome_ub_lb_update(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
 
 
 def dome_dub_dlb(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
+    """Update sensitivites of upper and lower bounds of the dome based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the dome
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+
+    Returns
+    -------
+    dub : array
+        Values of the sensitivites of upper bound in the points
+    dlb : array
+        Values of the sensitivites of lower bound in the points
+    """
 
     xc = center[0]
     yc = center[1]
@@ -412,6 +602,28 @@ def dome_dub_dlb(x, y, thk, t, center=[5.0, 5.0], radius=5.0):
 
 
 def dome_b_update(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
+    """Updates the ``b`` parameter of a dome for a given thickness
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the dome
+    fixed : list
+        List with indexes of the fixed vertices
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+
+    Returns
+    -------
+    b : array
+        The ``b`` parameter
+    """
 
     [xc, yc] = center[:2]
     b = zeros((len(fixed), 2))
@@ -427,6 +639,28 @@ def dome_b_update(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
 
 
 def dome_db(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
+    """Updates the ``b`` parameter of a dome for a given thickness
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the dome
+    fixed : list
+        List with indexes of the fixed vertices
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+    radius : float, optional
+        The radius of the dome, by default 5.0
+
+    Returns
+    -------
+    b : array
+        The sensitivity of the ``b`` parameter
+    """
 
     [xc, yc] = center[:2]
     db = zeros((len(fixed), 2))
@@ -441,7 +675,29 @@ def dome_db(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
     return db
 
 
-def dome_b_update_with_n(x, y, n, fixed, b, center=[5.0, 5.0]):  # Update the reaction bounds considering as variable the extrusion from the surface,
+def dome_b_update_with_n(x, y, n, fixed, b, center=[5.0, 5.0]):
+    """Updates the ``b`` parameter of a dome for a given thickness considering as variable the offset from the surface
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    n : float
+        Offset distance
+    fixed : list
+        List with indexes of the fixed vertices
+    b : list
+        Current ``b`` list
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+
+    Returns
+    -------
+    new_b : array
+        The new ``b`` parameter
+    """
 
     [xc, yc] = center[:2]
     new_b = zeros((len(fixed), 2))
@@ -455,7 +711,29 @@ def dome_b_update_with_n(x, y, n, fixed, b, center=[5.0, 5.0]):  # Update the re
     return new_b
 
 
-def dome_db_with_n(x, y, fixed, center=[5.0, 5.0]):  # Update the reaction bounds considering as variable the extrusion from the surface,
+def dome_db_with_n(x, y, fixed, center=[5.0, 5.0]):
+    """Updates the sensitivites of the ``b`` parameter of a dome for a given thickness considering as variable the offset from the surface
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    n : float
+        Offset distance
+    fixed : list
+        List with indexes of the fixed vertices
+    b : list
+        Current ``b`` list
+    center : [float, float], optional
+        x, y coordinates of the center of the dome, by default [5.0, 5.0]
+
+    Returns
+    -------
+    db : array
+        The sensitivity of the ``b`` parameter
+    """
 
     [xc, yc] = center[:2]
     db = zeros((len(fixed), 2))

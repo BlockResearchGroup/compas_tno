@@ -14,36 +14,36 @@ __all__ = ['arch_shape',
            ]
 
 
-def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
-    """ Helper to create meshes to define upper and lower bounds of 2D arch.
+def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, total_nodes=100):
+    """Helper to create meshes to define upper and lower bounds of 2D arch
 
     Parameters
     ----------
-    H : float
-        Rise of the arch measured with regards to the center line.
-
-    L : float
-        Span of the arch considered as center, to center. (L <= 2*H).
-
-    x0: float
-        Beginning of the linear form diagram.
-
-    thk: float
-        Thickness of the arch
-
-    b: float
-        Out of plane dimension of the arch
-
-    total_nodes : int
-        Numbers of nodes to be considered in the form diagram.
+    H : float, optional
+        Height of the arch, by default 1.00
+    L : float, optional
+        Span of the arch, by default 2.0
+    x0 : float, optional
+        Starting coordinate of the arch , by default 0.0
+    thk : float, optional
+        Thickness of the arch, by default 0.20
+    b : float, optional
+        Out-of-plane measure of the arch, by default 0.5
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+    total_nodes : int, optional
+        Density of the shape, by default 100
 
     Returns
     -------
-    obj
-        FormDiagram.
+    intrados
+        A MeshDos for the intrados of the pattern
+    extrados
+        A MeshDos for the extrados of the pattern
+    middle
+        A MeshDos for the middle of the pattern
 
     """
-
     # Add option for starting from Hi and Li for a given thk.
 
     radius = H / 2 + (L**2 / (8 * H))
@@ -103,6 +103,32 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
 
 
 def arch_ub_lb_update(x, y, thk, t, H=1.00, L=2.0, x0=0.0):
+    """Update upper and lower bounds of an arch based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    H : float, optional
+        Height of the arch, by default 1.00
+    L : float, optional
+        Span of the arch, by default 2.0
+    x0 : float, optional
+        Starting coordinate of the arch , by default 0.0
+
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
+    """
 
     radius = H / 2 + (L**2 / (8 * H))
     ri = radius - thk/2
@@ -122,6 +148,32 @@ def arch_ub_lb_update(x, y, thk, t, H=1.00, L=2.0, x0=0.0):
 
 
 def arch_dub_dlb(x, y, thk, t, H=1.00, L=2.0, x0=0.0):
+    """Computes the sensitivities of upper and lower bounds in the x, y coordinates and thickness specified.
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    H : float, optional
+        Height of the arch, by default 1.00
+    L : float, optional
+        Span of the arch, by default 2.0
+    x0 : float, optional
+        Starting coordinate of the arch , by default 0.0
+
+    Returns
+    -------
+    dub : array
+        Values of the sensitivities for the upper bound in the points
+    dlb : array
+        Values of the sensitivities for the lower bound in the points
+    """
 
     radius = H / 2 + (L**2 / (8 * H))
     ri = radius - thk/2
@@ -147,6 +199,30 @@ def arch_dub_dlb(x, y, thk, t, H=1.00, L=2.0, x0=0.0):
 
 
 def arch_b_update(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):
+    """Computes the sensitivities of upper and lower bounds in the x, y coordinates and thickness specified.
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    H : float, optional
+        Height of the arch, by default 1.00
+    L : float, optional
+        Span of the arch, by default 2.0
+    x0 : float, optional
+        Starting coordinate of the arch , by default 0.0
+
+    Returns
+    -------
+    b : array
+        Value of the ``b`` parameter.
+    """
 
     radius = H / 2 + (L**2 / (8 * H))
     re = radius + thk/2
@@ -160,7 +236,31 @@ def arch_b_update(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):
     return b
 
 
-def arch_db(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):  # This does not work for spring angles
+def arch_db(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):
+    """Computes the sensitivities of upper and lower bounds in the x, y coordinates and thickness specified.
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    H : float, optional
+        Height of the arch, by default 1.00
+    L : float, optional
+        Span of the arch, by default 2.0
+    x0 : float, optional
+        Starting coordinate of the arch , by default 0.0
+
+    Returns
+    -------
+    db : array
+        Sensitivity of the ``b`` parameter.
+    """
 
     radius = H / 2 + (L**2 / (8 * H))
     re = radius + thk/2

@@ -229,8 +229,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
             if datashape['type'] in ['dome']:
                 datashape['type'] = 'dome_polar'
                 shape = Shape.from_library(datashape)
-            elif datashape['type'] == 'arch':
-                print('WIP = Special Plot for arch')
+            # elif datashape['type'] == 'arch':
+            #     print('WIP = Special Plot for arch')
             else:
                 shape = self.shape
 

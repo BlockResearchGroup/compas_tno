@@ -175,18 +175,6 @@ def set_up_general_optimisation(analysis):
     else:
         M.b = None
 
-    # if 'cracks' in constraints:
-    #     cracks_lb, cracks_ub = set_cracks_constraint(form, printout)
-    # else:
-    #     cracks_lb, cracks_ub = None, None
-
-    # if 'rollers' in constraints:
-    #     max_rol_rx, max_rol_ry = set_rollers_constraint(form, printout)
-    # else:
-    #     max_rol_rx, max_rol_ry = None, None
-
-    # shape.data['thickness_type'] = thickness_type  # this argument is useful if minimising thickness
-
     # Select Objetive and Gradient
 
     if objective == 'loadpath':

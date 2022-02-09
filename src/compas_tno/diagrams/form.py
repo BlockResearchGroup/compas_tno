@@ -61,15 +61,6 @@ class FormDiagram(FormDiagram):
     >>> from compas_tno.diagrams import FormDiagram
     >>> data = {'type': 'fan_fd', 'xy_span': [[0, 10], [0, 10]], 'discretisation': [10, 10], 'fix': 'corners'}
     >>> form = FormDiagram.from_library(data)
-    >>> print(form)
-    Form Diagram
-    ============
-    name: FormDiagram
-    number of vertices: 201
-    number of (real) edges: 400
-    number of faces: 200
-    vertex degree: 3/11
-    face degree: 2/4
 
     """
 

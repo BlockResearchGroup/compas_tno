@@ -1,16 +1,12 @@
-
-__all__ = ['rectangular_topology']
-
-
 def rectangular_topology(x, y):
-    """ Draw the vertices position and dictionary for a rectangular base besh.
+    """Draw the vertices position and dictionary for a rectangular base besh
 
     Parameters
     ----------
     x : list
-        List with the x-coordinates required for the mesh.
+        List with the x-coordinates required for the mesh
     y : list
-        List with the y-coordinates required for the mesh.
+        List with the y-coordinates required for the mesh
 
     Returns
     -------
@@ -20,7 +16,6 @@ def rectangular_topology(x, y):
         List with the y-coordinate of the vertices.
     faces_i: list of lists
         Lists with the connectivity required to create the mesh.
-
     """
 
     index = 0

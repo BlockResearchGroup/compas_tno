@@ -17,7 +17,6 @@ __all__ = ['Shape']
 
 
 class Shape(Datastructure):
-
     """The ``Shape`` class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.
 
     The class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some
@@ -64,18 +63,9 @@ class Shape(Datastructure):
 
     Examples
     --------
-    >>> from compas_tno.diagrams import FormDiagram
-    >>> data = {'type': 'fan_fd', 'xy_span': [[0, 10], [0, 10]], 'discretisation': [10, 10], 'fix': 'corners'}
-    >>> form = FormDiagram.from_library(data)
-    >>> print(form)
-    Form Diagram
-    ============
-    name: FormDiagram
-    number of vertices: 201
-    number of (real) edges: 400
-    number of faces: 200
-    vertex degree: 3/11
-    face degree: 2/4
+    >>> from compas_tno.shapes import Shape
+    >>> data = {'type': 'crossvault', 'thk': 0.5, 'discretisation': 10, 'xy_span': [[0.0, 10.0], [0.0, 10.0]], 't': 0.0 }
+    >>> shape = Shape.from_library(data)
 
 
     Notes
@@ -137,7 +127,7 @@ class Shape(Datastructure):
 
     @property
     def data(self):
-        """dict : A data dict representing the shape data structure for serialization.
+        """ A data dict representing the shape data structure for serialization.
         """
         dataintrados = None
         dataextrados = None
@@ -191,7 +181,7 @@ class Shape(Datastructure):
 
         Parameters
         ----------
-        data : dictionary
+        data : dict
             Dictionary with the settings to create the vault.
 
         Returns
@@ -283,7 +273,7 @@ class Shape(Datastructure):
 
         Parameters
         ----------
-        data : dictionary
+        data : dict
             Dictionary with the setttings to create the vault.
 
         Returns
@@ -498,8 +488,8 @@ class Shape(Datastructure):
         fill_pts : list, optional
             List of points collected in the fill.
             The default value is ``None``, in which case no fill surface is constructed
-        data : dict (None)
-            Dictionary with the data in required.
+        data : dict, optional
+            Dictionary with the data in required. The default is None.
 
         Returns
         -------
@@ -529,15 +519,15 @@ class Shape(Datastructure):
         Parameters
         ----------
         form: FormDiagram
-            Form Diagram with the topology to be used.
+            Form Diagram with the topology to be used
         intrados : mesh
-            Mesh for intrados.
+            Mesh for intrados
         extrados : mesh
-            Mesh for extrados.
-        middle : mesh (None)
-            Mesh for middle.
-        data : dict (None)
-            Dictionary with the data in required.
+            Mesh for extrados
+        middle : mesh, optional
+            Mesh for middle, the default is None
+        data : dict,  optional
+            Dictionary with the data in required, the default is None
 
         Returns
         -------
@@ -564,10 +554,10 @@ class Shape(Datastructure):
             Mesh for intrados.
         extrados : mesh
             Mesh for extrados.
-        middle : mesh (None)
-            Mesh for middle.
-        data : dict (None)
-            Dictionary with the data if required.
+        middle : mesh, optional
+            Mesh for middle, the default is None
+        data : dict, optional
+            Dictionary with the data if required, the default is None
 
         Returns
         -------
@@ -592,16 +582,31 @@ class Shape(Datastructure):
 
     @classmethod
     def from_assembly(self):
-        NotImplementedError
+        """Create a TNO Shape from an assembly
 
-    def add_damage_from_meshes(self, intrados, extrados):
+        Returns
+        -------
+        Shape
+            The shape object
+        """
 
-        self.intrados_damage = intrados
-        self.extrados_damage = extrados
-
-        return
+        raise NotImplementedError
 
     def interpolate_middle_from_ub_lb(self, intrados=None, extrados=None):
+        """Interpolate the middle surface based on intrados and extrados
+
+        Parameters
+        ----------
+        intrados : Mesh, optional
+            Intrados to consider, by default None
+        extrados : Mesh, optional
+            Extrados to consider, by default None
+
+        Returns
+        -------
+        None
+            Middle surface is added to the Shape.
+        """
 
         if not intrados:
             intrados = self.intrados
@@ -619,6 +624,20 @@ class Shape(Datastructure):
         return
 
     def store_normals(self, mark_fixed_LB=True, plot=False):
+        """Store the normals of the shape
+
+        Parameters
+        ----------
+        mark_fixed_LB : bool, optional
+            If vertices in the boundary are taken specially, by default True
+        plot : bool, optional
+            If plots should appear, by default False
+
+        Returns
+        -------
+        None
+            Normals are added as attributes.
+        """
 
         intrados = self.intrados
         extrados = self.extrados
@@ -649,6 +668,20 @@ class Shape(Datastructure):
         return
 
     def analytical_normals(self, assume_shape=None, mark_fixed_LB=True):
+        """Compute normals analytically for some shapes
+
+        Parameters
+        ----------
+        assume_shape : dict, optional
+            A dictionary with data of the shape to assume, by default None
+        mark_fixed_LB : bool, optional
+            If vertices in the boundary should be considered specially, by default True
+
+        Returns
+        -------
+        None
+            Normals added as attribute.
+        """
 
         if assume_shape:
             data = assume_shape
@@ -694,7 +727,7 @@ class Shape(Datastructure):
 
         Returns
         -------
-        swt : float
+        total_selfweight : float
             The selfweight.
         """
 
@@ -720,7 +753,7 @@ class Shape(Datastructure):
 
         Returns
         -------
-        vol : float
+        volume : float
             The volume.
         """
 
@@ -734,12 +767,14 @@ class Shape(Datastructure):
     def add_fill_with_height(self, height, fill_ro=20.0):
         """Compute the weight of the fill applied based on the height.
 
-        Returns
-        -------
+        Parameters
+        ----------
         height : float
             The height until which infill should be observed.
-        fill_ro : float (20)
-            The density of the infill.
+        fill_ro : float, optional
+            The density of the infill, the default is 20.0
+
+
         """
 
         self.extrados_fill = deepcopy(self.extrados)
@@ -784,7 +819,11 @@ class Shape(Datastructure):
         return
 
     def compute_fill_weight(self):
-        return self.fill_volume * self.fill_ro
+        """Compute and returns the volume of fill in the structure.
 
-    def add_fill_with_angle(self, angle):
-        pass
+        Returns
+        -------
+        volume : float
+            The volume.
+        """
+        return self.fill_volume * self.fill_ro
