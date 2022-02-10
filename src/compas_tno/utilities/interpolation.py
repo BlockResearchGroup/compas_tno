@@ -13,8 +13,6 @@ __all__ = [
     'get_shape_lb',
     'get_shape_lb_pattern',
     'get_shape_middle',
-    'get_shape_target',
-    'get_shape_target_pattern',
     'delaunay_mesh_from_points',
     'mesh_from_pointcloud',
     'create_mesh_from_topology_and_pointcloud',
@@ -32,10 +30,13 @@ def get_shape_ub(shape, x, y):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     x : float
         x-coordinate of the point to evaluate.
     y : float
         y-coordinate of the point to evaluate.
+
     Returns
     -------
     z : float
@@ -50,8 +51,11 @@ def get_shape_ub_pattern(shape, XY):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     XY : list or array
         list of the x-coordinate and y-coordinate of the points to evaluate.
+
     Returns
     -------
     z : float
@@ -66,10 +70,13 @@ def get_shape_ub_fill(shape, x, y):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     x : float
         x-coordinate of the point to evaluate.
     y : float
         y-coordinate of the point to evaluate.
+
     Returns
     -------
     z : float
@@ -84,10 +91,13 @@ def get_shape_lb(shape, x, y):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     x : float
         x-coordinate of the point to evaluate.
     y : float
         y-coordinate of the point to evaluate.
+
     Returns
     -------
     z : float
@@ -102,8 +112,11 @@ def get_shape_lb_pattern(shape, XY):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     XY : list or array
         list of the x-coordinate and y-coordinate of the points to evaluate.
+
     Returns
     -------
     z : float
@@ -118,10 +131,13 @@ def get_shape_middle(shape, x, y):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     x : float
         x-coordinate of the point to evaluate.
     y : float
         y-coordinate of the point to evaluate.
+
     Returns
     -------
     z : float
@@ -136,8 +152,11 @@ def get_shape_middle_pattern(shape, XY):
 
     Parameters
     ----------
+    shape : Shape
+        Shape of the masonry
     XY : list or array
         list of the x-coordinate and y-coordinate of the points to evaluate.
+
     Returns
     -------
     z : float
@@ -147,16 +166,6 @@ def get_shape_middle_pattern(shape, XY):
     return interpolate_from_pointcloud(shape.middle.vertices_attributes('xyz'), XY, method=method)
 
 
-def get_shape_target(shape, x, y):
-    """Get the height of the target/middle surface in the point."""
-    return get_shape_middle(shape, x, y)
-
-
-def get_shape_target_pattern(shape, XY):
-    """Get the height of the target/middle surface in the point."""
-    return get_shape_middle_pattern(shape, XY)
-
-
 def delaunay_mesh_from_points(points):
     """Construct a Delaunay triangulation of set of vertices.
 
@@ -164,6 +173,7 @@ def delaunay_mesh_from_points(points):
     ----------
     points : list
         XY(Z) coordinates of the points to triangulate.
+
     Returns
     -------
     mesh : MeshDos
@@ -203,6 +213,7 @@ def mesh_from_pointcloud(points):
     ----------
     points : list
         XY(Z) coordinates of the points to triangulate.
+
     Returns
     -------
     mesh : MeshDos
@@ -226,12 +237,13 @@ def create_mesh_from_topology_and_pointcloud(meshtopology, pointcloud, isnan_hei
 
     Parameters
     ----------
-    meshtopology : compas_tno.diagrams.FormDiagram
+    meshtopology : FormDiagram
         Topology that is intended to keep
     mesh_base : mesh
-        Mesh usually denser to base the heights on
-    keep_normals : bool (True)
-        Go through the process of
+        Mesh usually denser to use as base to interpolate the heights
+    isnan_height : bool, optional
+        Value if the height is nan, by default is 0.0
+
     Returns
     -------
     obj
@@ -261,9 +273,8 @@ def create_mesh_from_topology_and_basemesh(meshtopology, mesh_base):
     meshtopology : compas_tno.diagrams.FormDiagram
         Topology that is intended to keep
     mesh_base : mesh
-        Mesh usually denser to base the heights on
-    keep_normals : bool (True)
-        Go through the process of
+        Mesh usually denser to use as base to interpolate the heights
+
     Returns
     -------
     obj

@@ -18,17 +18,15 @@ def check_envelope_constraints(form, tol=1e-6):
 
     Parameters
     ----------
-    form : compas_tno.diagrams.FormDiagram
+    form : FormDiagram
         The form diagram with the envelope as nodal attributes.
-    tol : float
-        Tolerance for verifying the constraints.
-        The default value is ``1e-6``.
+    tol : float, optional
+        Tolerance for verifying the constraints, by default ``1e-6``.
 
     Returns
     -------
     penalty: float
         The penalty computed as the sum square of the exceeding value at each node.
-
     """
     penalty = 0.0
 
@@ -53,8 +51,8 @@ def distance_target(form):
 
     Parameters
     ----------
-    form : compas_tno.diagrams.FormDiagram
-        The form diagram / thrust network to check.
+    form : FormDiagram
+        The form diagram to check.
 
     Returns
     -------
@@ -78,10 +76,10 @@ def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
 
     Parameters
     ----------
-    form : compas_tno.diagrams.FormDiagram
-        The form diagram / thrust network to check.
-    xy_span: list
-        The rectangular footprint to smooth.
+    form : FormDiagram
+        The form diagram to check.
+    xy_span: list, optional
+        The rectangular footprint to smooth, by default [[0, 10], [0, 10]]
 
     Returns
     -------
@@ -112,24 +110,23 @@ def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
 
 
 def assign_cracks(form, dx=[[0.50, 0.55]], dy=[[-0.1, 0.1]], type=['top']):
-    """Assign cracks on a form diagram to the nodes desired.
+    """Assign cracks on a form diagram to the nodes desired
 
     Parameters
     ----------
     form : FormDiagram
-        ForceDiagram to constraint.
-    dx : list
-        List of the range on the x-coordinates of the nodes to be constrained.
-    dy : list
-        List of the range on the y-coordinates of the nodes to be constrained.
-    type : list
-        List with the type of constraint to applye to the vertices (top or bottom).
+        ForceDiagram to constraint
+    dx : list, optional
+        List of the range on the x-coordinates of the nodes to be constrained, by default [[0.50, 0.55]]
+    dy : list, optional
+        List of the range on the y-coordinates of the nodes to be constrained, by default [[-0.1, 0.1]]
+    type : list, optional
+        List with the type of constraint to applye to the vertices (top or bottom), by default ['top']
 
     Returns
     -------
     form : FormDiagram
         ForceDiagram with the constraints in attribute 'cracks'.
-
     """
 
     k_i = form.key_index()
@@ -159,10 +156,10 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
     ----------
     form : FormDiagram
         ForceDiagram to constraint.
-    xy_span: list
-        The rectangular footprint of the diagram.
-    max_f : float
-        The maximum force allowed in each roller.
+    xy_span: list, optional
+        The rectangular footprint to smooth, by default [[0, 10], [0, 10]]
+    max_f : float, optional
+        The maximum force allowed in each roller, by default 5.0
     constraint_directions : str
         Define the restriction in ``all`` directions or only ``x``or only ``y``.
 
@@ -170,7 +167,6 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
     -------
     form : FormDiagram
         ForceDiagram with the rollers assigned.
-
     """
 
     y1 = xy_span[1][1]
@@ -200,7 +196,30 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
 
 
 def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3):
-    """Deprecated function to assign constraints in the joints among blocks instead of in the z's."""
+    """Deprecated function to assign constraints in the joints among blocks instead of in the z's.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram
+    x0 : float, optional
+        The initial ordinate of the arch, by default None
+    xf : float, optional
+        The final ordinate of the arch, by default None
+    blocks : int, optional
+        Number of blocks, by default 18
+    thk : float, optional
+        The thickness of the arch, by default 0.5
+    t : float, optional
+        Lower bound in the vertices of the boundary, by default 0.0
+    tol : float, optional
+        The tolerance, by default 1e-3
+
+    Returns
+    -------
+    form : FormDiagram
+        The form diagram with the joints
+    """
 
     k_i = form.key_index()
 

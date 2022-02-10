@@ -9,22 +9,17 @@ from .post_process import post_process_general
 import time
 
 
-__all__ = [
-    'run_optimisation_scipy',
-]
-
-
 def run_optimisation_scipy(analysis):
-    """ Run nonlinear optimisation problem with scipy
+    """ Run nonlinear optimisation problem with SciPy.
 
     Parameters
     ----------
-    obj : analysis
+    analysis : Analysis
         Analysis object with information about optimiser, form and shape.
 
     Returns
     -------
-    obj : analysis
+    analysis : Analysis
         Analysis object optimised.
 
     """

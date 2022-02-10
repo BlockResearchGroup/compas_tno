@@ -4,13 +4,19 @@ from compas_tno.shapes import Shape
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.problems import save_geometry_at_iterations
 
-__all__ = [
-    'post_process_general'
-]
-
 
 def post_process_general(analysis):
-    """ Post processing of the optimisation.
+    """Post processing of the optimisation.
+
+    Parameters
+    ----------
+    analysis : Analysis
+        The Analysis object
+
+    Returns
+    -------
+    analysis : Analysis
+        The Analysis object updated
     """
 
     form = analysis.form

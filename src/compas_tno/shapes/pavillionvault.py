@@ -11,16 +11,6 @@ from compas_tno.shapes import rectangular_topology
 import math
 
 
-__all__ = [
-    'pavillion_vault_highfields_proxy',
-    'pavillion_vault_highfields',
-    'pavillionvault_ub_lb_update',
-    'pavillionvault_dub_dlb',
-    'pavillionvault_b_update',
-    'pavillionvault_db'
-    ]
-
-
 def pavillion_vault_highfields_proxy(xy_span, thk=0.5, discretisation=10, t=0.0):
     """Get Pavillionvault from proxy.
 

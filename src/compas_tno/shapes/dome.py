@@ -7,22 +7,6 @@ from compas_tno.shapes import MeshDos
 from compas.datastructures import mesh_delete_duplicate_vertices
 
 
-__all__ = [
-    'dome_heightfields_proxy',
-    'set_dome_heighfield',
-    'set_dome_with_spr',
-    'set_dome_polar_coord',
-    'geom_dome',
-    'dome_zt_update',
-    'dome_ub_lb_update',
-    'dome_dub_dlb',
-    'dome_b_update',
-    'dome_db',
-    'dome_b_update_with_n',
-    'dome_db_with_n'
-]
-
-
 def dome_heightfields_proxy(center=[5.0, 5.0], radius=5.0, thk=0.30, t=5.0, discretisation=[8, 20], *args, **kwargs):
     """Function that computes the highfield of a dome through the proxy
 

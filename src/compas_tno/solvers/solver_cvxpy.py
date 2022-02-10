@@ -11,21 +11,12 @@ from cvxpy import Minimize
 from cvxpy import Problem
 
 
-__all__ = [
-    'run_optimisation_CVXPY',
-    'run_loadpath_from_form_CVXPY',
-    'call_cvxpy',
-    'call_cvxpy_ind',
-    'call_and_output_CVXPY'
-]
-
-
 def run_optimisation_CVXPY(analysis):
     """ Run convex optimisation problem with CVXPY after going through the optimisation set up.
 
     Parameters
     ----------
-    obj : analysis
+    analysis : Analysis
         Analysis object with information about optimiser, form and shape.
 
     """
@@ -80,9 +71,7 @@ def call_and_output_CVXPY(form, problem, printout=False):
     form : ::class:: FormDiagram
         The form Diagram of the analysis
     problem : ::class:: Problem
-        The Problem with relevant matrices and vectors
-    eng : matlab.engine
-        The matlab engine initiated to call the analysis
+        The Problem with relevant matrices and vectors`
     printout : bool, optional
         Whether or not print results, by default False
 
@@ -148,6 +137,30 @@ def call_and_output_CVXPY(form, problem, printout=False):
 
 
 def call_cvxpy(problem, printout=False):
+    """Call and output the loadpath optimisation with CVXPY
+
+    Parameters
+    ----------
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors`
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Independent Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+    """
 
     # Retrieve important vector and matrices
     q = problem.q
@@ -219,6 +232,30 @@ def call_cvxpy(problem, printout=False):
 
 
 def call_cvxpy_ind(problem, printout=False):
+    """Call and output the loadpath optimisation with CVXPY using independents
+
+    Parameters
+    ----------
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors`
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Independent Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+    """
 
     # Retrieve important vector and matrices
     q = problem.q

@@ -21,12 +21,9 @@ __all__ = [
     'diagram_of_multiple_thrust',
     'diagram_of_thrust_load_mult',
     'surface_GSF_load_mult',
-    'save_csv',
     'save_csv_row',
-    'open_csv',
     'open_csv_row',
     'interpolate_min_thk',
-    'prune_data',
     'filter_min_thk',
     'lookup_folder',
     'save_pointcloud'
@@ -484,33 +481,27 @@ def surface_GSF_load_mult(sizes, mins, maxs, legends, save=None):
     return plt
 
 
-def save_csv(dimension, min_sol, max_sol, limit_state=True, path=None, title=None):
-
-    xmin = xmax = array(dimension)
-    fmin = 100.0 * array(min_sol)
-    fmax = -100.0 * array(max_sol)
-    n = len(xmin)
-    if limit_state:
-        x_, y_, _ = intersection_line_line_xy([[xmax[n-1], fmax[n-1]], [xmax[n-2], fmax[n-2]]], [[xmin[n-1], fmin[n-1]], [xmin[n-2], fmin[n-2]]])
-        xmin = append(xmax, x_)
-        fmin = append(fmin, y_)
-        fmax = append(fmax, y_)
-
-    if path is None:
-        path = os.path.join(compas_tno.get('/csv/'), 'test.csv')
-
-    with open(path, mode='w') as csv_file:
-        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        if title is not None:
-            csv_writer.writerow([title])
-        csv_writer.writerow(['X-Axis', 'min T/W', 'max T/W'])
-        for i in range(len(fmin)):
-            csv_writer.writerow([xmin[i], fmin[i], fmax[i]])
-
-    return
-
-
 def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None):
+    """Save a CSV file from the routine with several min/max thrust computations
+
+    Parameters
+    ----------
+    thicknesses : list
+        The list of the thickness computed for min/max thrust
+    solutions : [list, list]
+        The list of solutions of min/max solutions
+    limit_state : bool, optional
+        If limit state is included, by default True
+    path : str, optional
+        Full path to save the file, by default None
+    title : str, optional
+        Title for the analysis, by default None
+
+    Returns
+    -------
+    None
+        File is saved
+    """
 
     xmin = array(thicknesses[0])
     xmax = array(thicknesses[1])
@@ -542,40 +533,25 @@ def save_csv_row(thicknesses, solutions, limit_state=True, path=None, title=None
     return
 
 
-def open_csv(path, cut_last=True):
-
-    x = []
-    min_thrust = []
-    max_thrust = []
-    line_total = 0
-
-    with open(path) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        for row in csv_reader:
-            line_total += 1
-
-    with open(path) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        for row in csv_reader:
-            if line_count == 0:
-                print(f'Title: {", ".join(row)}')
-                line_count += 1
-            elif line_count == 1:
-                line_count += 1
-                pass
-            elif line_count < line_total - 1:
-                print(row[0])
-                x.append(float(row[0]))
-                min_thrust.append(float(row[1])/100)
-                max_thrust.append(-1 * float(row[2])/100)
-                line_count += 1
-        print(f'Processed {line_count} lines.')
-
-    return x, min_thrust, max_thrust
-
-
 def open_csv_row(path, cut_last=True, printout=True):
+    """Open a CSV file from the routine with several min/max thrust computations
+
+    Parameters
+    ----------
+    path : str, optional
+        Full path to save the file, by default None
+    cut_last : bool, optional
+        If should cut last element, by default True
+    printout : bool, optional
+        if should print in the screen, by default True
+
+    Returns
+    -------
+    thicknesses : list
+        The list of the thickness computed for min/max thrust
+    solutions : [list, list]
+        The list of solutions of min/max solutions
+    """
 
     xmin = []
     xmax = []
@@ -626,68 +602,21 @@ def open_csv_row(path, cut_last=True, printout=True):
     return [xmin, xmax], [min_thrust, max_thrust]
 
 
-def prune_data(sizes, solutions):
-
-    xmin = sizes[0]
-    xmax = sizes[1]
-    fmin = solutions[0]
-    fmax = solutions[1]
-    n = len(xmin)
-    m = len(xmax)
-
-    xmax_ = []
-    xmin_ = []
-    fmax_ = []
-    fmin_ = []
-
-    if n == m:
-        return sizes, solutions
-    elif n > m and xmin[-1] == xmax[-1]:
-        xmax_ = xmax
-        fmax_ = fmax
-        j = 0
-        for i in range(m):
-            while xmax[i] != xmin[j]:
-                j = j+1
-            if xmax[i] == xmin[j]:
-                xmin_.append(xmin[j])
-                fmin_.append(fmin[j])
-                j = j+1
-        return [xmin_, xmax_], [fmin_, fmax_]
-    elif n < m and xmin[-1] == xmax[-1]:
-        xmin_ = xmin
-        fmin_ = fmin
-        j = 0
-        for i in range(n):
-            while xmin[i] != xmax[j]:
-                j = j+1
-            if xmin[i] == xmax[j]:
-                xmax_.append(xmax[j])
-                fmax_.append(fmax[j])
-        return [xmin_, xmax_], [fmin_, fmax_]
-    else:
-        print('Last optimisation not with same thickness. Can not prune')
-        print([xmin, xmax], [fmin, fmax])
-        if m > n:
-            diff = m - n
-            print(diff)
-            for i in range(diff):
-                xmax.pop(m-3)
-                fmax.pop(m-3)
-            print([xmin, xmax], [fmin, fmax])
-            return [xmin, xmax], [fmin, fmax]
-        else:
-            diff = n - m
-            print(diff)
-            for i in range(diff):
-                xmin.pop(m-3)
-                fmin.pop(m-3)
-            print([xmin, xmax], [fmin, fmax])
-            return [xmin, xmax], [fmin, fmax]
-    return sizes, solutions
-
-
 def interpolate_min_thk(sizes, solutions):
+    """Interpolate min thickness from sizes and solutions computed
+
+    Parameters
+    ----------
+    sizes : list
+        Sizes computed
+    solutions : list
+        SOlutions of min/max optimisation
+
+    Returns
+    -------
+    x_
+        Point to add to the Stability domain with the interpolated value
+    """
 
     xmin = array(sizes[0])
     xmax = array(sizes[1])
@@ -701,6 +630,18 @@ def interpolate_min_thk(sizes, solutions):
 
 
 def lookup_folder(folder):
+    """Lookup files in a folder
+
+    Parameters
+    ----------
+    folder : str
+        Path to the folder
+
+    Returns
+    -------
+    files_dict
+        Dictionary with the information about the files
+    """
 
     files = os.listdir(folder)
     # print(files)
@@ -766,6 +707,20 @@ def lookup_folder(folder):
 
 
 def filter_min_thk(files_dict, filters=None):
+    """Filter structure with minimum thickness in a folder
+
+    Parameters
+    ----------
+    files_dict : dict
+        Dictionary of all files
+    filters : dict, optional
+        Filters applied, by default None
+
+    Returns
+    -------
+    limit_form_min, limit_form_max
+        The limit values
+    """
 
     limit_thk_min = 100
     limit_thk_max = 100
@@ -795,6 +750,17 @@ def filter_min_thk(files_dict, filters=None):
 
 
 def save_pointcloud(points_lb, points_ub, json_path):
+    """Save pointcloud to a JSON file
+
+    Parameters
+    ----------
+    points_lb : list
+        List of points of the intrados
+    points_ub : list
+        List of points of the extrados
+    json_path : str
+        Path to save the file
+    """
 
     data = {'UB': {}, 'LB': {}}
 
@@ -816,3 +782,64 @@ def save_pointcloud(points_lb, points_ub, json_path):
         json.dump(data, outfile)
 
     return
+
+
+# def prune_data(sizes, solutions):
+
+#     xmin = sizes[0]
+#     xmax = sizes[1]
+#     fmin = solutions[0]
+#     fmax = solutions[1]
+#     n = len(xmin)
+#     m = len(xmax)
+
+#     xmax_ = []
+#     xmin_ = []
+#     fmax_ = []
+#     fmin_ = []
+
+#     if n == m:
+#         return sizes, solutions
+#     elif n > m and xmin[-1] == xmax[-1]:
+#         xmax_ = xmax
+#         fmax_ = fmax
+#         j = 0
+#         for i in range(m):
+#             while xmax[i] != xmin[j]:
+#                 j = j+1
+#             if xmax[i] == xmin[j]:
+#                 xmin_.append(xmin[j])
+#                 fmin_.append(fmin[j])
+#                 j = j+1
+#         return [xmin_, xmax_], [fmin_, fmax_]
+#     elif n < m and xmin[-1] == xmax[-1]:
+#         xmin_ = xmin
+#         fmin_ = fmin
+#         j = 0
+#         for i in range(n):
+#             while xmin[i] != xmax[j]:
+#                 j = j+1
+#             if xmin[i] == xmax[j]:
+#                 xmax_.append(xmax[j])
+#                 fmax_.append(fmax[j])
+#         return [xmin_, xmax_], [fmin_, fmax_]
+#     else:
+#         print('Last optimisation not with same thickness. Can not prune')
+#         print([xmin, xmax], [fmin, fmax])
+#         if m > n:
+#             diff = m - n
+#             print(diff)
+#             for i in range(diff):
+#                 xmax.pop(m-3)
+#                 fmax.pop(m-3)
+#             print([xmin, xmax], [fmin, fmax])
+#             return [xmin, xmax], [fmin, fmax]
+#         else:
+#             diff = n - m
+#             print(diff)
+#             for i in range(diff):
+#                 xmin.pop(m-3)
+#                 fmin.pop(m-3)
+#             print([xmin, xmax], [fmin, fmax])
+#             return [xmin, xmax], [fmin, fmax]
+#     return sizes, solutions

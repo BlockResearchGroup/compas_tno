@@ -8,14 +8,6 @@ from compas_tno.shapes import rectangular_topology
 import math
 
 
-__all__ = [
-    'domical_vault',
-    'parabolic_shell_highfields',
-    'parabolic_shell_middle_update',
-    'parabolic_shell_ub_lb_update'
-]
-
-
 def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, center=None, tol=10e-6, t=0.0, discretisation=[100, 100]):
     """Set domical vault upper and lower meshes
 

@@ -5,11 +5,7 @@ import compas_tno
 from compas.geometry import centroid_points
 from compas.geometry import subtract_vectors
 
-
-__all__ = [
-    'animation_from_optimisation',
-    'animation_from_section'
-]
+from compas_tno.plotters import TNOPlotter
 
 
 def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, shape=None, settings=None, record=False, interval=100, jump_each=1):
@@ -78,11 +74,11 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
             viewer.thrust.vertex_attribute(vertex, 'z', Xf[index][2])
             index += 1
 
-        viewer.view_thrust()
-        # viewer.view_cracks()
-        # viewer.view_reactions()
-        viewer.view_shape()
-        viewer.view_reactions()
+        viewer.draw_thrust()
+        # viewer.draw_cracks()
+        # viewer.draw_reactions()
+        viewer.draw_shape()
+        viewer.draw_reactions()
 
         if force:
             _Xf = Xforce[str(f * jump_each)]
@@ -99,7 +95,7 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
                 x, y, _ = force.vertex_coordinates(vertex)
                 force.vertex_attribute(vertex, 'x', x - dc[0])
                 force.vertex_attribute(vertex, 'y', y - dc[1])
-            viewer.view_force(force)
+            viewer.draw_force(force)
 
     viewer.app.run()
 
@@ -107,6 +103,16 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
 
 
 def animation_from_section(form, file_Xform):
+    """Make a 3D animated plot with the xz section of the solution.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        Form Diagram in which the animation should be based
+    file_Xform : str
+        Path for the ``.json`` file with the notal position of the form diagram during iterations
+
+    """
 
     with open(file_Xform, mode='r', encoding='utf-8') as f:
         Xform = json.load(f)
@@ -126,7 +132,7 @@ def animation_from_section(form, file_Xform):
             form.vertex_attribute(vertex, 'z', Xi[index][2])
             index += 1
 
-        plotter = Plotter()
+        plotter = TNOPlotter()
         meshartist = plotter.add(form)
         meshartist.draw_edges()
         plotter.show()

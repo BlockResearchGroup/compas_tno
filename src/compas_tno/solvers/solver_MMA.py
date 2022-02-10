@@ -21,11 +21,6 @@ except BaseException:
     pass
 
 
-__all__ = [
-    'run_optimisation_MMA'
-]
-
-
 def run_optimisation_MMA(analysis):
     """ Run convex optimisation problem with MMA.
 

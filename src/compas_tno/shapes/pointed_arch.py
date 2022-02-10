@@ -9,12 +9,6 @@ from compas_tno.shapes import MeshDos
 import math
 
 
-__all__ = ['pointed_arch_shape',
-           'pointed_arch_ub_lb_update',
-           'pointed_arch_dub_dlb'
-           ]
-
-
 def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
     """Function to create meshes to define upper and lower bounds of 2D pointed arch.
 

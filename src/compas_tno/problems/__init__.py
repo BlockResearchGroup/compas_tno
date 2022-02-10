@@ -246,6 +246,7 @@ __all__ = [
 
     'callback_save_json',
     'callback_create_json',
+    'save_geometry_at_iterations',
 
     'initialize_loadpath',
     'initialize_tna',

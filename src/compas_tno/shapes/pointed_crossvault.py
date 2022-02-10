@@ -9,16 +9,45 @@ from compas_tno.shapes import rectangular_topology
 import math
 
 
-__all__ = [
-    'pointed_vault_heightfields_proxy',
-    'pointed_vault_heightfields',
-    'pointed_vault_middle_update',
-    'pointed_vault_ub_lb_update',
-    'pointed_vault_dub_dlb'
-]
-
-
 def pointed_vault_heightfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[20, 20], hc=8.0, he=None, hm=None, tol=10e-6, t=0.0, *args, **kwargs):
+    """Set pointed cross vault heights through a proxy
+
+    Parameters
+    ----------
+    xy_span : list, optional
+        [description], by default [[0.0, 10.0], [0.0, 10.0]]
+    thk : float, optional
+        [description], by default 0.5
+    discretisation : list, optional
+        [description], by default [10, 10]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    he : [float, float, float, float], optional
+        Height of the opening mid-span for each of the quadrants, by default None
+    hm : [float, float, float, float], optional
+        Height of each quadrant center (spadrel), by default None
+    tol : float, optional
+        Tolerance, by default 10e-6
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+
+    Returns
+    -------
+    intradosdata
+        The data of MeshDos for the intrados of the shape
+    extradosdata
+        The data of MeshDos for the extrados of the shape
+    middledata
+        The data of MeshDos for the middle of the shape
+
+    Notes
+    ----------------------
+    Position of the quadrants is as in the schema below:
+
+        Q3
+    Q2      Q1
+        Q4
+    """
     intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, thk=thk, discretisation=discretisation, hc=hc, he=he, hm=hm, tol=tol, t=t)
     return intrados.to_data(), extrados.to_data(), middle.to_data()
 

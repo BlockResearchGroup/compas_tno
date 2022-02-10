@@ -10,11 +10,6 @@ from compas_tno.algorithms import compute_reactions
 from compas_tno.problems import initialise_problem_general
 from compas_tno.problems import adapt_problem_to_fixed_diagram
 
-__all__ = [
-    'run_optimisation_MATLAB',
-    'run_loadpath_from_form_MATLAB'
-]
-
 
 def run_optimisation_MATLAB(analysis):
     """ Run convex optimisation problem with MATLAB after going through the optimisation set up.

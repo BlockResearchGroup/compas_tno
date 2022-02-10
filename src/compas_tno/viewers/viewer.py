@@ -9,10 +9,7 @@ from compas_view2.shapes import Arrow
 from compas_view2.shapes import Text
 
 
-__all__ = ['Viewer']
-
-
-class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
+class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
     """A Class for view 3D thrust networks and shapes.
 
     Parameters
@@ -109,10 +106,10 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
             The objects are updated in place
         """
 
-        self.view_thrust()
-        self.view_cracks()
-        self.view_shape()
-        self.view_reactions()
+        self.draw_thrust()
+        self.draw_cracks()
+        self.draw_shape()
+        self.draw_reactions()
         self.show()
 
     def show(self):
@@ -152,8 +149,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
 
         self.app.view.objects = {}
 
-    def view_thrust(self):
-        """View thrust network according to the settings
+    def draw_thrust(self):
+        """Draw thrust network according to the settings
 
         Returns
         -------
@@ -183,8 +180,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
             if force > self.settings['tol.forces']:
                 self.app.add(line, name=str((u, v)), linewidth=thk, color=_norm(self.settings['color.edges.thrust']))
 
-    def view_cracks(self):
-        """View cracks according to the settings
+    def draw_cracks(self):
+        """Draw cracks according to the settings
 
         Returns
         -------
@@ -215,8 +212,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
                     self.app.add(Point(x, y, z), name="Outside - Extra (%s)" % out, color=_norm(self.settings['color.vertex.outside']), size=self.settings['size.vertex'])
                     out += 1
 
-    def view_shape(self):
-        """View the shape (intrados + extrados) according to the settings
+    def draw_shape(self):
+        """Draw the shape (intrados + extrados) according to the settings
 
         Returns
         -------
@@ -240,8 +237,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
         self.app.add(shape.intrados, name="Intrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.intrados']))
         self.app.add(shape.extrados, name="Extrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.extrados']))
 
-    def view_middle_shape(self):
-        """ View the middle of the shape according to the settings
+    def draw_middle_shape(self):
+        """ Draw the middle of the shape according to the settings
 
         Returns
         -------
@@ -257,8 +254,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
         mesh_middle = Mesh.from_vertices_and_faces(vertices_middle, faces_middle)
         self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=self.settings['opacity.shapes'], color=_norm(self.settings['color.mesh.middle']))
 
-    def view_shape_normals(self):
-        """ View the shape normals at intrados and extrados surfaces
+    def draw_shape_normals(self):
+        """ Draw the shape normals at intrados and extrados surfaces
 
         Returns
         -------
@@ -282,8 +279,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
                 line = Line(pt0, pt1)
                 self.app.add(line, name='normal-{}'.format(key))
 
-    def view_mesh(self, mesh=None, show_edges=True, opacity=0.5):
-        """Add a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
+    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5):
+        """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
 
         Parameters
         ----------
@@ -308,8 +305,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
 
         self.app.add(mesh, show_edges=show_edges, opacity=opacity)
 
-    def view_reactions(self):
-        """View the reaction vectors on the supports according to the settings
+    def draw_reactions(self):
+        """Draw the reaction vectors on the supports according to the settings
 
         Returns
         -------
@@ -328,8 +325,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
                 arrow = Arrow([x, y, z], [-rx, -ry, -rz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
                 self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
-    def view_loads(self):
-        """View the externally applied loadss as vectors on the applied nodes
+    def draw_loads(self):
+        """Draw the externally applied loadss as vectors on the applied nodes
 
         Returns
         -------
@@ -348,8 +345,8 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
                 arrow = Arrow([x - px, y - py, z - pz], [px, py, pz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
                 self.app.add(arrow, color=_norm(self.settings['color.edges.reactions']))
 
-    def view_reaction_label(self):
-        """View the reaction labels (force magnitude) on the supports according to the settings
+    def draw_reaction_label(self):
+        """Draw the reaction labels (force magnitude) on the supports according to the settings
 
         Returns
         -------
@@ -370,31 +367,7 @@ class Viewer(object):  # CHHANGE view_xxx functions to draw_xxx functions
                 text = Text(reaction, pt, height=self.settings['size.reactionlabel'])
                 self.app.add(text)
 
-    def view_dome_shape(self, radius=5.0, thickness=0.50, center=[5.0, 5.0, 0.0], spr_angle=0.0):
-        """ 3D display of dome with high discretisation
-
-        Parameters
-        ----------
-        radius : float, optional
-            The radius of the dome, by default 5.0
-        thickness : float, optional
-            The thickness of the dome, by default 0.50
-        center : list, optional
-            List with the coordinated of the dome, by default [5.0, 5.0, 0.0]
-        spr_angle : float, optional
-            The springing angle of the dome, by default 0
-
-        Returns
-        -------
-        [type]
-            [description]
-        """
-
-        # WIP
-
-        return
-
-    def view_force(self, force=None, show_edges=True, opacity=0.5):
+    def draw_force(self, force=None, show_edges=True, opacity=0.5):
         """Add the ForceDiagram to the viewer, if no force is given the force diagram is recomputed in place.
 
         Parameters

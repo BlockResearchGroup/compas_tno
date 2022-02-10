@@ -21,24 +21,23 @@ __all__ = [
 
 
 def apply_radial_symmetry(form, center=[5.0, 5.0, 0.0], correct_loads=True):
-    """ Apply a radial symmetry based on a center points. Applicable for dome circulat patterns.
+    """Apply a radial symmetry based on a center points. Applicable for dome circulat patterns.
 
     Parameters
     ----------
     form : FormDiagram
-        The FormDiagram.
-    center : list
-        The coordinates of the center of the pattern.
-    correct_loads : bool
-        Whether or not the loads should be corrected in the nodes for perfect symmetry
-        The default value is ``True``.
+        [description]
+    center : [float, float, float], optional
+        The coordinates of the center of the pattern, by default [5.0, 5.0, 0.0]
+    correct_loads : bool, optional
+        Whether or not the loads should be corrected in the nodes for perfect symmetry, by default True
 
     Returns
     -------
     None
         The FormDiagram is modified in place.
+    """"
 
-    """
 
     form.edges_attribute('sym_key', None)
     form.vertices_attribute('sym_key', None)
@@ -105,11 +104,10 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
     ----------
     form : FormDiagram
         The FormDiagram.
-    list_axis_symmetry : list
-        The list of the axis of symmetry.
-    correct_loads : bool
-        Whether or not the loads should be corrected in the nodes for perfect symmetry
-        The default value is ``True``.
+    list_axis_symmetry : list, optional
+        The list of the axis of symmetry, by default []
+    correct_loads : bool, optional
+        Whether or not the loads should be corrected in the nodes for perfect symmetry, by default True
 
     Returns
     -------
@@ -265,22 +263,19 @@ def find_sym_axis_in_rect_patterns(data_form):
 
 
 def build_symmetry_matrix(form, printout=False):
-    """
-    Build a symmetry matrix such as Asym * q = 0, with Asym shape (m - k; m)
+    """ Build a symmetry matrix such as Asym * q = 0, with Asym shape (m - k; m)
 
     Parameters
     ----------
     form : FormDiagram
         The FormDiagram.
-    printout : bool
-        Whether or not display messages are printed.
-        The default value is ``False``.
+    printout : bool, optional
+        Whether or not display messages are printed, by default True
 
     Returns
     -------
     Asym: array (m - k x m)
         The symmetry matrix.
-
     """
 
     m = len(list(form.edges_where({'_is_edge': True})))
@@ -310,16 +305,14 @@ def build_symmetry_matrix(form, printout=False):
 
 
 def build_symmetry_transformation(form, printout=False):
-    """
-    Build a symmetry matrix Esym (m, k) such as q = Esym * qsym.
+    """Build a symmetry matrix Esym (m, k) such as q = Esym * qsym.
 
     Parameters
     ----------
     form : FormDiagram
         The FormDiagram.
-    printout : bool
-        Whether or not display messages are printed.
-        The default value is ``False``.
+    printout : bool, optional
+        Whether or not display messages are printed, by default True
 
     Returns
     -------
@@ -350,22 +343,19 @@ def build_symmetry_transformation(form, printout=False):
 
 
 def build_vertex_symmetry_transformation(form, printout=False):
-    """
-    Build a symmetry matrix Evsym (n, k) such as z = Evsym * z_.
+    """Build a symmetry matrix Evsym (n, k) such as z = Evsym * z_.
 
     Parameters
     ----------
     form : FormDiagram
         The FormDiagram.
-    printout : bool
-        Whether or not display messages are printed.
-        The default value is ``False``.
+    printout : bool, optional
+        Whether or not display messages are printed, by default True
 
     Returns
     -------
     Evsym: array (n x k)
         The symmetry matrix.
-
     """
 
     n = form.number_of_edges()
@@ -390,6 +380,20 @@ def build_vertex_symmetry_transformation(form, printout=False):
 
 
 def build_symmetry_matrix_supports(form, printout=False):
+    """Build a symmetry matrix to the supports.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The FormDiagram.
+    printout : bool, optional
+        Whether or not display messages are printed, by default True
+
+    Returns
+    -------
+    Evsym: array (n x k)
+        The symmetry matrix.
+    """
 
     n = form.number_of_supports()
     k_unique = form.number_of_sym_supports(printout=printout)
