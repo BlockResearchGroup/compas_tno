@@ -24,31 +24,35 @@ def pointed_vault_heightfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5
 
 
 def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None,  t=0.0, tol=0.00):
-    """ Set pointed-vault heights.
+    """Set pointed cross vault heights
 
     Parameters
     ----------
-    xy_span : list
-        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-    hc: float
-        Height of the central part of the pointed vault.
-    he: list (optional)
-        Height of the opening mid-span for each of the quadrants (see Notes).
-    hm: list (optional)
-        Height of each quadrant mid-span (see Notes).
-    ub_lb : bool (optional)
-        If True, the thickness will apply and the limits will be stored as attributes 'ub' and 'lb' on the form-diagram
+    xy_span : list, optional
+        [description], by default [[0.0, 10.0], [0.0, 10.0]]
     thk : float, optional
-        Thickness of the vault - perpendicular to the middle surface
+        [description], by default 0.5
+    discretisation : list, optional
+        [description], by default [10, 10]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    he : [float, float, float, float], optional
+        Height of the opening mid-span for each of the quadrants, by default None
+    hm : [float, float, float, float], optional
+        Height of each quadrant center (spadrel), by default None
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
     tol : float, optional
-        Approximates the equations avoiding negative square-roots.
-    set_heights: bool
-        If True, the nodes will have the heights 'z' updated to match the pointed arch shape.
+        Tolerance, by default 10e-6
 
     Returns
     -------
-    obj
-        FormDiagram.
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
 
     Notes
     ----------------------
@@ -57,7 +61,6 @@ def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, disc
         Q3
     Q2      Q1
         Q4
-
     """
 
     if isinstance(discretisation, int):
@@ -88,7 +91,33 @@ def pointed_vault_heightfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, disc
     return intrados, extrados, middle
 
 
-def pointed_vault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8.0, he=None, hm=None, tol=1e-6):
+def pointed_vault_middle_update(x, y, thk, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8.0, he=None, hm=None, tol=1e-6):
+    """Update middle of a pointed vault based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    he : [float, float, float, float], optional
+        Height of the opening mid-span for each of the quadrants, by default None
+    hm : [float, float, float, float], optional
+        Height of each quadrant center (spadrel), by default None
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    middle : array
+        Values of the middle surface in the points
+    """
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -98,15 +127,15 @@ def pointed_vault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=
     ly = y1 - y0
 
     if he and hm is None:
-        h1, k1, r1 = circle_3points_xy([x0, he[1]], [(x1+x0)/2, hc], [x1, he[0]])
+        h1, k1, r1 = _circle_3points_xy([x0, he[1]], [(x1+x0)/2, hc], [x1, he[0]])
         h2, k2, r2 = h1, k1, r1
-        h3, k3, r3 = circle_3points_xy([y0, he[3]], [(y1+y0)/2, hc], [y1, he[2]])
+        h3, k3, r3 = _circle_3points_xy([y0, he[3]], [(y1+y0)/2, hc], [y1, he[2]])
         h4, k4, r4 = h3, k3, r3
     elif hm and he:
-        h1, k1, r1 = circle_3points_xy([(x1+x0)/2, hc], [3*(x1+x0)/4, hm[0]], [x1, he[0]])
-        h2, k2, r2 = circle_3points_xy([(x1+x0)/2, hc], [1*(x1+x0)/4, hm[1]], [x0, he[1]])
-        h3, k3, r3 = circle_3points_xy([(y1+y0)/2, hc], [3*(y1+y0)/4, hm[2]], [y1, he[2]])
-        h4, k4, r4 = circle_3points_xy([(y1+y0)/2, hc], [1*(y1+y0)/4, hm[3]], [y0, he[3]])
+        h1, k1, r1 = _circle_3points_xy([(x1+x0)/2, hc], [3*(x1+x0)/4, hm[0]], [x1, he[0]])
+        h2, k2, r2 = _circle_3points_xy([(x1+x0)/2, hc], [1*(x1+x0)/4, hm[1]], [x0, he[1]])
+        h3, k3, r3 = _circle_3points_xy([(y1+y0)/2, hc], [3*(y1+y0)/4, hm[2]], [y1, he[2]])
+        h4, k4, r4 = _circle_3points_xy([(y1+y0)/2, hc], [1*(y1+y0)/4, hm[3]], [y0, he[3]])
 
     middle = zeros((len(x), 1))
 
@@ -168,26 +197,35 @@ def pointed_vault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=
 
 
 def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8.0, he=None, hm=None, tol=1e-6):
-    """[summary]
+    """Update upper and lower bounds of a pointed vault based in the parameters
 
-    Arguments:
-        x {[type]} -- [description]
-        y {[type]} -- [description]
-        thk {[type]} -- [description]
-        t {[type]} -- [description]
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    he : [float, float, float, float], optional
+        Height of the opening mid-span for each of the quadrants, by default None
+    hm : [float, float, float, float], optional
+        Height of each quadrant center (spadrel), by default None
+    tol : float, optional
+        Tolerance, by default 10e-6
 
-    Keyword Arguments:
-        xy_span {list} -- [description] (default: {[[0.0, 10.0], [0.0, 10.0]]})
-        hc {float} -- [description] (default: {8.0})
-        he {[type]} -- [description] (default: {None})
-        hm {[type]} -- [description] (default: {None})
-        tol {[type]} -- [description] (default: {1e-6})
-
-    Raises:
-        NotImplementedError: [description]
-
-    Returns:
-        [type] -- [description]
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
     """
 
     y1 = xy_span[1][1]
@@ -235,31 +273,31 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
             hm_lb[i] -= thk/2
 
     if he and hm is None:
-        # h1_ub, k1_ub, r1_ub = circle_3points_xy([x0, he_ub[1]], [(x1+x0)/2, hc_ub], [x1, he_ub[0]])
+        # h1_ub, k1_ub, r1_ub = _circle_3points_xy([x0, he_ub[1]], [(x1+x0)/2, hc_ub], [x1, he_ub[0]])
         # h2_ub, k2_ub, r2_ub = h1_ub, k1_ub, r1_ub
-        # h3_ub, k3_ub, r3_ub = circle_3points_xy([y0, he_ub[3]], [(y1+y0)/2, hc_ub], [y1, he_ub[2]])
+        # h3_ub, k3_ub, r3_ub = _circle_3points_xy([y0, he_ub[3]], [(y1+y0)/2, hc_ub], [y1, he_ub[2]])
         # h4_ub, k4_ub, r4_ub = h3_ub, k3_ub, r3_ub
 
-        # h1_lb, k1_lb, r1_lb = circle_3points_xy([x0, he_lb[1]], [(x1+x0)/2, hc_lb], [x1, he_lb[0]])
+        # h1_lb, k1_lb, r1_lb = _circle_3points_xy([x0, he_lb[1]], [(x1+x0)/2, hc_lb], [x1, he_lb[0]])
         # h2_lb, k2_lb, r2_lb = h1_lb, k1_lb, r1_lb
-        # h3_lb, k3_lb, r3_lb = circle_3points_xy([y0, he_lb[3]], [(y1+y0)/2, hc_lb], [y1, he_lb[2]])
+        # h3_lb, k3_lb, r3_lb = _circle_3points_xy([y0, he_lb[3]], [(y1+y0)/2, hc_lb], [y1, he_lb[2]])
         # h4_lb, k4_lb, r4_lb = h3_lb, k3_lb, r3_lb
 
-        h1, k1, r1 = circle_3points_xy([x0, he[1]], [(x1+x0)/2, hc], [x1, he[0]])
+        h1, k1, r1 = _circle_3points_xy([x0, he[1]], [(x1+x0)/2, hc], [x1, he[0]])
         h2, k2, r2 = h1, k1, r1
-        h3, k3, r3 = circle_3points_xy([y0, he[3]], [(y1+y0)/2, hc], [y1, he[2]])
+        h3, k3, r3 = _circle_3points_xy([y0, he[3]], [(y1+y0)/2, hc], [y1, he[2]])
         h4, k4, r4 = h3, k3, r3
 
     # elif hm and he:
-    #     h1_ub, k1_ub, r1_ub = circle_3points_xy([(x1+x0)/2, hc_ub], [3*(x1+x0)/4, hm_ub[0]], [x1, he_ub[0]])
-    #     h2_ub, k2_ub, r2_ub = circle_3points_xy([(x1+x0)/2, hc_ub], [1*(x1+x0)/4, hm_ub[1]], [x0, he_ub[1]])
-    #     h3_ub, k3_ub, r3_ub = circle_3points_xy([(y1+y0)/2, hc_ub], [3*(y1+y0)/4, hm_ub[2]], [y1, he_ub[2]])
-    #     h4_ub, k4_ub, r4_ub = circle_3points_xy([(y1+y0)/2, hc_ub], [1*(y1+y0)/4, hm_ub[3]], [y0, he_ub[3]])
+    #     h1_ub, k1_ub, r1_ub = _circle_3points_xy([(x1+x0)/2, hc_ub], [3*(x1+x0)/4, hm_ub[0]], [x1, he_ub[0]])
+    #     h2_ub, k2_ub, r2_ub = _circle_3points_xy([(x1+x0)/2, hc_ub], [1*(x1+x0)/4, hm_ub[1]], [x0, he_ub[1]])
+    #     h3_ub, k3_ub, r3_ub = _circle_3points_xy([(y1+y0)/2, hc_ub], [3*(y1+y0)/4, hm_ub[2]], [y1, he_ub[2]])
+    #     h4_ub, k4_ub, r4_ub = _circle_3points_xy([(y1+y0)/2, hc_ub], [1*(y1+y0)/4, hm_ub[3]], [y0, he_ub[3]])
 
-    #     h1_lb, k1_lb, r1_lb = circle_3points_xy([(x1+x0)/2, hc_lb], [3*(x1+x0)/4, hm_lb[0]], [x1, he_lb[0]])
-    #     h2_lb, k2_lb, r2_lb = circle_3points_xy([(x1+x0)/2, hc_lb], [1*(x1+x0)/4, hm_lb[1]], [x0, he_lb[1]])
-    #     h3_lb, k3_lb, r3_lb = circle_3points_xy([(y1+y0)/2, hc_lb], [3*(y1+y0)/4, hm_lb[2]], [y1, he_lb[2]])
-    #     h4_lb, k4_lb, r4_lb = circle_3points_xy([(y1+y0)/2, hc_lb], [1*(y1+y0)/4, hm_lb[3]], [y0, he_lb[3]])
+    #     h1_lb, k1_lb, r1_lb = _circle_3points_xy([(x1+x0)/2, hc_lb], [3*(x1+x0)/4, hm_lb[0]], [x1, he_lb[0]])
+    #     h2_lb, k2_lb, r2_lb = _circle_3points_xy([(x1+x0)/2, hc_lb], [1*(x1+x0)/4, hm_lb[1]], [x0, he_lb[1]])
+    #     h3_lb, k3_lb, r3_lb = _circle_3points_xy([(y1+y0)/2, hc_lb], [3*(y1+y0)/4, hm_lb[2]], [y1, he_lb[2]])
+    #     h4_lb, k4_lb, r4_lb = _circle_3points_xy([(y1+y0)/2, hc_lb], [1*(y1+y0)/4, hm_lb[3]], [y0, he_lb[3]])
 
     ub = ones((len(x), 1))
     lb = ones((len(x), 1)) * - t
@@ -368,6 +406,36 @@ def pointed_vault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]],
 
 
 def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8.0, he=None, hm=None, tol=1e-6):
+    """Computes the sensitivities of upper and lower bounds in the x, y coordinates and thickness specified.
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    he : [float, float, float, float], optional
+        Height of the opening mid-span for each of the quadrants, by default None
+    hm : [float, float, float, float], optional
+        Height of each quadrant center (spadrel), by default None
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    dub : array
+        Values of the sensitivities for the upper bound in the points
+    dlb : array
+        Values of the sensitivities for the lower bound in the points
+    """
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -414,31 +482,31 @@ def pointed_vault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=8
             hm_lb[i] -= thk/2
 
     if he and hm is None:
-        # h1_ub, k1_ub, r1_ub = circle_3points_xy([x0, he_ub[1]], [(x1+x0)/2, hc_ub], [x1, he_ub[0]])
+        # h1_ub, k1_ub, r1_ub = _circle_3points_xy([x0, he_ub[1]], [(x1+x0)/2, hc_ub], [x1, he_ub[0]])
         # h2_ub, k2_ub, r2_ub = h1_ub, k1_ub, r1_ub
-        # h3_ub, k3_ub, r3_ub = circle_3points_xy([y0, he_ub[3]], [(y1+y0)/2, hc_ub], [y1, he_ub[2]])
+        # h3_ub, k3_ub, r3_ub = _circle_3points_xy([y0, he_ub[3]], [(y1+y0)/2, hc_ub], [y1, he_ub[2]])
         # h4_ub, k4_ub, r4_ub = h3_ub, k3_ub, r3_ub
 
-        # h1_lb, k1_lb, r1_lb = circle_3points_xy([x0, he_lb[1]], [(x1+x0)/2, hc_lb], [x1, he_lb[0]])
+        # h1_lb, k1_lb, r1_lb = _circle_3points_xy([x0, he_lb[1]], [(x1+x0)/2, hc_lb], [x1, he_lb[0]])
         # h2_lb, k2_lb, r2_lb = h1_lb, k1_lb, r1_lb
-        # h3_lb, k3_lb, r3_lb = circle_3points_xy([y0, he_lb[3]], [(y1+y0)/2, hc_lb], [y1, he_lb[2]])
+        # h3_lb, k3_lb, r3_lb = _circle_3points_xy([y0, he_lb[3]], [(y1+y0)/2, hc_lb], [y1, he_lb[2]])
         # h4_lb, k4_lb, r4_lb = h3_lb, k3_lb, r3_lb
 
-        h1, k1, r1 = circle_3points_xy([x0, he[1]], [(x1+x0)/2, hc], [x1, he[0]])
+        h1, k1, r1 = _circle_3points_xy([x0, he[1]], [(x1+x0)/2, hc], [x1, he[0]])
         h2, k2, r2 = h1, k1, r1
-        h3, k3, r3 = circle_3points_xy([y0, he[3]], [(y1+y0)/2, hc], [y1, he[2]])
+        h3, k3, r3 = _circle_3points_xy([y0, he[3]], [(y1+y0)/2, hc], [y1, he[2]])
         h4, k4, r4 = h3, k3, r3
 
     # elif hm and he:
-    #     h1_ub, k1_ub, r1_ub = circle_3points_xy([(x1+x0)/2, hc_ub], [3*(x1+x0)/4, hm_ub[0]], [x1, he_ub[0]])
-    #     h2_ub, k2_ub, r2_ub = circle_3points_xy([(x1+x0)/2, hc_ub], [1*(x1+x0)/4, hm_ub[1]], [x0, he_ub[1]])
-    #     h3_ub, k3_ub, r3_ub = circle_3points_xy([(y1+y0)/2, hc_ub], [3*(y1+y0)/4, hm_ub[2]], [y1, he_ub[2]])
-    #     h4_ub, k4_ub, r4_ub = circle_3points_xy([(y1+y0)/2, hc_ub], [1*(y1+y0)/4, hm_ub[3]], [y0, he_ub[3]])
+    #     h1_ub, k1_ub, r1_ub = _circle_3points_xy([(x1+x0)/2, hc_ub], [3*(x1+x0)/4, hm_ub[0]], [x1, he_ub[0]])
+    #     h2_ub, k2_ub, r2_ub = _circle_3points_xy([(x1+x0)/2, hc_ub], [1*(x1+x0)/4, hm_ub[1]], [x0, he_ub[1]])
+    #     h3_ub, k3_ub, r3_ub = _circle_3points_xy([(y1+y0)/2, hc_ub], [3*(y1+y0)/4, hm_ub[2]], [y1, he_ub[2]])
+    #     h4_ub, k4_ub, r4_ub = _circle_3points_xy([(y1+y0)/2, hc_ub], [1*(y1+y0)/4, hm_ub[3]], [y0, he_ub[3]])
 
-    #     h1_lb, k1_lb, r1_lb = circle_3points_xy([(x1+x0)/2, hc_lb], [3*(x1+x0)/4, hm_lb[0]], [x1, he_lb[0]])
-    #     h2_lb, k2_lb, r2_lb = circle_3points_xy([(x1+x0)/2, hc_lb], [1*(x1+x0)/4, hm_lb[1]], [x0, he_lb[1]])
-    #     h3_lb, k3_lb, r3_lb = circle_3points_xy([(y1+y0)/2, hc_lb], [3*(y1+y0)/4, hm_lb[2]], [y1, he_lb[2]])
-    #     h4_lb, k4_lb, r4_lb = circle_3points_xy([(y1+y0)/2, hc_lb], [1*(y1+y0)/4, hm_lb[3]], [y0, he_lb[3]])
+    #     h1_lb, k1_lb, r1_lb = _circle_3points_xy([(x1+x0)/2, hc_lb], [3*(x1+x0)/4, hm_lb[0]], [x1, he_lb[0]])
+    #     h2_lb, k2_lb, r2_lb = _circle_3points_xy([(x1+x0)/2, hc_lb], [1*(x1+x0)/4, hm_lb[1]], [x0, he_lb[1]])
+    #     h3_lb, k3_lb, r3_lb = _circle_3points_xy([(y1+y0)/2, hc_lb], [3*(y1+y0)/4, hm_lb[2]], [y1, he_lb[2]])
+    #     h4_lb, k4_lb, r4_lb = _circle_3points_xy([(y1+y0)/2, hc_lb], [1*(y1+y0)/4, hm_lb[3]], [y0, he_lb[3]])
 
     ub = ones((len(x), 1))
     lb = ones((len(x), 1)) * - t
@@ -564,7 +632,7 @@ def _find_r_given_h_l(h, length):
     return r
 
 
-def circle_3points_xy(p1, p2, p3):
+def _circle_3points_xy(p1, p2, p3):
 
     x1 = p1[0]
     z1 = p1[1]

@@ -17,30 +17,35 @@ __all__ = [
 
 
 def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, center=None, tol=10e-6, t=0.0, discretisation=[100, 100]):
-    """ Set domical vault upper and lower meshes.
+    """Set domical vault upper and lower meshes
 
     Parameters
     ----------
-    xy_span : list
-        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
+    xy_span : list, optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
     thk : float, optional
-        Thickness of the vault - perpendicular to the middle surface.
-    r : float, optional
-        Radius of the middle surface of the vault. If None, it will be calculated as half diagonal
-    center: list
-        List with coordinates (x,y) of the center of the sphere [xc,yc]
+        [description], by default 0.5
+    thk : float
+        Thickness of the vault
+    center : [float, float], optional
+        Center of the dome in which the geometry of the vault is based, by default None in which the center point of the pattern is taken
     tol : float, optional
-        Approximates the equations avoiding negative square-roots.
-    discretisation: list
-        Density of the grid that approximates the surfaces in x- and y- directions.
-    t: float
-        Negative lower-bound for the reactions position.
+        Tolerance, by default 10e-6
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+    discretisation : list|int, optional
+        Level of discretisation of the shape, by default [100, 100]
+
     Returns
     -------
-    obj
-        interp2d.
-
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
     """
+
 
     if isinstance(discretisation, int):
         discretisation = [discretisation, discretisation]
@@ -141,27 +146,29 @@ def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5
 
     Parameters
     ----------
-    xy_span : list
-        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-    hc: float
-        Height of the central part of the pointed vault.
-    he: list (optional)
-        Height of the opening mid-span for each of the quadrants (see Notes).
-    hm: list (optional)
-        Height of each quadrant mid-span (see Notes).
-    ub_lb : bool (optional)
-        If True, the thickness will apply and the limits will be stored as attributes 'ub' and 'lb' on the form-diagram
+    xy_span : list, optional
+        [description], by default [[0.0, 10.0], [0.0, 10.0]]
     thk : float, optional
-        Thickness of the vault - perpendicular to the middle surface
+        [description], by default 0.5
+    discretisation : list, optional
+        [description], by default [10, 10]
+    hc : float, optional
+        Height in the middle point of the vault, by default 5.0
     tol : float, optional
-        Approximates the equations avoiding negative square-roots.
-    set_heights: bool
-        If True, the nodes will have the heights 'z' updated to match the pointed arch shape.
+        Tolerance, by default 10e-6
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+    discretisation : list, optional
+        [description], by default [100, 100]
 
     Returns
     -------
-    obj
-        FormDiagram.
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
 
     Notes
     ----------------------
@@ -201,14 +208,62 @@ def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5
     return intrados, extrados, middle
 
 
-def parabolic_shell_middle_update(xi, yi, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
+def parabolic_shell_middle_update(x, y, thk, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
+    """Update middle of a parabolic vault based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    zt : array
+        Values of the middle surface in the points
+    """
     print('WIP')
     zt = 0
     return zt
 
 
-def parabolic_shell_ub_lb_update(xi, yi, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
+def parabolic_shell_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], hc=5.0, tol=10e-6):
+    """Update upper and lower bounds of a parabolic vault based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    hc : float, optional
+        Height in the middle point of the vault, by default 8.0
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
+    """
     print('WIP')
-    zub = 0
-    zlb = 0
-    return zub, zlb
+    ub = 0
+    lb = 0
+    return ub, lb
