@@ -123,16 +123,16 @@ data = {
     'radius': 5.0,
 }
 
-# data = {
-#     'type': 'arch',
-#     'H': 0.50,
-#     'L': 2.0,
-#     'thk': 0.10,
-#     'discretisation': 13,
-#     'b': 0.5,
-#     't': 0.4,
-#     'x0': 0.0,
-# }
+data = {
+    'type': 'arch',
+    'H': 1.0,
+    'L': 2.0,
+    'thk': 0.10,
+    'discretisation': 13,
+    'b': 0.5,
+    't': 0.0,
+    'x0': 0.0,
+}
 
 vault = Shape.from_library(data)
 
@@ -140,24 +140,22 @@ viewer = Viewer(shape=vault)
 viewer.view_shape()
 viewer.show()
 
-# print(vault)
-# print(vault.data)
-print(len(vault.data))
+# print(len(vault.data))
 
-for key in vault.data:
-    print(key)
+# for key in vault.data:
+#     print(key)
 
-x = vault.to_data()
+# x = vault.to_data()
 
-# print(x)
-print(len(x))
+# # print(x)
+# print(len(x))
 
-for key in x:
-    print(key)
+# for key in x:
+#     print(key)
 
-vault2 = Shape.from_data(x)
+# vault2 = Shape.from_data(x)
 
-print()
+# print()
 
 # print('Evaluate Height of some points:')
 

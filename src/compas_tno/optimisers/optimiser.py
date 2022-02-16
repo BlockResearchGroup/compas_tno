@@ -62,6 +62,7 @@ class Optimiser(Datastructure):
             'variables': ['q', 'zb'],
             'find_inds': True,
             'printout': False,
+            'plot': False,
             'starting_point': 'current',
             'solver-convex': 'CVX',
             'support_displacement': None,

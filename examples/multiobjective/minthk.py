@@ -12,7 +12,7 @@ k = 1.0
 discretisation = [20, 16]
 type_formdiagram = 'radial_fd'
 type_structure = 'dome'
-discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
+discretisation_shape = [4 * discretisation[0], 4 * discretisation[1]]
 
 # discretisation = 10
 # type_formdiagram = 'cross_fd'

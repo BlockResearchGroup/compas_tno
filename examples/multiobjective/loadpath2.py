@@ -22,10 +22,10 @@ discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
 save = True
 solutions = {}
 
-obj = 't'
+obj = 'min'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
-variables = ['q', 'zb', 't']
+variables = ['q', 'zb']
 features = ['fixed']
 axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
@@ -91,8 +91,7 @@ optimiser.settings['gradient'] = True
 optimiser.settings['jacobian'] = True
 optimiser.settings['printout'] = True
 optimiser.settings['jacobian'] = True
-# optimiser.settings['find_inds'] = True
-optimiser.settings['derivative_test'] = True
+optimiser.settings['derivative_test'] = False
 optimiser.settings['starting_point'] = starting_point
 optimiser.settings['save_iterations'] = True
 
@@ -118,12 +117,8 @@ print('Ratio Thrust/Weight:', thrust/weight)
 
 print('Optimiser exitflag:', optimiser.exitflag)
 
-view = Viewer(form)
+view = Viewer(form, vault)
 view.show_solution()
-
-import compas_tno
-location = compas_tno.get('form.json')
-form.to_json(location)
 
 # # ---- MAKE THE VIDEO ----
 

@@ -1,26 +1,23 @@
 from compas_tno.diagrams import FormDiagram
-# from compas_tno.plotters import plot_form
-
-from compas_tno.plotters2 import TNOPlotter
+from compas_tno.plotters import TNOPlotter
 
 # ------------------------------------------------
 # --------- CREATING ARCH FORM DIAGRAM -----------
 # ------------------------------------------------
 
-# data = {
-#     'type': 'arch',
-#     'H': 1.0,
-#     'L': 2.0,
-#     'total_nodes': 11,
-#     'x0': 0.0,
-# }
+data = {
+    'type': 'arch',
+    'H': 1.0,
+    'L': 2.0,
+    'total_nodes': 11,
+    'x0': 0.0,
+}
 
-# form = FormDiagram.from_library(data)
-# print(form)
-# form.overview_forces()
-# plot_form(form, show_q=False).show()
-
-# print(form.vertices_attribute('x'))
+form = FormDiagram.from_library(data)
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING ORTHO FORM DIAGRAM ----------
@@ -34,12 +31,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-# print(form)
-# form.overview_forces()
-# plot_form(form, show_q=False).show()
-
 plotter = TNOPlotter(form)
-plotter.show_solution()
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING CROSS FORM DIAGRAM ----------
@@ -53,9 +48,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING FAN FORM DIAGRAM ------------
@@ -69,9 +65,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # -----------------------------------------------------------
 # --------- CREATING CROSS DIAGONAL FORM DIAGRAM ------------
@@ -85,8 +82,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING RADIAL FORM DIAGRAM ---------
@@ -100,10 +99,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
-
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --- CREATING RADIAL FORM DIAGRAM W DIAGONALS ---
@@ -120,9 +119,11 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
 # ------------------------------------------------
 # --------- CREATING RADIAL SPACED DIAGRAM ---------
 # ------------------------------------------------
@@ -139,10 +140,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
-
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING SPIRAL FORM DIAGRAM ---------
@@ -158,9 +159,10 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # -----------------------------------------------------------
 # --------- CREATING CROSS W DIAGONAL FORM DIAGRAM ------------
@@ -174,10 +176,7 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-plot_form(form, show_q=False).show()
-
-form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()

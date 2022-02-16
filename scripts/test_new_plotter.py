@@ -1,7 +1,7 @@
 
 from compas_plotters.artists import segmentartist
 from compas_tno.diagrams import FormDiagram
-from compas_tno.plotters2 import TNOPlotter
+from compas_tno.plotters import TNOPlotter
 import compas_tno
 
 from compas_plotters import Plotter

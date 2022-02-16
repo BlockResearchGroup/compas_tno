@@ -157,7 +157,7 @@ for c in [0.1]:  # set the distance that the nodes can move
                 dXb = array(vector_supports)
                 print(dXb)
 
-                from compas_tno.plotters2 import TNOPlotter
+                from compas_tno.plotters import TNOPlotter
 
                 plotter = TNOPlotter(form)
                 plotter.draw_mesh()

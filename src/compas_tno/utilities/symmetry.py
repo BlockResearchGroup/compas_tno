@@ -36,8 +36,7 @@ def apply_radial_symmetry(form, center=[5.0, 5.0, 0.0], correct_loads=True):
     -------
     None
         The FormDiagram is modified in place.
-    """"
-
+    """
 
     form.edges_attribute('sym_key', None)
     form.vertices_attribute('sym_key', None)

@@ -27,9 +27,9 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
     # Add option for starting from Hi and Li for a given thk.
 
     radius = H / 2 + (L**2 / (8 * H))
-    print('radius =', radius)
+    # print('radius =', radius)
     spr = math.atan2((L/2), (radius - H))
-    print('springing angle =', math.degrees(spr))
+    # print('springing angle =', math.degrees(spr))
     tot_angle = 2*spr
     angle_init = (math.pi - tot_angle)/2
     an = tot_angle / (total_nodes - 1)

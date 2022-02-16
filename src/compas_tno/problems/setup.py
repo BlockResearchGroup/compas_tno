@@ -92,6 +92,7 @@ def set_up_general_optimisation(analysis):
     save_iterations = optimiser.settings.get('save_iterations', False)
     pattern_center = form.parameters.get('center', None)
     solver_convex = form.parameters.get('solver-convex', None)
+    autodiff = form.parameters.get('autodiff', False)
 
     if shape:
         thk = shape.datashape['thk']
@@ -219,6 +220,11 @@ def set_up_general_optimisation(analysis):
     else:
         print('Please, provide a valid objective for the optimisation')
         raise NotImplementedError
+
+    # WIP AUTODIFF
+
+    if autodiff:
+        fgrad = jax_create_gradient(objective)
 
     # Select Inequality Constraints and Jacobian
 

@@ -28,38 +28,50 @@ x = array(data['x'])
 y = array(data['y'])
 m = data['m']
 
-# print(qmin)  # -100000
-# print(qmax)  # 1e-8
+import scipy
 
-q = cp.Variable(m)
-scale = 100.0
+factorization = scipy.linalg.lu(E)
+print(factorization)
+P, L, U = factorization
 
-# fobj = matrix_frac(pz[free], Cit@cp.diag(q)@Ci) + x.T@C.T@diag(q)@Cb@x[fixed] + y.T@C.T@diag(q)@Cb@y[fixed]
-fobj = matrix_frac(1/scale*pz[free], - scale*Cit@cp.diag(q)@Ci) - scale*x.T@C.T@diag(q)@Cb@x[fixed] - scale*y.T@C.T@diag(q)@Cb@y[fixed]
-objective = Minimize(fobj)
+print('E:', E.shape)
+print('P:', E.shape)
+print('L:', E.shape)
+print('U:', E.shape)
+# print('ind:', len(ind))
 
-horz = E@q == 0
-# pos = q >= zeros(m)
-# maxq = q <= -1/100 * qmin.flatten()
-# pos = q >= 2000.0
-# maxq = q <= 0
-pos = q >= qmin.flatten()
-maxq = q <= qmax.flatten()
 
-constraints = [horz, pos, maxq]
+# # print(qmin)  # -100000
+# # print(qmax)  # 1e-8
 
-prob = Problem(objective, constraints)
-prob.solve(verbose=True, solver='MOSEK')
+# q = cp.Variable(m)
+# scale = 1.0
 
-q = q.value
+# # fobj = matrix_frac(pz[free], Cit@cp.diag(q)@Ci) + x.T@C.T@diag(q)@Cb@x[fixed] + y.T@C.T@diag(q)@Cb@y[fixed]
+# fobj = matrix_frac(pz[free], - scale*Cit@cp.diag(q)@Ci) - scale*x.T@C.T@diag(q)@Cb@x[fixed] - scale*y.T@C.T@diag(q)@Cb@y[fixed]
+# objective = Minimize(fobj)
 
-print('max / min pz:', max(pz[free]), min(pz[free]))
-print('max / min q:', max(q), min(q))
-print('max / min qmin:', max(qmin), min(qmin))
-print('max / min qmax:', max(qmax), min(qmax))
+# horz = E@q == 0
+# # pos = q >= zeros(m)
+# # maxq = q <= -1/100 * qmin.flatten()
+# # pos = q >= 2000.0
+# # maxq = q <= 0
+# pos = q >= qmin.flatten()
+# maxq = q <= qmax.flatten()
 
-fobj_1 = matrix_frac(pz[free], - Cit@cp.diag(q)@Ci)
-fobj_2 = - x.T@C.T@diag(q)@Cb@x[fixed]
-fobj_3 = - y.T@C.T@diag(q)@Cb@y[fixed]
+# constraints = [horz, pos, maxq]
 
-# print(fobj_1, fobj_2, fobj_3)
+# prob = Problem(objective, constraints)
+# prob.solve(verbose=True, solver='MOSEK')
+
+# q = q.value
+
+# print('max / min pz:', max(pz[free]), min(pz[free]))
+# print('max / min q:', max(q), min(q))
+# print('max / min qmin:', max(qmin), min(qmin))
+# print('max / min qmax:', max(qmax), min(qmax))
+
+# # fobj_1 = matrix_frac(pz[free], - Cit@cp.diag(q)@Ci)
+# # fobj_2 = - x.T@C.T@diag(q)@Cb@x[fixed]
+# # fobj_3 = - y.T@C.T@diag(q)@Cb@y[fixed]
+
