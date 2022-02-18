@@ -426,7 +426,7 @@ class TNOPlotter(object):
                      show_faces=show_faces
                      )
 
-    def draw_form_xz(self):
+    def draw_form_xz(self, scale_width=True):
         """Plot the form diagram rotated 90 degrees.
 
         Returns
@@ -438,7 +438,7 @@ class TNOPlotter(object):
         axis = Vector(1.0, 0, 0)
         self.form = self.form.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
 
-        self.draw_form()
+        self.draw_form(scale_width=scale_width)
 
     def draw_shape(self):
         """Adds the shape to the plot.
