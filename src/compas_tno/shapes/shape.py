@@ -328,6 +328,48 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
+    def create_dome(cls, center=[5.0, 5.0, 0.0], radius=5.0, thk=0.5, discretisation=[16, 40], t=0.0):
+        """Create the shape representing a Hemispheric Dome
+
+        Parameters
+        ----------
+        center : [float, float, float], optional
+            Center of the dome, by default [5.0, 5.0, 0.0]
+        radius : float, optional
+            Central radius of the dome, by default 5.0
+        thk : float, optional
+            Thickness of the dome, by default 0.5
+        discretisation : [float, float], optional
+            Discretisation of the parallel and meridians, by default [16, 40]
+        t : float, optional
+            Negative thickness to consider if the intrados can not be interpolated in the point, by default 0.0
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        from compas_tno.shapes import set_dome_heighfield
+
+        intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
+
+        data = {'type': 'dome', 'thk': thk, 'discretisation': discretisation, 'center': center, 'radius': radius, 't': t}
+
+        shape = cls()
+        shape.datashape = data
+        shape.intrados = intrados
+        shape.extrados = extrados
+        shape.middle = middle
+
+        shape.area = middle.area()
+        shape.volume = shape.compute_volume()
+        shape.total_selfweight = shape.compute_selfweight()
+
+        return shape
+
+    @classmethod
     def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data=None):
         """Construct a Shape from meshes for intrados, extrados, and middle.
 

@@ -182,15 +182,13 @@ class Problem():
         return problem
 
 
-def initialise_form(form, printout=False):
+def initialise_form(form):
     """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
     ----------
     form : FormDiagram
         The FormDiagram.
-    printout : bool, optional
-        Whether or not printouts with the main resuslts should appear in the screen. Default is Falsse
 
     Returns
     -------
@@ -205,8 +203,8 @@ def initialise_form(form, printout=False):
 
     i_uv = form.index_uv()
 
-    M = initialise_problem_general(form, printout=printout)
-    adapt_problem_to_fixed_diagram(M, form, printout=printout)
+    M = initialise_problem_general(form)
+    adapt_problem_to_fixed_diagram(M, form)
     ind = M.ind
 
     form.update_default_edge_attributes({'is_ind': False})

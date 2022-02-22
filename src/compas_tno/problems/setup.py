@@ -80,7 +80,6 @@ def set_up_general_optimisation(analysis):
 
     printout = optimiser.settings.get('printout', True)
     plot = optimiser.settings.get('plot', False)
-    # thickness_type = optimiser.settings.get('thickness_type', 'constant')
     axis_symmetry = optimiser.settings.get('axis_symmetry', None)
     sym_loads = optimiser.settings.get('sym_loads', False)
     fjac = optimiser.settings.get('jacobian', False)
@@ -90,8 +89,10 @@ def set_up_general_optimisation(analysis):
     qmax = optimiser.settings.get('qmax', +1e+8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
+    solver_convex = optimiser.settings.get('solver-convex', 'matlab')
+    # thickness_type = optimiser.settings.get('thickness_type', 'constant')
+
     pattern_center = form.parameters.get('center', None)
-    solver_convex = form.parameters.get('solver-convex', None)
     autodiff = form.parameters.get('autodiff', False)
 
     if shape:
