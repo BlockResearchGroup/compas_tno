@@ -7,6 +7,7 @@ from scipy.sparse import diags
 from compas_tno.problems.bounds_update import ub_lb_update
 from compas_tno.problems.bounds_update import b_update
 
+from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
 
 
@@ -32,10 +33,9 @@ def constr_wrapper(variables, M):
     k = M.k
     n = M.n
     nb = M.nb
-    qid = variables[:k]
     check = k
-    M.q = M.B.dot(qid)
-    # M.q = q_from_qid(M.q, M.ind, M.Edinv, M.Ei, M.ph)  # wont work if not fixed
+    qid = variables[:k].reshape(-1, 1)
+    lambd = 1.0
     thk = M.thk
     t = M.shape.datashape['t']
 
@@ -67,6 +67,8 @@ def constr_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
+
+    M.q = q_from_variables(qid, M.B, M.d, lambd=lambd)
 
     # update geometry
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)

@@ -9,6 +9,7 @@ from scipy.sparse import diags
 from compas_tno.problems.bounds_update import dub_dlb_update
 from compas_tno.problems.bounds_update import db_update
 
+from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
 
 
@@ -74,11 +75,10 @@ def sensitivities_wrapper(variables, M):
     nbxy = 0
     thk = M.thk  # Introduce this because it might be necessary
     t = M.shape.datashape['t']
+    lambd = 1.0
 
-    qid = variables[:k]
+    qid = variables[:k].reshape(-1, 1)
     check = k
-    M.q = M.B.dot(qid)
-    # M.q = q_from_qid(M.q, M.ind, M.Edinv, M.Ei, M.ph)  # wont work if not fixed
 
     if 'xyb' in M.variables:
         xyb = variables[check:check + 2*nb]
@@ -110,6 +110,8 @@ def sensitivities_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
+
+    M.q = q_from_variables(qid, M.B, M.d, lambd=lambd)
 
     # update geometry
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)

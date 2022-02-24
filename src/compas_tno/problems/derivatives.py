@@ -13,6 +13,7 @@ from scipy.sparse import diags
 from compas.numerical import normrow
 from numpy import array
 
+from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
 
 
@@ -162,8 +163,8 @@ def gradient_fmin(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -270,8 +271,8 @@ def gradient_bestfit(variables, M):
     nb = len(M.fixed)
     n = M.n
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -334,8 +335,8 @@ def gradient_horprojection(variables, M):
     nb = len(M.fixed)
     n = M.n
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -408,8 +409,8 @@ def gradient_complementary_energy(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -540,8 +541,8 @@ def gradient_loadpath(variables, M):
     nb = len(M.fixed)
     n = M.n
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]

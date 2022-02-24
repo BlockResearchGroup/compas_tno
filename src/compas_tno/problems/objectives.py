@@ -1,6 +1,7 @@
 from numpy import sum as npsum
 
 from compas_tno.algorithms import xyz_from_q
+from compas_tno.algorithms import q_from_variables
 from compas.numerical import normrow
 
 from scipy.sparse import diags
@@ -28,8 +29,8 @@ def f_min_thrust(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -42,8 +43,8 @@ def f_min_thrust(variables, M):
     xy = M.X[:, :2]
     P_xy_fixed = M.P[M.fixed][:, :2]
 
-    CfQC = M.Cb.transpose().dot(diags(M.q.flatten())).dot(M.C)
-    Rh = CfQC.dot(xy) - P_xy_fixed
+    CfQC = M.Cb.transpose() @ diags(M.q.flatten()) @ M.C
+    Rh = CfQC @ xy - P_xy_fixed
     f = sum(normrow(Rh))
 
     return f
@@ -90,8 +91,8 @@ def f_bestfit(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -129,8 +130,8 @@ def f_horprojection(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -168,8 +169,8 @@ def f_loadpath_general(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
@@ -180,7 +181,7 @@ def f_loadpath_general(variables, M):
 
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
-    uvw = M.C.dot(M.X)
+    uvw = M.C @ M.X
 
     l2 = npsum(uvw**2, axis=1).reshape(-1, 1)
 
@@ -211,8 +212,8 @@ def f_complementary_energy(variables, M):
     k = M.k
     nb = len(M.fixed)
 
-    qid = variables[:k]
-    M.q = M.B.dot(qid)
+    qid = variables[:k].reshape(-1, 1)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]

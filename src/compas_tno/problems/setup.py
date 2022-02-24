@@ -133,12 +133,6 @@ def set_up_general_optimisation(analysis):
 
     M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
 
-    if plot:
-        view = Viewer(form)
-        view.draw_thrust()
-        view.draw_force()
-        view.show()
-
     if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
         adapt_problem_to_sym_and_fixed_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout)
@@ -334,18 +328,16 @@ def set_up_general_optimisation(analysis):
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)
 
-    # print(max(g0), min(g0))
-
     if fgrad:
         grad = fgrad(x0, M)
     if fjac:
         jac = fjac(x0, M)
 
-    # if plot:
-    #     view = Viewer(form)
-    #     view.view_thrust()
-    #     view.view_force()
-    #     view.show()
+    if plot:
+        view = Viewer(form)
+        view.draw_thrust()
+        view.draw_force()
+        view.show()
 
     if printout:
         print('-'*20)
