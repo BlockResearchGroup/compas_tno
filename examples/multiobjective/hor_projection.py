@@ -7,9 +7,9 @@ from compas_tno.shapes import Shape
 from compas_plotters import MeshPlotter
 
 from compas_tno.viewers import view_shapes
-from compas_tno.viewers import view_thrust
+from compas_tno.viewers import draw_thrust
 from compas_tno.viewers import view_bestfit_solution
-from compas_tno.viewers import view_thrust_as_lines
+from compas_tno.viewers import draw_thrust_as_lines
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.algorithms import equilibrium_fdm
@@ -77,7 +77,7 @@ form_base = form.copy()
 
 # equilibrium_fdm(form)
 # plot_superimposed_diagrams(form, form_base, max_width=3.0).show()
-# view_thrust(form).show()
+# draw_thrust(form).show()
 
 # Creating Analysis and Running
 
@@ -106,4 +106,4 @@ analysis.run()
 form.to_json(solution)
 
 # view_bestfit_solution(form).show()
-view_thrust(form).show()
+draw_thrust(form).show()

@@ -28,8 +28,8 @@ shape = Shape.from_library(
 force = reciprocal_from_form(form)
 
 viewer = Viewer(form, shape=shape)
-viewer.view_thrust()
-viewer.view_force()
+viewer.draw_thrust()
+viewer.draw_force()
 viewer.view_shape()
 viewer.show()
 

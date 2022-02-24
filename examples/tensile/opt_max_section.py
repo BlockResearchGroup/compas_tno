@@ -149,5 +149,5 @@ view.settings['scale.loads'] = 1.0
 view.view_loads()
 view.view_shape()
 view.view_cracks()
-view.view_thrust()
+view.draw_thrust()
 view.show()

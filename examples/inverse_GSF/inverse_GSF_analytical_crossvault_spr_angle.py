@@ -5,7 +5,7 @@ from compas_tno.shapes.shape import Shape
 from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.analysis.analysis import Analysis
-from compas_tno.viewers.thrust import view_thrusts
+from compas_tno.viewers.thrust import draw_thrusts
 from compas_tno.viewers.thrust import view_solution
 from compas_tno.shapes.crossvault import crossvault_ub_lb_update
 from copy import deepcopy

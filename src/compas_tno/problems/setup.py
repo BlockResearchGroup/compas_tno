@@ -106,7 +106,10 @@ def set_up_general_optimisation(analysis):
 
     i_k = form.index_key()
 
-    apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+    qmin_applied = form.edges_attribute('qmin')
+    if not all(qmin_applied):
+        print('Appied qmin / qmax:', qmin, qmax)
+        apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
 
     M = initialise_problem_general(form)
     M.variables = variables
@@ -119,22 +122,21 @@ def set_up_general_optimisation(analysis):
         pass
     elif starting_point == 'sag':
         apply_sag(form)
-        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'loadpath':
         initialize_loadpath(form, problem=M, find_inds=find_inds, solver_convex=solver_convex)
-        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'relax':
         equilibrium_fdm(form)
-        M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
     elif starting_point == 'tna' or starting_point == 'TNA':
         initialize_tna(form)
     else:
         print('Warning: define starting point')
 
+    M.q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+
     if plot:
         view = Viewer(form)
-        view.view_thrust()
-        view.view_force()
+        view.draw_thrust()
+        view.draw_force()
         view.show()
 
     if 'fixed' in features and 'sym' in features:

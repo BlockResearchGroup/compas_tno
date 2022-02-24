@@ -73,8 +73,8 @@ class FormDiagram(FormDiagram):
             'tub_reac': None,
         })
         self.update_default_edge_attributes({
-            'q': 1.0,
-            'f': 1.0,
+            'q': -1.0,
+            'f': -1.0,
             'is_symmetry': False,
             'is_ind': False,
             'qmin': -1e+4,
@@ -551,6 +551,123 @@ class FormDiagram(FormDiagram):
             self.edge_attribute((u, v), 'f', f)
 
         return
+
+    def tributary_dict(self):
+        """Make a tributary dictionary to help in the calculation of the tributary weights to the nodes afterwards.
+
+        Returns
+        -------
+        tributary_dict
+            The tributary area dictionary
+        """
+
+        tributary_dict = {}
+        vertex_index = self.vertex_index()
+
+        for key in self.vertices():
+            i = vertex_index[key]
+            tributary_dict[i] = {}
+            for nbr in self.halfedge[key]:
+                j = vertex_index[nbr]
+                tributary_dict[i][j] = []
+                fkey = self.halfedge[key][nbr]
+                if fkey is not None:
+                    facekeys = self.face_vertices(fkey)
+                    faceindices = [vertex_index[v] for v in facekeys]
+                    tributary_dict[i][j].append(faceindices)
+
+                fkey = self.halfedge[nbr][key]
+                if fkey is not None:
+                    facekeys = self.face_vertices(fkey)
+                    faceindices = [vertex_index[v] for v in facekeys]
+                    tributary_dict[i][j].append(faceindices)
+
+        return tributary_dict
+
+    def tributary_matrices(self, sparse=False):
+        """Returns the Matrices used for computation of the tributary area.
+
+        Returns
+        -------
+        F : array (f x n)
+            Linear transformation from ``X`` (n x 3) to ``c`` (f x 3) with the porision of the centroids
+        V0 : array (g x n)
+            Mark the influence of the original point in the calculation
+        V1 : array (g x n)
+            Mark the influence of the neighbor points the calculation
+        V2 : array (g x f)
+            Mark the influence of the centroid points the calculation
+        """
+
+        from numpy import zeros
+        from numpy import vstack
+
+        n = self.number_of_vertices()
+        f = self.number_of_faces()
+
+        vertex_index = self.vertex_index()
+        face_index = {}
+
+        F = zeros((f, n))
+        V0 = zeros((0, n))
+        V1 = zeros((0, n))
+        V2 = zeros((0, f))
+
+        for i, fkey in enumerate(self.faces()):
+            face_index[fkey] = i
+            faceindices = [vertex_index[v] for v in self.face_vertices(fkey)]
+            np = float(len(faceindices))
+            for j in faceindices:
+                F[i, j] = 1.0/np
+
+        ig = 0
+        for key in self.vertices():
+            i = vertex_index[key]
+            v0i = zeros((1, n))
+            v0i[0, i] = 1.0
+
+            for nbr in self.halfedge[key]:
+                j = vertex_index[nbr]
+
+                fkey = self.halfedge[key][nbr]
+                if fkey is not None:
+                    findex = face_index[fkey]
+                    facekeys = self.face_vertices(fkey)
+                    faceindices = [vertex_index[v] for v in facekeys]
+
+                    v1i = zeros((1, n))
+                    v1i[0, j] = 1.0
+                    V1 = vstack([V1, v1i])
+
+                    v2i = zeros((1, f))
+                    v2i[0, findex] = 1.0
+                    V2 = vstack([V2, v2i])
+
+                    V0 = vstack([V0, v0i])
+
+                    ig += 1
+
+                fkey = self.halfedge[nbr][key]
+                if fkey is not None:
+                    findex = face_index[fkey]
+                    facekeys = self.face_vertices(fkey)
+                    faceindices = [vertex_index[v] for v in facekeys]
+
+                    v1i = zeros((1, n))
+                    v1i[0, j] = 1.0
+                    V1 = vstack([V1, v1i])
+
+                    v2i = zeros((1, f))
+                    v2i[0, findex] = 1.0
+                    V2 = vstack([V2, v2i])
+
+                    V0 = vstack([V0, v0i])
+
+                    ig += 1
+
+        print('total ig', ig)
+
+        return F, V0, V1, V2
 
     def overview_forces(self):
         """Print an overview of the forces in the ``Form Diagram``."""

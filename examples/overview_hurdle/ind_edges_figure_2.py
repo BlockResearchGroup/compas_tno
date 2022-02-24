@@ -114,7 +114,7 @@ for bf in [5.0]:
     form.to_json(address)
 
     viewer = Viewer(form)
-    viewer.view_thrust()
+    viewer.draw_thrust()
     viewer.show()
 
     q0 = M.q.copy()
@@ -150,7 +150,7 @@ for bf in [5.0]:
         # M.q[ind[j]] = M.q[ind[j]] + 1.0
 
         viewer = Viewer(form)
-        viewer.view_thrust()
+        viewer.draw_thrust()
         viewer.show()
 
 
@@ -171,5 +171,5 @@ force_plot.show()
 
 viewer = Viewer(form)
 viewer.settings['size.edge.max_thickness'] = viewer.settings['size.edge.max_thickness']/4.0
-viewer.view_thrust()
+viewer.draw_thrust()
 viewer.show()

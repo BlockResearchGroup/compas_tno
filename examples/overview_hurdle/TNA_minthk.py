@@ -55,6 +55,6 @@ force.to_json(ad2)
 
 # viewer = Viewer(form)
 # viewer.settings['size.edge.max_thickness'] = viewer.settings['size.edge.max_thickness']/4.0
-# viewer.view_thrust()
+# viewer.draw_thrust()
 # viewer.view_cracks()
 # viewer.show()

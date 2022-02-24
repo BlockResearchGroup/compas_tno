@@ -56,9 +56,9 @@ from compas_tno.viewers import Viewer
 # # SETTINGS['scale.reactions'] = 0.05
 
 # viewer.initiate_app()
-# viewer.view_thrust()
+# viewer.draw_thrust()
 # viewer.view_cracks()
-# viewer.view_force()
+# viewer.draw_force()
 # viewer.view_shape()
 # viewer.view_reactions()
 # viewer.show()
@@ -110,9 +110,9 @@ from compas_tno.viewers import Viewer
 # # SETTINGS['scale.reactions'] = 0.05
 
 # viewer.initiate_app()
-# viewer.view_thrust()
+# viewer.draw_thrust()
 # viewer.view_cracks()
-# viewer.view_force()
+# viewer.draw_force()
 # viewer.view_shape()
 # viewer.view_reactions()
 # viewer.show()
@@ -150,9 +150,9 @@ from compas_tno.viewers import Viewer
 # # # SETTINGS['scale.reactions'] = 0.05
 
 # # viewer.initiate_app()
-# # viewer.view_thrust()
+# # viewer.draw_thrust()
 # # viewer.view_cracks()
-# # viewer.view_force()
+# # viewer.draw_force()
 # # viewer.view_shape()
 # # viewer.view_reactions()
 # # viewer.show()
@@ -208,9 +208,9 @@ from compas_tno.viewers import Viewer
 # # SETTINGS['scale.reactions'] = 0.05
 
 # viewer.initiate_app()
-# viewer.view_thrust()
+# viewer.draw_thrust()
 # viewer.view_cracks()
-# viewer.view_force()
+# viewer.draw_force()
 # viewer.view_shape()
 # viewer.view_reactions()
 # viewer.show()
@@ -277,9 +277,9 @@ SETTINGS['force.scale'] = 0.05
 # SETTINGS['scale.reactions'] = 0.05
 
 viewer.initiate_app()
-viewer.view_thrust()
+viewer.draw_thrust()
 viewer.view_cracks()
-viewer.view_force()
+viewer.draw_force()
 viewer.view_shape()
 # viewer.view_reactions()
 viewer.show()

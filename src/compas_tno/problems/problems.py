@@ -423,12 +423,16 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     B[dep] = Edinv.dot(Ei).toarray()
     B[ind] = identity(k)
 
+    d = zeros((problem.m, 1))
+    d[dep] = -Edinv.dot(problem.ph)
+
     problem.ind = ind
     problem.k = k
     problem.dep = dep
     problem.B = B
     problem.Edinv = Edinv
     problem.Ei = Ei
+    problem.d = d
 
     return
 

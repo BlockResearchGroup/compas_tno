@@ -63,8 +63,8 @@ title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation
 #     address_plot_section = os.path.join(folder, title) + '_' + obj + '_thk_' + str(thk) + '_plot_' + 'section' + '.pdf'
 #     plot_form_semicirculararch_xz(form, radius=0.06, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True, yrange=[radius-tol, radius+tol], save=address_plot_section).show()
 
-#     from compas_tno.viewers import view_thrust_as_lines
-#     view_thrust_as_lines(form).show()
+#     from compas_tno.viewers import draw_thrust_as_lines
+#     draw_thrust_as_lines(form).show()
 
 address = '/Users/mricardo/compas_dev/me/general_opt/dome/radial_fd/mov_c_0.1/dome_radial_fd_discr_[20, 16]_t_thk_10.77604794596367.json'
 form = FormDiagram.from_json(address)
@@ -77,8 +77,8 @@ form.overview_forces()
 
 compute_reactions(form)
 
-from compas_tno.viewers import view_thrust_as_lines
-view_thrust_as_lines(form).show()
+from compas_tno.viewers import draw_thrust_as_lines
+draw_thrust_as_lines(form).show()
 
 tol = 10e-3
 plot_form_semicirculararch_xz(form, radius=0.06, simple=True, fix_width=True, max_width=1.5, heights=True, show_q=False, thk=thk, plot_reactions=True, yrange=[radius-tol, radius+tol]).show()

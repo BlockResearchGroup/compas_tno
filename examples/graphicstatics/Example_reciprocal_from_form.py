@@ -134,7 +134,7 @@ plotter.show()
 
 # plot_form(form).show()
 # form.plot()
-# view_thrust(form).show()
+# draw_thrust(form).show()
 # view_shapes(form).show()
 
 # file_address = os.path.join(compas_tno.get('/rqe/'), type_structure + '_' + type_formdiagram + '_t=50_'+ objective + '_force.json')

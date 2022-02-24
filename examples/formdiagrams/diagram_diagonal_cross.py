@@ -5,7 +5,7 @@ from compas_tno.optimisers.optimiser import Optimiser
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_independents
 from compas_tno.analysis.analysis import Analysis
-from compas_tno.viewers.thrust import view_thrust
+from compas_tno.viewers.thrust import draw_thrust
 from compas_tno.viewers.thrust import view_solution
 
 # ----------------------------------------------------------------------------
@@ -87,7 +87,7 @@ plot_form(form, show_q=False, simple=True, cracks=True).show()
 file_address = compas_tno.get('test.json')
 form.to_json(file_address)
 
-view_thrust(form).show()
+draw_thrust(form).show()
 
 # If you wish to visualise the upper and lower bound together
 # view_solution(form, vault).show()

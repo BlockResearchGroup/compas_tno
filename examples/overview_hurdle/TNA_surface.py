@@ -95,7 +95,7 @@ for obj in objective:  # set the objective
 
         view = Viewer(form)
         view.view_shape()
-        view.view_thrust()
+        view.draw_thrust()
         view.show()
 
         # ------------------------------------------------------------

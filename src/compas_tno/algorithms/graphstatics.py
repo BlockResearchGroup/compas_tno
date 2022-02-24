@@ -70,7 +70,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, alpha=100.0, km
     # horizontal equilibrium
     horizontal_nodal(form, force, alpha=alpha, kmax=kmax)
 
-    # change compression to negative (TNO convention)
+    # ****** change compression to negative (TNO convention)
     q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
     for index, edge in enumerate(form.edges_where({'_is_edge': True})):
         form.edge_attribute(edge, 'q', -1 * q[index])

@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 from compas_tno.plotters import plot_form
-from compas_tno.viewers import view_thrust
+from compas_tno.viewers import draw_thrust
 from compas.datastructures import mesh_delete_duplicate_vertices
 
 

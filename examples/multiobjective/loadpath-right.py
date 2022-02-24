@@ -96,8 +96,8 @@ thrust = form.thrust()
 print('Ratio Thrust/Weight:', thrust/weight)
 
 view = Viewer(form)
-view.view_thrust()
-view.view_force()
+view.draw_thrust()
+view.draw_force()
 view.show()
 
 # # ---- MAKE THE VIDEO ----
