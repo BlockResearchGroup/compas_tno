@@ -587,15 +587,20 @@ class FormDiagram(FormDiagram):
     def tributary_matrices(self, sparse=False):
         """Returns the Matrices used for computation of the tributary area.
 
+        Parameters
+        ----------
+        sparse : bool, optional
+            If the matrices should be returned as sparse matrices (see ``scipy.linalg.sparse``), by default False
+
         Returns
         -------
-        F : array (f x n)
-            Linear transformation from ``X`` (n x 3) to ``c`` (f x 3) with the porision of the centroids
-        V0 : array (g x n)
+        F : array [f x n]
+            Linear transformation from ``X`` [n x 3] to ``c`` [f x 3] with the position of the centroids
+        V0 : array [g x n]
             Mark the influence of the original point in the calculation
-        V1 : array (g x n)
+        V1 : array [g x n]
             Mark the influence of the neighbor points the calculation
-        V2 : array (g x f)
+        V2 : array [g x f]
             Mark the influence of the centroid points the calculation
         """
 
@@ -664,8 +669,6 @@ class FormDiagram(FormDiagram):
                     V0 = vstack([V0, v0i])
 
                     ig += 1
-
-        print('total ig', ig)
 
         return F, V0, V1, V2
 

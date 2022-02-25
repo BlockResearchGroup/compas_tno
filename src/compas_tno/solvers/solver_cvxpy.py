@@ -26,9 +26,9 @@ def run_optimisation_CVXPY(analysis):
     find_inds = analysis.optimiser.settings.get('find_inds', False)
     printout = analysis.optimiser.settings.get('printout', False)
 
-    run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
+    problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
 
-    return
+    return problem
 
 
 def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=False):
@@ -58,9 +58,9 @@ def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=F
     if find_inds:
         adapt_problem_to_fixed_diagram(problem, form)
 
-    output = call_and_output_CVXPY(form, problem, printout=printout)
+    problem = call_and_output_CVXPY(form, problem, printout=printout)
 
-    return output
+    return problem
 
 
 def call_and_output_CVXPY(form, problem, printout=False):
@@ -133,7 +133,7 @@ def call_and_output_CVXPY(form, problem, printout=False):
         print('sol. time : {0:.3f} sec'.format(sol_time))
         print('-' * 50 + '\n')
 
-    return output
+    return problem
 
 
 def call_cvxpy(problem, printout=False):
@@ -289,7 +289,7 @@ def call_cvxpy_ind(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = Problem(objective, constraints)
-    prob.solve(verbose=printout)
+    prob.solve(verbose=True)
 
     # save output
     fopt = prob.value

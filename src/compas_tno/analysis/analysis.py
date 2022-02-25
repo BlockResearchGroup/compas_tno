@@ -111,7 +111,8 @@ class Analysis(Data):
     def apply_selfweight(self):
         """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
 
-        apply_selfweight_from_shape(self.form, self.shape)
+        norm = self.optimiser.settings.get('normalize_loads', True)
+        apply_selfweight_from_shape(self.form, self.shape, normalize=norm)
 
         return
 
@@ -235,7 +236,7 @@ class Analysis(Data):
             elif solver == 'CVXPY':
                 run_optimisation_CVXPY(self)
             else:
-                raise NotImplementedError('Only CVXPY and MATLAB are suitable for this optimisation')
+                raise NotImplementedError('Only <CVXPY> and <MATLAB> are suitable for this optimisation')
         elif library == 'pyOpt':
             self = run_optimisation_MMA(self)
         elif solver == 'MMA':

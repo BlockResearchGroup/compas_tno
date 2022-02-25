@@ -27,13 +27,15 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVX'
     if solver_convex == 'CVX' or solver_convex == 'MATLAB':
         if not importlib.util.find_spec('matlab'):
             raise ValueError('MATLAB/CVX not configured. Try changing the <solver-convex> attribute.')
-        run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds)
+        problem = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds)
     elif solver_convex == 'CVXPY' or solver_convex == 'MOSEK':
         if not importlib.util.find_spec('cvxpy'):
             raise ValueError('CVXPY/MOSEK not configured. Try changing the <solver-convex> attribute.')
-        run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds)
+        problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds)
     else:
         raise ValueError('Could not initilalise loadpath optimisation. Try changing the <solver-convex> attribute.')
+
+    return problem
 
 
 def initialize_tna(form, plot=False):

@@ -42,7 +42,7 @@ def apply_selfweight_from_shape_proxy(formdata, shapedata):
     return form.to_data()
 
 
-def apply_selfweight_from_shape(form, shape, pz_negative=True):
+def apply_selfweight_from_shape(form, shape, pz_negative=True, normalize=True):
     """Apply selfweight to the nodes of the form diagram based on the shape
 
     Parameters
@@ -53,6 +53,8 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
         Shape of the masonry
     pz_negative : bool, optional
         Wether or not the vertical loads are negative, by default True
+    normalize : bool, optional
+        Wether or not normalise the selfweight to match shape.total_weight, by default True
 
     Returns
     -------
@@ -62,8 +64,10 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
 
     form_ = form.copy()
     total_selfweight = shape.compute_selfweight()
+    ro = shape.ro
+    thk = shape.datashape['thk']
 
-    x = form.vertices_attribute('x')  # check if array is necessary here
+    x = form.vertices_attribute('x')
     y = form.vertices_attribute('y')
 
     if shape.datashape['type'] == 'dome':
@@ -98,12 +102,14 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
                 form.vertex_attribute(key, 'pz', value=0.5)
             pzt += form.vertex_attribute(key, 'pz')
 
-    factor = total_selfweight/pzt
+    factor = 1.0 * ro * thk  # Transform tributary area in tributary load
+    if normalize:
+        factor = total_selfweight/pzt
+    if pz_negative:
+        factor *= -1  # make loads negative
 
     for key in form.vertices():
         pzi = factor * form.vertex_attribute(key, 'pz')
-        if pz_negative:
-            pzi *= -1  # make loads negative
         form.vertex_attribute(key, 'pz', value=pzi)
 
 
@@ -193,56 +199,4 @@ def apply_fill_load(form):
         In development.
     """
 
-    print('Non implemented')
-
-    return
-
-
-# def vertex_projected_area(form, key):  # Modify to compute the projected aerea of all and save as an attribute
-#     """Compute the projected tributary area of a vertex.
-
-#     Parameters
-#     ----------
-#     key : int
-#         The identifier of the vertex.
-
-#     Returns
-#     -------
-#     float
-#         The projected tributary area.
-
-#     Example
-#     -------
-#     >>>
-
-#     """
-
-#     from compas.geometry import subtract_vectors
-#     from compas.geometry import length_vector
-#     from compas.geometry import cross_vectors
-
-#     area = 0.
-
-#     p0 = form.vertex_coordinates(key)
-#     p0[2] = 0
-
-#     for nbr in form.halfedge[key]:
-#         p1 = form.vertex_coordinates(nbr)
-#         p1[2] = 0
-#         v1 = subtract_vectors(p1, p0)
-
-#         fkey = form.halfedge[key][nbr]
-#         if fkey is not None:
-#             p2 = form.face_centroid(fkey)
-#             p2[2] = 0
-#             v2 = subtract_vectors(p2, p0)
-#             area += length_vector(cross_vectors(v1, v2))
-
-#         fkey = form.halfedge[nbr][key]
-#         if fkey is not None:
-#             p3 = form.face_centroid(fkey)
-#             p3[2] = 0
-#             v3 = subtract_vectors(p3, p0)
-#             area += length_vector(cross_vectors(v1, v3))
-
-#     return 0.25 * area
+    raise NotImplementedError('Not implemented')

@@ -31,9 +31,9 @@ def run_optimisation_MATLAB(analysis):
     find_inds = analysis.optimiser.settings.get('find_inds', False)
     printout = analysis.optimiser.settings.get('printout', False)
 
-    output = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
+    problem = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
 
-    return output
+    return problem
 
 
 def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=False):
@@ -68,9 +68,9 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     if find_inds:
         adapt_problem_to_fixed_diagram(problem, form)
 
-    output = call_and_output_CVX_MATLAB(form, problem, eng, printout=printout)
+    problem = call_and_output_CVX_MATLAB(form, problem, eng, printout=printout)
 
-    return output
+    return problem
 
 
 def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
@@ -145,7 +145,7 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         print('sol. time : {0:.3f} sec'.format(sol_time))
         print('-' * 50 + '\n')
 
-    return output
+    return problem
 
 
 def call_cvx(problem, eng, printout=False):

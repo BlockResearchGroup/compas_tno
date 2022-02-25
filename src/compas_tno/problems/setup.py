@@ -107,9 +107,11 @@ def set_up_general_optimisation(analysis):
     i_k = form.index_key()
 
     qmin_applied = form.edges_attribute('qmin')
-    if not all(qmin_applied):
-        print('Appied qmin / qmax:', qmin, qmax)
-        apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+    for qmin_applied_i in qmin_applied:
+        if qmin_applied_i is None:
+            print('Appied qmin / qmax:', qmin, qmax)
+            apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+            break
 
     M = initialise_problem_general(form)
     M.variables = variables
@@ -117,6 +119,17 @@ def set_up_general_optimisation(analysis):
     M.features = features
     M.shape = shape
     M.thk = thk
+
+    if 'update-loads' in features:
+        F, V0, V1, V2 = form.tributary_matrices(sparse=False)
+    else:
+        F, V0, V1, V2 = 4*[None]
+
+    M.F = F
+    M.V0 = V0
+    M.V1 = V1
+    M.V2 = V2
+    M.ro = shape.ro
 
     if starting_point == 'current':
         pass

@@ -3,15 +3,22 @@ from numpy import array
 from numpy import float64
 from numpy import newaxis
 from numpy import zeros
-from numpy import hstack
+# from numpy import hstack
+from numpy import cross
+from numpy.linalg import norm
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import splu
-from scipy.sparse.linalg import lsqr
+# from scipy.sparse.linalg import lsqr
 from scipy.sparse import diags
 
 from compas.numerical import fd_numpy
 from compas.numerical import connectivity_matrix
+
+from compas.geometry import subtract_vectors
+from compas.geometry import length_vector
+from compas.geometry import cross_vectors
+from compas.geometry import centroid_points
 
 
 def equilibrium_fdm(form):
@@ -149,23 +156,59 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
     return q
 
 
-def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
+def q_from_variables(qid, B, d, lambd=1.0):
+    r""" Calculate q's from the force parameters (independent edges).
+
+    Parameters
+    ----------
+    qid : array [kx1]
+        Force density vector.
+    B : array [m x k]
+        The linear map on the force densities.
+    d : array [mx1]
+        A particular solution of the equilibrium.
+    lambd : float, optional
+        Lambda multiplier applied to horizontal loads. The default is 1.0.
+
+    Returns
+    -------
+    q : array [m x 1]
+        Force densities on all edges.
+
+    Notes
+    -------
+    This function works for load multiplers and is prefered. To see details about the implementation check ``q_from_qid``.
+
+    Reference
+    ---------
+    Block and Lachauer, 2014...
+
+    """
+
+    q = B @ qid + lambd * d
+
+    return q
+
+
+def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb, SPLU_D=None):
     """ Calculate coordinates's xyz the q's.
 
     Parameters
     ----------
-    q : array (m)
+    q : array [m x 1]
         Force densities of all edges.
-    Pi : array (ni x 3)
+    Pi : array [ni x 3]
         External forces applied to the free vertices.
-    Xb : array (nb x 3)
+    Xb : array [nb x 3]
         Position of the fixed vertices.
-    Ci : array (m x ni)
+    Ci : array [m x ni]
         Connectivity matrix on the free vertices
-    Cit : array (ni x m)
+    Cit : array [ni x m]
         Transpose of connectivity matrix on the free vertices
-    Cb : array (m x nb)
+    Cb : array [m x nb]
         Connectivity matrix on the fixed vertices
+    SPLU_D : callable, optional
+        Sparse LU decomposition of CitQCi to speed up optimisation, by default None
 
     Returns
     -------
@@ -174,24 +217,102 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
 
     """
 
-    CiQCb = Cit.dot(diags(q.flatten())).dot(Cb)
-    CiQCi = Cit.dot(diags(q.flatten())).dot(Ci)
-    try:
+    CiQCb = Cit @ diags(q.flatten()) @ Cb
+    if not SPLU_D:
+        CiQCi = Cit @ diags(q.flatten()) @ Ci
         SPLU_D = splu(CiQCi)
-        Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
-    except BaseException:
-        A = CiQCi
-        b = Pi - CiQCb.dot(Xb)
-        resx = lsqr(A, b[:, 0])
-        resy = lsqr(A, b[:, 1])
-        resz = lsqr(A, b[:, 2])
-        print('* Warning: System might be bad conditioned - recured to LSQR')
-        xfree = resx[0].reshape(-1, 1)
-        yfree = resy[0].reshape(-1, 1)
-        zfree = resz[0].reshape(-1, 1)
-        Xfree = hstack([xfree, yfree, zfree])
+    Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
+    # try:
+    # except BaseException:
+    #     A = CiQCi
+    #     b = Pi - CiQCb.dot(Xb)
+    #     resx = lsqr(A, b[:, 0])
+    #     resy = lsqr(A, b[:, 1])
+    #     resz = lsqr(A, b[:, 2])
+    #     print('* Warning: System might be bad conditioned - recured to LSQR')
+    #     xfree = resx[0].reshape(-1, 1)
+    #     yfree = resy[0].reshape(-1, 1)
+    #     zfree = resz[0].reshape(-1, 1)
+    #     Xfree = hstack([xfree, yfree, zfree])
 
     return Xfree
+
+
+def weights_from_xyz_dict(xyz, tributary_dict, thk=0.5, density=20.0):
+    """Compute the trbutary weights based on the geometry of the structure and a tributary dictionary.
+
+    Parameters
+    ----------
+    xyz : array [n x 3]
+        The XYZ coordinates of the thrust network
+    tributary_dict : dict
+        The dictionary with the list of the triangles to compute the tributary area
+    thk : float, optional
+        The thickness of the structure to compute the tributary volumes, by default 0.5
+    density : float, optional
+        The density of the structure to compute the applied vertical loads, by default 20.0
+
+    Returns
+    -------
+    pz : array [n x 1]
+        The vertical loads applied ar each node
+    """
+
+    from numpy import zeros
+
+    pz = zeros((len(xyz), 1))
+
+    for i in tributary_dict:
+        p0 = xyz[i]
+        area = 0
+        for j in tributary_dict[i]:
+            pj = xyz[j]
+            for face in tributary_dict[i][j]:
+                face_coord = [xyz[pt] for pt in face]
+                pf = centroid_points(face_coord)
+                v1 = subtract_vectors(pj, p0)
+                v2 = subtract_vectors(pf, p0)
+                area += length_vector(cross_vectors(v1, v2))
+        pz[i] = 0.25 * area * thk * density
+
+    return pz
+
+
+def weights_from_xyz(xyz, F, V0, V1, V2, thk=0.5, density=20.0):
+    """Compute the tributary weights based on the assembled sparse matrices linking the topology
+
+    Parameters
+    ----------
+    xyz : array [n x 3]
+        The XYZ coordinates of the thrust network
+    F : array [f x n]
+        Linear transformation from ``X`` [n x 3] to ``c`` [f x 3] with the position of the centroids
+    V0 : array [g x n]
+        Mark the influence of the original point in the calculation
+    V1 : array [g x n]
+        Mark the influence of the neighbor points the calculation
+    V2 : array [g x f]
+        Mark the influence of the centroid points the calculation
+    thk : float, optional
+        The thickness of the structure to compute the tributary volumes, by default 0.5
+    density : float, optional
+        The density of the structure to compute the applied vertical loads, by default 20.0
+
+    Returns
+    -------
+    pz : array [n x 1]
+        The vertical loads applied ar each node
+    """
+
+    v0 = V0.dot(xyz)
+    v1 = V1.dot(xyz) - v0
+    v2 = V2.dot(F).dot(xyz) - v0
+
+    ag = norm(cross(v1, v2), axis=1)
+
+    pz = 0.25 * thk * density * V0.transpose().dot(ag)
+
+    return pz
 
 
 def compute_reactions(form, plot=False):
