@@ -1,10 +1,86 @@
 from numpy import sum as npsum
+from numpy.linalg import norm
 
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.algorithms import q_from_variables
 from compas.numerical import normrow
 
 from scipy.sparse import diags
+from scipy.sparse.linalg import splu
+
+from compas_tno.algorithms import weights_from_xyz
+
+from compas_tno.problems import gradient_fmin
+from compas_tno.problems import gradient_fmax
+from compas_tno.problems import gradient_bestfit
+from compas_tno.problems import gradient_horprojection
+from compas_tno.problems import gradient_loadpath
+from compas_tno.problems import gradient_complementary_energy
+from compas_tno.problems import gradient_complementary_energy_nonlinear
+from compas_tno.problems import gradient_max_section
+
+
+def objective_selector(objective):
+    """Select objective callable and gradient vector based on the desired objective function.
+
+    Parameters
+    ----------
+    objective : str
+        The name of the objective. See ``Optimiser`` for a complete list of objectivees.
+
+    Returns
+    -------
+    fobj : callable
+        Callable to compute the value of the objective function in the point.
+    fgrad : callable
+        Callable to compute the gradient of the objective function in the point.
+
+    """
+
+    if objective == 'loadpath':
+        fobj = f_loadpath_general
+        fgrad = gradient_loadpath
+    elif objective == 'target' or objective == 'bestfit':
+        fobj = f_bestfit
+        fgrad = gradient_bestfit
+    elif objective == 'min':
+        fobj = f_min_thrust
+        fgrad = gradient_fmin
+    elif objective == 'max':
+        fobj = f_max_thrust
+        fgrad = gradient_fmax
+    elif objective == 'feasibility':
+        fobj = f_constant
+        fgrad = gradient_feasibility
+    elif objective == 'hor_projection':
+        fobj = f_horprojection
+        fgrad = gradient_horprojection
+    elif objective == 't':  # analytical reduce thickness
+        fobj = f_reduce_thk
+        fgrad = gradient_reduce_thk
+    elif objective == 's':  # tight UB and LB 0 -> 1/2
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
+    elif objective == 'n':  # vector n offset the surfaces -> larger the better (higher GSF)
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
+    elif objective == 'lambd':  # vector lambda as hor multiplier larger the better (higher GSF)
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
+    elif objective == 'Ecomp-linear':  # vector lambda as hor multiplier larger the better (higher GSF)
+        fobj = f_complementary_energy
+        fgrad = gradient_complementary_energy
+    elif objective == 'Ecomp-nonlinear':
+        fobj = f_complementary_energy_nonlinear
+        fgrad = gradient_complementary_energy_nonlinear
+    elif objective == 'max_section':
+        fobj = f_max_section
+        fgrad = gradient_max_section
+    else:
+        print('Please, provide a valid objective for the optimisation')
+        raise NotImplementedError
+
+    return fobj, fgrad
 
 
 def f_min_thrust(variables, M):

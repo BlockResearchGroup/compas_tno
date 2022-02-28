@@ -50,6 +50,7 @@ Objectives
 .. autosummary::
     :toctree: generated/
 
+    objective_selector
     f_min_thrust
     f_max_thrust
     f_bestfit
@@ -153,6 +154,7 @@ from .jacobian import (
 )
 
 from .objectives import (
+    objective_selector,
     f_min_thrust,
     f_max_thrust,
     f_bestfit,
@@ -224,6 +226,7 @@ __all__ = [
     'd_fconstr',
     'sensitivities_wrapper',
 
+    'objective_selector',
     'f_min_thrust',
     'f_max_thrust',
     'f_bestfit',
