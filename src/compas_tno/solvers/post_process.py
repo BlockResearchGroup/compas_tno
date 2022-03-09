@@ -128,7 +128,7 @@ def post_process_general(analysis):
                 form.vertex_attribute(key, 'lb', float(M.lb[i]))
                 i += 1
 
-    if 'adapted-envelope' in features:
+    if 'update-envelope' in features:
         form.attributes['thk'] = thk
         shape.datashape['thk'] = thk
         shape = Shape.from_library(shape.datashape)

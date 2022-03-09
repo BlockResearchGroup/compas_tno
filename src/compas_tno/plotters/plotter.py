@@ -68,6 +68,8 @@ class TNOPlotter(object):
             'show.cracks': True,
             'show.vertex.outside': True,
             'show.edge.thickness': True,
+            'show.reactions.extended': False,
+            'show.reactions.asarrows': True,
 
             'camera.target': [0, 0, 0],
             'camera.distance': 40,
@@ -87,7 +89,8 @@ class TNOPlotter(object):
 
             'scale.reactions': 0.05,
             'scale.loads': 0.001,
-            'opacity.shapes': 0.5,
+            'shape.opacity': 0.5,
+            'rotated': False,
 
             'color.edges.form': (255, 0, 0),
             'color.edges.reactions': (170, 170, 170),
@@ -292,6 +295,8 @@ class TNOPlotter(object):
 
         for key in self.form.vertices():
             x, y, z = self.form.vertex_coordinates(key)
+            if self.settings['rotated']:
+                x, z, y = self.form.vertex_coordinates(key)
             lb = self.form.vertex_attribute(key, 'lb')
             ub = self.form.vertex_attribute(key, 'ub')
             if not lb:
@@ -324,6 +329,8 @@ class TNOPlotter(object):
 
         for point in cracks:
             x, y, z = point['xyz']
+            if self.settings['rotated']:
+                x, z, y = point['xyz']
             color = point['color']
             pt = Point(x, y, z)
             pointartist = self.app.add(pt, facecolor=color, size=self.settings['size.vertex'])
@@ -361,17 +368,36 @@ class TNOPlotter(object):
 
             for key in self.form.vertices_where({'is_fixed': True}):
                 x, y, z = self.form.vertex_coordinates(key)
+                if self.settings['show.reactions.extended']:  # assume rotated
+                    if y > 0:
+                        reaction_scale = y/self.form.vertex_attribute(key, '_rz')
+                    else:
+                        reaction_scale = 0.0
                 rx = self.form.vertex_attribute(key, '_rx') * reaction_scale
                 ry = self.form.vertex_attribute(key, '_ry') * reaction_scale
                 rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
+                norm = math.sqrt(self.form.vertex_attribute(key, '_rx')**2 + self.form.vertex_attribute(key, '_ry')**2 + self.form.vertex_attribute(key, '_rz')**2)
+                if self.settings['rotated']:
+                    rx, ry, rz = rx, rz, ry
                 if self.settings['show.reactions.emerging']:
                     r = Vector(-rx, -ry, -rz)
                     pt = Point(x, y, z)
                 else:
                     r = Vector(rx, ry, rz)
                     pt = Point(x - rx, y - ry, z - rz)
-                vectorartist = self.app.add(r, point=pt, color=_norm(self.settings['color.edges.reactions']))
-                self._otherartists.append(vectorartist)
+                print(pt, r)
+                if self.settings['show.reactions.asarrows']:
+                    self.app.add(r, point=pt, color=_norm(self.settings['color.edges.reactions']))
+                else:
+                    pt1 = Point(x, y, z)
+                    pt2 = Point(x - rx, y - ry, z - rz)
+                    line = Line(pt1, pt2)
+                    max_f = max([abs(self.form.edge_attribute(edge, 'q') * self.form.edge_length(*edge)) for edge in self.form.edges()])
+                    width = max_f/norm*self.settings['size.edge.max_thickness']
+                    self.app.add(line,
+                                 draw_as_segment=True,
+                                 color=_norm(self.settings['color.edges.form']),
+                                 linewidth=width)
 
     def draw_vectors(self, vectors=[], bases=[]):
         """Helper to add vectors to the plotter.
@@ -397,6 +423,24 @@ class TNOPlotter(object):
             point = bases[i]
             vectorartist = self.app.add(vector, point=point)
             self._otherartists.append(vectorartist)
+
+    def draw_lines(self, lines=[]):
+        """Helper to add vectors to the plotter.
+
+        Parameters
+        ----------
+        lines : list, optional
+            The list of lines to plot, by default []
+
+        Returns
+        -------
+        None
+            The plotter is updated in place
+        """
+
+        for line in lines:
+            linecompas = Line(line[0], line[1])
+            self.app.add(linecompas, draw_as_segment=True)
 
     def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False):
         """Initiate the Plotter with the default camera options.
@@ -437,11 +481,17 @@ class TNOPlotter(object):
 
         axis = Vector(1.0, 0, 0)
         self.form = self.form.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
+        self.settings['rotated'] = True
 
         self.draw_form(scale_width=scale_width)
 
-    def draw_shape(self):
+    def draw_shape(self, update_from_parameters=True, **kwargs):
         """Adds the shape to the plot.
+
+        Parameters
+        ----------
+        update_from_parameters : bool, optional
+            Whether or not should look for shapes having special cases such as "arch" and "dome" to adapt.
 
         Returns
         -------
@@ -455,22 +505,49 @@ class TNOPlotter(object):
         intrados = self.shape.intrados
         extrados = self.shape.extrados
 
+        if update_from_parameters:
+            datashape = self.shape.datashape.copy()
+            if datashape['type'] in ['arch']:
+                stereotomy = False
+                close_bottom = True
+                total_nodes = datashape['discretisation']
+                for key in kwargs:
+                    if key == 'stereotomy':
+                        stereotomy = kwargs[key]
+                    if key == 'close_bottom':
+                        close_bottom = kwargs[key]
+                    if key == 'blocks':
+                        total_nodes = kwargs[key]
+                self.draw_arch_lines(H=datashape['H'],
+                                     L=datashape['L'],
+                                     x0=datashape['x0'],
+                                     thk=datashape['thk'],
+                                     total_nodes=total_nodes,
+                                     stereotomy=stereotomy,
+                                     close_bottom=close_bottom)
+                return
+
         self.app.add(
             intrados,
-            opacity=0.5,
+            opacity=self.settings['shape.opacity'],
             edgecolor=_norm(self.settings['color.edges.shape']),
             show_vertices=False
         )
 
         self.app.add(
             extrados,
-            opacity=0.5,
+            opacity=self.settings['shape.opacity'],
             edgecolor=_norm(self.settings['color.edges.shape']),
             show_vertices=False
         )
 
-    def draw_shape_xz(self):
+    def draw_shape_xz(self, update_from_parameters=True, **kwargs):
         """Adds the shape to the plot rotated 90 degrees.
+
+        Parameters
+        ----------
+        update_from_parameters : bool, optional
+            Whether or not should look for shapes having special cases such as "arch" and "dome" to adapt.
 
         Returns
         -------
@@ -484,8 +561,9 @@ class TNOPlotter(object):
         axis = Vector(1.0, 0, 0)
         self.shape.intrados = self.shape.intrados.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
         self.shape.extrados = self.shape.extrados.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
+        self.settings['rotated'] = True
 
-        self.draw_shape()
+        self.draw_shape(update_from_parameters=update_from_parameters, **kwargs)
 
     def draw_base_form(self):
         """Adds to the plot the base mesh which is the mesh before the nodes moved horizontally.
@@ -701,6 +779,93 @@ class TNOPlotter(object):
             force = force.transformed(T)
 
         self.app.add(force, show_edges=show_edges, show_vertices=show_vertices, show_faces=show_faces)
+
+    def draw_arch_lines(self, H=1.00, L=2.0, x0=0.0, thk=0.20, total_nodes=50, stereotomy=False, close_bottom=True):
+        """Helper to draw the lines of intrados and extrados of an arch for given parameters
+
+        Parameters
+        ----------
+        H : float, optional
+            Height of the arch, by default 1.00
+        L : float, optional
+            Span of the arch, by default 2.0
+        x0 : float, optional
+            Starting coordinate of the arch , by default 0.0
+        thk : float, optional
+            Thickness of the arch, by default 0.20
+        total_nodes : int, optional
+            Density of the shape, equals to the number of blocks, by default 50
+        stereotomy : bool, optional
+            Whether or not interfaces of the stereotomy should be drawn, by default False
+        close_bottom : bool, optional
+            Whether or not the last interfaces of the arch should be drawn, by default True
+
+        Returns
+        -------
+        None
+            Lines are added to the plotter
+        """
+
+        lines_intrados = []
+        lines_extrados = []
+
+        radius = H / 2 + (L**2 / (8 * H))
+        ri = radius - thk/2
+        re = radius + thk/2
+        spr = math.atan2((L/2), (radius - H))
+        tot_angle = 2*spr
+        angle_init = (math.pi - tot_angle)/2
+        an = tot_angle / (total_nodes)
+        zc = radius - H
+        xc = L/2 + x0
+        i = 0
+
+        for i in range(total_nodes):
+            angle_i = angle_init + i * an
+            angle_f = angle_init + (i + 1) * an
+
+            xii = xc - ri * math.cos(angle_i)
+            xif = xc - ri * math.cos(angle_f)
+            zii = ri * math.sin(angle_i) - zc
+            zif = ri * math.sin(angle_f) - zc
+
+            xei = xc - re * math.cos(angle_i)
+            xef = xc - re * math.cos(angle_f)
+            zei = re * math.sin(angle_i) - zc
+            zef = re * math.sin(angle_f) - zc
+
+            line_i = Line([xii, zii, 0.0], [xif, zif, 0.0])
+            lines_intrados.append(line_i)
+
+            line_e = Line([xei, zei, 0.0], [xef, zef, 0.0])
+            lines_extrados.append(line_e)
+
+        interfaces = []
+
+        if close_bottom:
+            interfaces = [0, total_nodes]
+        if stereotomy:
+            interfaces = list(range(total_nodes + 1))
+
+        for i in interfaces:
+            angle = angle_init + i * an
+
+            xi = xc - ri * math.cos(angle)
+            xf = xc - re * math.cos(angle)
+            zi = ri * math.sin(angle) - zc
+            zf = re * math.sin(angle) - zc
+
+            line = Line([xi, zi, 0.0], [xf, zf, 0.0])
+            lines_intrados.append(line)
+
+        # update this when collections are available
+
+        for le in lines_extrados:
+            self.app.add(le, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=_norm(self.settings['color.edges.shape']))
+        for li in lines_intrados:
+            self.app.add(li, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=_norm(self.settings['color.edges.shape']))
+
+        return
 
 
 def _norm(rgb):

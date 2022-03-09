@@ -17,14 +17,16 @@ discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
 obj = 'min'
 solver = 'SLSQP'
-constraints = ['funicular', 'envelope', 'reac_bounds']
+constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
 features = ['fixed']
-starting_point = 'tna'
+starting_point = 'loadpath'
+make_video = True
+autodiff = False
 
 # Create shape/diagram
 
-dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.5)
+dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=1.0)
 
 form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)
 
@@ -37,9 +39,10 @@ optimiser.settings['constraints'] = constraints
 optimiser.settings['variables'] = variables
 optimiser.settings['features'] = features
 optimiser.settings['starting_point'] = starting_point
-optimiser.settings['derivative_test'] = False
+optimiser.settings['derivative_test'] = True
 optimiser.settings['printout'] = True
-optimiser.settings['plot'] = True
+optimiser.settings['save_iterations'] = make_video
+optimiser.settings['autodiff'] = autodiff
 
 # Create analysis
 
@@ -54,6 +57,15 @@ analysis.run()
 view = Viewer(form, dome)
 view.show_solution()
 
-# x0 = optimiser.x0
+if make_video:
 
-# print(x0)
+    from compas_tno.viewers import animation_from_optimisation
+    from compas_tno.algorithms import reciprocal_from_form
+    import compas_tno
+
+    DATA_XFORM = compas_tno.get('Xform.json')
+    DATA_XFORCE = compas_tno.get('Xforce.json')
+
+    force = reciprocal_from_form(form)
+
+    animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, interval=150)

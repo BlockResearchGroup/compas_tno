@@ -14,8 +14,6 @@ from compas_tno.analysis import Analysis
 
 from compas_view2.shapes import Arrow
 
-from compas.geometry import normalize_vector
-from compas.geometry import scale_vector
 from compas.geometry import norm_vector
 from numpy import array
 
@@ -34,14 +32,14 @@ he = None
 
 corner = True
 
-save = True
+save = False
 solutions = {}
 
 objective = ['Ecomp-linear']
-solver = 'SLSQP'
+solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'envelopexy']
 variables = ['q', 'zb']
-features = ['fixed']  # ['sym', 'adapted-envelope']
+features = ['fixed']  # ['sym', 'update-envelope']
 axis_sym = [[[0.0, 0.0], [10.0, 10.0]]]
 # qmax = 10e+6
 starting_point = 'loadpath'
@@ -58,20 +56,19 @@ Xc = [5.0, 5.0, 0.0]
 c = 0.1
 phi = 0.0
 
-phi_list = [-67.5]  # [0.0]  # [0.0, 22.5, 45, 67.5, 90.0]  # [-22.5, -45, -67.5]
+phi_list = [0.0]  # [0.0]  # [0.0, 22.5, 45, 67.5, 90.0]  # [-22.5, -45, -67.5]
 ro = 45.0
 
 for phi in phi_list:
     solutions[phi] = {}
-    for sign in [-1]:  # get the minimum and maximum
+    solutions[phi]['features'] = features
+    for sign in [1, -1]:  # get the minimum and maximum [1, -1]
         solutions[phi][sign] = {}
 
         for obj in objective:  # set the objective
             solutions[phi][sign][obj] = {}
 
-            for thk in [0.50, 0.45, 0.40, 0.35]:  # thickness of the problem # [0.50, 0.45, 0.40, 0.35, 0.336]
-
-                # min_thk_json = '/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_14_min_thk_t_0.3355366629102956.json'
+            for thk in [0.50, 0.45, 0.40, 0.35, 0.336]:  # thickness of the problem # [0.50, 0.45, 0.40, 0.35, 0.336]
 
                 # Create form diagram
 
@@ -119,7 +116,7 @@ for phi in phi_list:
 
                 form_base = form.copy()
 
-                # Consider the displacement vecto
+                # Consider the displacement vector
 
                 lines = []
                 vector_supports = []
@@ -139,6 +136,8 @@ for phi in phi_list:
                             dXbi = [sign * math.cos(math.radians(ro)) * math.cos(math.radians(-phi)),
                                     sign * math.cos(math.radians(ro)) * math.cos(math.radians(-phi)),
                                     sign * math.sin(math.radians(-phi))]
+                            # dXbi = [sign * 1, 0, 0
+                            dXbi = [0, 0, sign * -1]
                             print('Norm of vector:', norm_vector(dXbi))
                         else:
                             dXbi = [0, 0, 0]
@@ -157,8 +156,8 @@ for phi in phi_list:
                     dXb = array(vector_supports)
                     print(dXb)
 
-                    # view.view_shape()
-                    # view.show()
+                    view.view_shape()
+                    view.show()
 
                 else:
                     raise NotImplementedError
@@ -216,8 +215,8 @@ for phi in phi_list:
                     folder = os.path.join(folder, 'fixed')
                 else:
                     folder = os.path.join(folder, 'mov_c_' + str(c))
-                    if 'adapted-envelope' in optimiser.settings['features']:
-                        folder = os.path.join(folder, 'adapted-envelope')
+                    if 'update-envelope' in optimiser.settings['features']:
+                        folder = os.path.join(folder, 'update-envelope')
                 if he:
                     folder = os.path.join(folder, 'hc_' + str(hc) + '_he_' + str(he))
                 if corner:
@@ -232,8 +231,8 @@ for phi in phi_list:
                 address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
                 # plot_superimposed_diagrams(form, form_base).show()
-                # view = Viewer(form)
-                # view.show_solution()
+                view = Viewer(form)
+                view.show_solution()
 
                 print('Optimiser exitflag:', optimiser.exitflag)
 
@@ -245,21 +244,24 @@ for phi in phi_list:
                         form.to_json(address)
                         print('Saved to: ', address)
                         # plot_superimposed_diagrams(form, form_base, save=img_file)#.show()
-                        plot_form(form, show_q=False, cracks=True, save=img_file)  #.show()
-                        starting_point = 'current'
+                        plot_form(form, show_q=False, cracks=True, save=img_file)  # .show()
+                        # starting_point = 'current'
                 else:
                     # plot_superimposed_diagrams(form, form_base).show()
                     # view = Viewer(form)
                     # view.show_solution()
                     solutions[phi][sign][obj][thk]['T/W'] = 'ERROR'
                     solutions[phi][sign][obj][thk]['E/W'] = 'ERROR'
-                    starting_point = 'loadpath'
+                    # starting_point = 'loadpath'
 
                 print(solutions)
                 print('\n')
 
 view = Viewer(form)
 view.show_solution()
+
+plot_superimposed_diagrams(form, form_base).show()
+plot_form(form, show_q=False, cracks=True).show()
 
 print(solutions)
 print('\n')

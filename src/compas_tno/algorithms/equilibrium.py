@@ -212,7 +212,7 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb, SPLU_D=None):
 
     Returns
     -------
-    Xfree : array (ni)
+    Xfree : array [ni x 3]
         x, y, z coordinates of the nodes
 
     """
@@ -222,18 +222,6 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb, SPLU_D=None):
         CiQCi = Cit @ diags(q.flatten()) @ Ci
         SPLU_D = splu(CiQCi)
     Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
-    # try:
-    # except BaseException:
-    #     A = CiQCi
-    #     b = Pi - CiQCb.dot(Xb)
-    #     resx = lsqr(A, b[:, 0])
-    #     resy = lsqr(A, b[:, 1])
-    #     resz = lsqr(A, b[:, 2])
-    #     print('* Warning: System might be bad conditioned - recured to LSQR')
-    #     xfree = resx[0].reshape(-1, 1)
-    #     yfree = resy[0].reshape(-1, 1)
-    #     zfree = resz[0].reshape(-1, 1)
-    #     Xfree = hstack([xfree, yfree, zfree])
 
     return Xfree
 

@@ -1,7 +1,5 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
-from compas_tno.plotters import plot_form
-from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import Viewer
 
 from compas_tno.utilities import apply_envelope_from_shape
@@ -36,7 +34,7 @@ Ecomp_method = 'complete'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb']
-features = ['fixed']
+features = []
 axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
 # axis_sym = [[5.0, 0.0], [5.0, 10.0]]
@@ -235,27 +233,19 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             print('Optimiser exitflag:', optimiser.exitflag)
 
-            if optimiser.exitflag == 0:
-                solutions[c][obj][thk] = thrust/weight * 100
-                img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
-                if save:
-                    form.to_json(address)
-                    print('Saved to: ', address)
-                    #plot_superimposed_diagrams(form, form_base, save=img_file).show()
-                    #plot_form(form, show_q=False, cracks=True).show()
-            else:
-                #plot_superimposed_diagrams(form, form_base).show()
-                view = Viewer(form)
-                view.show_solution()
-                break
-
     view = Viewer(form, shape=vault)
     view.draw_thrust()
     view.draw_force()
-    view.view_cracks()
-    view.view_shape()
-    view.view_reactions()
+    view.draw_cracks()
+    view.draw_shape()
+    view.draw_reactions()
     view.show()
+
+    plotter = TNOPlotter(form)
+    plotter.draw_form()
+    plotter.draw_vectors(vectors, bases)
+    plotter.draw_cracks()
+    plotter.show()
 
     import compas_tno
     location = compas_tno.get('form.json')

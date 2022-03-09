@@ -86,6 +86,8 @@ class FormDiagram(FormDiagram):
         self.parameters = {
             'type': None,
             'discretisation': None,
+            'E': None,
+            'Ah': None,
             # 'x0': None,
             # 'total_nodes': 20,
             # 'xy_span': [[0,10],[0,10]],
