@@ -3,7 +3,6 @@ from numpy.linalg import norm
 
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.algorithms import q_from_variables
-from compas.numerical import normrow
 
 from scipy.sparse import diags
 from scipy.sparse.linalg import splu
@@ -18,6 +17,9 @@ from compas_tno.problems import gradient_loadpath
 from compas_tno.problems import gradient_complementary_energy
 from compas_tno.problems import gradient_complementary_energy_nonlinear
 from compas_tno.problems import gradient_max_section
+from compas_tno.problems import gradient_feasibility
+from compas_tno.problems import gradient_reduce_thk
+from compas_tno.problems import gradient_tight_crosssection
 
 
 def objective_selector(objective):
@@ -105,26 +107,46 @@ def f_min_thrust(variables, M):
     if isinstance(M, list):
         M = M[0]
 
+    update_geometry = False  # In the typical case the geometry does not need to be updated
     k = M.k
     nb = len(M.fixed)
 
+    P_Xh_fixed = M.P[M.fixed][:, :2]  # Horizontal loads in the fixed vertices
+    P_free = M.P[M.free]  # Loads in the free vertices
+
+    X = M.X
+    Xh = X[:, :2]  # xy of the thrust (i.e. horizontal projection)
+
+    SPLU_D = None
+
     qid = variables[:k].reshape(-1, 1)
-    M.q = q_from_variables(qid, M.B, M.d)
+    q = q_from_variables(qid, M.B, M.d)
+    Q = diags(q.flatten())
 
     if 'xyb' in M.variables:
         xyb = variables[k:k + 2*nb]
-        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        update_geometry = True
     if 'zb' in M.variables:
         zb = variables[-nb:]
-        M.X[M.fixed, [2]] = zb.flatten()
+        X[M.fixed, 2] = zb.flatten()
+        if 'fixed' not in M.features:
+            update_geometry = True
 
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
-    xy = M.X[:, :2]
-    P_xy_fixed = M.P[M.fixed][:, :2]
+    if update_geometry:
+        if 'update-loads' in M.features:
+            CitQCi = M.Cit @ Q @ M.Ci
+            SPLU_D = splu(CitQCi)
+            X[M.free] = xyz_from_q(q, P_free, X[M.fixed], M.Ci, M.Cit, M.Cb, SPLU_D=SPLU_D)
+            pz = -1 * weights_from_xyz(X, M.F, M.V0, M.V1, M.V2, thk=M.thk, density=M.ro)
+            P_free[:, 2] = pz[M.free]
 
-    CfQC = M.Cb.transpose() @ diags(M.q.flatten()) @ M.C
-    Rh = CfQC @ xy - P_xy_fixed
-    f = sum(normrow(Rh))
+        X[M.free] = xyz_from_q(q, P_free, X[M.fixed], M.Ci, M.Cit, M.Cb, SPLU_D=SPLU_D)
+        Xh = X[:, :2]
+
+    CfQC = M.Cb.transpose() @ Q @ M.C
+    Rh = CfQC @ Xh - P_Xh_fixed
+    f = sum(norm(Rh, axis=1))
 
     return f
 

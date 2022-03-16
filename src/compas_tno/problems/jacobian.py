@@ -173,7 +173,7 @@ def sensitivities_wrapper(variables, M):
         dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
         dzdq[M.free] = dzidq
 
-        if 'adapted-envelope' in M.features:
+        if 'update-envelope' in M.features:
             dzmaxdt, dzmindt, dzmaxdx, dzmindx, dzmaxdy, dzmindy = dub_dlb_update(M.X[:, 0], M.X[:, 1], thk, t, M.shape, None, None, M.s, M.variables)
             dzmaxdq = dzmaxdx.dot(dxdq) + dzmaxdy.dot(dydq)
             dzmindq = dzmindx.dot(dxdq) + dzmindy.dot(dydq)
@@ -194,12 +194,12 @@ def sensitivities_wrapper(variables, M):
 
         R = CbQC.dot(M.X) - M.P[M.fixed]
 
-        dslope_dind = zeros((2 * len(M.fixed), len(M.ind)))
-        dslope_dzb = zeros((2 * len(M.fixed), len(M.fixed)))
-        dslope_dlambd = zeros((2 * len(M.fixed), 1))
+        dslope_dind = zeros((2 * nb, len(M.ind)))
+        dslope_dzb = zeros((2 * nb, nb))
+        dslope_dlambd = zeros((2 * nb, 1))
 
         for i in range(len(M.fixed)):
-            i_ = len(M.fixed) + i
+            i_ = nb + i
             zbi = M.X[M.fixed, 2][i]
             # px0i = M.P[M.fixed, 0][i]
             # py0i = M.P[M.fixed, 1][i]
@@ -249,7 +249,7 @@ def sensitivities_wrapper(variables, M):
             deriv = hstack([deriv, addcolumn])
 
     if 't' in M.variables or 'n' in M.variables:  # add a column to the derivatives to count the variable t (thickness)
-        if 'adapted-envelope' in M.features:
+        if 'update-envelope' in M.features:
             pass
         else:
             dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)[:2]
@@ -266,7 +266,7 @@ def sensitivities_wrapper(variables, M):
         dxdlambd[M.free] = SPLU_D.solve(M.px0[M.free]).reshape(-1, 1)
         dydlambd[M.free] = SPLU_D.solve(M.py0[M.free]).reshape(-1, 1)
 
-        if 'adapted-envelope' in M.features:
+        if 'update-envelope' in M.features:
             dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
             dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
             dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd])

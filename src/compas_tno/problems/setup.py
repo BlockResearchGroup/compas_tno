@@ -135,7 +135,9 @@ def set_up_general_optimisation(analysis):
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
 
-    # Specific parameters that depend on the objective:
+    # Specific parameters that depend on the objectives
+
+    # If objective is the complementary energy
 
     if 'Ecomp' in objective.split('-'):
         M.dXb = optimiser.settings['support_displacement']
@@ -314,13 +316,21 @@ def set_up_general_optimisation(analysis):
         print('Number of force variables:', len(M.ind))
         print('Number of variables:', len(x0))
         print('Number of constraints:', len(g0))
+        if 'funicular' in M.constraints:
+            print('# constraints funicular:', 2*len(M.q))
+        if 'envelopexy' in M.constraints:
+            print('# constraints envelope xy:', 4*len(M.X))
+        if 'envelope' in M.constraints:
+            print('# constraints envelope z:', 2*len(M.X))
+        if 'reac_bounds' in M.constraints:
+            print('# constraints reac_bounds:', 2*len(M.fixed))
         if fgrad:
             print('Shape of gradient:', grad.shape)
         if fjac:
             print('Shape of jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
-        if objective == 'Ecomp-nonlinear':
-            print('Init. Linear Obj Func: {0}'.format(f_complementary_energy(x0, M)))
+        # if objective == 'Ecomp-nonlinear':
+        #     print('Init. Linear Obj Func: {0}'.format(f_complementary_energy(x0, M)))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         violated = []
         for i in range(len(g0)):
