@@ -1,7 +1,6 @@
 from compas_tno.diagrams import FormDiagram
+from compas_tno.plotters.plotter import TNOPlotter
 from compas_tno.shapes import Shape
-from compas_tno.plotters import plot_form
-from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import Viewer
 
 from compas_tno.utilities import apply_envelope_from_shape
@@ -38,7 +37,7 @@ save = True
 solutions = {}
 
 objective = ['Ecomp-linear']
-solver = 'SLSQP'
+solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
 features = ['fixed']  # ['sym', 'update-envelope']
@@ -63,13 +62,13 @@ ro = 45.0
 
 for phi in phi_list:
     solutions[phi] = {}
-    for sign in [-1]:  # get the minimum and maximum
+    for sign in [1]:  # get the minimum and maximum
         solutions[phi][sign] = {}
 
         for obj in objective:  # set the objective
             solutions[phi][sign][obj] = {}
 
-            for thk in [0.50, 0.45, 0.40, 0.35]:  # thickness of the problem # [0.50, 0.45, 0.40, 0.35, 0.336]
+            for thk in [0.50]:  # thickness of the problem # [0.50, 0.45, 0.40, 0.35, 0.336]
 
                 # min_thk_json = '/Users/mricardo/compas_dev/me/min_thk/crossvault/cross_fd/crossvault_cross_fd_discr_14_min_thk_t_0.3355366629102956.json'
 
@@ -127,6 +126,8 @@ for phi in phi_list:
                 # sign = +1  # +1 for outwards / -1 for inwards
 
                 view = Viewer(form, vault)
+                vectors = []
+                bases = []
 
                 if corner:
 
@@ -152,13 +153,15 @@ for phi in phi_list:
 
                         if norm_vector(dXbi) > 0.01:
                             arrow = Arrow([x, y, z], dXbi)
+                            bases.append([x, y, z])
+                            vectors.append(arrow)
                             view.app.add(arrow, color=(0, 0, 0))
 
                     dXb = array(vector_supports)
                     print(dXb)
 
-                    # view.view_shape()
-                    # view.show()
+                    view.draw_shape()
+                    view.show()
 
                 else:
                     raise NotImplementedError
@@ -245,8 +248,8 @@ for phi in phi_list:
                         form.to_json(address)
                         print('Saved to: ', address)
                         # plot_superimposed_diagrams(form, form_base, save=img_file)#.show()
-                        plot_form(form, show_q=False, cracks=True, save=img_file)  #.show()
-                        starting_point = 'current'
+                        # plot_form(form, show_q=False, cracks=True, save=img_file)  #.show()
+                        # starting_point = 'current'
                 else:
                     # plot_superimposed_diagrams(form, form_base).show()
                     # view = Viewer(form)
@@ -259,7 +262,19 @@ for phi in phi_list:
                 print('\n')
 
 view = Viewer(form)
-view.show_solution()
+view.draw_thrust()
+view.draw_shape()
+view.draw_cracks()
+for vector in vectors:
+    view.app.add(vector, color=(0, 0, 0))
+view.show()
+
+plotter = TNOPlotter(form, shape=vault)
+plotter.draw_form()
+plotter.draw_cracks()
+plotter.draw_vectors(vectors=[vector.direction for vector in vectors], bases=[vector.position for vector in vectors])
+# plotter.draw_reactions()
+plotter.show()
 
 print(solutions)
 print('\n')

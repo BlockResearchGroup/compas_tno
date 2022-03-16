@@ -76,6 +76,9 @@ def objective_selector(objective):
     elif objective == 'max_section':
         fobj = f_max_section
         fgrad = gradient_max_section
+    elif objective == 'max_load':
+        fobj = f_tight_crosssection
+        fgrad = gradient_tight_crosssection
     else:
         print('Please, provide a valid objective for the optimisation')
         raise NotImplementedError

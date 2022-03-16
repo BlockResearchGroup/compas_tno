@@ -110,6 +110,10 @@ def sensitivities_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
+    if 'lambdv' in M.variables:
+        lambdv = variables[check: check + 1]
+        M.P[:, [2]] = lambdv * M.pzv + M.pz0
+        check = check + 1
 
     M.q = q_from_variables(qid, M.B, M.d, lambd=lambd)
 
@@ -271,6 +275,39 @@ def sensitivities_wrapper(variables, M):
 
         if 'reac_bounds' in M.constraints:
             dXdlambd = vstack([dXdlambd, dslope_dlambd])
+
+        deriv = hstack([deriv, dXdlambd])
+
+    if 'lambdv' in M.variables:  # add a column to the derivatives to count the variable lambdv (vertical load multiplier)
+
+        dzdlambdv = zeros((n, 1))
+        dzdlambdv[M.free] = SPLU_D.solve(M.pzv[M.free]).reshape(-1, 1)
+
+        if 'fixed' in M.features:
+            dXdlambd = vstack([zeros((nlin_fun, 1)), dzdlambdv, - dzdlambdv])
+        else:
+            raise NotImplementedError
+            if 'update-envelope' in M.features:
+                dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
+                dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
+                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd])
+            else:
+                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, zeros((nlin_env, 1))])
+
+        if 'reac_bounds' in M.constraints:
+            dRzdlambdv = CbQC.dot(dzdlambdv) - M.pzv[M.fixed]
+            dslope_dlambdv = zeros((2 * nb, 1))
+            for i in range(nb):
+                i_ = nb + i
+                zbi = M.X[M.fixed, 2][i]
+                signe_z = 1.0
+                if R[i, 2] < 0:
+                    signe_z = -1.0
+
+                dslope_dlambdv[i] = signe_z * zbi * abs(R[i, 0])/R[i, 2]**2 * dRzdlambdv[i]
+                dslope_dlambdv[i_] = signe_z * zbi * abs(R[i, 1])/R[i, 2]**2 * dRzdlambdv[i]
+            dXdlambd = vstack([dXdlambd, dslope_dlambdv])
+
 
         deriv = hstack([deriv, dXdlambd])
 

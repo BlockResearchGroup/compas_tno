@@ -247,6 +247,7 @@ def initialise_problem_general(form):
     nb = len(fixed)
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
     free = list(set(range(n)) - set(fixed))
+    ni = len(free)
 
     q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)  # review need of 'is_edge': True
     qmax = array([form.edge_attribute((u, v), 'qmax') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
@@ -319,6 +320,17 @@ def initialise_problem_general(form):
     dep = []
     k = m
     B = identity(m)
+    d = zeros((m, 1))
+
+    # Permutation matrix to fixed and free keys  (Useful?)
+    # with this matrix z = [Pmatrix]z will have the first ni nodes as free
+    # and the last nb nodes as fixed
+
+    Pfree = zeros((n, ni))
+    Pfixed = zeros((n, nb))
+    Pfree[free, :] = identity(ni)
+    Pfixed[fixed, :] = identity(nb)
+    Pmatrix = hstack([Pfree, Pfixed])
 
     # Create Class and build matrices
 
@@ -327,6 +339,7 @@ def initialise_problem_general(form):
     problem.q = q
     problem.m = m
     problem.n = n
+    problem.ni = ni
     problem.nb = nb
     problem.E = E
     problem.C = C
@@ -367,6 +380,9 @@ def initialise_problem_general(form):
     problem.k = k
     problem.dep = dep
     problem.B = B
+    problem.d = d
+    problem.Pmatrix = Pmatrix
+    # problem.Bfixed = Bfixed
 
     return problem
 

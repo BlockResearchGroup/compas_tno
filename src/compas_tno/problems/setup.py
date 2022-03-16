@@ -6,28 +6,6 @@ from compas_tno.problems import adapt_problem_to_sym_and_fixed_diagram
 
 from compas_tno.problems import objective_selector
 
-# from compas_tno.problems import f_min_thrust
-# from compas_tno.problems import f_max_thrust
-# from compas_tno.problems import f_bestfit
-# from compas_tno.problems import f_horprojection
-# from compas_tno.problems import f_loadpath_general
-# from compas_tno.problems import f_complementary_energy
-# from compas_tno.problems import f_complementary_energy_nonlinear
-# from compas_tno.problems import f_max_section
-
-# from compas_tno.problems import gradient_fmin
-# from compas_tno.problems import gradient_fmax
-# from compas_tno.problems import gradient_bestfit
-# from compas_tno.problems import gradient_horprojection
-# from compas_tno.problems import gradient_loadpath
-# from compas_tno.problems import gradient_complementary_energy
-# from compas_tno.problems import gradient_complementary_energy_nonlinear
-# from compas_tno.problems import gradient_max_section
-
-from compas_tno.problems import f_constant
-from compas_tno.problems import f_reduce_thk
-from compas_tno.problems import f_tight_crosssection
-
 from compas_tno.problems import callback_save_json
 from compas_tno.problems import callback_create_json
 
@@ -36,10 +14,6 @@ from compas_tno.problems import initialize_tna
 
 from compas_tno.algorithms import apply_sag
 from compas_tno.algorithms import equilibrium_fdm
-
-from compas_tno.problems import gradient_feasibility
-from compas_tno.problems import gradient_reduce_thk
-from compas_tno.problems import gradient_tight_crosssection
 
 from compas_tno.problems import sensitivities_wrapper
 
@@ -93,9 +67,9 @@ def set_up_general_optimisation(analysis):
     save_iterations = optimiser.settings.get('save_iterations', False)
     solver_convex = optimiser.settings.get('solver-convex', 'matlab')
     # thickness_type = optimiser.settings.get('thickness_type', 'constant')
+    autodiff = optimiser.settings.get('autodiff', False)
 
     pattern_center = form.parameters.get('center', None)
-    autodiff = form.parameters.get('autodiff', False)
 
     if shape:
         thk = shape.datashape['thk']
@@ -178,8 +152,16 @@ def set_up_general_optimisation(analysis):
                 stiff[index] = 1 / 2 * 1 / k[index] * lengths[index] ** 2
             M.stiff = stiff
         elif Ecomp_method == 'complete':
-            k = compute_average_edge_stiffness(form)
+            #form. add here a control over the stiffness
+            k = compute_average_edge_stiffness(form, E=E, Ah=Ah)
+            print('Average Stiffness (1/k) applied to sections:', 1/k)
             M.stiff = 1/2 * 1/k
+
+    # If objective is the max_load (new)
+
+    # if objective == 'max_load':
+    #     max_load_vector = optimiser.settings.get('max_load_direction', None)
+    #     M.pzv = max_load_vector
 
     # Set specific constraints
 
@@ -188,63 +170,22 @@ def set_up_general_optimisation(analysis):
     else:
         M.b = None
 
-    # Select Objetive and Gradient
+    # Select Objetive, Gradient, Costraints and Jacobian.
 
     fobj, fgrad = objective_selector(objective)
-
-    # if objective == 'loadpath':
-    #     fobj = f_loadpath_general
-    #     fgrad = gradient_loadpath
-    # elif objective == 'target' or objective == 'bestfit':
-    #     fobj = f_bestfit
-    #     fgrad = gradient_bestfit
-    # elif objective == 'min':
-    #     fobj = f_min_thrust
-    #     fgrad = gradient_fmin
-    # elif objective == 'max':
-    #     fobj = f_max_thrust
-    #     fgrad = gradient_fmax
-    # elif objective == 'feasibility':
-    #     fobj = f_constant
-    #     fgrad = gradient_feasibility
-    # elif objective == 'hor_projection':
-    #     fobj = f_horprojection
-    #     fgrad = gradient_horprojection
-    # elif objective == 't':  # analytical reduce thickness
-    #     fobj = f_reduce_thk
-    #     fgrad = gradient_reduce_thk
-    # elif objective == 's':  # tight UB and LB 0 -> 1/2
-    #     fobj = f_tight_crosssection
-    #     fgrad = gradient_tight_crosssection
-    # elif objective == 'n':  # vector n offset the surfaces -> larger the better (higher GSF)
-    #     fobj = f_tight_crosssection
-    #     fgrad = gradient_tight_crosssection
-    # elif objective == 'lambd':  # vector lambda as hor multiplier larger the better (higher GSF)
-    #     fobj = f_tight_crosssection
-    #     fgrad = gradient_tight_crosssection
-    # elif objective == 'Ecomp-linear':  # vector lambda as hor multiplier larger the better (higher GSF)
-    #     fobj = f_complementary_energy
-    #     fgrad = gradient_complementary_energy
-    # elif objective == 'Ecomp-nonlinear':
-    #     fobj = f_complementary_energy_nonlinear
-    #     fgrad = gradient_complementary_energy_nonlinear
-    # elif objective == 'max_section':
-    #     fobj = f_max_section
-    #     fgrad = gradient_max_section
-    # else:
-    #     print('Please, provide a valid objective for the optimisation')
-    #     raise NotImplementedError
-
-    # WIP AUTODIFF
-
-    if autodiff:
-        fgrad = jax_create_gradient(objective)
-
-    # Select Inequality Constraints and Jacobian
 
     fconstr = constr_wrapper
     if fjac:
         fjac = sensitivities_wrapper
+
+    # Alternative for autodiff
+
+    if autodiff:
+        from compas_tno.autodiff.jax_objectives import objective_selector_jax
+        from compas_tno.autodiff.jax_constraints import f_jacobian_jax
+
+        fobj, fgrad = objective_selector_jax(objective)
+        fconstr, fjac = f_jacobian_jax()
 
     # Select starting point (x0) and max/min for variables
 
@@ -327,6 +268,17 @@ def set_up_general_optimisation(analysis):
         M.tub_reac_min = zeros((2*M.nb, 1))
         x0 = append(x0, M.tub_reac_min)
         bounds = bounds + list(zip(M.tub_reac_min, M.tub_reac))
+
+    if 'lambdv' in variables:
+        max_load_vector = optimiser.settings.get('max_load_direction', None)
+        max_load_mult = optimiser.settings.get('max_load_mult', 100.0)
+        min_load_mult = 0.0
+        lambd0 = 1.0
+        print('Maximum load multiplier:', max_load_mult)
+        M.pzv = max_load_vector
+        M.pz0 = array(form.vertices_attribute('pz')).reshape(-1, 1)
+        x0 = append(x0, lambd0).reshape(-1, 1)
+        bounds = bounds + [[min_load_mult, max_load_mult]]
 
     if save_iterations:
         callback_create_json()

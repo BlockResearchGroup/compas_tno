@@ -9,6 +9,7 @@ from compas_tno.problems.bounds_update import b_update
 
 from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
+from compas_tno.algorithms import weights_from_xyz
 
 
 def constr_wrapper(variables, M):
@@ -67,11 +68,18 @@ def constr_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
+    if 'lambdv' in M.variables:
+        lambdv = variables[check: check + 1]
+        M.P[:, [2]] = lambdv * M.pzv + M.pz0
+        check = check + 1
 
     M.q = q_from_variables(qid, M.B, M.d, lambd=lambd)
 
-    # update geometry
+    if 'update-loads' in M.features:
+        M.P[:, 2] = -1 * weights_from_xyz(M.X, M.F, M.V0, M.V1, M.V2, thk=M.thk, density=M.ro)
+
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
     # if 'fixed' in M.features:
     #     M.X[M.free, 2] = X_free[:, 2]
     # else:
@@ -97,7 +105,7 @@ def constr_wrapper(variables, M):
 
     if 'envelope' in M.constraints:
         # constraints in z
-        if 'adapted-envelope' in M.features:
+        if 'update-envelope' in M.features:
             M.ub, M.lb = ub_lb_update(M.X[:, 0], M.X[:, 1], thk, t, M.shape, None, None, M.s, M.variables)
         elif 't' in M.variables or 'n' in M.variables:
             M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)

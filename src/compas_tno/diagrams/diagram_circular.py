@@ -81,6 +81,8 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                             lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
                         else:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
+                    elif partial_diagonal == 'rotation':
+                        lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
                     elif partial_diagonal == 'straight':
                         midx, midy, _ = intersection_line_line_xy([[xa, ya], [xb_, yb_]], [[xa_, ya_], [xb, yb]])
                         lines.append([[xa, ya, 0.0], [midx, midy, 0.0]])
