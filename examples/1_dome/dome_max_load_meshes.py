@@ -5,6 +5,7 @@ from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
 from compas_tno.plotters import TNOPlotter
 from compas_plotters import Plotter
+from compas.datastructures import Mesh
 from numpy import zeros
 import os
 
@@ -20,7 +21,7 @@ discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 obj = 'max_load'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']
-variables = ['q', 'zb', 'lambdv']
+variables = ['q', 'zb', 'lambdv']  # lambdv
 features = ['fixed']
 starting_point = 'loadpath'
 make_video = True
@@ -30,13 +31,24 @@ autodiff = False
 
 dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.0)
 
-form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius, diagonal=True, partial_diagonal='left')
+# mesh_file = '/Users/mricardo/compas_dev/compas_tno/data/mesh-A2.json'
+mesh_file = '/Users/mricardo/compas_dev/compas_tno/data/mesh-B2.json'
+
+mesh = Mesh.from_json(mesh_file)
+print('mesh faces:', mesh.number_of_faces())
+
+form = FormDiagram.from_mesh(mesh)
+print('form faces:', form.number_of_faces())
+
+form.delete_boundary_edges()
+form.set_boundary_supports()
+
+# form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)  # , diagonal=True, partial_diagonal='straight')
 
 plotter = Plotter()
 plotter.fontsize = 6
 artist = plotter.add(form)
 artist.draw_vertexlabels()
-
 plotter.zoom_extents()
 plotter.show()
 
@@ -48,7 +60,8 @@ max_load_mult = 600.0
 n = form.number_of_vertices()
 pzv = zeros((n, 1))
 # pzv[0] = -1.0
-pzv[31] = -1.0
+# pzv[48] = -1.0
+pzv[37] = -1.0
 
 plotter = TNOPlotter(form)
 plotter.draw_form(scale_width=False)
@@ -111,13 +124,15 @@ pc = fopt/pzt
 
 print('Percentage of load added is:', round(pc*100, 3), '%')
 
-folder = os.path.join('/Users/mricardo/compas_dev/me/max_load/dome/apex/', 'dome', 'radial_fd')
-os.makedirs(folder, exist_ok=True)
-title = 'dome' + '_' + 'radial_fd' + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '_pct_stw_' + str(pc) + '.json'
-save_form = os.path.join(folder, title)
-form.to_json(save_form)
+if exitflag == 0:
 
-print('Solution Saved at:', save_form)
+    folder = os.path.join('/Users/mricardo/compas_dev/me/max_load/dome/apex/', 'dome', 'radial_fd')
+    os.makedirs(folder, exist_ok=True)
+    title = 'dome' + '_' + 'radial_fd' + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '_pct_stw_' + str(pc) + '.json'
+    save_form = os.path.join(folder, title)
+    form.to_json(save_form)
+
+    print('Solution Saved at:', save_form)
 
 view = Viewer(form, dome)
 view.draw_thrust()
