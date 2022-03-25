@@ -352,7 +352,7 @@ def initialise_problem_general(form):
     problem.P = hstack([px, py, pz])
     problem.free = free
     problem.fixed = fixed
-    problem.ph = vstack([px[free], py[free]])
+    problem.ph = vstack([px[free_x], py[free_y]])
     problem.lb = lb
     problem.ub = ub
     problem.lb0 = lb

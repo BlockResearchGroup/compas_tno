@@ -17,6 +17,8 @@ class Optimiser(Datastructure):
         The value of the objective function at the end of the optimisation process.
     message : str
         The message provided by the solver.
+    M : problem
+        The problem with the relevat matrices.
     time : float
         The time consumption for solving.
     niter : int
@@ -60,7 +62,7 @@ class Optimiser(Datastructure):
             'constraints': ['funicular', 'envelope'],
             'features': ['fixed'],
             'variables': ['q', 'zb'],
-            'find_inds': True,
+            'find_inds': False,
             'printout': False,
             'plot': False,
             'starting_point': 'current',
@@ -76,6 +78,7 @@ class Optimiser(Datastructure):
         self.x0 = None
         self.xopt = None
         self.fopt = None
+        self.M = None
         self.mesage = None
         self.time = None
         self.niter = None

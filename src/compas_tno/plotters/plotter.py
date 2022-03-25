@@ -184,10 +184,10 @@ class TNOPlotter(object):
         self.draw_form()
         self.draw_supports()
         self.draw_cracks()
-        self.zoom_extends()
+        self.zoom_extents()
         self.show()
 
-    def zoom_extends(self, padding=0.1):
+    def zoom_extents(self, padding=0.1):
         """Wrapper to extend the objects in the active view.
 
         Parameters
@@ -231,7 +231,7 @@ class TNOPlotter(object):
 
         self.app.clear()
 
-    def draw_form(self, scale_width=True):
+    def draw_form(self, scale_width=True, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
 
         Parameters
@@ -272,7 +272,8 @@ class TNOPlotter(object):
             edges=edges,
             faces=faces,
             edgewidth=edgewidths,
-            edgecolor=_norm(self.settings['color.edges.form'])
+            edgecolor=_norm(self.settings['color.edges.form']),
+            **kwargs
         )
 
         self.formartist = formartist
@@ -347,11 +348,19 @@ class TNOPlotter(object):
 
         if self.settings['show.supports']:
             supportcolor = _norm(self.settings['color.vertex.supports'])
+            rollercolor = _norm((255, 165, 0))
 
             for key in self.form.vertices_where({'is_fixed': True}):
                 x, y, z = self.form.vertex_coordinates(key)
                 pt = Point(x, y, z)
                 pointartist = self.app.add(pt, facecolor=supportcolor, size=self.settings['size.vertex'])
+                self._otherartists.append(pointartist)
+
+            rollers = list(self.form.vertices_where({'rol_x': True})) + list(self.form.vertices_where({'rol_y': True}))
+            for key in rollers:
+                x, y, z = self.form.vertex_coordinates(key)
+                pt = Point(x, y, z)
+                pointartist = self.app.add(pt, facecolor=rollercolor, size=self.settings['size.vertex'])
                 self._otherartists.append(pointartist)
 
     def draw_reactions(self):
@@ -565,7 +574,7 @@ class TNOPlotter(object):
 
         self.draw_shape(update_from_parameters=update_from_parameters, **kwargs)
 
-    def draw_base_form(self):
+    def draw_base_form(self, form_base=None):
         """Adds to the plot the base mesh which is the mesh before the nodes moved horizontally.
 
         Returns
@@ -573,6 +582,9 @@ class TNOPlotter(object):
         None
             The plotter is updated in place
         """
+
+        if form_base:
+            self.form_base = form_base
 
         if not self.form_base:
             return
@@ -588,6 +600,33 @@ class TNOPlotter(object):
             show_vertices=False,
             show_faces=False
         )
+
+    def draw_constraints(self):
+        """ Draw the constraints applied.
+
+        Returns
+        -------
+        None
+            The Viewer object is modified in place
+        """
+
+        draw_xy_constraints = True
+
+        if draw_xy_constraints:
+            for key in self.form.vertices():
+                x, y, _ = self.form.vertex_coordinates(key)
+                xmin = self.form.vertex_attribute(key, 'xmin')
+                xmax = self.form.vertex_attribute(key, 'xmax')
+                ymin = self.form.vertex_attribute(key, 'ymin')
+                ymax = self.form.vertex_attribute(key, 'ymax')
+                if xmin:
+                    p0 = [xmin, ymin]
+                    p1 = [xmax, ymin]
+                    p2 = [xmax, ymax]
+                    p3 = [xmin, ymax]
+                    lines = [Line(p0, p1), Line(p1, p2), Line(p2, p3), Line(p3, p0)]
+                    for line in lines:
+                        self.app.add(line, draw_as_segment=True)
 
     def draw_form_independents(self, show_text=True):
         """Draw the form diagram with highlight in the independent edges.

@@ -89,7 +89,10 @@ def set_up_general_optimisation(analysis):
             apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
             break
 
-    M = initialise_problem_general(form)
+    M = optimiser.M
+    if not M:
+        M = initialise_problem_general(form)
+
     M.variables = variables
     M.constraints = constraints
     M.features = features
@@ -110,11 +113,13 @@ def set_up_general_optimisation(analysis):
     if starting_point == 'current':
         pass
     elif starting_point == 'sag':
-        apply_sag(form)
+        apply_sag(form, boundary_force=50.0)  # the issue here is that after the sag the M.x0, M.y0 are not updated
+        initialize_tna(form)
     elif starting_point == 'loadpath':
         initialize_loadpath(form, problem=M, find_inds=find_inds, solver_convex=solver_convex)
     elif starting_point == 'relax':
         equilibrium_fdm(form)
+        initialize_tna(form)
     elif starting_point == 'tna' or starting_point == 'TNA':
         initialize_tna(form)
     else:
