@@ -79,7 +79,7 @@ class Optimiser(Datastructure):
         self.xopt = None
         self.fopt = None
         self.M = None
-        self.mesage = None
+        self.message = None
         self.time = None
         self.niter = None
         self.exitflag = None

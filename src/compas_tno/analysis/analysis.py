@@ -20,6 +20,11 @@ from compas_tno.utilities import apply_horizontal_multiplier
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import apply_bounds_reactions
+from compas_tno.utilities import apply_envelope_on_xy
+
+from compas_tno.diagrams import FormDiagram
+from compas_tno.shapes import Shape
+from compas_tno.optimisers import Optimiser
 
 from numpy import array
 from scipy import interpolate
@@ -70,10 +75,45 @@ class Analysis(Data):
 
     def __init__(self, name="Analysis"):
         self.settings = {}
-        self.shape = None
         self.form = None
+        self.shape = None
         self.optimiser = None
         self.name = name
+
+    @property
+    def data(self):
+        """dict : A data dict representing the shape data structure for serialization.
+        """
+        data = {
+            'form': self.form.data,
+            'optimiser': self.optimiser.data,
+            'shape': self.shape.data,
+            'name': self.name,
+            'settings': self.settings
+        }
+        return data
+
+    @data.setter
+    def data(self, data):
+        if 'data' in data:
+            data = data['data']
+        self.settings = data.get('settings') or {}
+        self.name = data.get('name')
+
+        formdata = data.get('form', None)
+        shapedata = data.get('shape', None)
+        optimiserdata = data.get('optimiser', None)
+
+        self.form = None
+        self.shape = None
+        self.optimiser = None
+
+        if formdata:
+            self.form = FormDiagram.from_data(formdata)
+        if shapedata:
+            self.shape = Shape.from_data(shapedata)
+        if optimiserdata:
+            self.optimiser = Optimiser.from_data(optimiserdata)
 
     @classmethod
     def from_elements(cls, shape, form, optimiser):
@@ -187,6 +227,20 @@ class Analysis(Data):
         # Go over nodes and find node = key and apply the pointed load pz += magnitude
 
         self.form = form  # With correct forces
+
+        return
+
+    def apply_envelope_on_xy(self, c=0.5):
+        """_summary_
+
+        Parameters
+        ----------
+        c : float, optional
+            Distance in (x, y) to constraint the nodes limiting the hor. movement, by default 0.5
+
+        """
+
+        apply_envelope_on_xy(self.form, c=c)
 
         return
 
