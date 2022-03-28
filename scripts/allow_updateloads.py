@@ -17,15 +17,15 @@ discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
 obj = 'min'
 solver = 'IPOPT'
-constraints = ['funicular', 'envelope', 'reac_bounds']
+constraints = ['funicular', 'envelope']
 variables = ['q', 'zb']
-features = ['fixed']
+features = ['fixed']  # , 'update-loads']
 starting_point = 'tna'
 make_video = True
 
 # Create shape/diagram
 
-dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.5)
+dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=1.0)
 
 form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)
 
@@ -40,7 +40,7 @@ optimiser.settings['features'] = features
 optimiser.settings['starting_point'] = starting_point
 optimiser.settings['derivative_test'] = True
 optimiser.settings['printout'] = True
-optimiser.settings['plot'] = True
+optimiser.settings['plot'] = False
 optimiser.settings['save_iterations'] = make_video
 
 # Create analysis
@@ -54,20 +54,25 @@ analysis.set_up_optimiser()
 analysis.run()
 
 view = Viewer(form, dome)
-view.show_solution()
+view.draw_thrust()
+view.draw_shape()
+view.draw_force()
+view.draw_cracks()
+view.draw_reactions()
+view.show()
 
 
-# # ---- MAKE THE VIDEO ----
+# # # ---- MAKE THE VIDEO ----
 
-if make_video:
+# if make_video:
 
-    from compas_tno.viewers import animation_from_optimisation
-    from compas_tno.algorithms import reciprocal_from_form
-    import compas_tno
+#     from compas_tno.viewers import animation_from_optimisation
+#     from compas_tno.algorithms import reciprocal_from_form
+#     import compas_tno
 
-    DATA_XFORM = compas_tno.get('Xform.json')
-    DATA_XFORCE = compas_tno.get('Xforce.json')
+#     DATA_XFORM = compas_tno.get('Xform.json')
+#     DATA_XFORCE = compas_tno.get('Xforce.json')
 
-    force = reciprocal_from_form(form)
+#     force = reciprocal_from_form(form)
 
-    animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, interval=150, record=True)
+#     animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, interval=150)

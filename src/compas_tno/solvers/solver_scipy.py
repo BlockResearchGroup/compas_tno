@@ -37,7 +37,7 @@ def run_optimisation_scipy(analysis):
     grad_choice = optimiser.settings.get('gradient', False)
     jac_choice = optimiser.settings.get('jacobian', False)
     max_iter = optimiser.settings.get('max_iter', 500)
-    callback = optimiser.settings.get('callback', None)
+    callback = optimiser.callback
 
     if grad_choice is False:
         fgrad = None

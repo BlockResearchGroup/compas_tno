@@ -84,6 +84,7 @@ class Optimiser(Datastructure):
         self.niter = None
         self.exitflag = None
         self.log = None
+        self.callback = None
 
     @property
     def data(self):

@@ -277,7 +277,7 @@ def set_up_general_optimisation(analysis):
         bounds = bounds + list(zip(M.tub_reac_min, M.tub_reac))
 
     if 'lambdv' in variables:
-        max_load_vector = optimiser.settings.get('max_load_direction', None)
+        max_load_vector = array(optimiser.settings.get('max_load_direction', None)).reshape(-1, 1)
         max_load_mult = optimiser.settings.get('max_load_mult', 100.0)
         min_load_mult = 0.0
         lambd0 = 1.0
@@ -289,7 +289,7 @@ def set_up_general_optimisation(analysis):
 
     if save_iterations:
         callback_create_json()
-        optimiser.settings['callback'] = callback_save_json
+        optimiser.callback = callback_save_json
         callback_save_json(x0)  # save staring point to file
 
     if plot:

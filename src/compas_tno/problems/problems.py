@@ -131,6 +131,7 @@ class Problem():
         self.q = None
         self.m = None
         self.n = None
+        self.ni = None
         self.nb = None
         self.E = None
         self.C = None

@@ -79,14 +79,14 @@ n = 10
 #     't': 0.0,
 # }
 
-# data = {
-#     'type': 'dome',
-#     'thk': 0.15,
-#     'discretisation': [50, 50],
-#     't' : 0.0,
-#     'center': [5.0, 5.0],
-#     'radius': 5.0,
-# }
+data = {
+    'type': 'dome',
+    'thk': 0.50,
+    'discretisation': [50, 50],
+    't' : 0.0,
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+}
 
 # data = {
 #     'type': 'domicalvault',
@@ -112,32 +112,32 @@ n = 10
 # }
 
 
-n = 2
+# n = 2
 
-data = {
-    'type': 'dome_polar',
-    'thk': 0.50,
-    'discretisation': [8*n, 20*n],
-    't' : 0.0,
-    'center': [5.0, 5.0],
-    'radius': 5.0,
-}
+# data = {
+#     'type': 'dome_polar',
+#     'thk': 0.50,
+#     'discretisation': [8*n, 20*n],
+#     't' : 0.0,
+#     'center': [5.0, 5.0],
+#     'radius': 5.0,
+# }
 
-data = {
-    'type': 'arch',
-    'H': 1.0,
-    'L': 2.0,
-    'thk': 0.10,
-    'discretisation': 13,
-    'b': 0.5,
-    't': 0.0,
-    'x0': 0.0,
-}
+# data = {
+#     'type': 'arch',
+#     'H': 1.0,
+#     'L': 2.0,
+#     'thk': 0.10,
+#     'discretisation': 13,
+#     'b': 0.5,
+#     't': 0.0,
+#     'x0': 0.0,
+# }
 
 vault = Shape.from_library(data)
 
 viewer = Viewer(shape=vault)
-viewer.view_shape()
+viewer.draw_shape()
 viewer.show()
 
 # print(len(vault.data))

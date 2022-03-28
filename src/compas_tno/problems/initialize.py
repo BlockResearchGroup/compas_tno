@@ -20,8 +20,8 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVX'
 
     Returns
     -------
-    None
-        Optimisation runs in the background
+    problem : Problem
+        The class with the main matrices of the problem
     """
 
     if solver_convex == 'CVX' or solver_convex == 'MATLAB':

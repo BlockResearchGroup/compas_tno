@@ -205,7 +205,7 @@ def run_optimisation_ipopt(analysis):
     printout = optimiser.settings.get('printout', False)
     gradients = optimiser.settings.get('gradient', False)
     variables = optimiser.settings['variables']
-    callback = optimiser.settings.get('callback', None)
+    callback = optimiser.callback
 
     bounds = optimiser.bounds
     x0 = optimiser.x0

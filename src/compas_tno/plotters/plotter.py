@@ -660,15 +660,16 @@ class TNOPlotter(object):
                 color[edge] = (0, 0, 0)
                 width[edge] = base_thick
 
-        self.app.add(
+        artist = self.app.add(
             self.form,
             edges=edges,
             edgewidth=width,
-            edge_text=text,
+            edgetext=text,
             edgecolor=color,
             show_vertices=False,
             show_faces=False
         )
+        self.formartist = artist
 
     def highlight_vertices(self, vertices, show_forcepolygon=False):
         """Highlight a vertex in the form diagram and in the force diagram (if they have been previously added to the plotter)

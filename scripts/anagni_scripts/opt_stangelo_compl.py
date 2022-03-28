@@ -1,4 +1,11 @@
 # import compas_tno
+import math
+from compas_tno.algorithms import form_update_with_parallelisation
+from compas_tno.problems import initialize_loadpath
+from compas_tno.problems import initialize_tna
+from compas_tno.algorithms import apply_sag
+from compas_tno.utilities import apply_envelope_from_shape
+from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.optimisers import Optimiser
@@ -12,6 +19,7 @@ from compas_tno.viewers import Viewer
 from compas.datastructures import Mesh
 from compas_tno.plotters import TNOPlotter
 
+from numpy import array
 from compas_plotters import Plotter
 import json
 import os
@@ -29,8 +37,8 @@ x0 = -4.431
 xf = 1.313
 y0 = 14.968
 yf = 18.312
-xc = (xf - x0)/2
-yc = (yf - y0)/2
+xc = (xf + x0)/2
+yc = (yf + y0)/2
 
 # small vault
 # x0 = -4.190
@@ -42,7 +50,7 @@ k = 1.0
 n = 2
 ro_fill = 14.0
 
-objective = 'Ecomp'
+objective = 'Ecomp-linear'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope']
 variables = ['ind', 'zb']
@@ -65,9 +73,11 @@ vertices, faces = mesh.to_vertices_and_faces()
 form = FormDiagram.from_vertices_and_faces(vertices, faces)
 
 # Find the supports on the corners
+vector_supports = []
+lines = []
 for key in form.vertices():
     deg = form.vertex_degree(key)
-    x, y, _ = form.vertex_coordinates(key)
+    x, y, z = form.vertex_coordinates(key)
     a = abs(x - x0) < 0.1
     b = abs(y - y0) < 0.1
     c = abs(x - xf) < 0.1
@@ -75,12 +85,23 @@ for key in form.vertices():
     test = [a, b, c, d]
     if sum(test) == 2:
         form.vertex_attribute(key, 'is_fixed', True)
+        print(x, y, z, xc)
+        if x < xc:
+            dXbi = [-1, 0, 0]
+        else:
+            dXbi = [1, 0, 0]
+        vector_supports.append(dXbi)
+        lines.append([[x, y, z], [x + dXbi[0], y + dXbi[1], z + dXbi[2]]])
 
-# plotter = TNOPlotter(form)
-# plotter.draw_form(scale_width=False)
-# plotter.draw_supports()
-# plotter.zoom_extents()  # why zoom extents does not work?
-# plotter.show()
+dXb = array(vector_supports)
+print(dXb)
+
+plotter = TNOPlotter(form)
+plotter.draw_form(scale_width=False)
+plotter.draw_lines(lines)
+plotter.draw_supports()
+plotter.zoom_extents()  # why zoom extents does not work?
+plotter.show()
 
 # ----------------------- Point Cloud -----------------------
 
@@ -133,8 +154,6 @@ print('Area is: {0:.2f}'.format(area))
 
 # view_shapes(vault).show()
 
-from compas_tno.utilities import apply_selfweight_from_shape
-from compas_tno.utilities import apply_envelope_from_shape
 
 apply_selfweight_from_shape(form, vault)
 apply_envelope_from_shape(form, vault)
@@ -197,8 +216,6 @@ plotter.zoom_extents()
 plotter.show()
 
 
-from compas_tno.algorithms import apply_sag
-from compas_tno.problems import initialize_tna
 apply_sag(form, boundary_force=25.0)
 initialize_tna(form)
 
@@ -212,8 +229,6 @@ view.show()
 
 # --------------------- 3. Create Starting point with TNA ---------------------
 
-from compas_tno.problems import initialize_loadpath
-from compas_tno.algorithms import form_update_with_parallelisation
 
 form_lp = os.path.join(folder, file_name + '-lp.json')
 
@@ -253,6 +268,7 @@ optimiser.settings['qmax'] = 1000.0
 optimiser.settings['gradient'] = gradients
 optimiser.settings['jacobian'] = gradients
 optimiser.settings['max_iter'] = max_iter
+optimiser.settings['support_displacement'] = dXb
 
 # --------------------- 5. Set up and run analysis ---------------------
 
@@ -275,7 +291,6 @@ view.draw_shape()
 view.draw_cracks()
 view.show()
 
-import math
 
 for key in form.vertices_where({'is_fixed': True}):
     rx = form.vertex_attribute(key, '_rx')
