@@ -61,7 +61,7 @@ data = {
     'type': 'fan_fd',
     'xy_span': [[0, 10], [0, 10]],
     'discretisation': [10, 10],
-    'fix': 'all',
+    'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data)

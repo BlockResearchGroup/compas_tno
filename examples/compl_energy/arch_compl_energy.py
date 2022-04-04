@@ -21,7 +21,7 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 20
+discretisation = 50
 type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
 type_structure = 'arch'
 thk = 1.0
@@ -112,9 +112,9 @@ for c in [0.1]:  # set the distance that the nodes can move
                     x, y, z = form.vertex_coordinates(key)
 
                     if x < Xc[0]:
-                        dXbi = [0, 0, -1]  # normalize_vector([-1, 0, -1])  # left support of the arch
+                        dXbi = [0, 0, 1]  # normalize_vector([-1, 0, -1])  # left support of the arch
                     else:
-                        dXbi = [1, 0, 0]  # right support of the arch
+                        dXbi = [0, 0, 1]  # right support of the arch
 
                     vector_supports.append(dXbi)
                     # vectors_plot.append(Vector(dXbi[0], dXbi[1], dXbi[2]))
@@ -186,6 +186,10 @@ for c in [0.1]:  # set the distance that the nodes can move
                 ry = form.vertex_attribute(key, '_ry')
                 rz = form.vertex_attribute(key, '_rz')
                 CEnergy += - dXb[i][0] * rx - dXb[i][1] * ry - dXb[i][2] * rz
+
+            thrust = form.thrust()
+            print('Thrust/2:', thrust/2)
+            print('Thrust/Weight/2:', thrust/weight/2)
 
             print('CEnergy:', CEnergy)
             print('Ratio CEnergy/Weight:', CEnergy/weight)

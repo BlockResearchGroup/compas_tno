@@ -9,7 +9,7 @@ from compas_view2.shapes import Arrow
 from compas_view2.shapes import Text
 
 
-class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
+class Viewer(object):
     """A Class for view 3D thrust networks and shapes.
 
     Parameters
@@ -78,7 +78,6 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
 
             'tol.forces': 1e-3,
         }
-        self.initiate_app()
 
     def initiate_app(self):
         """ Initiate the App with the default camera options
@@ -106,6 +105,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The objects are updated in place
         """
 
+        if not self.app:
+            self.initiate_app()
+
         self.draw_thrust()
         self.draw_cracks()
         self.draw_shape()
@@ -121,6 +123,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The objects are updated in place
         """
 
+        if not self.app:
+            raise ValueError('First Initiate the app')
+
         self.app.show()
 
     def save(self, path='temp/fig.png'):
@@ -131,6 +136,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
         None
             The objects are updated in place
         """
+
+        if not self.app:
+            raise ValueError('First Initiate the app')
 
         # self.app.save(path)
         self.app.view.init()
@@ -147,6 +155,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The objects are updated in place
         """
 
+        if not self.app:
+            raise ValueError('First Initiate the app')
+
         self.app.view.objects = {}
 
     def draw_thrust(self):
@@ -157,6 +168,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
         None
             The viewer is updated in place
         """
+
+        if not self.app:
+            self.initiate_app()
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
@@ -188,6 +202,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
         None
             The viewer is updated in place.
         """
+
+        if not self.app:
+            self.initiate_app()
 
         intrad = 1
         extrad = 1
@@ -221,6 +238,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The Viewer object is modified in place
         """
 
+        if not self.app:
+            self.initiate_app()
+
         if self.shape:
             datashape = self.shape.datashape.copy()
             if datashape['type'] in ['dome']:
@@ -246,6 +266,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The Viewer object is modified in place
         """
 
+        if not self.app:
+            self.initiate_app()
+
         shape = self.shape
         if not shape:
             shape = Shape.from_formdiagram_and_attributes(self.thrust)
@@ -263,6 +286,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The Viewer object is modified in place
         """
 
+        if not self.app:
+            self.initiate_app()
+
         shape = self.shape
         if not shape:
             shape = Shape.from_formdiagram_and_attributes(self.thrust)
@@ -279,7 +305,7 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
                 line = Line(pt0, pt1)
                 self.app.add(line, name='normal-{}'.format(key))
 
-    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5):
+    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5, color=(125, 125, 125)):
         """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
 
         Parameters
@@ -297,13 +323,16 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The Viewer is updated in place.
         """
 
+        if not self.app:
+            self.initiate_app()
+
         if not mesh:
             mesh = self.thrust
 
         vertices_mesh, faces_mesh = mesh.to_vertices_and_faces()
         mesh = Mesh.from_vertices_and_faces(vertices_mesh, faces_mesh)
 
-        self.app.add(mesh, show_edges=show_edges, opacity=opacity)
+        self.app.add(mesh, show_edges=show_edges, opacity=opacity, color=_norm(color))
 
     def draw_reactions(self):
         """Draw the reaction vectors on the supports according to the settings
@@ -313,6 +342,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
         None
             The viewer is updated in place.
         """
+
+        if not self.app:
+            self.initiate_app()
 
         if self.settings['show.reactions']:
             reaction_scale = self.settings['scale.reactions']
@@ -334,6 +366,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
             The viewer is updated in place.
         """
 
+        if not self.app:
+            self.initiate_app()
+
         if self.settings['show.reactions']:
             reaction_scale = self.settings['scale.loads']
 
@@ -353,6 +388,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
         None
             The viewer is updated in place.
         """
+
+        if not self.app:
+            self.initiate_app()
 
         if self.settings['show.reactionlabels']:
             reaction_scale = self.settings['scale.reactions']
@@ -384,6 +422,9 @@ class Viewer(object):  # CHANGE draw_xxx functions to draw_xxx functions
         None
             The Viewer is updated in place.
         """
+
+        if not self.app:
+            self.initiate_app()
 
         if not force:
             from compas_tno.algorithms import reciprocal_from_form  # here to avoid double imports
