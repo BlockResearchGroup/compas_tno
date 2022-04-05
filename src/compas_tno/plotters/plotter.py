@@ -21,10 +21,10 @@ class TNOPlotter(object):
     ----------
     form : FormDiagram, optional
         The form diagram to be plotted, by default None
-    form_base : FormDiagram, optional
-        The base form diagram to be visualised if pattern is allowed to move, by default None
     shape : Shape, optional
         The shape of the masonry constraining the solution, by default None
+    form_base : FormDiagram, optional
+        The base form diagram to be visualised if pattern is allowed to move, by default None
     force : ForceDiagram, optional
         The force diagram associates with the form diagram, by default None
     figsize : tuple, optional
@@ -38,8 +38,8 @@ class TNOPlotter(object):
     """
 
     def __init__(self, form=None,
-                 form_base=None,
                  shape=None,
+                 form_base=None,
                  force=None,
                  figsize=(8, 8),
                  *args,
@@ -247,6 +247,7 @@ class TNOPlotter(object):
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
+        edgecolor = {(u, v): _norm(self.settings['color.edges.form']) for u, v in self.form.edges()}
 
         if scale_width:
             forcedensities = self.form.edges_attribute('q')
@@ -272,7 +273,7 @@ class TNOPlotter(object):
             edges=edges,
             faces=faces,
             edgewidth=edgewidths,
-            edgecolor=_norm(self.settings['color.edges.form']),
+            edgecolor=edgecolor,
             **kwargs
         )
 
