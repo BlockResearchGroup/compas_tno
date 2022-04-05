@@ -35,10 +35,9 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
 
     from compas_tno.viewers import Viewer
     viewer = Viewer(form, shape=shape)
-
     if settings:
         viewer.settings = settings
-        viewer.initiate_app()
+    viewer.initiate_app()
 
     with open(file_Xform, mode='r', encoding='utf-8') as f:
         Xform = json.load(f)
@@ -54,8 +53,12 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
 
     out = None
     if record:
-        out = compas_tno.get('out.gif')
+        if isinstance(record, str):
+            out = record
+        else:
+            out = compas_tno.get('out.gif')
         print('Save gif at:', out)
+
 
     @viewer.app.on(interval=interval, frames=iterations, record=record, record_path=out)
     def update(f):
@@ -78,6 +81,7 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
         viewer.draw_thrust()
         # viewer.draw_cracks()
         # viewer.draw_reactions()
+        viewer.draw_loads()
         viewer.draw_shape()
         viewer.draw_reactions()
 
