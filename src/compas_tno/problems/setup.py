@@ -62,7 +62,7 @@ def set_up_general_optimisation(analysis):
     starting_point = optimiser.settings.get('starting_point', 'current')
     find_inds = optimiser.settings.get('find_inds', False)
     qmin = optimiser.settings.get('qmin', -1e+4)
-    qmax = optimiser.settings.get('qmax', +1e+8)
+    qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
     solver_convex = optimiser.settings.get('solver-convex', 'matlab')
