@@ -12,6 +12,7 @@ from compas_tno.shapes import Shape
 from compas.utilities import rgb_to_hex
 import matplotlib.pyplot as plt
 import math
+from PIL import Image
 
 
 class TNOPlotter(object):
@@ -230,6 +231,23 @@ class TNOPlotter(object):
         """
 
         self.app.clear()
+
+    def save(self, filepath):
+        """Save the plotter window as an image.
+
+        Parameters
+        ----------
+        filepath : str
+            The file path to save the image.
+
+        Returns
+        -------
+        None
+            Picture is saved
+
+        """
+
+        self.app.save(filepath)
 
     def draw_form(self, scale_width=True, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
@@ -907,6 +925,30 @@ class TNOPlotter(object):
             self.app.add(li, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=_norm(self.settings['color.edges.shape']))
 
         return
+
+    def make_gif(self, images_file, filepath, interval=10):
+        """Make a gif from a list of image files
+
+        Parameters
+        ----------
+        images_file : str
+            List with the files to make the image. Note that list should be ordered
+        filepath : str
+            Pathh to save the .gif file
+        interval : int, optional
+            Interval between images, by default 10
+
+        Returns
+        -------
+        None
+            GIF is saved in the address provided
+        """
+
+        images = []
+        for path in images_file:
+            images.append(Image.open(path))
+
+        images[0].save(filepath, save_all=True, append_images=images[1:], optimize=False, duration=interval * 10, loop=0)
 
 
 def _norm(rgb):

@@ -41,7 +41,6 @@ class Viewer(object):
             'show.reactionlabels': True,
             'show.cracks': True,
             'show.vertex.outside': True,
-            'show.edge.thickness': True,
 
             'camera.target': [0, 0, 0],
             'camera.distance': 40,
@@ -67,7 +66,7 @@ class Viewer(object):
             'opacity.shapes': 0.5,
 
             'color.edges.thrust': (255, 0, 0),
-            'color.edges.reactions': (125, 125, 125),
+            'color.edges.reactions': (255, 192, 203),
             'color.vertex.extrados': (0, 125, 0),
             'color.vertex.intrados': (0, 0, 255),
             'color.vertex.outside': (200, 200, 200),
@@ -160,8 +159,13 @@ class Viewer(object):
 
         self.app.view.objects = {}
 
-    def draw_thrust(self):
+    def draw_thrust(self, scale_width=True):
         """Draw thrust network according to the settings
+
+        Parameters
+        ----------
+        scale_width : bool, optional
+            If the lines of the form diagram should be scaled with regards to the force carried, by default True
 
         Returns
         -------
@@ -174,9 +178,8 @@ class Viewer(object):
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
-        thickness = self.settings['show.edge.thickness']
 
-        if thickness:
+        if scale_width:
             forces = [self.thrust.edge_attribute((u, v), 'q') * self.thrust.edge_length(u, v) for u, v in self.thrust.edges_where({'_is_edge': True})]
             fmax = max(abs(max(forces)), abs(min(forces)))
 
@@ -184,7 +187,7 @@ class Viewer(object):
             Xu = self.thrust.vertex_coordinates(u)
             Xv = self.thrust.vertex_coordinates(v)
             line = Line(Xu, Xv)
-            if not thickness:
+            if not scale_width:
                 self.app.add(line, name=str((u, v)), linewidth=base_thick, color=_norm(self.settings['color.edges.thrust']))
                 continue
             q = self.thrust.edge_attribute((u, v), 'q')
