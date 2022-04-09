@@ -44,7 +44,7 @@ gradients = True
 
 if objective == ['t']:
     variables.append(objective[0])
-if objective == ['lambd']:
+if objective == ['lambdh']:
     variables.append(objective[0])
 
 print(variables)
@@ -96,7 +96,7 @@ for c in [c]:  # set the distance that the nodes can move
 
             apply_envelope_from_shape(form, vault)
             apply_selfweight_from_shape(form, vault)
-            if 'lambd' in variables:
+            if 'lambdh' in variables:
                 apply_horizontal_multiplier(form, lambd=lambd)
 
             if 'envelopexy' in constraints:
@@ -155,7 +155,7 @@ for c in [c]:  # set the distance that the nodes can move
                 folder = os.path.join(folder, 'mov_c_' + str(c))
             if he:
                 folder = os.path.join(folder, 'hc_' + str(hc) + '_he_' + str(he))
-            if 'lambd' in obj:
+            if 'lambdh' in obj:
                 folder = os.path.join(folder, 'max_lambd')
                 lambd = -1 * optimiser.fopt
             os.makedirs(folder, exist_ok=True)
@@ -163,7 +163,7 @@ for c in [c]:  # set the distance that the nodes can move
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            if 'lambd' in obj:
+            if 'lambdh' in obj:
                 address = save_form + '_' + optimiser.settings['objective'] + '_' + str(lambd) + '_thk_' + str(100*thk) + '.json'
 
             plot_superimposed_diagrams(form, form_base).show()

@@ -88,8 +88,8 @@ optimiser.settings['plot'] = True
 optimiser.settings['save_iterations'] = make_video
 optimiser.settings['autodiff'] = autodiff
 
-optimiser.settings['max_load_mult'] = max_load_mult
-optimiser.settings['max_load_direction'] = pzv
+optimiser.settings['max_lambd'] = max_load_mult
+optimiser.settings['load_direction'] = pzv
 
 # Create analysis
 

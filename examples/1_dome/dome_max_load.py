@@ -30,7 +30,8 @@ autodiff = False
 
 dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.0)
 
-form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius, diagonal=True, partial_diagonal='left')
+# form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius, diagonal=True, partial_diagonal='left')
+form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)
 
 plotter = Plotter()
 plotter.fontsize = 6
@@ -47,8 +48,8 @@ plotter.show()
 max_load_mult = 600.0
 n = form.number_of_vertices()
 pzv = zeros((n, 1))
-# pzv[0] = -1.0
-pzv[31] = -1.0
+pzv[0] = -1.0
+# pzv[31] = -1.0
 
 plotter = TNOPlotter(form)
 plotter.draw_form(scale_width=False)
@@ -70,9 +71,8 @@ optimiser.settings['plot'] = True
 optimiser.settings['save_iterations'] = make_video
 optimiser.settings['autodiff'] = autodiff
 
-
-optimiser.settings['max_load_mult'] = max_load_mult
-optimiser.settings['max_load_direction'] = pzv
+optimiser.settings['max_lambd'] = max_load_mult
+optimiser.settings['load_direction'] = pzv
 
 # Create analysis
 
@@ -89,7 +89,6 @@ for key in form.vertices():
     pzt += pz
 
 print('Total load of:', pzt)
-load_100 = pzt/100.0
 
 analysis.set_up_optimiser()
 
@@ -119,23 +118,22 @@ form.to_json(save_form)
 
 print('Solution Saved at:', save_form)
 
+plotter = TNOPlotter(form, dome)
+plotter.show_solution()
+
 view = Viewer(form, dome)
-view.draw_thrust()
-view.draw_shape()
 view.draw_force()
-view.draw_cracks()
-view.draw_reactions()
-view.show()
+view.show_solution()
 
-if make_video:
+# if make_video:
 
-    from compas_tno.viewers import animation_from_optimisation
-    from compas_tno.algorithms import reciprocal_from_form
-    import compas_tno
+#     from compas_tno.viewers import animation_from_optimisation
+#     from compas_tno.algorithms import reciprocal_from_form
+#     import compas_tno
 
-    DATA_XFORM = compas_tno.get('Xform.json')
-    DATA_XFORCE = compas_tno.get('Xforce.json')
+#     DATA_XFORM = compas_tno.get('Xform.json')
+#     DATA_XFORCE = compas_tno.get('Xforce.json')
 
-    force = reciprocal_from_form(form)
+#     force = reciprocal_from_form(form)
 
-    animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, interval=150)
+#     animation_from_optimisation(form, DATA_XFORM, force, DATA_XFORCE, interval=150)

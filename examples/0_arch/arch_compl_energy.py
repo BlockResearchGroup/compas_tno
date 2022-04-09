@@ -17,6 +17,7 @@ from compas_tno.analysis import Analysis
 
 from compas.geometry import normalize_vector
 from numpy import array
+import math
 import os
 
 span = 10.0
@@ -29,29 +30,27 @@ thk = 1.0
 save = True
 solutions = {}
 
-objective = ['Ecomp-nonlinear']
+objective = ['Ecomp-linear']
 Ecomp_method = 'complete'
 solver = 'SLSQP'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb']
 features = ['fixed']
 axis_sym = None
-# axis_sym = [[0.0, 5.0], [10.0, 5.0]]
-# axis_sym = [[5.0, 0.0], [5.0, 10.0]]
-# qmax = 10e+6
-starting_point = 'loadpath'
+starting_point = 'current'
 
 if objective == ['t']:
     variables.append(objective[0])
-if objective == ['lambd']:
+if objective == ['lambdh']:
     variables.append(objective[0])
     lambd = 0.1
 
 Xc = [0.5, 0.0, 0.0]
 
-c = 0.1
+c = 0
 
-for c in [0.1]:  # set the distance that the nodes can move
+for i_angle in range(36):  # set the distance that the nodes can move
+    theta = math.radians(i_angle*10.0)
     solutions[c] = {}
 
     for obj in objective:  # set the objective
@@ -106,20 +105,20 @@ for c in [0.1]:  # set the distance that the nodes can move
                 vectors_plot = []
                 base_plot = []
 
-                sign = -1  # +1 for outwards / -1 for inwards
+                sign = None
 
                 for key in form.vertices_where({'is_fixed': True}):
                     x, y, z = form.vertex_coordinates(key)
 
                     if x < Xc[0]:
-                        dXbi = [0, 0, 1]  # normalize_vector([-1, 0, -1])  # left support of the arch
+                        dXbi = [0, 0, 0]  # left support of the arch
                     else:
-                        dXbi = [0, 0, 1]  # right support of the arch
+                        dXbi = [math.cos(theta), 0, math.sin(theta)]
 
                     vector_supports.append(dXbi)
                     # vectors_plot.append(Vector(dXbi[0], dXbi[1], dXbi[2]))
                     vectors_plot.append(Vector(dXbi[0], dXbi[2], 0.0))
-                    base_plot.append(Point(x, y, z))
+                    base_plot.append(Point(x, y, z - 0.2))
                     lines.append({
                         'start': [x, y, z],
                         'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
@@ -130,13 +129,13 @@ for c in [0.1]:  # set the distance that the nodes can move
                 print(dXb)
 
                 key_index = form.key_index()
-                plotter = TNOPlotter(form, shape=shape)
-                plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
-                plotter.draw_shape()
-                plotter.draw_vectors(vectors=vectors_plot, bases=base_plot)
-                # plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
-                # plotter.draw_arrows(lines)
-                plotter.show()
+                # plotter = TNOPlotter(form, shape=shape)
+                # plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
+                # plotter.draw_shape()
+                # plotter.draw_vectors(vectors=vectors_plot, bases=base_plot)
+                # # plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
+                # # plotter.draw_arrows(lines)
+                # plotter.show()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -200,14 +199,35 @@ for c in [0.1]:  # set the distance that the nodes can move
             else:
                 if 'fixed' not in features:
                     folder = os.path.join(folder, 'mov_c_' + str(c))
-            if sign:
-                folder = os.path.join(folder, 'sign_' + str(sign))
             os.makedirs(folder, exist_ok=True)
             title = type_structure + '_' + type_formdiagram + '_discr_' + str(discretisation)
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
             print('Optimiser exitflag:', optimiser.exitflag)
+
+            p0 = [-1.1, -1.1]
+            p1 = [11.1, -1.1]
+            p2 = [11.1, 6]
+            p3 = [-1.1, 6]
+            lines_around = [[p0, p1], [p1, p2], [p2, p3], [p3, p0]]
+
+            folder = os.path.join(folder, 'img')
+            pic = folder + '/fig-' + str(i_angle) + '.png'
+            print('Picture saved to:', pic)
+
+            plotter = TNOPlotter(form, shape=shape, figsize=(12, 8))
+            plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
+            plotter.settings['show.reactions.extended'] = True
+            plotter.settings['show.reactions.asarrows'] = False
+            plotter.draw_form_xz()
+            plotter.draw_vectors(vectors=vectors_plot, bases=base_plot)
+            plotter.draw_shape_xz()
+            plotter.draw_cracks()
+            plotter.draw_reactions()
+            plotter.draw_lines(lines=lines_around)
+            plotter.save(pic)
+            # plotter.show()
 
 # plotter = TNOPlotter(form, shape=shape)
 # plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
@@ -220,11 +240,6 @@ for c in [0.1]:  # set the distance that the nodes can move
 # plotter.draw_reactions()
 # plotter.show()
 
-p0 = [-1.1, -1.1]
-p1 = [11.1, -1.1]
-p2 = [11.1, 6]
-p3 = [-1.1, 6]
-lines_around = [[p0, p1], [p1, p2], [p2, p3], [p3, p0]]
 
 plotter = TNOPlotter(form, shape=shape)
 plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)

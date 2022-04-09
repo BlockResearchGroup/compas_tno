@@ -48,7 +48,7 @@ starting_point = 'loadpath'
 
 if objective == ['t']:
     variables.append(objective[0])
-if objective == ['lambd']:
+if objective == ['lambdh']:
     variables.append(objective[0])
     lambd = 0.1
 
