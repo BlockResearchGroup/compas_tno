@@ -370,7 +370,53 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data=None):
+    def create_arch(cls, H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, discretisation=100):
+        """Create the shape representing a Hemispheric Dome
+
+        Parameters
+        ----------
+        H : float, optional
+            Height of the arch, by default 1.00
+        L : float, optional
+            Span of the arch, by default 2.0
+        x0 : float, optional
+            Starting coordinate of the arch , by default 0.0
+        thk : float, optional
+            Thickness of the arch, by default 0.20
+        b : float, optional
+            Out-of-plane measure of the arch, by default 0.5
+        t : float, optional
+            Parameter for lower bound in nodes in the boundary, by default 0.0
+        discretisation : int, optional
+            Density of the shape, by default 100
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        from compas_tno.shapes import arch_shape
+
+        intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
+
+        data = {'type': 'arch', 'thk': thk, 'discretisation': discretisation, 'H': H, 'L': L, 'x0': x0, 'b': b, 't': t}
+
+        shape = cls()
+        shape.datashape = data
+        shape.intrados = intrados
+        shape.extrados = extrados
+        shape.middle = middle
+
+        shape.area = middle.area()
+        shape.volume = shape.compute_volume()
+        shape.total_selfweight = shape.compute_selfweight()
+
+        return shape
+
+    @classmethod
+    def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data={'type': 'general', 'thk': 0.50, 't': 0.0}):
         """Construct a Shape from meshes for intrados, extrados, and middle.
 
         Parameters
@@ -384,7 +430,7 @@ class Shape(Datastructure):
             The default value is ``None``, in a case in which no middle surface is assigned
         data : dict, optional
             Dictionary with the data about the structure.
-            The default value is ``None``, no data is assigned.
+            The default value is a typical general dictionary.
 
         Returns
         -------

@@ -150,7 +150,7 @@ class FormDiagram(FormDiagram):
         return form
 
     @classmethod
-    def create_arch(cls, H=1.00, L=2.00, x0=0.0, total_nodes=100):
+    def create_arch(cls, H=1.00, L=2.00, x0=0.0, discretisation=100):
         """Construct a FormDiagram based on an arch linear discretisation.
         Note: The nodes of the form diagram are spaced following a projection in a semicircular arch.
 
@@ -162,7 +162,7 @@ class FormDiagram(FormDiagram):
             Span of the arch, by default 2.00
         x0 : float, optional
             Initial coordiante of the arch, by default 0.0
-        total_nodes : int, optional
+        discretisation : int, optional
             Numbers of nodes to be considered in the form diagram, by default 100
 
         Returns
@@ -171,7 +171,7 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_arch_form_diagram(cls(), L=L, H=H, x0=x0, total_nodes=total_nodes)
+        form = create_arch_form_diagram(cls(), L=L, H=H, x0=x0, total_nodes=discretisation)
 
         return form
 
