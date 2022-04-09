@@ -161,7 +161,7 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
         print('total load applied:', pzt)
 
 
-def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
+def apply_horizontal_multiplier(form, lambd=1.0, direction='x'):
     """Modify the applied loads considering a load multiplier.
 
     Parameters
@@ -169,9 +169,9 @@ def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
     form : FormDiagram
         Form diagram to apply the horizontal multiplier.
     lambd : float, optional
-        Value of the horizontal multiplier, by default ``0.1``.
+        Value of the horizontal multiplier, by default ``1.0``.
     direction : str, optional
-        direction to apply the loads, by default ``x``.
+        Direction to apply the loads, ``x`` or ``y``, by default ``x``.
 
     Returns
     -------

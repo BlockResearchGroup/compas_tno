@@ -229,7 +229,7 @@ def check_independents(args_inds, tol=0.001):
     return checked
 
 
-def check_horizontal(E, p):
+def check_horizontal_loads(E, p):
     """ Run checks to verify of a certain horizontal distribution can be taken by the fixed form diagram.
 
     Parameters

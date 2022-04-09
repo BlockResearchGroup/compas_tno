@@ -156,7 +156,7 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
     return q
 
 
-def q_from_variables(qid, B, d, lambd=1.0):
+def q_from_variables(qid, B, d):
     r""" Calculate q's from the force parameters (independent edges).
 
     Parameters
@@ -167,17 +167,11 @@ def q_from_variables(qid, B, d, lambd=1.0):
         The linear map on the force densities.
     d : array [mx1]
         A particular solution of the equilibrium.
-    lambd : float, optional
-        Lambda multiplier applied to horizontal loads. The default is 1.0.
 
     Returns
     -------
     q : array [m x 1]
         Force densities on all edges.
-
-    Notes
-    -------
-    This function works for load multiplers and is prefered. To see details about the implementation check ``q_from_qid``.
 
     Reference
     ---------
@@ -185,7 +179,7 @@ def q_from_variables(qid, B, d, lambd=1.0):
 
     """
 
-    q = B @ qid + lambd * d
+    q = B @ qid + d
 
     return q
 
@@ -420,7 +414,6 @@ def xyz_from_xopt(variables, M):
 
     qid = variables[:k]
     check = k
-    M.q = M.B.dot(qid)
 
     if 'xyb' in M.variables:
         xyb = variables[check:check + 2*nb]
@@ -434,11 +427,11 @@ def xyz_from_xopt(variables, M):
     if 't' in M.variables or 'n' in M.variables:
         thk = variables[check: check + 1]
         check = check + 1
-    elif 'lambd' in M.variables:
-        lambd = variables[check: check + 1]
-        M.P[:, [0]] = lambd * M.px0
-        M.P[:, [1]] = lambd * M.py0
-        check = check + 1
+    if 'lambdh' in M.variables:
+        lambdh = variables[check: check + 1]
+        M.P[:, [0]] = lambdh * M.px0
+        M.P[:, [1]] = lambdh * M.py0
+        M.d = lambdh * M.d0
     if 'tub' in M.variables:
         tub = variables[check: check + n]
         M.tub = tub
@@ -452,10 +445,9 @@ def xyz_from_xopt(variables, M):
         M.tub_reac = tub_reac
         check = check + 2*nb
 
-    q = M.q
-    Xfixed = M.X[M.fixed]
+    M.q = q_from_variables(qid, M.B, M.d)
 
     # update geometry
-    M.X[M.free] = xyz_from_q(q, M.P[M.free], Xfixed, M.Ci, M.Cit, M.Cb)
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
     return M

@@ -191,7 +191,7 @@ def call_cvx(problem, eng, printout=False):
     eng.workspace['xb'] = matlab.double(problem.X[:, 0][problem.fixed].reshape(-1, 1).tolist())
     eng.workspace['yb'] = matlab.double(problem.X[:, 1][problem.fixed].reshape(-1, 1).tolist())
     eng.workspace['pz'] = matlab.double(problem.P[:, 2][problem.free].reshape(-1, 1).tolist())
-    eng.workspace['p'] = matlab.double(problem.P[problem.free, :2].flatten('F').reshape((-1, 1)).tolist())
+    eng.workspace['p'] = matlab.double(problem.ph.reshape(-1, 1).tolist())
 
     eng.workspace['qmax'] = matlab.double(problem.qmax.reshape(-1, 1).tolist())
     eng.workspace['qmin'] = matlab.double(problem.qmin.reshape(-1, 1).tolist())
@@ -286,7 +286,7 @@ def call_cvx_ind(problem, eng, printout=True):
 
     eng.workspace['dep'] = matlab.double(dep_)
     eng.workspace['ind'] = matlab.double(ind_)
-    eng.workspace['p'] = matlab.double(problem.P[problem.free, :2].flatten('F').reshape((-1, 1)).tolist())
+    eng.workspace['p'] = matlab.double(problem.ph.reshape(-1, 1).tolist())
     eng.workspace['xt'] = matlab.double(problem.X[:, 0].reshape(-1, 1).transpose().tolist())
     eng.workspace['yt'] = matlab.double(problem.X[:, 1].reshape(-1, 1).transpose().tolist())
     eng.workspace['xb'] = matlab.double(problem.X[:, 0][problem.fixed].reshape(-1, 1).tolist())

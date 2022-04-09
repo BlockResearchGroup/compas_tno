@@ -36,7 +36,7 @@ def constr_wrapper(variables, M):
     nb = M.nb
     check = k
     qid = variables[:k].reshape(-1, 1)
-    lambd = 1.0
+    lambdh = 1.0
     thk = M.thk
     t = M.shape.datashape['t']
 
@@ -51,10 +51,16 @@ def constr_wrapper(variables, M):
     if 't' in M.variables or 'n' in M.variables:
         thk = variables[check: check + 1]
         check = check + 1
-    if 'lambd' in M.variables:
-        lambd = variables[check: check + 1]
-        M.P[:, [0]] = lambd * M.px0
-        M.P[:, [1]] = lambd * M.py0
+    if 'lambdh' in M.variables:
+        lambdh = variables[check: check + 1]
+        M.P[:, [0]] = lambdh * M.px0
+        M.P[:, [1]] = lambdh * M.py0
+        M.d = lambdh * M.d0
+        # M.d[M.dep] = -M.Edinv.dot(vstack([M.P[M.free_x, 0].reshape(-1, 1), M.P[M.free_y, 1].reshape(-1, 1)]))  # make this line shorter
+        check = check + 1
+    if 'lambdv' in M.variables:
+        lambdv = variables[check: check + 1]
+        M.P[:, [2]] = lambdv * M.pzv + M.pz0
         check = check + 1
     if 'tub' in M.variables:
         tub = variables[check: check + n].reshape(-1, 1)
@@ -68,12 +74,8 @@ def constr_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
-    if 'lambdv' in M.variables:
-        lambdv = variables[check: check + 1]
-        M.P[:, [2]] = lambdv * M.pzv + M.pz0
-        check = check + 1
 
-    M.q = q_from_variables(qid, M.B, M.d, lambd=lambd)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     if 'update-loads' in M.features:
         M.P[:, 2] = -1 * weights_from_xyz(M.X, M.F, M.V0, M.V1, M.V2, thk=M.thk, density=M.ro)

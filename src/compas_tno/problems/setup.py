@@ -14,6 +14,8 @@ from compas_tno.problems import initialize_tna
 
 from compas_tno.algorithms import apply_sag
 from compas_tno.algorithms import equilibrium_fdm
+from compas_tno.algorithms import q_from_variables
+from compas_tno.algorithms import xyz_from_q
 
 from compas_tno.problems import sensitivities_wrapper
 
@@ -65,6 +67,7 @@ def set_up_general_optimisation(analysis):
     qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
+    show_force_diagram = optimiser.settings.get('save_force_diagram', True)
     solver_convex = optimiser.settings.get('solver-convex', 'matlab')
     # thickness_type = optimiser.settings.get('thickness_type', 'constant')
     autodiff = optimiser.settings.get('autodiff', False)
@@ -161,14 +164,9 @@ def set_up_general_optimisation(analysis):
         elif Ecomp_method == 'complete':
             #form. add here a control over the stiffness
             k = compute_average_edge_stiffness(form, E=E, Ah=Ah)
+            k = 100
             print('Average Stiffness (1/k) applied to sections:', 1/k)
             M.stiff = 1/2 * 1/k
-
-    # If objective is the max_load (new)
-
-    # if objective == 'max_load':
-    #     max_load_vector = optimiser.settings.get('max_load_direction', None)
-    #     M.pzv = max_load_vector
 
     # Set specific constraints
 
@@ -199,6 +197,14 @@ def set_up_general_optimisation(analysis):
     x0 = M.q[M.ind]
     bounds = [[qmin.item(), qmax.item()] for i, (qmin, qmax) in enumerate(zip(M.qmin, M.qmax)) if i in M.ind]
 
+    qid = M.q[M.ind]
+    M.q = q_from_variables(qid, M.B, M.d)
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    error = sum((M.E.dot(M.q) - M.ph)**2)
+    if error > 0.001:
+        print('Warning: Error equilibrium:', error)
+
     # bounds = [[qmin, qmax]] * M.k
 
     if 'xyb' in variables:
@@ -225,17 +231,6 @@ def set_up_general_optimisation(analysis):
         print('max thickness', max_thk)
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, max_thk]]
-
-    if 'lambd' in variables:
-        lambd0 = optimiser.settings.get('lambd', 1.0)
-        direction = optimiser.settings.get('lambd-direction', 'x')
-        M.px0 = array(form.vertices_attribute('px')).reshape(-1, 1)
-        M.py0 = array(form.vertices_attribute('py')).reshape(-1, 1)
-        form.apply_horizontal_multiplier(lambd=1.0, direction=direction)
-        max_lambd = optimiser.settings.get('max_lambd', lambd0 * 10)
-        min_lambd = 0.0
-        x0 = append(x0, lambd0).reshape(-1, 1)
-        bounds = bounds + [[min_lambd, max_lambd]]
 
     # if 's' in variables:
     #     x0 = append(x0, 0.0).reshape(-1, 1)
@@ -276,16 +271,25 @@ def set_up_general_optimisation(analysis):
         x0 = append(x0, M.tub_reac_min)
         bounds = bounds + list(zip(M.tub_reac_min, M.tub_reac))
 
-    if 'lambdv' in variables:
-        max_load_vector = array(optimiser.settings.get('max_load_direction', None)).reshape(-1, 1)
-        max_load_mult = optimiser.settings.get('max_load_mult', 100.0)
-        min_load_mult = 0.0
+    if 'lambdh' in variables:
         lambd0 = 1.0
-        print('Maximum load multiplier:', max_load_mult)
-        M.pzv = max_load_vector
+        direction = optimiser.settings.get('load_direction', None).reshape(-1, 1)
+        M.px0 = direction[:M.n].reshape(-1, 1)
+        M.py0 = direction[M.n: 2*M.n].reshape(-1, 1)
+        max_lambd = optimiser.settings.get('max_lambd', lambd0 * 10)
+        min_lambd = 0.0
+        x0 = append(x0, lambd0).reshape(-1, 1)
+        bounds = bounds + [[min_lambd, max_lambd]]
+
+    if 'lambdv' in variables:
+        direction = array(optimiser.settings.get('load_direction', None)).reshape(-1, 1)
+        max_lambd = optimiser.settings.get('max_lambd', 100.0)
+        min_lambd = 0.0
+        lambd0 = 1.0
+        M.pzv = direction
         M.pz0 = array(form.vertices_attribute('pz')).reshape(-1, 1)
         x0 = append(x0, lambd0).reshape(-1, 1)
-        bounds = bounds + [[min_load_mult, max_load_mult]]
+        bounds = bounds + [[min_lambd, max_lambd]]
 
     if save_iterations:
         callback_create_json()
@@ -309,10 +313,16 @@ def set_up_general_optimisation(analysis):
     if fjac:
         jac = fjac(x0, M)
 
+    for i, key in enumerate(form.vertices()):
+        form.vertex_attribute(key, 'x', M.X[i, 0])
+        form.vertex_attribute(key, 'y', M.X[i, 1])
+        form.vertex_attribute(key, 'z', M.X[i, 2])
+
     if plot:
         view = Viewer(form)
         view.draw_thrust()
-        view.draw_force()
+        if show_force_diagram:
+            view.draw_force()
         view.show()
 
     if printout:

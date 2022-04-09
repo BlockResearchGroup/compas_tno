@@ -66,9 +66,6 @@ def objective_selector(objective):
     elif objective == 'n':  # vector n offset the surfaces -> larger the better (higher GSF)
         fobj = f_tight_crosssection
         fgrad = gradient_tight_crosssection
-    elif objective == 'lambd':  # vector lambda as hor multiplier larger the better (higher GSF)
-        fobj = f_tight_crosssection
-        fgrad = gradient_tight_crosssection
     elif objective == 'Ecomp-linear':  # vector lambda as hor multiplier larger the better (higher GSF)
         fobj = f_complementary_energy
         fgrad = gradient_complementary_energy

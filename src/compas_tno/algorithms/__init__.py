@@ -36,7 +36,7 @@ Independents
     independents_include
     inds_incl_excl
     check_independents
-    check_horizontal
+    check_horizontal_loads
 
 
 Smoothing
@@ -85,7 +85,7 @@ if not compas.IPY:
         independents_include,
         inds_incl_excl,
         check_independents,
-        check_horizontal
+        check_horizontal_loads
     )
     from .smoothing import (
         constrained_smoothing,
@@ -115,7 +115,7 @@ __all__ = [
     'independents_include',
     'inds_incl_excl',
     'check_independents',
-    'check_horizontal',
+    'check_horizontal_loads',
 
     'constrained_smoothing',
     'apply_sag',

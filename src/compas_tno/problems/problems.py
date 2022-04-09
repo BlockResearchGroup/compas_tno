@@ -14,6 +14,7 @@ from compas.numerical import connectivity_matrix
 from compas.utilities import geometric_key
 
 from compas_tno.algorithms import find_independents
+from compas_tno.algorithms import check_horizontal_loads
 
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
@@ -441,7 +442,14 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     B[ind] = identity(k)
 
     d = zeros((problem.m, 1))
-    d[dep] = -Edinv.dot(problem.ph)
+    d[dep] = -Edinv.dot(problem.ph)  # q = Bqi + d | d = Ed(-1)*ph
+
+    if any(problem.ph):
+        check_hor = check_horizontal_loads(problem.E, problem.ph)
+        if check_hor:
+            print('Horizontal Loads can be taken!')
+        else:
+            print('Horizontal Loads are not suitable for this FD!')
 
     problem.ind = ind
     problem.k = k
@@ -450,6 +458,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     problem.Edinv = Edinv
     problem.Ei = Ei
     problem.d = d
+    problem.d0 = d
 
     return
 

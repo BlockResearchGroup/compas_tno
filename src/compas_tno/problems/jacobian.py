@@ -75,7 +75,7 @@ def sensitivities_wrapper(variables, M):
     nbxy = 0
     thk = M.thk  # Introduce this because it might be necessary
     t = M.shape.datashape['t']
-    lambd = 1.0
+    lambdh = 1.0
 
     qid = variables[:k].reshape(-1, 1)
     check = k
@@ -93,10 +93,16 @@ def sensitivities_wrapper(variables, M):
     if 't' in M.variables or 'n' in M.variables:
         thk = variables[check: check + 1]
         check = check + 1
-    elif 'lambd' in M.variables:
-        lambd = variables[check: check + 1]
-        M.P[:, [0]] = lambd * M.px0
-        M.P[:, [1]] = lambd * M.py0
+    if 'lambdh' in M.variables:
+        lambdh = variables[check: check + 1]
+        M.P[:, [0]] = lambdh * M.px0
+        M.P[:, [1]] = lambdh * M.py0
+        M.d = lambdh * M.d0
+        # M.d[M.dep] = -M.Edinv.dot(vstack([M.P[M.free_x, 0].reshape(-1, 1), M.P[M.free_y, 1].reshape(-1, 1)]))  # make this line shorter
+        check = check + 1
+    if 'lambdv' in M.variables:
+        lambdv = variables[check: check + 1]
+        M.P[:, [2]] = lambdv * M.pzv + M.pz0
         check = check + 1
     if 'tub' in M.variables:
         tub = variables[check: check + n]
@@ -110,19 +116,11 @@ def sensitivities_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
-    if 'lambdv' in M.variables:
-        lambdv = variables[check: check + 1]
-        M.P[:, [2]] = lambdv * M.pzv + M.pz0
-        check = check + 1
 
-    M.q = q_from_variables(qid, M.B, M.d, lambd=lambd)
+    M.q = q_from_variables(qid, M.B, M.d)
 
     # update geometry
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
-    # if 'fixed' in M.features:
-    #     M.X[M.free, 2] = X_free[:, 2]
-    # else:
-    #     M.X[M.free] = X_free
 
     q = M.q
 
@@ -140,55 +138,61 @@ def sensitivities_wrapper(variables, M):
     nlin_limitxy = 0
     nlin_env = 0
     nlin_reacbounds = 0
+    dqdqi = M.B
 
     A = zeros((n, nb))
     CitQCf = M.Cit.dot(Q).dot(M.Cb).toarray()
     A[M.free] = SPLU_D.solve(-CitQCf)
     A[M.fixed] = identity(nb)
 
-    dxdq = zeros((n, k))
-    dydq = zeros((n, k))
-    dzdq = zeros((n, k))
+    dxdqi = zeros((n, k))  # TODO: rename this to dxdqii to be more consistent
+    dydqi = zeros((n, k))
+    dzdqi = zeros((n, k))
     db_column = zeros((nlin_reacbounds, 1))
 
+    # ------------ Adding rows to the jacobian matrix based on constraints activated ------------
+
     if 'funicular' in M.constraints:
-        deriv = vstack([deriv, M.B, - M.B])
+        deriv = vstack([deriv, dqdqi, - dqdqi])
         nlin_fun = 2 * m
 
     if 'envelopexy' in M.constraints:
         # jacobian of in constraints on x
-        dxidq = SPLU_D.solve(-M.Cit.dot(M.U).toarray()).dot(M.B)
-        dxdq[M.free] = dxidq
-        deriv = vstack([deriv, dxdq, - dxdq])
+        dxidq = SPLU_D.solve(-M.Cit.dot(M.U).toarray())
+        dxidqi = dxidq.dot(dqdqi)
+        dxdqi[M.free] = dxidqi
+        deriv = vstack([deriv, dxdqi, - dxdqi])
 
         # jacobian of in constraints on y
-        dyidq = SPLU_D.solve(-M.Cit.dot(M.V).toarray()).dot(M.B)
-        dydq[M.free] = dyidq
-        deriv = vstack([deriv, dydq, - dydq])
+        dyidq = SPLU_D.solve(-M.Cit.dot(M.V).toarray())
+        dyidqi = dyidq.dot(dqdqi)
+        dydqi[M.free] = dyidqi
+        deriv = vstack([deriv, dydqi, - dydqi])
 
         nlin_limitxy = 4 * n
 
     if 'envelope' in M.constraints:
         # jacobian of in constraints on z
-        dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray()).dot(M.B)
-        dzdq[M.free] = dzidq
+        dzidq = SPLU_D.solve(-M.Cit.dot(M.W).toarray())
+        dzidqi = dzidq.dot(dqdqi)
+        dzdqi[M.free] = dzidqi
 
         if 'update-envelope' in M.features:
             dzmaxdt, dzmindt, dzmaxdx, dzmindx, dzmaxdy, dzmindy = dub_dlb_update(M.X[:, 0], M.X[:, 1], thk, t, M.shape, None, None, M.s, M.variables)
-            dzmaxdq = dzmaxdx.dot(dxdq) + dzmaxdy.dot(dydq)
-            dzmindq = dzmindx.dot(dxdq) + dzmindy.dot(dydq)
-            deriv = vstack([deriv, dzdq - dzmindq, dzmaxdq - dzdq])
+            dzmaxdq = dzmaxdx.dot(dxdqi) + dzmaxdy.dot(dydqi)
+            dzmindq = dzmindx.dot(dxdqi) + dzmindy.dot(dydqi)
+            deriv = vstack([deriv, dzdqi - dzmindq, dzmaxdq - dzdqi])
         else:
-            deriv = vstack([deriv, dzdq, - dzdq])
+            deriv = vstack([deriv, dzdqi, - dzdqi])
 
         nlin_env = 2 * n
 
     if 'reac_bounds' in M.constraints:
         CbQC = M.Cb.transpose().dot(Q).dot(M.C)
 
-        dRxdq = M.Cb.transpose().dot(M.U).dot(M.B) + CbQC.dot(dxdq)
-        dRydq = M.Cb.transpose().dot(M.V).dot(M.B) + CbQC.dot(dydq)
-        dRzdq = M.Cb.transpose().dot(M.W).dot(M.B) + CbQC.dot(dzdq)
+        dRxdq = M.Cb.transpose().dot(M.U).dot(dqdqi) + CbQC.dot(dxdqi)
+        dRydq = M.Cb.transpose().dot(M.V).dot(dqdqi) + CbQC.dot(dydqi)
+        dRzdq = M.Cb.transpose().dot(M.W).dot(dqdqi) + CbQC.dot(dzdqi)
 
         dRzdzb = CbQC.dot(A)
 
@@ -235,6 +239,9 @@ def sensitivities_wrapper(variables, M):
 
         nlin_reacbounds = 2 * nb
 
+    # ------------ Adding columns to the jacobian matrix based on variables activated activated ------------
+    # ------------ Note: length of the column to be defined through the "marking parameters" ---------------
+
     if nbxy or nbz:  # add a column to the derivatives to count the variables zb or xyb
         Anull = zeros((n, nb))
         if nbxy:
@@ -257,24 +264,56 @@ def sensitivities_wrapper(variables, M):
         dXdt = vstack([zeros((nlin_fun + nlin_limitxy, 1)), -dzmindt, +dzmaxdt, db_column])
         deriv = hstack([deriv, dXdt])
 
-    if 'lambd' in M.variables:  # add a column to the derivatives to count the variable lambd (hor-multiplier)
-        if 'fixed' in M.features:
-            raise NotImplementedError
+    if 'lambdh' in M.variables:  # add a column to the derivatives to count the variable lambd (hor-multiplier)
 
+        dqdlambd = zeros((M.m, 1))
         dxdlambd = zeros((n, 1))
         dydlambd = zeros((n, 1))
-        dxdlambd[M.free] = SPLU_D.solve(M.px0[M.free]).reshape(-1, 1)
-        dydlambd[M.free] = SPLU_D.solve(M.py0[M.free]).reshape(-1, 1)
-
-        if 'update-envelope' in M.features:
-            dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
-            dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
-            dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd])
+        dzdlambd = zeros((n, 1))
+        if 'fixed' in M.features:
+            dqdlambd = M.d0
+            dzdq = zeros((n, m))
+            dzdq[M.free] = dzidq
+            dzdlambd = dzdq.dot(dqdlambd)
+            dXdlambd = vstack([dqdlambd, -dqdlambd, dzdlambd, -dzdlambd])
+            # dXdlambd = vstack([dqdlambd, -dqdlambd, zeros((nlin_limitxy, 1)), -dzdlambd, +dzdlambd])
         else:
-            dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, zeros((nlin_env, 1))])
+            dxdlambd[M.free] = SPLU_D.solve(M.px0[M.free]).reshape(-1, 1)
+            dydlambd[M.free] = SPLU_D.solve(M.py0[M.free]).reshape(-1, 1)
+
+            if 'update-envelope' in M.features:
+                dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
+                dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
+                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd])
+            else:
+                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, zeros((nlin_env, 1))])
 
         if 'reac_bounds' in M.constraints:
-            dXdlambd = vstack([dXdlambd, dslope_dlambd])
+
+            dRxdlambd = M.Cb.transpose().dot(M.U).dot(dqdlambd) + CbQC.dot(dxdlambd) - M.px0[M.fixed]
+            dRydlambd = M.Cb.transpose().dot(M.V).dot(dqdlambd) + CbQC.dot(dydlambd) - M.py0[M.fixed]
+            dRzdlambd = M.Cb.transpose().dot(M.W).dot(dqdlambd) + CbQC.dot(dzdlambd)
+            dslope_dlambdh = zeros((2 * nb, 1))
+            for i in range(nb):
+                i_ = nb + i
+                zbi = M.X[M.fixed, 2][i]
+                signe_x = 1.0
+                signe_y = 1.0
+                signe_z = 1.0
+                if R[i, 0] < 0:
+                    signe_x = -1.0
+                if R[i, 1] < 0:
+                    signe_y = -1.0
+                if R[i, 2] < 0:
+                    signe_z = -1.0
+
+                dslope_dlambdh[i] = zbi * signe_x * (-R[i, 2] * dRxdlambd[i] + R[i, 0] * dRzdlambd[i]) / R[i, 2]**2 / signe_z
+                dslope_dlambdh[i_] = zbi * signe_y * (-R[i, 2] * dRydlambd[i] + R[i, 1] * dRzdlambd[i]) / R[i, 2]**2 / signe_z
+
+            dXdlambd = vstack([dXdlambd, dslope_dlambdh])
+
+        # if 'reac_bounds' in M.constraints:  # changed by above
+        #     dXdlambd = vstack([dXdlambd, dslope_dlambd])
 
         deriv = hstack([deriv, dXdlambd])
 
@@ -286,7 +325,6 @@ def sensitivities_wrapper(variables, M):
         if 'fixed' in M.features:
             dXdlambd = vstack([zeros((nlin_fun, 1)), dzdlambdv, - dzdlambdv])
         else:
-            raise NotImplementedError
             if 'update-envelope' in M.features:
                 dzmaxdlambd = dzmaxdx.dot(dxdlambd) + dzmaxdy.dot(dydlambd)
                 dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
@@ -307,7 +345,6 @@ def sensitivities_wrapper(variables, M):
                 dslope_dlambdv[i] = signe_z * zbi * abs(R[i, 0])/R[i, 2]**2 * dRzdlambdv[i]
                 dslope_dlambdv[i_] = signe_z * zbi * abs(R[i, 1])/R[i, 2]**2 * dRzdlambdv[i]
             dXdlambd = vstack([dXdlambd, dslope_dlambdv])
-
 
         deriv = hstack([deriv, dXdlambd])
 
