@@ -26,7 +26,7 @@ class Viewer(object):
 
     """
 
-    def __init__(self, thrust=None, shape=None, force=None, **kwargs):
+    def __init__(self, thrust=None, shape=None, force=None, show_grid=True, **kwargs):
 
         super().__init__(**kwargs)
         self.title = 'Viewer'
@@ -47,7 +47,7 @@ class Viewer(object):
             'camera.rx': -45,
             'camera.rz': 45,
             'camera.fov': 40,
-            'camera.show.grid': True,
+            'camera.show.grid': show_grid,
             'camera.show.axis': True,
 
             'size.vertex': 15.0,
@@ -91,8 +91,8 @@ class Viewer(object):
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
-        self.app.view.camera.rx = self.settings['camera.rx']
-        self.app.view.camera.rz = self.settings['camera.rz']
+        self.app.view.camera.rotation.x = self.settings['camera.rx']
+        self.app.view.camera.rotation.z = self.settings['camera.rz']
         self.app.view.camera.fov = self.settings['camera.fov']
 
     def show_solution(self):
@@ -144,6 +144,26 @@ class Viewer(object):
         self.app.record = True
         self.app.view.paint()
         print(self.app.recorded_frames)
+
+    def add(self, item, **kwargs):
+        """Add an item to the viewer.
+
+        Parameters
+        ----------
+        item : Any
+            Item to add
+
+        Returns
+        -------
+        None
+            Viewer updated in place
+
+        """
+
+        if not self.app:
+            self.initiate_app()
+
+        self.app.add(item, **kwargs)
 
     def clear(self):
         """Clear the viewer elements
@@ -248,7 +268,9 @@ class Viewer(object):
             datashape = self.shape.datashape.copy()
             if datashape['type'] in ['dome']:
                 datashape['type'] = 'dome_polar'
+                datashape['discretisation'] =  [20, 20]
                 shape = Shape.from_library(datashape)
+                print('Drawing nicer dome')
             # elif datashape['type'] == 'arch':
             #     print('WIP = Special Plot for arch')
             else:
@@ -447,6 +469,20 @@ class Viewer(object):
 
         self.app.add(force, show_edges=show_edges, opacity=opacity)
 
+    def draw_assembly(self, assembly):
+        """Draw the reaction labels (force magnitude) on the supports according to the settings
+
+        Returns
+        -------
+        None
+            The viewer is updated in place.
+        """
+
+        if not self.app:
+            self.initiate_app()
+
+        for block in assembly.blocks():
+            self.add(block, opacity=0.5)
 
 def _norm(rgb):
     """ Normalise the color in RGB dividing each component by 255

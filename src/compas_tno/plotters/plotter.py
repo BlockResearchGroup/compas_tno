@@ -9,6 +9,8 @@ from compas.geometry import Line
 from compas.geometry import Polygon
 from compas_tno.shapes import Shape
 
+from compas.colors import Color
+
 from compas.utilities import rgb_to_hex
 import matplotlib.pyplot as plt
 import math
@@ -93,19 +95,19 @@ class TNOPlotter(object):
             'shape.opacity': 0.5,
             'rotated': False,
 
-            'color.edges.form': (255, 0, 0),
-            'color.edges.reactions': (170, 170, 170),
-            'color.edges.shape': (200, 200, 200),
-            'color.edges.form_base': (200, 200, 200),
-            'color.edges.independent': (255, 0, 120),
-            'color.vertex.supports': (170, 170, 170),
-            'color.vertex.extrados': (0, 125, 0),
-            'color.vertex.intrados': (0, 0, 255),
-            'color.vertex.outside': (200, 200, 200),
-            'color.mesh.intrados': (125, 125, 125),
-            'color.mesh.extrados': (125, 125, 125),
-            'color.mesh.middle': (125, 125, 125),
-            'color.mesh.general': (0, 0, 0),
+            'color.edges.form': Color.from_rgb255(255, 0, 0),
+            'color.edges.reactions': Color.from_rgb255(170, 170, 170),
+            'color.edges.shape': Color.from_rgb255(200, 200, 200),
+            'color.edges.form_base': Color.from_rgb255(200, 200, 200),
+            'color.edges.independent': Color.from_rgb255(255, 0, 120),
+            'color.vertex.supports': Color.from_rgb255(170, 170, 170),
+            'color.vertex.extrados': Color.from_rgb255(0, 125, 0),
+            'color.vertex.intrados': Color.from_rgb255(0, 0, 255),
+            'color.vertex.outside': Color.from_rgb255(200, 200, 200),
+            'color.mesh.intrados': Color.from_rgb255(125, 125, 125),
+            'color.mesh.extrados': Color.from_rgb255(125, 125, 125),
+            'color.mesh.middle': Color.from_rgb255(125, 125, 125),
+            'color.mesh.general': Color.from_rgb255(0, 0, 0),
 
             'tol.forces': 1e-3,
         }
@@ -249,6 +251,23 @@ class TNOPlotter(object):
 
         self.app.save(filepath)
 
+    def add(self, item):
+        """Add an item to the plotter.
+
+        Parameters
+        ----------
+        item : Any
+            Item to add
+
+        Returns
+        -------
+        Artist
+            The artist of the added item
+
+        """
+
+        return self.app.add(item)
+
     def draw_form(self, scale_width=True, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
 
@@ -265,7 +284,7 @@ class TNOPlotter(object):
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
-        edgecolor = {(u, v): _norm(self.settings['color.edges.form']) for u, v in self.form.edges()}
+        edgecolor = {(u, v): self.settings['color.edges.form'] for u, v in self.form.edges()}
 
         if scale_width:
             forcedensities = self.form.edges_attribute('q')
@@ -307,9 +326,9 @@ class TNOPlotter(object):
         """
 
         tol = self.settings['tol.forces']
-        color_intra = _norm(self.settings['color.vertex.intrados'])
-        color_extra = _norm(self.settings['color.vertex.extrados'])
-        color_outside = _norm(self.settings['color.vertex.outside'])
+        color_intra = self.settings['color.vertex.intrados']
+        color_extra = self.settings['color.vertex.extrados']
+        color_outside = self.settings['color.vertex.outside']
 
         cracks = []
 
@@ -366,8 +385,8 @@ class TNOPlotter(object):
         """
 
         if self.settings['show.supports']:
-            supportcolor = _norm(self.settings['color.vertex.supports'])
-            rollercolor = _norm((255, 165, 0))
+            supportcolor = self.settings['color.vertex.supports']  # _norm(self.settings['color.vertex.supports'])
+            rollercolor = Color.from_rgb255(255, 165, 0)
 
             for key in self.form.vertices_where({'is_fixed': True}):
                 x, y, z = self.form.vertex_coordinates(key)
@@ -415,7 +434,7 @@ class TNOPlotter(object):
                     pt = Point(x - rx, y - ry, z - rz)
                 print(pt, r)
                 if self.settings['show.reactions.asarrows']:
-                    self.app.add(r, point=pt, color=_norm(self.settings['color.edges.reactions']))
+                    self.app.add(r, point=pt, color=self.settings['color.edges.reactions'])
                 else:
                     pt1 = Point(x, y, z)
                     pt2 = Point(x - rx, y - ry, z - rz)
@@ -424,7 +443,7 @@ class TNOPlotter(object):
                     width = max_f/norm*self.settings['size.edge.max_thickness']
                     self.app.add(line,
                                  draw_as_segment=True,
-                                 color=_norm(self.settings['color.edges.form']),
+                                 color=self.settings['color.edges.form'],
                                  linewidth=width)
 
     def draw_vectors(self, vectors=[], bases=[]):
@@ -558,14 +577,14 @@ class TNOPlotter(object):
         self.app.add(
             intrados,
             opacity=self.settings['shape.opacity'],
-            edgecolor=_norm(self.settings['color.edges.shape']),
+            edgecolor=self.settings['color.edges.shape'],
             show_vertices=False
         )
 
         self.app.add(
             extrados,
             opacity=self.settings['shape.opacity'],
-            edgecolor=_norm(self.settings['color.edges.shape']),
+            edgecolor=self.settings['color.edges.shape'],
             show_vertices=False
         )
 
@@ -615,7 +634,7 @@ class TNOPlotter(object):
             self.form_base,
             edges=edges,
             opacity=0.5,
-            edgecolor=_norm(self.settings['color.edges.form_base']),
+            edgecolor=self.settings['color.edges.form_base'],
             show_vertices=False,
             show_faces=False
         )
@@ -670,7 +689,7 @@ class TNOPlotter(object):
         i = 0
         for edge in edges:
             if self.form.edge_attribute(edge, 'is_ind'):
-                color[edge] = _norm(self.settings['color.edges.independent'])
+                color[edge] = self.settings['color.edges.independent']
                 width[edge] = base_thick * 3.0
                 if show_text:
                     text[edge] = str(i)
@@ -772,15 +791,17 @@ class TNOPlotter(object):
             if print_sym:
                 texts[edge] = str(i_sym)
 
-        self.app.add(
+        self.formartist = self.app.add(
             self.form,
             edges=edges,
             edgewidth=base_thick,
-            edge_text=texts,
+            # edge_text=texts,  # not working for COMPAS 1.15
             edgecolor=colors,
             show_vertices=False,
             show_faces=False
         )
+        if print_sym:
+            self.formartist.draw_edgelabels(text=texts)
 
     def draw_force(self, show_edges=True, show_vertices=False, show_faces=False):
         """Draw the force diagram associated with the form diagram.
@@ -805,6 +826,10 @@ class TNOPlotter(object):
             self.force = reciprocal_from_form(self.form)
 
         force = self.force
+
+        edgecolor = {}
+        for edge in force.edges():
+            edgecolor[edge] = Color.black()
 
         force_bbox = self.force.bounding_box_xy()
         xmin_force, xmax_force = force_bbox[0][0], force_bbox[1][0]
@@ -837,7 +862,7 @@ class TNOPlotter(object):
             force = force.transformed(S)
             force = force.transformed(T)
 
-        self.app.add(force, show_edges=show_edges, show_vertices=show_vertices, show_faces=show_faces)
+        self.app.add(force, show_edges=show_edges, show_vertices=show_vertices, show_faces=show_faces, edgecolor=edgecolor)
 
     def draw_arch_lines(self, H=1.00, L=2.0, x0=0.0, thk=0.20, total_nodes=50, stereotomy=False, close_bottom=True):
         """Helper to draw the lines of intrados and extrados of an arch for given parameters
@@ -920,9 +945,9 @@ class TNOPlotter(object):
         # update this when collections are available
 
         for le in lines_extrados:
-            self.app.add(le, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=_norm(self.settings['color.edges.shape']))
+            self.app.add(le, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=self.settings['color.edges.shape'])
         for li in lines_intrados:
-            self.app.add(li, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=_norm(self.settings['color.edges.shape']))
+            self.app.add(li, draw_as_segment=True, opacity=self.settings['shape.opacity'], color=self.settings['color.edges.shape'])
 
         return
 
