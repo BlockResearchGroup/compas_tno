@@ -202,8 +202,14 @@ def force_update_from_form(force, form):
     # rotate force diagram to make it parallel to the form diagram
     # use CCW direction (opposite of cycle direction)
     # --------------------------------------------------------------------------
+    # _x, _y = zip(*_xy)
+    # _xy[:] = [list(item) for item in zip([-_ for _ in _y], _x)]
+    # --------------------------------------------------------------------------
+    # rotate the force diagram 90 degrees in CW direction
+    # this way the relation between the two diagrams is easier to read
+    # --------------------------------------------------------------------------
     _x, _y = zip(*_xy)
-    _xy[:] = [list(item) for item in zip([-_ for _ in _y], _x)]
+    _xy[:] = [list(item) for item in zip(_y, [-_ for _ in _x])]
     # --------------------------------------------------------------------------
     # update force diagram
     # --------------------------------------------------------------------------
