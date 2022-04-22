@@ -14,9 +14,10 @@ for guid in guids:
     compasline = rhinoline.to_compas()
     lines.append(compasline)
 
-compas_mesh = Mesh.from_lines(lines)
+compas_mesh = Mesh.from_lines(lines, delete_boundary_face=True)
 
-jsonpath = '/Users/mricardo/compas_dev/me/freeform/meshes_rectangular/mesh-E.json'
+#jsonpath = '/Users/mricardo/compas_dev/me/freeform/meshes_square/mesh-E.json'
+jsonpath = '/Users/mricardo/compas_dev/me/pattern/singular/dome/mesh-E3.json'
 
 compas_mesh.to_json(jsonpath)
 

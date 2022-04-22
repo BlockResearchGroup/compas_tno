@@ -182,7 +182,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['objective'] = obj
             optimiser.settings['plot'] = False
             optimiser.settings['find_inds'] = False
-            optimiser.settings['axis_symmetry'] = axis_sym
+            optimiser.settings['axis_sym'] = axis_sym
             optimiser.settings['max_iter'] = 500
             optimiser.settings['gradient'] = True
             optimiser.settings['jacobian'] = True

@@ -182,7 +182,7 @@ for phi in phi_list:
                 optimiser.settings['jacobian'] = True
                 optimiser.settings['derivative_test'] = False
                 optimiser.settings['starting_point'] = starting_point
-                optimiser.settings['axis_symmetry'] = axis_sym
+                optimiser.settings['axis_sym'] = axis_sym
                 optimiser.settings['support_displacement'] = dXb
                 optimiser.settings['Ecomp_method'] = 'complete'
 

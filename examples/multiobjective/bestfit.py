@@ -115,7 +115,7 @@ for c in [c]:  # set the distance that the nodes can move
             optimiser.settings['constraints'] = constraints
             optimiser.settings['variables'] = variables
             optimiser.settings['features'] = features
-            optimiser.settings['axis_symmetry'] = axis_sym
+            optimiser.settings['axis_sym'] = axis_sym
             optimiser.settings['objective'] = obj
             optimiser.settings['plot'] = False
             optimiser.settings['find_inds'] = False
