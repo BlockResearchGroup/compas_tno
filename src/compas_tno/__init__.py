@@ -76,7 +76,9 @@ def get(filename):
 
     localpath = os.path.abspath(os.path.join(DATA, filename))
 
-    if os.path.exists(localpath):
-        return localpath
-    else:
-        return "https://raw.githubusercontent.com/BlockResearchGroup/compas_tno/master/data/{}".format(filename)
+    return localpath
+
+    # if os.path.exists(localpath):
+    #     return localpath
+    # else:
+    #     return "https://raw.githubusercontent.com/BlockResearchGroup/compas_tno/master/data/{}".format(filename)
