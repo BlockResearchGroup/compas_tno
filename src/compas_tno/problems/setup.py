@@ -58,7 +58,7 @@ def set_up_general_optimisation(analysis):
 
     printout = optimiser.settings.get('printout', True)
     plot = optimiser.settings.get('plot', False)
-    axis_symmetry = optimiser.settings.get('axis_symmetry', None)
+    axis_symmetry = optimiser.settings.get('axis_sym', None)
     sym_loads = optimiser.settings.get('sym_loads', False)
     fjac = optimiser.settings.get('jacobian', False)
     starting_point = optimiser.settings.get('starting_point', 'current')
@@ -142,6 +142,18 @@ def set_up_general_optimisation(analysis):
     else:
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
+
+    # from scipy.sparse.linalg import svds
+
+    # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
+    # disc = len(M.ind) - (M.E.shape[1] - M.E.shape[1])
+    # disc_val = s[:disc]
+    # print('Eshape', M.E.shape)
+    # # print('E sing. values:', s)
+    # print('max/min singular vectors E', max(s), min(s), len(s))
+    # print('Discated singular vectors E', disc, disc_val)
+    # print('Maximum Discated Singular Value:', max(disc_val), '< 1e-4?')
+    # print('First considered Singular Value:', s[disc], 'much bigger?')
 
     # Specific parameters that depend on the objectives
 

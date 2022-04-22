@@ -423,7 +423,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     elapsed_time = time.time() - start_time
 
     if printout:
-        print('Reduced problem to {0} force variables'.format(k))
+        print('Reduced problem to {0} force variables with ind. edges'.format(k))
         print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
     gkeys = []
@@ -497,7 +497,7 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
     elapsed_time = time.time() - start_time
 
     if printout:
-        print('Reduced problem to {0} force variables'.format(k))
+        print('Reduced problem to {0} force variables by SYM'.format(k))
         print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
     for u, v in form.edges_where({'_is_edge': True}):
@@ -619,5 +619,44 @@ def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=
 
     if list_axis_symmetry:
         apply_symmetry_from_axis(form, list_axis_symmetry=list_axis_symmetry, correct_loads=correct_loads)
+
+    return
+
+
+def check_bad_independents(problem, form, printout=False, eps=10e+6):
+
+    keep_inds = []
+
+    for i_ind in range(len(problem.ind)):
+        column_i = abs(problem.B[:, i_ind]).flatten()
+        max_col = max(column_i)
+        if max_col < eps:
+            keep_inds.append(i_ind)
+
+    if len(keep_inds) == problem.m:
+        return
+    else:
+        print('original inds:', len(problem.ind), problem.ind)
+        print('Updating the relevant independent')
+        inds = []
+        for i_ind in keep_inds:
+            inds.append(problem.ind[i_ind])
+
+        q0 = zeros((problem.m, 1))
+        form.edges_attribute('is_ind', False)
+        for i, edge in enumerate(form.edges_where({'_is_edge': True})):
+            if i in inds:
+                form.edge_attribute(edge, 'is_ind', True)
+            elif i in problem.ind:
+                q0[i] = form.edge_attribute(edge, 'q')
+
+        print(q0)
+
+        problem.ind = inds
+        problem.dep = list(set(range(problem.m)) - set(inds))
+        problem.B = problem.B[:, keep_inds]
+        problem.d += q0
+        problem.k = len(inds)
+        print('final inds', len(problem.ind), problem.ind)
 
     return
