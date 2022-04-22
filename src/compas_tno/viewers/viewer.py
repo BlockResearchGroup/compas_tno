@@ -1,6 +1,7 @@
 from compas.datastructures import Mesh
 from compas.geometry import Line
 from compas.geometry import Point
+from math import radians
 
 from compas_tno.shapes import Shape
 
@@ -91,8 +92,8 @@ class Viewer(object):
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
-        self.app.view.camera.rotation.x = self.settings['camera.rx']
-        self.app.view.camera.rotation.z = self.settings['camera.rz']
+        self.app.view.camera.rotation.x = radians(self.settings['camera.rx'])
+        self.app.view.camera.rotation.z = radians(self.settings['camera.rz'])
         self.app.view.camera.fov = self.settings['camera.fov']
 
     def show_solution(self):
