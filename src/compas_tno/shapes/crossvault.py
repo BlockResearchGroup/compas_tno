@@ -24,7 +24,7 @@ def cross_vault_highfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, to
     t : float, optional
         Parameter for lower bound in nodes in the boundary, by default 0.0
     discretisation : list|int, optional
-        LEvel of discretisation of the shape, by default [100, 100]
+        Level of discretisation of the shape, by default [100, 100]
 
     Returns
     -------

@@ -351,27 +351,13 @@ class Shape(Datastructure):
 
         """
 
-        from compas_tno.shapes import set_dome_heighfield
-
-        intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
-
         data = {'type': 'dome', 'thk': thk, 'discretisation': discretisation, 'center': center, 'radius': radius, 't': t}
 
-        shape = cls()
-        shape.datashape = data
-        shape.intrados = intrados
-        shape.extrados = extrados
-        shape.middle = middle
-
-        shape.area = middle.area()
-        shape.volume = shape.compute_volume()
-        shape.total_selfweight = shape.compute_selfweight()
-
-        return shape
+        return cls().from_library(data)
 
     @classmethod
     def create_arch(cls, H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, discretisation=100):
-        """Create the shape representing a Hemispheric Dome
+        """Create the shape representing a circular arch.
 
         Parameters
         ----------
@@ -397,23 +383,68 @@ class Shape(Datastructure):
 
         """
 
-        from compas_tno.shapes import arch_shape
-
-        intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
-
         data = {'type': 'arch', 'thk': thk, 'discretisation': discretisation, 'H': H, 'L': L, 'x0': x0, 'b': b, 't': t}
 
-        shape = cls()
-        shape.datashape = data
-        shape.intrados = intrados
-        shape.extrados = extrados
-        shape.middle = middle
+        return cls().from_library(data)
 
-        shape.area = middle.area()
-        shape.volume = shape.compute_volume()
-        shape.total_selfweight = shape.compute_selfweight()
+    @classmethod
+    def create_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, discretisation=[100, 100]):
+        """Create the shape representing a Crossvault
 
-        return shape
+        Parameters
+        ----------
+        xy_span : [list[float], list[float]], optional
+            xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+        thk : float, optional
+            The thickness of the vault, by default 0.5
+        t : float, optional
+            Parameter for lower bound in nodes in the boundary, by default 0.0
+        discretisation : list|int, optional
+            Level of discretisation of the shape, by default [100, 100]
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        data = {'type': 'crossvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t}
+
+        return cls().from_library(data)
+
+
+    @classmethod
+    def create_pointedcrossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None,  t=0.0):
+        """Create the shape representing a Pointed Crossvault
+
+        Parameters
+        ----------
+        xy_span : list, optional
+            [description], by default [[0.0, 10.0], [0.0, 10.0]]
+        thk : float, optional
+            [description], by default 0.5
+        discretisation : list, optional
+            [description], by default [10, 10]
+        hc : float, optional
+            Height in the middle point of the vault, by default 8.0
+        he : [float, float, float, float], optional
+            Height of the opening mid-span for each of the quadrants, by default None
+        hm : [float, float, float, float], optional
+            Height of each quadrant center (spadrel), by default None
+        t : float, optional
+            Parameter for lower bound in nodes in the boundary, by default 0.0
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        data = {'type': 'pointed_crossvault', 'xy_span': xy_span, 'thk': thk, 'discretisation': discretisation, 't': t, 'hc': hc, 'he': he, 'hm': hm}
+
+        return cls().from_library(data)
 
     @classmethod
     def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data={'type': 'general', 'thk': 0.50, 't': 0.0}):

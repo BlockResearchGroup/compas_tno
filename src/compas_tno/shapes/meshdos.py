@@ -123,14 +123,14 @@ class MeshDos(Mesh):
         Parameters
         ----------
         n : float, optional
-            Percentage of the normal vector to use.
+            Percentage of the normal vector to use, by default 1.0.
         t : float, optional
             Distance considered in the supports, by default 0.0
 
         Returns
         -------
-        obj
-            MeshDos.
+        mesh_ub, mesh_lb
+            Extrados mesh and intrados mesh.
 
         """
 
@@ -183,13 +183,13 @@ class MeshDos(Mesh):
 
         return
 
-    def identify_creases_by_angle(self, deviation=20):
+    def identify_creases_by_angle(self, deviation=20.0):
         """ Identify creses in the structure based on a threshold angle limit.
 
         Parameters
         ----------
         deviation : float, optional
-            Angle (deg) deviation of normals along an edge so it is considered a crease. Default is 20.
+            Angle (deg) deviation of normals along an edge so it is considered a crease. Default is 20.0.
 
         Returns
         -------
