@@ -89,6 +89,15 @@ Stiffness
     compute_edge_stiffness
     compute_average_edge_stiffness
 
+Blocks
+======
+
+.. autosummary::
+    :toctree: generated/
+
+    blocks_from_dual
+    extended_dual
+
 Data Analysis
 ====================
 
@@ -172,6 +181,10 @@ from .stiffness import (
 from .json import (
     update_json
 )
+from .blocks import(
+    blocks_from_dual,
+    extended_dual
+)
 from .data_analysis import (
     diagram_of_thrust,
     diagram_of_multiple_thrust,
@@ -241,6 +254,9 @@ __all__ = [
     'compute_average_edge_stiffness',
 
     'update_json',
+
+    'blocks_from_dual',
+    'extended_dual',
 
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',
