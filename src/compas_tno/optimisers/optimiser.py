@@ -83,7 +83,7 @@ class Optimiser(Datastructure):
         self.time = None
         self.niter = None
         self.exitflag = None
-        self.log = None
+        # self.log = None
         self.callback = None
 
     @property
@@ -98,7 +98,7 @@ class Optimiser(Datastructure):
             'message': self.message,
             'niter': self.niter,
             'exitflag': self.exitflag,
-            'log': self.log,
+            # 'log': self.log,
         }
         return data
 
@@ -114,4 +114,4 @@ class Optimiser(Datastructure):
         self.message = data.get('message', None)
         self.niter = data.get('niter', None)
         self.exitflag = data.get('exitflag', None)
-        self.log = data.get('log', None)
+        # self.log = data.get('log', None)

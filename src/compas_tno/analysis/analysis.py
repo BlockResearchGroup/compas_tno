@@ -301,3 +301,7 @@ class Analysis(Data):
             self = run_optimisation_scipy(self)
 
         return
+
+    def __str__(self):
+        tpl = "<Analysis with parameters: {} >".format(self.data)
+        return tpl
