@@ -26,7 +26,7 @@ from compas.numerical import connectivity_matrix
 from compas.utilities import geometric_key
 
 from compas_tno.algorithms import find_independents
-from compas_tno.algorithms import check_horizontal
+from compas_tno.algorithms import check_horizontal_loads
 from compas_tno.algorithms import check_independents
 
 import time
@@ -396,7 +396,7 @@ def initialise_problem_torch(form, indset=None, printout=False, find_inds=True, 
     q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})])[:, newaxis]
 
     if any(p):
-        check_hor = check_horizontal(E, p)
+        check_hor = check_horizontal_loads(E, p)
         if check_hor:
             print('Horizontal Loads can be taken!')
         else:

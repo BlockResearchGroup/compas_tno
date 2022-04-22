@@ -6,10 +6,10 @@ compas_tno.autodiff
 .. currentmodule:: compas_tno.autodiff
 
 
-Equilibrium Pytorch
-===================
+Optimisation with JAX
+=====================
 
-Computes the equilibrium equation using auto-differentiation with PyTorch. Future versions will also include compatibility with JAX.
+Computes the equilibrium equation using auto-differentiation with JAX. Future versions will also include compatibility with JAX.
 
 .. autosummary::
     :toctree: generated/

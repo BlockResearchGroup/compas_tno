@@ -9,7 +9,7 @@ import compas_tno
 span = 10.0
 k = 1.0
 
-discretisation = [20, 16]
+discretisation = [10, 8]
 type_formdiagram = 'radial_fd'
 type_structure = 'dome'
 discretisation_shape = [2 * discretisation[0], 2 * discretisation[1]]
@@ -25,16 +25,19 @@ solutions = {}
 obj = 'min'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
-variables = ['q', 'zb']
+variables = ['q', 'zb', 't']
 features = ['fixed']
 axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
 # axis_sym = [[5.0, 0.0], [5.0, 10.0]]
 axis_sym = None
-starting_point = 'loadpath-cvxpy'
+starting_point = 'loadpath'
+autodiff = False
+der_test = False
+save_iterations = False
 
-thk = 0.50  # thickness of the problem
-qmax = 100000.0
+thk = 0.25  # thickness of the problem
+qmax = 1000.0
 
 # Create form diagram
 
@@ -62,15 +65,16 @@ data_shape = {
 }
 
 vault = Shape.from_library(data_shape)
-vault.ro = 20.0
+vault.ro = 40.0
+
+location = compas_tno.get('shape.json')
+vault.to_json(location)
 
 # ------------------------------------------------------------
 # -----------------------  INITIALISE   ----------------------
 # ------------------------------------------------------------
 
 apply_bounds_on_q(form, qmin=-qmax)
-
-form_base = form.copy()
 
 # ------------------------------------------------------------
 # ------------------- Proper Implementation ------------------
@@ -85,15 +89,17 @@ optimiser.settings['features'] = features
 optimiser.settings['objective'] = obj
 optimiser.settings['plot'] = False
 optimiser.settings['find_inds'] = False
-optimiser.settings['axis_symmetry'] = axis_sym
+optimiser.settings['axis_sym'] = axis_sym
 optimiser.settings['max_iter'] = 500
 optimiser.settings['gradient'] = True
 optimiser.settings['jacobian'] = True
 optimiser.settings['printout'] = True
 optimiser.settings['jacobian'] = True
-optimiser.settings['derivative_test'] = False
+# optimiser.settings['find_inds'] = True
+optimiser.settings['derivative_test'] = der_test
 optimiser.settings['starting_point'] = starting_point
-optimiser.settings['save_iterations'] = True
+optimiser.settings['save_iterations'] = save_iterations
+optimiser.settings['autodiff'] = autodiff
 
 # --------------------- 5. Set up and run analysis ---------------------
 
@@ -117,8 +123,12 @@ print('Ratio Thrust/Weight:', thrust/weight)
 
 print('Optimiser exitflag:', optimiser.exitflag)
 
-view = Viewer(form, vault)
+view = Viewer(form)
 view.show_solution()
+
+import compas_tno
+location = compas_tno.get('form.json')
+form.to_json(location)
 
 # # ---- MAKE THE VIDEO ----
 
