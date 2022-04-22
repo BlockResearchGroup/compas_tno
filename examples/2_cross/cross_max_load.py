@@ -65,8 +65,8 @@ n = form.number_of_vertices()
 pzv = zeros((n, 1))
 # pzv[0] = -1.0
 # pzv[31] = -1.0
-# pzv[59] = -1.0
-pzv[65] = -1.0
+pzv[59] = -1.0
+# pzv[65] = -1.0
 
 plotter = TNOPlotter(form)
 plotter.draw_form(scale_width=False)

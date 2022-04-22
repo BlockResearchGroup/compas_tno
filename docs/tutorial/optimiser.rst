@@ -114,7 +114,7 @@ The features available are described in the table below. They are should be pass
     * - ``fixed``
       - Fix diagram in plan (limit 'q' variables to the independent edges)
     * - ``sym``
-      - Activate symmetry in the diagram ('axis_symmetry' can be passed)
+      - Activate symmetry in the diagram ('axis_sym' can be passed)
     * - ``adapted-envelope``
       - Deals with the update on the vertical envelope as nodes move horizontally
 
