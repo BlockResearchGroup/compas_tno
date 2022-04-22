@@ -115,35 +115,49 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
+        # General parameters
         form_type = data['type']
+        discretisation = data.get('discretisation', 10)
 
+        # Arch parameters
+        H = data.get('H', 1.0)
+        L = data.get('L', 2.0)
+        x0 = data.get('x0', 0.0)
+
+        # Rectangular vault parameters
+        xy_span = data.get('xy_span', [[0.0, 10.0], [0.0, 10.0]])
+        fix = data.get('fix', 'corners')
+
+        # Circular parameters
+        center = data.get('center', [5.0, 5.0])
+        radius = data.get('radius', 5.0)
         r_oculus = data.get('r_oculus', 0.0)
         diagonal = data.get('diagonal')
         partial_diagonal = data.get('partial_diagonal')
         partial_bracing_modules = data.get('partial_bracing_modules')
 
         if form_type == 'arch':
-            form = cls().create_arch(H=data['H'], L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
-        if form_type == 'pointed_arch':
-            form = cls().create_pointed_arch(L=data['L'], x0=data['x0'], total_nodes=data['total_nodes'])
-        if form_type == 'cross_fd':
-            form = cls().create_cross_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+            form = create_arch_form_diagram(cls(), H=H, L=L, x0=x0, discretisation=discretisation)
+        elif form_type == 'linear_arch' or form_type == 'pointed_arch':
+            form = create_linear_form_diagram(cls(), L=L, x0=x0, discretisation=discretisation)
+        elif form_type == 'cross_fd':
+            form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
         if form_type == 'cross_diagonal':
-            form = cls().create_cross_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], partial_bracing_modules=partial_bracing_modules, fix=data['fix'])
+            form = create_cross_diagonal(cls(), xy_span=data['xy_span'], discretisation=data['discretisation'], partial_bracing_modules=partial_bracing_modules, fix=data['fix'])
         if form_type == 'cross_with_diagonal':
-            form = cls().create_cross_with_diagonal(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data.get('fix', 'all'))
+            form = create_cross_with_diagonal(cls(), xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'fan_fd':
-            form = cls().create_fan_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+            form = create_fan_form(cls(), xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
         if form_type == 'ortho' or form_type == 'ortho_fd':
-            form = cls().create_ortho_form(xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+            form = create_ortho_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
         if form_type == 'radial_fd':
-            form = cls().create_circular_radial_form(center=data['center'], radius=data['radius'],
-                                                     discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
+            form = create_circular_radial_form(cls(), center=center, radius=radius, discretisation=discretisation,
+                                               r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'radial_spaced_fd':
-            form = cls().create_circular_radial_spaced_form(center=data['center'], radius=data['radius'],
-                                                            discretisation=data['discretisation'], r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
+            form = create_circular_radial_spaced_form(cls(), center=center, radius=radius, discretisation=discretisation,
+                                                      r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'spiral_fd':
-            form = cls().create_circular_spiral_form(center=data['center'], radius=data['radius'], discretisation=data['discretisation'], r_oculus=r_oculus)
+            form = create_circular_spiral_form(cls(), center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus)
 
         form.parameters = data
 
@@ -171,12 +185,12 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_arch_form_diagram(cls(), L=L, H=H, x0=x0, total_nodes=discretisation)
+        data = {'type': 'arch', 'L': L, 'H': H, 'x0': x0, 'discretisation': discretisation}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
-    def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
+    def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
         """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
 
         Parameters
@@ -185,7 +199,7 @@ class FormDiagram(FormDiagram):
             Span of the arch, by default 2.00
         x0 : float, optional
             Initial coordiante of the arch, by default 0.0
-        total_nodes : int, optional
+        discretisation : int, optional
             Numbers of nodes to be considered in the form diagram, by default 100
 
         Returns
@@ -194,9 +208,9 @@ class FormDiagram(FormDiagram):
             FormDiagram generated according to the parameters.
         """
 
-        form = create_linear_form_diagram(cls(), L=L, x0=x0, total_nodes=total_nodes)
+        data = {'type': 'linear_arch', 'L': L, 'x0': x0, 'discretisation': discretisation}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
@@ -217,9 +231,9 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+        data = {'type': 'cross_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, partial_bracing_modules=None, fix='corners'):
@@ -242,9 +256,9 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_cross_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, partial_bracing_modules=partial_bracing_modules, fix=fix)
+        data = {'type': 'cross_diagonal', 'xy_span': xy_span, 'discretisation': discretisation, 'partial_bracing_modules': partial_bracing_modules, 'fix': fix}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='all'):
@@ -265,9 +279,9 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_cross_with_diagonal(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+        data = {'type': 'cross_with_diagonal', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
@@ -288,9 +302,9 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_fan_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+        data = {'type': 'fan_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
@@ -311,9 +325,9 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_ortho_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
+        data = {'type': 'ortho_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
@@ -340,10 +354,10 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_circular_radial_form(cls(), center=center, radius=radius, discretisation=discretisation,
-                                           r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
+        data = {'type': 'radial_fd', 'center': center, 'radius': radius, 'discretisation': discretisation,
+                'r_oculus': r_oculus, 'diagonal': diagonal, 'partial_diagonal': partial_diagonal}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
@@ -370,10 +384,10 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_circular_radial_spaced_form(cls(), center=center, radius=radius, discretisation=discretisation,
-                                                  r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
+        data = {'type': 'radial_spaced_fd', 'center': center, 'radius': radius, 'discretisation': discretisation,
+                'r_oculus': r_oculus, 'diagonal': diagonal, 'partial_diagonal': partial_diagonal}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0):
@@ -396,9 +410,9 @@ class FormDiagram(FormDiagram):
             The FormDiagram created.
         """
 
-        form = create_circular_spiral_form(cls(), center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus)
+        data = {'type': 'spiral_fd', 'center': center, 'radius': radius, 'discretisation': discretisation, 'r_oculus': r_oculus}
 
-        return form
+        return cls().from_library(data)
 
     @classmethod
     def from_assembly(self):

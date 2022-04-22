@@ -3,7 +3,7 @@ from compas.utilities import geometric_key
 import math
 
 
-def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
+def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, discretisation=100):
     """Construct a FormDiagram based on an arch linear discretisation.
     Note: The nodes of the form diagram are spaced following a projection in a semicircular arch.
 
@@ -15,7 +15,7 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
         Span of the arch, by default 2.00
     x0 : float, optional
         Initial coordiante of the arch, by default 0.0
-    total_nodes : int, optional
+    discretisation : int, optional
         Numbers of nodes to be considered in the form diagram, by default 100
 
     Returns
@@ -32,11 +32,11 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
     print('springing angle =', math.degrees(spr))
     tot_angle = 2*spr
     angle_init = (math.pi - tot_angle)/2
-    an = tot_angle / (total_nodes - 1)
+    an = tot_angle / (discretisation - 1)
     lines = []
     gkey_fix = []
 
-    for i in range(total_nodes-1):
+    for i in range(discretisation-1):
         angle_i = angle_init + i * an
         angle_f = angle_init + (i + 1) * an
         xi = L/2 - radius * math.cos(angle_i)
@@ -44,7 +44,7 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, total_nodes=100):
         lines.append([[xi, 0.0, 0.0], [xf, 0.0, 0.0]])
         if i == 0:
             gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))
-        elif i == total_nodes - 2:
+        elif i == discretisation - 2:
             gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
 
     mesh = Mesh.from_lines(lines)
