@@ -96,7 +96,7 @@ def apply_radial_symmetry(form, center=[5.0, 5.0, 0.0], correct_loads=True):
     return
 
 
-def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
+def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True, tol=0.01):
     """ Apply a symmetry based on a series of axis of symmetry. Applicable for rectangular patterns.
 
     Parameters
@@ -107,6 +107,8 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
         The list of the axis of symmetry, by default []
     correct_loads : bool, optional
         Whether or not the loads should be corrected in the nodes for perfect symmetry, by default True
+    tol : float, optional
+        Tollerance to assume symmetry, by default 0.001
 
     Returns
     -------
@@ -127,15 +129,17 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
         dist_dict = {}
         for u, v in form.edges_where({'_is_edge': True}):
             midpoint = form.edge_midpoint(u, v)
-            dist_line = round(distance_point_line_xy(midpoint, axis_symmetry), 10)
-            closest_pt = geometric_key(closest_point_on_line_xy(midpoint, axis_symmetry))
-            dist = [closest_pt, dist_line]
+            dist_line = round(distance_point_line_xy(midpoint, axis_symmetry), 10)  # change this logic to something that takes into account ``tol`` and not based on the round() method
+            closest_pt = closest_point_on_line_xy(midpoint, axis_symmetry)  # geometric_key(..) used before
+            # dist = [closest_pt, dist_line]
+            dist = [dist_line, closest_pt]
             dist_dict[(u, v)] = dist
             if dist not in dist_checked:
                 dist_checked.append(dist)
         for dist in dist_checked:
             for u, v in dist_dict:
-                if dist_dict[(u, v)] == dist:
+                # if dist_dict[(u, v)] == dist:
+                if abs(dist[0] - dist_dict[(u, v)][0]) < tol and distance_point_point_xy(dist[1], dist_dict[(u, v)][1]) < tol:
                     form.edge_attribute((u, v), 'sym_key', i)
                     if not form.edge_attribute((u, v), 'sym_dict'):
                         dic = {}
@@ -177,14 +181,16 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True):
         for key in form.vertices():
             point = form.vertex_coordinates(key)
             dist_line = round(distance_point_line_xy(point, axis_symmetry), 10)
-            closest_pt = geometric_key(closest_point_on_line_xy(point, axis_symmetry))
-            dist = [closest_pt, dist_line]
+            closest_pt = closest_point_on_line_xy(point, axis_symmetry)  # geometric_key( .. )
+            # dist = [closest_pt, dist_line]
+            dist = [dist_line, closest_pt]
             dist_dict[key] = dist
             if dist not in dist_checked:
                 dist_checked.append(dist)
         for dist in dist_checked:
             for key in dist_dict:
-                if dist_dict[key] == dist:
+                # if dist_dict[key] == dist:
+                if abs(dist[0] - dist_dict[key][0]) < tol and distance_point_point_xy(dist[1], dist_dict[key][1]) < tol:
                     form.vertex_attribute(key, 'sym_key', i)
                     if not form.vertex_attribute(key, 'sym_dict'):
                         dic = {}
