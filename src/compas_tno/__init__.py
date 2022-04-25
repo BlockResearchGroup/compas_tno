@@ -82,3 +82,16 @@ def get(filename):
     #     return localpath
     # else:
     #     return "https://raw.githubusercontent.com/BlockResearchGroup/compas_tno/master/data/{}".format(filename)
+
+
+def wakeup_matlab():
+    """ Method to wake up matlab in the background.
+
+    Note: This function has to be called directly from the terminal.
+    """
+
+    import matlab.engine
+    future = matlab.engine.connect_matlab(background=True)
+    eng = future.result()
+    eng.cvx_begin(nargout=0)
+    print(matlab.engine.find_matlab())
