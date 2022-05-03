@@ -98,6 +98,15 @@ Blocks
     blocks_from_dual
     extended_dual
 
+Form Modifications
+====================
+
+.. autosummary::
+    :toctree: generated/
+
+    form_add_lines_support
+    form_parabolic_slide
+
 Data Analysis
 ====================
 
@@ -128,6 +137,7 @@ from .symmetry import (
     build_vertex_symmetry_transformation,
     build_symmetry_matrix_supports,
 )
+
 from .constraints import (
     check_envelope_constraints,
     distance_target,
@@ -137,10 +147,12 @@ from .constraints import (
     set_b_constraint,
     set_rollers_constraint
 )
+
 from .functions import (
     paraboloid,
     dome
 )
+
 from .loads import (
     apply_selfweight_from_shape,
     apply_selfweight_from_pattern,
@@ -149,6 +161,7 @@ from .loads import (
     apply_selfweight_from_shape_proxy
 
 )
+
 from .envelopes import (
     apply_envelope_from_shape,
     apply_envelope_on_xy,
@@ -160,6 +173,7 @@ from .envelopes import (
     apply_bounds_tub_tlb,
     apply_bounds_reactions
 )
+
 from .interpolation import (
     interpolate_from_pointcloud,
     get_shape_ub,
@@ -173,18 +187,27 @@ from .interpolation import (
     create_mesh_from_topology_and_pointcloud,
     create_mesh_from_topology_and_basemesh
 )
+
 from .stiffness import (
     compute_form_initial_lengths,
     compute_edge_stiffness,
     compute_average_edge_stiffness
 )
+
 from .json import (
     update_json
 )
+
 from .blocks import(
     blocks_from_dual,
     extended_dual
 )
+
+from .form import(
+    form_add_lines_support,
+    form_parabolic_slide
+)
+
 from .data_analysis import (
     diagram_of_thrust,
     diagram_of_multiple_thrust,
@@ -257,6 +280,9 @@ __all__ = [
 
     'blocks_from_dual',
     'extended_dual',
+
+    'form_add_lines_support',
+    'form_parabolic_slide',
 
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',

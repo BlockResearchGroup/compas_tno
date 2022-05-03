@@ -115,3 +115,50 @@ class Optimiser(Datastructure):
         self.niter = data.get('niter', None)
         self.exitflag = data.get('exitflag', None)
         # self.log = data.get('log', None)
+
+    @classmethod
+    def create_minthk_optimiser(cls, printout=False, plot=False , max_iter=500, starting_point='loadpath'):
+        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape
+            The shape cconstraining the problem
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        optimiser = cls()
+        optimiser.settings['library'] = 'IPOPT'
+        optimiser.settings['solver'] = 'IPOPT'
+        optimiser.settings['constraints'] = ['funicular', 'envelope']
+        optimiser.settings['variables'] = ['q', 'zb', 't']
+        optimiser.settings['features'] = ['fixed']
+        optimiser.settings['objective'] = 't'
+        optimiser.settings['plot'] = plot
+        optimiser.settings['find_inds'] = False
+        optimiser.settings['max_iter'] = max_iter
+        optimiser.settings['gradient'] = True
+        optimiser.settings['jacobian'] = True
+        optimiser.settings['printout'] = printout
+        optimiser.settings['starting_point'] = starting_point
+
+        return optimiser
+
+    def __str__(self):
+        tpl = "<Optimiser with settings {}>".format(self.settings)
+        return tpl

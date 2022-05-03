@@ -117,7 +117,23 @@ class Analysis(Data):
 
     @classmethod
     def from_elements(cls, shape, form, optimiser):
-        """Create a analysis from the elements of the problem (form, shape and optimiser) """
+        """Create a analysis from the elements of the problem (form, shape and optimiser)
+
+        Parameters
+        ----------
+        shape : Shape
+            The vaulted structure constraining the problem
+        form : FormDiagram
+            The form diagram to analyse the structure
+        optimiser : Optimiser
+            The optimiser with information about the problem
+
+        Returns
+        -------
+        analysis: Analysis
+            The analysis object
+
+        """
 
         analysis = cls()
         analysis.shape = shape
@@ -148,9 +164,63 @@ class Analysis(Data):
 
         return analysis
 
-    def apply_selfweight(self):
-        """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
+    @classmethod
+    def create_minthk_analysis(cls, form, shape, printout=False, plot=False , max_iter=500, starting_point='loadpath'):
+        """Create a minimum thickness analysus from the elements of the problem (form and shape)
 
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape
+            The shape cconstraining the problem
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        optimiser = Optimiser.create_minthk_optimiser(printout=printout,
+                                                      plot=plot ,
+                                                      max_iter=max_iter,
+                                                      starting_point=starting_point)
+
+        print('-'*20)
+        print('Optimiser created for the a minimum thickness analysis')
+        print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+    def is_convex(self):
+        """Check if the analysis problem is convex."""
+
+        if not self.optimiser:
+            raise ValueError('Define the Optimiser for the problem')
+
+        objective = self.optimiser.settings['objective']
+        features = self.optimiser.settings['features']
+
+        if objective == 'loadpath' and 'fixed' in features:
+            return True
+        else:
+            return False
+
+    def apply_selfweight(self, normalize_loads=True):
+        """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
         norm = self.optimiser.settings.get('normalize_loads', True)
         apply_selfweight_from_shape(self.form, self.shape, normalize=norm)
 
@@ -265,14 +335,9 @@ class Analysis(Data):
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        objective = self.optimiser.settings['objective']
-        features = self.optimiser.settings['features']
-
-        if objective == 'loadpath' and 'fixed' in features:
-            self.optimiser.settings['type'] = 'convex'
+        if self.is_convex():
             set_up_convex_optimisation(self)
         else:
-            self.optimiser.settings['type'] = 'nonlinear'
             self = set_up_general_optimisation(self)
 
         return
@@ -280,25 +345,25 @@ class Analysis(Data):
     def run(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        opt_type = self.optimiser.settings['type']
-        solver = self.optimiser.settings['solver']
-        library = self.optimiser.settings['library']
+        solver = self.optimiser.settings.get('solver', 'SLSQP')
+        library = self.optimiser.settings.get('library', 'Scipy')
 
-        if opt_type == 'convex':
+        if self.is_convex():
             if solver == 'MATLAB':
                 run_optimisation_MATLAB(self)
             elif solver == 'CVXPY':
                 run_optimisation_CVXPY(self)
             else:
                 raise NotImplementedError('Only <CVXPY> and <MATLAB> are suitable for this optimisation')
-        elif library == 'pyOpt':
-            self = run_optimisation_MMA(self)
-        elif solver == 'MMA':
-            self = run_optimisation_MMA(self)
-        elif solver == 'IPOPT':
-            self = run_optimisation_ipopt(self)
         else:
-            self = run_optimisation_scipy(self)
+            if library == 'pyOpt':
+                self = run_optimisation_MMA(self)
+            elif solver == 'MMA':
+                self = run_optimisation_MMA(self)
+            elif solver == 'IPOPT':
+                self = run_optimisation_ipopt(self)
+            else:
+                self = run_optimisation_scipy(self)
 
         return
 

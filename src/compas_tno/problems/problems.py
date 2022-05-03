@@ -12,6 +12,10 @@ from scipy.sparse import vstack as svstack
 from compas.numerical import connectivity_matrix
 
 from compas.utilities import geometric_key
+from compas.utilities import reverse_geometric_key
+
+from compas.geometry import Point
+from compas.geometry import distance_point_point_xy
 
 from compas_tno.algorithms import find_independents
 from compas_tno.algorithms import check_horizontal_loads
@@ -184,13 +188,15 @@ class Problem():
         return problem
 
 
-def initialise_form(form):
+def initialise_form(form, printout=False):
     """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
     ----------
     form : FormDiagram
-        The FormDiagram.
+        The FormDiagram
+    printout : bool, optional
+        Whether or not prints should appear on the screen, by default False
 
     Returns
     -------
@@ -206,7 +212,7 @@ def initialise_form(form):
     i_uv = form.index_uv()
 
     M = initialise_problem_general(form)
-    adapt_problem_to_fixed_diagram(M, form)
+    adapt_problem_to_fixed_diagram(M, form, printout=printout)
     ind = M.ind
 
     form.update_default_edge_attributes({'is_ind': False})
@@ -404,16 +410,36 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
     """
 
     ind = []
+    tol = 1e-3
 
     start_time = time.time()
 
     # Independent and dependent branches
 
     if form.attributes['indset']:
+        # check if it is a string and "restaure the points"
+        indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes['indset']]
         ind = []
+
+        # for u, v in form.edges_where({'_is_edge': True}):
+        #     if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in form.attributes['indset']:
+        #         ind.append(problem.uv_i[(u, v)])
         for u, v in form.edges_where({'_is_edge': True}):
-            if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in form.attributes['indset']:
-                ind.append(problem.uv_i[(u, v)])
+            index = problem.uv_i[(u, v)]
+            edgemid = Point(*(form.edge_midpoint(u, v)[:2] + [0]))
+            for pt in indset:
+                if distance_point_point_xy(edgemid, pt) < tol:
+                    ind.append(index)
+                    break
+            if index in ind:
+                indset.remove(pt)
+
+        if printout:
+            print('Loaded {} previous independents'.format(len(form.attributes['indset'])))
+            print('Found {} independents in the new pattern', len(ind))
+        if len(form.attributes['indset']) != len(ind):
+            print('Did not match problem inds')
+            ind = find_independents(problem.E)  # see if it can be improved with crs matrix
     else:
         ind = find_independents(problem.E)  # see if it can be improved with crs matrix
 
@@ -426,14 +452,16 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
         print('Reduced problem to {0} force variables with ind. edges'.format(k))
         print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
 
-    gkeys = []
+    points = []
     for u, v in form.edges_where({'_is_edge': True}):
         if problem.uv_i[(u, v)] in ind:
             form.edge_attribute((u, v), 'is_ind', True)
-            gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
+            points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
+            # gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
         else:
             form.edge_attribute((u, v), 'is_ind', False)
-    form.attributes['indset'] = gkeys
+    # form.attributes['indset'] = gkeys
+    form.attributes['indset'] = points
 
     Edinv = -csr_matrix(pinv(problem.E[:, dep]))
     Ei = csr_matrix(problem.E[:, ind])

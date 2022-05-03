@@ -318,8 +318,8 @@ def call_cvx_ind(problem, eng, printout=True):
     elapsed_time = time.time() - start_time
     print('Elapsed time on LP:', elapsed_time)
 
-    # If intended to save the MATLAB engine
-    eng.save('/Users/mricardo/Documents/MATLAB/data.mat', nargout=0)
+    # # If intended to save the MATLAB engine
+    # eng.save('/Users/mricardo/Documents/MATLAB/data.mat', nargout=0)
 
     if status != 'Infeasible':
         exitflag = 0
