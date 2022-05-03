@@ -95,3 +95,5 @@ def wakeup_matlab():
     eng = future.result()
     eng.cvx_begin(nargout=0)
     print(matlab.engine.find_matlab())
+
+    return eng

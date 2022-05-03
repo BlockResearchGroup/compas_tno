@@ -261,7 +261,7 @@ class FormDiagram(FormDiagram):
         return cls().from_library(data)
 
     @classmethod
-    def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='all'):
+    def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
         """ Construct a FormDiagram based on cross discretiastion with diagonals.
 
         Parameters
