@@ -268,13 +268,15 @@ class TNOPlotter(object):
 
         return self.app.add(item)
 
-    def draw_form(self, scale_width=True, **kwargs):
+    def draw_form(self, scale_width=True, color=None, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
 
         Parameters
         ----------
         scale_width : bool, optional
             If the lines of the form diagram should be scaled with regards to the force carried, by default True
+        color : Color, optional
+            Color of the edges of the form diagram, this will overwrite the setting 'color.edges.form', by default None
 
         Returns
         -------
@@ -284,7 +286,8 @@ class TNOPlotter(object):
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
-        edgecolor = {(u, v): self.settings['color.edges.form'] for u, v in self.form.edges()}
+        color = color or self.settings['color.edges.form']
+        edgecolor = {(u, v): color for u, v in self.form.edges()}
 
         if scale_width:
             forcedensities = self.form.edges_attribute('q')
@@ -375,8 +378,13 @@ class TNOPlotter(object):
             pointartist = self.app.add(pt, facecolor=color, size=self.settings['size.vertex'])
             self._otherartists.append(pointartist)
 
-    def draw_supports(self):
+    def draw_supports(self, color=None):
         """Add the supports as points in the mesh.
+
+        Parameters
+        ----------
+        color : Color, optional
+            Color of the supports of the form diagram, this will overwrite the setting 'color.vertex.supports', by default None
 
         Returns
         -------
@@ -385,7 +393,7 @@ class TNOPlotter(object):
         """
 
         if self.settings['show.supports']:
-            supportcolor = self.settings['color.vertex.supports']  # _norm(self.settings['color.vertex.supports'])
+            supportcolor = color or self.settings['color.vertex.supports']  # _norm(self.settings['color.vertex.supports'])
             rollercolor = Color.from_rgb255(255, 165, 0)
 
             for key in self.form.vertices_where({'is_fixed': True}):
@@ -666,13 +674,15 @@ class TNOPlotter(object):
                     for line in lines:
                         self.app.add(line, draw_as_segment=True)
 
-    def draw_form_independents(self, show_text=True):
+    def draw_form_independents(self, color=None, show_text=True):
         """Draw the form diagram with highlight in the independent edges.
 
         Parameters
         ----------
         show_text : bool, optional
             If text should be added to the independent edges, by default True
+        color : Color, optional
+            Color of the independent edges of the form diagram, this will overwrite the setting 'color.edges.independent', by default None
 
         Returns
         -------
@@ -682,6 +692,7 @@ class TNOPlotter(object):
 
         edges = list(self.form.edges_where({'_is_edge': True}))
         base_thick = self.settings['size.edge.base_thickness']
+        colorinds = color or self.settings['color.edges.independent']
 
         color = {}
         width = {}
@@ -689,7 +700,7 @@ class TNOPlotter(object):
         i = 0
         for edge in edges:
             if self.form.edge_attribute(edge, 'is_ind'):
-                color[edge] = self.settings['color.edges.independent']
+                color[edge] = colorinds
                 width[edge] = base_thick * 3.0
                 if show_text:
                     text[edge] = str(i)
@@ -803,7 +814,7 @@ class TNOPlotter(object):
         if print_sym:
             self.formartist.draw_edgelabels(text=texts)
 
-    def draw_force(self, show_edges=True, show_vertices=False, show_faces=False):
+    def draw_force(self, show_edges=True, show_vertices=False, show_faces=False, show_independents=False):
         """Draw the force diagram associated with the form diagram.
 
         Parameters
@@ -814,22 +825,31 @@ class TNOPlotter(object):
             Whether or not vertices are shown in the force diagram, by default False
         show_faces : bool, optional
             Whether or not faces are shown in the force diagram, by default False
+        show_independentrs : bool, optional
+            Whether or not independent edges are highlighted, by default False
 
         Returns
         -------
         None
             The plotter is updated in place.
         """
-
         if not self.force:
             from compas_tno.algorithms import reciprocal_from_form
             self.force = reciprocal_from_form(self.form)
 
         force = self.force
 
+        base_width = self.settings['size.edge.base_thickness']
+        width = {}
+
         edgecolor = {}
         for edge in force.edges():
             edgecolor[edge] = Color.black()
+            width[edge] = base_width
+        if show_independents:
+            for edge in force.edges_where_dual({'is_ind': True}):
+                edgecolor[edge] = self.settings['color.edges.independent']
+                width[edge] = base_width * 3
 
         force_bbox = self.force.bounding_box_xy()
         xmin_force, xmax_force = force_bbox[0][0], force_bbox[1][0]
@@ -862,7 +882,13 @@ class TNOPlotter(object):
             force = force.transformed(S)
             force = force.transformed(T)
 
-        self.app.add(force, show_edges=show_edges, show_vertices=show_vertices, show_faces=show_faces, edgecolor=edgecolor)
+        self.app.add(force,
+                     show_edges=show_edges,
+                     show_vertices=show_vertices,
+                     show_faces=show_faces,
+                     edgecolor=edgecolor,
+                     edgewidth=width,
+                     )
 
     def draw_arch_lines(self, H=1.00, L=2.0, x0=0.0, thk=0.20, total_nodes=50, stereotomy=False, close_bottom=True):
         """Helper to draw the lines of intrados and extrados of an arch for given parameters
@@ -974,21 +1000,3 @@ class TNOPlotter(object):
             images.append(Image.open(path))
 
         images[0].save(filepath, save_all=True, append_images=images[1:], optimize=False, duration=interval * 10, loop=0)
-
-
-def _norm(rgb):
-    """ Normalise the color in RGB dividing each component by 255
-
-    Parameters
-    ----------
-    rgb : tuple
-        Tuple with RBG colors
-
-    Returns
-    ----------
-    norm_rgb : tuple
-        The normalised color
-    """
-    r, g, b = rgb
-
-    return (r/255.0, g/255.0, b/255.0)
