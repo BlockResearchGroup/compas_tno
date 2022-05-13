@@ -106,6 +106,8 @@ Form Modifications
 
     form_add_lines_support
     form_parabolic_slide
+    move_pattern_to_origin
+    slide_diagram
 
 Data Analysis
 ====================
@@ -205,7 +207,9 @@ from .blocks import(
 
 from .form import(
     form_add_lines_support,
-    form_parabolic_slide
+    form_parabolic_slide,
+    move_pattern_to_origin,
+    slide_diagram
 )
 
 from .data_analysis import (
@@ -283,6 +287,8 @@ __all__ = [
 
     'form_add_lines_support',
     'form_parabolic_slide',
+    'move_pattern_to_origin',
+    'slide_diagram',
 
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',
