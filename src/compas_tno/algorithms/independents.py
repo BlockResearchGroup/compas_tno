@@ -42,7 +42,7 @@ def find_independents(E):
     for i in internal[1:]:
         Etest = hstack([Etemp, E[:, [i]]])
         _, ncol = Etest.shape
-        if matrix_rank(Etest, tol=1e-4) < ncol:  # testing tol
+        if matrix_rank(Etest) < ncol:  # testing tol
             ind.append(i)
         else:
             Etemp = Etest

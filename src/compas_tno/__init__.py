@@ -97,3 +97,23 @@ def wakeup_matlab():
     print(matlab.engine.find_matlab())
 
     return eng
+
+
+def open_dialog():
+    """Method to open a dialog window to find the path of a file.
+
+    Returns
+    -------
+    file_path
+        The path of the file selected
+    """
+
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.askopenfilename()
+
+    return file_path

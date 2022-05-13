@@ -213,8 +213,8 @@ def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb, SPLU_D=None):
 
     CiQCb = Cit @ diags(q.flatten()) @ Cb
     if not SPLU_D:
-        CiQCi = Cit @ diags(q.flatten()) @ Ci
-        SPLU_D = splu(CiQCi)
+        CitQCi = Cit @ diags(q.flatten()) @ Ci
+        SPLU_D = splu(CitQCi)
     Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
 
     return Xfree

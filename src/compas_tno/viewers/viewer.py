@@ -66,7 +66,7 @@ class Viewer(object):
             'force.anchor': [0, -10, 0],
 
             'scale.reactions': 0.01,
-            'scale.loads': 0.001,
+            'scale.loads': 0.01,
             'opacity.shapes': 0.5,
 
             'color.edges.thrust': Color.red(),

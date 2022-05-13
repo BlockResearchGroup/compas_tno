@@ -87,7 +87,7 @@ def constr_wrapper(variables, M):
     # else:
     #     M.X[M.free] = X_free
 
-    constraints = zeros([0, 1])  # missing compression only constraint
+    constraints = zeros([0, 1])
 
     if 'funicular' in M.constraints:
         qmin = M.q.reshape(-1, 1) - M.qmin

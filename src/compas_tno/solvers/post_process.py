@@ -2,6 +2,7 @@ from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.algorithms import q_from_variables
 from compas_tno.shapes import Shape
+from compas_tno.shapes.meshdos import MeshDos
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.problems import save_geometry_at_iterations
 
@@ -62,6 +63,9 @@ def post_process_general(analysis):
         M.P[:, [0]] = lambdh * M.px0
         M.P[:, [1]] = lambdh * M.py0
         M.d = lambdh * M.d0
+    if 'lambdv' in M.variables:
+        lambdv = xopt[check: check + 1]
+        M.P[:, [2]] = lambdv * M.pzv + M.pz0
     if 'tub' in M.variables:
         tub = xopt[check:check + M.n]
         check = check + M.n
@@ -82,7 +86,8 @@ def post_process_general(analysis):
     g_final = fconstr(xopt, M)
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
-    print('post min, max z:', min(M.X[:, 2].flatten()), max(M.X[:, 2].flatten()))
+    if printout:
+        print('post-processing min, max z:', min(M.X[:, 2].flatten()), max(M.X[:, 2].flatten()))
 
     i = 0
     for key in form.vertices():
@@ -154,8 +159,8 @@ def post_process_general(analysis):
     if 'n' in M.variables:
         print('Value of N:', n)
         n = -1 * fopt
-        shape.intrados = shape.intrados.offset_mesh(n=n, direction='up')
-        shape.extrados = shape.extrados.offset_mesh(n=n, direction='down')
+        shape.intrados: MeshDos = shape.intrados.offset_mesh(n=n, direction='up')
+        shape.extrados: MeshDos = shape.extrados.offset_mesh(n=n, direction='down')
         apply_envelope_from_shape(form, shape)
 
     if 'tub' in M.variables:

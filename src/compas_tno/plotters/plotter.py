@@ -635,6 +635,8 @@ class TNOPlotter(object):
         if not self.form_base:
             return
 
+        edgecolors = {edge: self.settings['color.edges.form_base'] for edge in self.form_base.edges()}
+
         if self.settings['show.edges']:
             edges = list(self.form_base.edges_where({'_is_edge': True}))
 
@@ -642,7 +644,7 @@ class TNOPlotter(object):
             self.form_base,
             edges=edges,
             opacity=0.5,
-            edgecolor=self.settings['color.edges.form_base'],
+            edgecolor=edgecolors,
             show_vertices=False,
             show_faces=False
         )

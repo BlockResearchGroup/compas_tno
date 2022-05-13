@@ -57,7 +57,7 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, discretisation=100):
     return form
 
 
-def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
+def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
     """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
 
     Parameters
@@ -66,7 +66,7 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
         Span of the arch, by default 2.00
     x0 : float, optional
         Initial coordiante of the arch, by default 0.0
-    total_nodes : int, optional
+    discretisation : int, optional
         Numbers of nodes to be considered in the form diagram, by default 100
 
     Returns
@@ -77,17 +77,17 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, total_nodes=100):
     """
 
     from numpy import linspace
-    x = linspace(x0, x0 + L, total_nodes)  # Continue this remove need of numpy in the future
+    x = linspace(x0, x0 + L, discretisation)  # Continue this remove need of numpy in the future
     lines = []
     gkey_fix = []
 
-    for i in range(total_nodes-1):
+    for i in range(discretisation-1):
         xi = x[i]
         xf = x[i + 1]
         lines.append([[xi, 0.0, 0.0], [xf, 0.0, 0.0]])
         if i == 0:
             gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))
-        elif i == total_nodes - 2:
+        elif i == discretisation - 2:
             gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
 
     mesh = Mesh.from_lines(lines)

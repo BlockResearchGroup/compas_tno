@@ -188,13 +188,15 @@ class Problem():
         return problem
 
 
-def initialise_form(form, printout=False):
+def initialise_form(form, find_inds=True, printout=False):
     """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
     ----------
     form : FormDiagram
         The FormDiagram
+    find_inds : bool, optional
+        Whether or not independents should be found (fixed diagram), by default True
     printout : bool, optional
         Whether or not prints should appear on the screen, by default False
 
@@ -209,19 +211,10 @@ def initialise_form(form, printout=False):
 
     """
 
-    i_uv = form.index_uv()
-
     M = initialise_problem_general(form)
-    adapt_problem_to_fixed_diagram(M, form, printout=printout)
-    ind = M.ind
 
-    form.update_default_edge_attributes({'is_ind': False})
-    gkeys = []
-    for i in ind:
-        u, v = i_uv[i]
-        gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-        form.edge_attribute((u, v), 'is_ind', value=True)
-    form.attributes['indset'] = gkeys
+    if find_inds:
+        adapt_problem_to_fixed_diagram(M, form, printout=printout)
 
     return M
 
@@ -436,7 +429,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
 
         if printout:
             print('Loaded {} previous independents'.format(len(form.attributes['indset'])))
-            print('Found {} independents in the new pattern', len(ind))
+            print('Found {} independents in the new pattern'.format(len(ind)))
         if len(form.attributes['indset']) != len(ind):
             print('Did not match problem inds')
             ind = find_independents(problem.E)  # see if it can be improved with crs matrix
