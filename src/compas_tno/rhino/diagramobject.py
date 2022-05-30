@@ -11,7 +11,7 @@ from compas.geometry import scale_vector
 from compas.geometry import add_vectors
 from compas.geometry import subtract_vectors
 
-from compas_rhino.objects import MeshObject
+from compas_ui.objects import MeshObject
 
 
 __all__ = ['DiagramObject']

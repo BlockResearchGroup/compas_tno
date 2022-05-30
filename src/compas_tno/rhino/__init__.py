@@ -36,7 +36,7 @@ from .forms import Browser  # noqa: F401
 
 if compas.IPY:
 
-    from compas_rhino.objects import BaseObject
+    from compas_ui.objects import Object
     from compas_rhino.artists import RhinoArtist
 
     DiagramObject.register(FormDiagram, FormObject)
@@ -45,10 +45,10 @@ if compas.IPY:
     DiagramObject.register(ForceDiagram, ForceObject)
     RhinoArtist.register(ForceDiagram, ForceArtist, context='Rhino')
 
-    BaseObject.register(Shape, ShapeObject)
+    Object.register(Shape, ShapeObject)
     RhinoArtist.register(Shape, ShapeArtist, context='Rhino')
 
-    BaseObject.register(Optimiser, OptimiserObject)
+    Object.register(Optimiser, OptimiserObject)
     RhinoArtist.register(Optimiser, DiagramArtist, context='Rhino')
 
     print('did my registering')

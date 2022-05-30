@@ -3,14 +3,14 @@ from __future__ import absolute_import
 from __future__ import division
 
 import compas_rhino
-from compas_rhino.objects import BaseObject
+from compas_ui.objects import Object
 from compas.geometry import Point
 
 
 __all__ = ['OptimiserObject']
 
 
-class OptimiserObject(BaseObject):
+class OptimiserObject(Object):
     """A form object represents a Shape in the Rhino model space.
     """
 
