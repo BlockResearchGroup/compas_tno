@@ -3,6 +3,11 @@ from compas.utilities import geometric_key
 from compas.geometry import mirror_points_line
 from compas.geometry import rotate_points_xy
 from compas.datastructures import Mesh
+from compas.datastructures import Network
+
+from compas.geometry import distance_point_point_xy
+from compas.datastructures import mesh_weld
+from compas.datastructures import network_join_edges
 
 
 def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
@@ -246,6 +251,15 @@ def mirror_8x(line, origin, line_hor, line_ver, lines):
     lines = mirror_4x(rot, line_hor, line_ver, lines)
 
     return lines
+
+def append_mirrored_lines(line, list_, line_hor, line_ver):
+    """ Helper to mirror an object 8 times and add to the list"""
+    mirror_a = mirror_points_line(line, line_hor)
+    mirror_b = mirror_points_line(mirror_a, line_ver)
+    mirror_c = mirror_points_line(line, line_ver)
+    list_.append(mirror_a)
+    list_.append(mirror_b)
+    list_.append(mirror_c)
 
 
 def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='all'):
@@ -503,9 +517,9 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
 
     if isinstance(discretisation, int):
         discretisation = [discretisation, discretisation]
-    if discretisation[0] % 2 != 0 or discretisation[1] % 2 != 0:
-        msg = "Warning!: discretisation of this form diagram has to be even."
-        raise ValueError(msg)
+    # if discretisation[0] % 2 != 0 or discretisation[1] % 2 != 0:
+    #     msg = "Warning!: discretisation of this form diagram has to be even."
+    #     raise ValueError(msg)
 
     y1 = float(xy_span[1][1])
     y0 = float(xy_span[1][0])

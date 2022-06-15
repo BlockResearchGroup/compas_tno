@@ -11,6 +11,7 @@ from compas_tno.diagrams.diagram_circular import create_circular_radial_form
 from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_form
 from compas_tno.diagrams.diagram_circular import create_circular_spiral_form
 from compas_tno.diagrams.diagram_rectangular import create_ortho_form
+from compas_tno.diagrams.diagram_rectangular import create_parametric_form
 
 from compas_tna.diagrams import FormDiagram
 
@@ -89,7 +90,7 @@ class FormDiagram(FormDiagram):
             'E': None,
             'Ah': None,
             # 'x0': None,
-            # 'total_nodes': 20,
+            # 'discretisation': 20,
             # 'xy_span': [[0,10],[0,10]],
             # 'discretisation': [10,10],
             # 'fix': 'corners',
@@ -135,19 +136,22 @@ class FormDiagram(FormDiagram):
         diagonal = data.get('diagonal')
         partial_diagonal = data.get('partial_diagonal')
         partial_bracing_modules = data.get('partial_bracing_modules')
+        fix = data.get('fix', 'corners')
+        lambd = data.get('lambd', 0.5)
 
         if form_type == 'arch':
             form = create_arch_form_diagram(cls(), H=H, L=L, x0=x0, discretisation=discretisation)
-        elif form_type == 'linear_arch' or form_type == 'pointed_arch':
+        if form_type == 'linear_arch' or form_type == 'pointed_arch':
             form = create_linear_form_diagram(cls(), L=L, x0=x0, discretisation=discretisation)
-        elif form_type == 'cross_fd':
+        if form_type == 'cross_fd':
             form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
         if form_type == 'cross_diagonal':
-            form = create_cross_diagonal(cls(), xy_span=data['xy_span'], discretisation=data['discretisation'], partial_bracing_modules=partial_bracing_modules, fix=data['fix'])
+            form = create_cross_diagonal(cls(), xy_span=data['xy_span'], discretisation=discretisation,
+                                         partial_bracing_modules=partial_bracing_modules, fix=fix)
         if form_type == 'cross_with_diagonal':
-            form = create_cross_with_diagonal(cls(), xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+            form = create_cross_with_diagonal(cls(), xy_span=data['xy_span'], discretisation=discretisation, fix=fix)
         if form_type == 'fan_fd':
-            form = create_fan_form(cls(), xy_span=data['xy_span'], discretisation=data['discretisation'], fix=data['fix'])
+            form = create_fan_form(cls(), xy_span=data['xy_span'], discretisation=discretisation, fix=fix)
         if form_type == 'ortho' or form_type == 'ortho_fd':
             form = create_ortho_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
         if form_type == 'radial_fd':
@@ -158,6 +162,8 @@ class FormDiagram(FormDiagram):
                                                       r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
         if form_type == 'spiral_fd':
             form = create_circular_spiral_form(cls(), center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus)
+        if form_type == 'parametric_form':
+            form = create_parametric_form(cls(), xy_span=xy_span, discretisation=discretisation, lambd=lambd, fix=fix)
 
         form.parameters = data
 
@@ -303,6 +309,31 @@ class FormDiagram(FormDiagram):
         """
 
         data = {'type': 'fan_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
+
+        return cls().from_library(data)
+
+    @classmethod
+    def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, lambd=0.5, fix='corners'):
+        """ Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
+
+        Parameters
+        ----------
+        xy_span : [[float, float], [float, float]], optional
+            List with initial- and end-points of the vault, by default, by default [[0.0, 10.0], [0.0, 10.0]]
+        discretisation : int, optional
+            Set the density of the grid in x and y directions, by default 10
+        lambd : float, optional
+            Inclination of the arches in the diagram (0.0 will result in cross and 1.0 in fan diagrams), by default 0.5
+        fix : str, optional
+            Option to select the constrained nodes: 'corners', 'all' are accepted, by default 'corners'
+
+        Returns
+        -------
+        FormDiagram
+            The FormDiagram created.
+        """
+
+        data = {'type': 'parametric_form', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix, 'lambd': lambd}
 
         return cls().from_library(data)
 
@@ -566,7 +597,20 @@ class FormDiagram(FormDiagram):
             f = self.edge_attribute((u, v), 'q') * self.edge_length(u, v)
             self.edge_attribute((u, v), 'f', f)
 
-        return
+    def add_pz(self, key, force=0.0):
+        """_summary_
+
+        Parameters
+        ----------
+        key : int
+            Edge identifier
+        force : float, optional
+            Load to add at the node in the attribute 'pz', by default 0.0
+
+        """
+
+        pz0 = self.vertex_attribute(key, 'pz')
+        self.vertex_attribute(key, 'pz', pz0 + force)
 
     def tributary_dict(self):
         """Make a tributary dictionary to help in the calculation of the tributary weights to the nodes afterwards.
@@ -688,6 +732,28 @@ class FormDiagram(FormDiagram):
 
         return F, V0, V1, V2
 
+    def update_lumped_weights(self, thickness=0.5, density=20.0):
+        """Update the lumped weights based on the curent geometry of the thrust network
+        The loads are computed based on the tributary area times the thickness times the density.
+        For variable thickness the nodal attribute `thk` is considered.
+
+        Parameters
+        ----------
+        thickness : float, optional
+            The thickness of the problem, by default 0.50
+            If None is passed, the thickness is taken from the nodal attribute `thk`
+        density : float, optional
+            The density assumed, by default 20.0
+
+        Returns
+        -------
+        None
+            Loads are updated in place.
+        """
+
+        from compas_tno.utilities import apply_selfweight_from_thrust
+        apply_selfweight_from_thrust(self, thickness=thickness, density=density)
+
     def overview_forces(self):
         """Print an overview of the forces in the ``Form Diagram``."""
 
@@ -759,11 +825,10 @@ class FormDiagram(FormDiagram):
         """ Compute loadpath in the current configuration based on the force attributes stored in the ``FormDiagram``. """
 
         lp = 0
-        for u, v in self.edges_where({'_is_external': False}):
-            if self.edge_attribute((u, v), '_is_edge') is True and self.edge_attribute((u, v), 'is_symmetry') is False:
-                qi = self.edge_attribute((u, v), 'q')
-                li = self.edge_length(u, v)
-                lp += qi*li**2
+        for u, v in self.edges_where({'_is_edge': True}):
+            qi = abs(self.edge_attribute((u, v), 'q'))
+            li = self.edge_length(u, v)
+            lp += qi*li**2
 
         self.attributes['loadpath'] = lp
 

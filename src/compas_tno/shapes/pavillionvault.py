@@ -41,7 +41,7 @@ def pavillion_vault_highfields_proxy(xy_span, thk=0.5, discretisation=10, t=0.0)
     return intrados.to_data(), extrados.to_data(), middle.to_data()
 
 
-def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=0.0, discretisation=[100, 100]):
+def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol=10e-6, t=0.0, discretisation=[100, 100], expanded=False):
     """Set Pavillion vault heights
 
     Parameters
@@ -67,7 +67,7 @@ def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol
         A MeshDos for the middle of the shape
     """
 
-    # Uodate this function to work on rectangular Pavillion-Vaults
+    # Update this function to work on rectangular Pavillion-Vaults
 
     if isinstance(discretisation, int):
         discretisation = [discretisation, discretisation]
@@ -95,6 +95,14 @@ def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol
 
     extrados = MeshDos.from_vertices_and_faces(xyzub, faces_i)
     intrados = MeshDos.from_vertices_and_faces(xyzlb, faces_i)
+
+    if expanded:
+        x = linspace(x0 - thk/2, x1 + thk/2, num=density_x+1, endpoint=True)  # arange(x0, x1 + dx/density_x, dx/density_x)
+        y = linspace(y0 - thk/2, y1 + thk/2, num=density_y+1, endpoint=True)  # arange(y0, y1 + dy/density_y, dy/density_y)
+        xi, yi, faces_i = rectangular_topology(x, y)
+        zub, zlb = pavillionvault_ub_lb_update(xi, yi, thk, t, xy_span=xy_span, tol=1e-6)
+        xyzub = array([xi, yi, zub.flatten()]).transpose()
+        extrados = MeshDos.from_vertices_and_faces(xyzub, faces_i)
 
     return intrados, extrados, middle
 

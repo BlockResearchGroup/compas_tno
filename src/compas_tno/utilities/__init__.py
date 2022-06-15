@@ -44,6 +44,8 @@ Loads
     apply_horizontal_multiplier
     apply_fill_load
     apply_selfweight_from_shape_proxy
+    apply_selfweight_from_thrust
+
 
 Envelopes
 =========
@@ -104,10 +106,12 @@ Form Modifications
 .. autosummary::
     :toctree: generated/
 
+    split_intersection_lines
     form_add_lines_support
     form_parabolic_slide
     move_pattern_to_origin
     slide_diagram
+    mesh_remove_two_valent_nodes
 
 Data Analysis
 ====================
@@ -158,6 +162,7 @@ from .functions import (
 from .loads import (
     apply_selfweight_from_shape,
     apply_selfweight_from_pattern,
+    apply_selfweight_from_thrust,
     apply_horizontal_multiplier,
     apply_fill_load,
     apply_selfweight_from_shape_proxy
@@ -200,16 +205,19 @@ from .json import (
     update_json
 )
 
-from .blocks import(
+from .blocks import (
     blocks_from_dual,
     extended_dual
 )
 
-from .form import(
+from .form import (
+    split_intersection_lines,
     form_add_lines_support,
     form_parabolic_slide,
     move_pattern_to_origin,
-    slide_diagram
+    slide_diagram,
+    mesh_remove_two_valent_nodes,
+    store_inds
 )
 
 from .data_analysis import (
@@ -249,6 +257,7 @@ __all__ = [
 
     'apply_selfweight_from_shape',
     'apply_selfweight_from_pattern',
+    'apply_selfweight_from_thrust',
     'apply_horizontal_multiplier',
     'apply_fill_load',
 
@@ -285,10 +294,13 @@ __all__ = [
     'blocks_from_dual',
     'extended_dual',
 
+    'split_intersection_lines',
     'form_add_lines_support',
     'form_parabolic_slide',
     'move_pattern_to_origin',
     'slide_diagram',
+    'mesh_remove_two_valent_nodes',
+    'store_inds',
 
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',

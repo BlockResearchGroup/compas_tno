@@ -215,7 +215,7 @@ class Shape(Datastructure):
             intrados, extrados, middle = cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
         elif typevault == 'pavillionvault':
             xy_span = data['xy_span']
-            intrados, extrados, middle = pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
+            intrados, extrados, middle = pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
         elif typevault == 'dome':
             center = data['center']
             radius = data['radius']
@@ -413,7 +413,6 @@ class Shape(Datastructure):
 
         return cls().from_library(data)
 
-
     @classmethod
     def create_pointedcrossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None,  t=0.0):
         """Create the shape representing a Pointed Crossvault
@@ -443,6 +442,32 @@ class Shape(Datastructure):
         """
 
         data = {'type': 'pointed_crossvault', 'xy_span': xy_span, 'thk': thk, 'discretisation': discretisation, 't': t, 'hc': hc, 'he': he, 'hm': hm}
+
+        return cls().from_library(data)
+
+    @classmethod
+    def create_pavillionvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, discretisation=[100, 100], expanded=False):
+        """Create the shape representing a Pavillion Vault
+
+        Parameters
+        ----------
+        xy_span : [list[float], list[float]], optional
+            xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+        thk : float, optional
+            The thickness of the vault, by default 0.5
+        t : float, optional
+            Parameter for lower bound in nodes in the boundary, by default 0.0
+        discretisation : list|int, optional
+            Level of discretisation of the shape, by default [100, 100]
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        data = {'type': 'pavillionvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t, 'expanded': expanded}
 
         return cls().from_library(data)
 

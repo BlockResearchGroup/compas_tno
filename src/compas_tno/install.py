@@ -12,7 +12,7 @@ import importlib
 
 
 PLUGIN_NAME = "TNO"
-PACKAGES = ['compas', 'compas_tno', 'compas_ags', 'compas_rhino', 'compas_tna', 'compas_cloud']  # 'compas_skeleton', 'compas_singular', 'compas_rv2'
+PACKAGES = ['compas', 'compas_tno', 'compas_ags', 'compas_rhino', 'compas_tna', 'compas_cloud', 'compas_ui']  # 'compas_skeleton', 'compas_singular', 'compas_rv2'
 
 
 def is_editable(project_name):

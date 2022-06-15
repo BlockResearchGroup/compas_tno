@@ -12,6 +12,9 @@ from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 from compas_tno.shapes.circular_arch import arch_ub_lb_update
 from compas_tno.shapes.pointed_arch import pointed_arch_ub_lb_update
 
+from compas_tno.shapes.pavillionvault import pavillionvault_ub_lb_update
+from compas_tno.shapes.pavillionvault import pavillionvault_middle_update
+
 from compas_tno.utilities.interpolation import get_shape_ub_pattern
 from compas_tno.utilities.interpolation import get_shape_lb_pattern
 from compas_tno.utilities.interpolation import get_shape_middle_pattern
@@ -87,6 +90,8 @@ def apply_envelope_from_shape(form, shape):
         zub, zlb = arch_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
     elif shape.datashape['type'] == 'pointed_arch':
         zub, zlb = pointed_arch_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], hc=shape.datashape['hc'], L=shape.datashape['L'], x0=shape.datashape['x0'])
+    elif shape.datashape['type'] == 'pavillionvault':
+        zub, zlb = pavillionvault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'])
     elif shape.datashape['type'] == 'general':
         XY = form.vertices_attributes('xy')
         zub = get_shape_ub_pattern(shape, XY)

@@ -39,8 +39,8 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, discretisation=100):
     for i in range(discretisation-1):
         angle_i = angle_init + i * an
         angle_f = angle_init + (i + 1) * an
-        xi = L/2 - radius * math.cos(angle_i)
-        xf = L/2 - radius * math.cos(angle_f)
+        xi = L/2 - radius * math.cos(angle_i) + x0
+        xf = L/2 - radius * math.cos(angle_f) + x0
         lines.append([[xi, 0.0, 0.0], [xf, 0.0, 0.0]])
         if i == 0:
             gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))

@@ -174,6 +174,7 @@ class TNOPlotter(object):
         """
 
         self.app = Plotter(figsize=figsize)
+        self.app.fontsize = 10
 
     def show_solution(self):
         """Show the thrust network, with the shape according to the settings.
@@ -251,7 +252,7 @@ class TNOPlotter(object):
 
         self.app.save(filepath)
 
-    def add(self, item):
+    def add(self, item, **kwargs):
         """Add an item to the plotter.
 
         Parameters
@@ -266,9 +267,9 @@ class TNOPlotter(object):
 
         """
 
-        return self.app.add(item)
+        return self.app.add(item, **kwargs)
 
-    def draw_form(self, scale_width=True, color=None, **kwargs):
+    def draw_form(self, scale_width=True, absolute_scale=False, color=None, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
 
         Parameters
@@ -369,6 +370,27 @@ class TNOPlotter(object):
                     })
                     continue
 
+        if self.settings['show.reactions.extended']:
+            for key in self.form.vertices_where({'is_fixed': True}):
+                x, y, z = self.form.vertex_coordinates(key)
+                if self.settings['rotated']:
+                    x, z, y = self.form.vertex_coordinates(key)
+                b = self.form.vertex_attribute(key, 'b')
+                if z > tol:
+                    reaction_scale = z/self.form.vertex_attribute(key, '_rz')
+                else:
+                    continue
+                rx = self.form.vertex_attribute(key, '_rx') * reaction_scale
+                ry = self.form.vertex_attribute(key, '_ry') * reaction_scale
+                rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
+                if abs(abs(rx) - b[0]) < tol:
+                    print('3')
+                    cracks.append({
+                        'key': key,
+                        'xyz': [x - rx, y - ry, z - rz],
+                        'color': color_extra
+                    })
+
         for point in cracks:
             x, y, z = point['xyz']
             if self.settings['rotated']:
@@ -440,7 +462,6 @@ class TNOPlotter(object):
                 else:
                     r = Vector(rx, ry, rz)
                     pt = Point(x - rx, y - ry, z - rz)
-                print(pt, r)
                 if self.settings['show.reactions.asarrows']:
                     self.app.add(r, point=pt, color=self.settings['color.edges.reactions'])
                 else:
@@ -454,15 +475,15 @@ class TNOPlotter(object):
                                  color=self.settings['color.edges.form'],
                                  linewidth=width)
 
-    def draw_vectors(self, vectors=[], bases=[]):
+    def draw_vector(self, vector=None, base=None):
         """Helper to add vectors to the plotter.
 
         Parameters
         ----------
-        vectors : list, optional
-            The list of vectors to plot, by default []
-        bases : list, optional
-            The list with the location of the base of the vectors, by default []
+        vectors : Vector, optional
+            Vector to plot, by default None
+        bases : Point, optional
+            Point with the location of the base of the vector, by default None
 
         Returns
         -------
@@ -470,14 +491,11 @@ class TNOPlotter(object):
             The plotter is updated in place
         """
 
-        if not(len(vectors) == len(bases)):
-            raise ValueError('Please provide the vector and the bases')
+        if not vector or not base:
+            raise ValueError()
 
-        for i in range(len(vectors)):
-            vector = vectors[i]
-            point = bases[i]
-            vectorartist = self.app.add(vector, point=point)
-            self._otherartists.append(vectorartist)
+        vectorartist = self.app.add(vector, point=base)
+        self._otherartists.append(vectorartist)
 
     def draw_lines(self, lines=[]):
         """Helper to add vectors to the plotter.
@@ -585,14 +603,14 @@ class TNOPlotter(object):
         self.app.add(
             intrados,
             opacity=self.settings['shape.opacity'],
-            edgecolor=self.settings['color.edges.shape'],
+            edgecolor={edge: self.settings['color.edges.shape'] for edge in intrados.edges()},
             show_vertices=False
         )
 
         self.app.add(
             extrados,
             opacity=self.settings['shape.opacity'],
-            edgecolor=self.settings['color.edges.shape'],
+            edgecolor={edge: self.settings['color.edges.shape'] for edge in extrados.edges()},
             show_vertices=False
         )
 
@@ -674,7 +692,7 @@ class TNOPlotter(object):
                     p3 = [xmin, ymax]
                     lines = [Line(p0, p1), Line(p1, p2), Line(p2, p3), Line(p3, p0)]
                     for line in lines:
-                        self.app.add(line, draw_as_segment=True)
+                        self.app.add(line, draw_as_segment=True, color=self.settings['color.edges.form_base'])
 
     def draw_form_independents(self, color=None, show_text=True):
         """Draw the form diagram with highlight in the independent edges.

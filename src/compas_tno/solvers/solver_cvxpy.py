@@ -213,8 +213,8 @@ def call_cvxpy(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = Problem(objective, constraints)
-    # prob.solve(verbose=printout)
-    prob.solve(verbose=True)
+    prob.solve(verbose=printout)
+    # prob.solve(verbose=True)
 
     # save output
     fopt = prob.value

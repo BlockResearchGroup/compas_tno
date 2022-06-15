@@ -193,12 +193,143 @@ class Analysis(Data):
         analysis = cls().from_form_and_shape(form, shape)
 
         optimiser = Optimiser.create_minthk_optimiser(printout=printout,
-                                                      plot=plot ,
+                                                      plot=plot,
                                                       max_iter=max_iter,
                                                       starting_point=starting_point)
 
         print('-'*20)
         print('Optimiser created for the a minimum thickness analysis')
+        print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+    @classmethod
+    def create_minthrust_analysis(cls, form, shape, printout=False, plot=False , max_iter=500, starting_point='loadpath'):
+        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape
+            The shape cconstraining the problemf
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        optimiser = Optimiser.create_minthrust_optimiser(printout=printout,
+                                                      plot=plot,
+                                                      max_iter=max_iter,
+                                                      starting_point=starting_point)
+
+        print('-'*20)
+        print('Optimiser created for the a minimum thrust analysis')
+        print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+
+    @classmethod
+    def create_compl_energy_analysis(cls, form, shape, printout=False, solver='IPOPT', plot=False , max_iter=500, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
+        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape
+            The shape cconstraining the problemf
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        optimiser = Optimiser.create_compl_energy_optimiser(printout=printout,
+                                                            plot=plot,
+                                                            max_iter=max_iter,
+                                                            starting_point=starting_point,
+                                                            support_displacement=support_displacement,
+                                                            Emethod=Emethod,
+                                                            solver=solver)
+
+        print('-'*20)
+        print('Optimiser created for the a Linear Complementary Energy analysis')
+        print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+
+    @classmethod
+    def create_lp_analysis(cls, form, shape=None, solver='MATLAB', printout=False, plot=False, max_iter=500):
+        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape, optional
+            The shape cconstraining the problem, by default None
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        optimiser = Optimiser.create_lp_optimiser(solver=solver,
+                                                  printout=printout,
+                                                  plot=plot,
+                                                  max_iter=max_iter)
+
+        if shape:
+            analysis = cls().from_elements(shape, form, optimiser)
+        else:
+            analysis = cls().from_form_and_optimiser(form, optimiser)
+
+        print('-'*20)
+        print('Optimiser created for a load-path analysis')
         print(optimiser)
 
         analysis.optimiser = optimiser
@@ -218,6 +349,14 @@ class Analysis(Data):
             return True
         else:
             return False
+
+    def clear_previous_results(self):
+        """Clear Previous results stored in the Analysis object. Necessary to perform sequential optimisation with the same analysis object
+        """
+
+        self.optimiser.clear_optimiser()
+
+        return
 
     def apply_selfweight(self, normalize_loads=True):
         """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
@@ -346,7 +485,9 @@ class Analysis(Data):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
         solver = self.optimiser.settings.get('solver', 'SLSQP')
-        library = self.optimiser.settings.get('library', 'Scipy')
+
+        if not isinstance(solver, str):
+            raise ValueError('Please provide the name of the solver')
 
         if self.is_convex():
             if solver == 'MATLAB':
@@ -356,8 +497,8 @@ class Analysis(Data):
             else:
                 raise NotImplementedError('Only <CVXPY> and <MATLAB> are suitable for this optimisation')
         else:
-            if library == 'pyOpt':
-                self = run_optimisation_MMA(self)
+            if solver.split('-') == 'pyOpt':
+                self = run_optimisation_MMA(self)  # change to PyOpt
             elif solver == 'MMA':
                 self = run_optimisation_MMA(self)
             elif solver == 'IPOPT':

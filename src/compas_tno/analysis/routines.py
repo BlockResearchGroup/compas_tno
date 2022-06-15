@@ -426,7 +426,6 @@ def max_n_minmax_GSF(analysis, n_step=0.01, printout=True, save_forms=False):
         n_reduction = n_step
 
         print('Changing solver to IPOPT')
-        analysis.optimiser.settings['library'] == 'IPOPT'
         analysis.optimiser.settings['solver'] == 'IPOPT'
 
     else:
