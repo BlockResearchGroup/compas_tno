@@ -37,6 +37,7 @@ def constr_wrapper(variables, M):
     check = k
     qid = variables[:k].reshape(-1, 1)
     lambdh = 1.0
+    delta = 0.0
     thk = M.thk
     t = M.shape.datashape['t']
 
@@ -74,6 +75,9 @@ def constr_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
+    if 'delta' in M.variables:
+        delta = float(variables[check: check + 1])
+        check = check + 1
 
     M.q = q_from_variables(qid, M.B, M.d)
 
@@ -140,5 +144,15 @@ def constr_wrapper(variables, M):
             Ry = Ry + abs(tub_reac[nb:])
 
         constraints = vstack([constraints, Rx, Ry])
+
+    if 'displ_map' in M.constraints:
+        if delta:
+            pos = (M.E @ M.q + delta * M.Ed @ M.q - M.ph).reshape(-1, 1)
+        else:
+            pos = (M.E @ M.q - M.ph).reshape(-1, 1)
+        # pos = (M.E @ M.q - M.ph).reshape(-1, 1)
+        neg = -pos
+
+        constraints = vstack([constraints, pos, neg])
 
     return constraints.flatten()

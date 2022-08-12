@@ -16,9 +16,18 @@ for guid in guids:
 
 compas_mesh = Mesh.from_lines(lines, delete_boundary_face=True)
 
-#jsonpath = '/Users/mricardo/compas_dev/me/freeform/meshes_square/mesh-E.json'
-jsonpath = '/Users/mricardo/compas_dev/me/pattern/singular/dome/mesh-E3.json'
+
+# jsonpath = '/Users/mricardo/compas_dev/me/freeform/meshes_square/mesh-E.json'
+# jsonpath = '/Users/mricardo/compas_dev/me/anagni/meshes/CISM/mesh-B7-maxload.json'
+# jsonpath = '/Users/mricardo/compas_dev/compas_tno/data/form-hor_load.json'
+
+jsonpath= '/Users/mricardo/compas_dev/me/inds/three_legs.json'
+# jsonpath= '/Users/mricardo/compas_dev/me/pattern/singular/dome/mesh-D3-diag.json'
+
+# jsonpath= '/Users/mricardo/compas_dev/me/pattern/parametric/form_lambd_0.5_from_rhino.json'
 
 compas_mesh.to_json(jsonpath)
+
+print(compas_mesh)
 
 print('Mesh saved @', jsonpath)

@@ -26,6 +26,14 @@ def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
     -------
     FormDiagram
         The FormDiagram created.
+
+    Notes
+    ----------------------
+    Position of the quadrants is as in the schema below:
+
+        Q3
+    Q2      Q1
+        Q4
     """
 
     if isinstance(discretisation, list):
@@ -593,5 +601,151 @@ def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[1
             form.edge_attribute(edge, '_is_edge', False)
 
         # form.delete_boundary_edges()
+
+    return form
+
+
+def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, lambd=0.5, fix='corners'):
+    """Create a parametric form diagram based on the inclination lambda of the arches
+
+    Parameters
+    ----------
+    xy_span : [[float, float], [float, float]], optional
+        List with initial- and end-points of the vault, by default, by default [[0.0, 10.0], [0.0, 10.0]]
+    discretisation : int, optional
+        Set the density of the grid in x and y directions, by default 10
+    lambd : float, optional
+        Inclination of the arches in the diagram (0.0 will result in cross and 1.0 in fan diagrams), by default 0.5
+    fix : str, optional
+        Option to select the constrained nodes: 'corners', 'all' are accepted, by default 'corners'
+
+    Returns
+    -------
+    FormDiagram
+        The FormDiagram created.
+
+    Reference
+    ---------
+        Add Reference
+    """
+
+    from compas_tno.utilities import split_intersection_lines
+    from compas_tno.utilities import move_pattern_to_origin
+    from compas_tno.utilities import mesh_remove_two_valent_nodes
+
+    if 0.0 > lambd or lambd > 1.0:
+        raise ValueError('Lambda should be between 0.0 and 1.0')
+
+    x_span = xy_span[0][1] - xy_span[0][0]
+    y_span = xy_span[1][1] - xy_span[1][0]
+    is_retangular = False
+
+    if abs(x_span - y_span) > 1e-6:
+        is_retangular = True
+        y_span = x_span = 10.0
+        x0, x1 = y0, y1 = 0.0, 10.0
+    else:
+        x0, x1 = xy_span[0][0], xy_span[0][1]
+        y0, y1 = xy_span[1][0], xy_span[1][1]
+
+    xc = (x1 + x0)/2
+    yc = (y1 + y0)/2
+
+    xc0 = x0 + x_span/2
+    yc0 = y0 + y_span/2
+    division_x = discretisation
+    division_y = discretisation
+    dx = float(x_span/division_x)
+    dy = float(y_span/division_y)
+    nx = int(division_x/2)
+    line_hor = [[x0, yc0, 0.0], [xc0, yc0, 0.0]]
+    line_ver = [[xc0, y0, 0.0], [xc0, yc0, 0.0]]
+
+    lines = []
+
+    for i in range(nx + 1):
+        j = i
+
+        xa = xc
+        ya = xc - dy*j
+        xb = (ya - y0) * (1 - lambd)
+        yb = (ya - y0) * (1 - lambd)
+
+        if distance_point_point_xy([xa, ya], [xb, yb]):
+            lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+
+            append_mirrored_lines([[xa, ya, 0.0], [xb, yb, 0.0]], lines, line_hor, line_ver)
+
+        if i == 0:
+            xa = x0
+            ya = y0
+
+            if distance_point_point_xy([xa, ya], [xb, yb]):
+                lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+
+                append_mirrored_lines([[xa, ya, 0.0], [xb, yb, 0.0]], lines, line_hor, line_ver)
+
+        xa = xc - dx*j
+        xb = xc - dx*j
+        ya = yc - dy*j
+        yb = y0
+
+        if distance_point_point_xy([xa, ya], [xb, yb]):
+            lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+
+            append_mirrored_lines([[xa, ya, 0.0], [xb, yb, 0.0]], lines, line_hor, line_ver)
+
+        xa = yc - dy*j
+        ya = yc
+        xb = (xa - x0) * (1 - lambd)
+        yb = xb * (y1 - y0) / (x1 - x0) + y0
+
+        if distance_point_point_xy([xa, ya], [xb, yb]):
+            lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+
+            append_mirrored_lines([[xa, ya, 0.0], [xb, yb, 0.0]], lines, line_hor, line_ver)
+
+        xa = xc - dx*j
+        xb = x0
+        ya = yc - dy*j
+        yb = yc - dy*j
+
+        if distance_point_point_xy([xa, ya], [xb, yb]):
+            lines.append([[xa, ya, 0.0], [xb, yb, 0.0]])
+
+            append_mirrored_lines([[xa, ya, 0.0], [xb, yb, 0.0]], lines, line_hor, line_ver)
+
+    clean_lines = split_intersection_lines(lines)
+
+    mesh = Mesh.from_lines(clean_lines, delete_boundary_face=True)
+    mesh = mesh_weld(mesh)
+
+    # if valence is 2
+    mesh = mesh_remove_two_valent_nodes(mesh, delete_boundary_face=True)
+
+    x0, x1 = xy_span[0][0], xy_span[0][1]
+    y0, y1 = xy_span[1][0], xy_span[1][1]
+    corners = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
+
+    if is_retangular:
+        move_pattern_to_origin(mesh, corners=corners)
+
+    vertices, faces = mesh.to_vertices_and_faces()
+    form = cls.from_vertices_and_faces(vertices, faces)
+    # form = cls.from_mesh(mesh)
+
+    if fix == 'corners':
+        for key in form.vertices():
+            pt = form.vertex_coordinates(key)
+            for corner in corners:
+                dist = distance_point_point_xy(pt, corner)
+                if dist < 1e-3:
+                    form.vertex_attribute(key, 'is_fixed', True)
+                    break
+    else:
+        [bnds] = form.vertices_on_boundaries()
+        for key in bnds:
+            form.vertex_attribute(key, 'is_fixed', True)
+        form = form.delete_boundary_edges()  # Check if this should be here, or explicit
 
     return form

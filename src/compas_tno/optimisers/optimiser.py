@@ -1,4 +1,3 @@
-from tracemalloc import start
 from compas.datastructures import Datastructure
 
 __all__ = ['Optimiser']
@@ -224,7 +223,7 @@ class Optimiser(Datastructure):
 
     @classmethod
     def create_compl_energy_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
-        """Create a minimum thickness optimiser to be sent with instructions to the Analysis.
+        """Create a linear complementary energy optimiser to be sent with instructions to the Analysis.
 
         Parameters
         ----------
@@ -252,6 +251,44 @@ class Optimiser(Datastructure):
         optimiser.set_variables(['q', 'zb'])
         optimiser.set_features(['fixed'])
         optimiser.set_objective('Ecomp-linear')
+        optimiser.set_display_options(plot=plot, printout=printout)
+        optimiser.set_max_iterations(max_iter=max_iter)
+        optimiser.set_gradient_options(gradient=True, jacobian=True)
+        optimiser.set_starting_point(starting_point=starting_point)
+        optimiser.set_additional_options(support_displacement=support_displacement, Ecomp_method=Emethod)
+
+        return optimiser
+
+    @classmethod
+    def create_quad_compl_energy_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
+        """Create a quadratic complementary energy optimiser to be sent with instructions to the Analysis.
+
+        Parameters
+        ----------
+        solver : str, optional
+            Which solver to use, by default 'SLSQP'. See Solvers page for more information.
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        optimiser = cls()
+        optimiser.set_solver(solver)
+        optimiser.set_constraints(['funicular', 'envelope'])
+        optimiser.set_variables(['q', 'zb'])
+        optimiser.set_features(['fixed'])
+        optimiser.set_objective('Ecomp-nonlinear')
         optimiser.set_display_options(plot=plot, printout=printout)
         optimiser.set_max_iterations(max_iter=max_iter)
         optimiser.set_gradient_options(gradient=True, jacobian=True)
@@ -446,6 +483,25 @@ class Optimiser(Datastructure):
 
         self.settings['gradient'] = gradient
         self.settings['jacobian'] = jacobian
+
+    def set_axis_symmetry(self, axis_sym=[]):
+        """Set the axis of symmetry.
+
+        Parameters
+        ----------
+        axis_sym : list, optional
+            List with the lines of symmetry
+
+        Returns
+        -------
+        None
+            Optimiser is modified in place
+        """
+
+        if not isinstance(axis_sym, list):
+            raise ValueError('Please provide a list with the name of features')
+
+        self.settings['axis_sym'] = axis_sym
 
     def set_additional_options(self, **kwargs):
         """Set the additional options of the optimisation.

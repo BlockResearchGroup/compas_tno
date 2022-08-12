@@ -16,6 +16,21 @@ ad_force = '/Users/mricardo/compas_dev/compas_tno/data/CISM/force-CISM-2.json'
 
 ad_form = '/Users/mricardo/compas_dev/compas_tno/data/form-min.json'
 
+ad_form = '/Users/mricardo/compas_dev/compas_tno/data/CISM/forces/form-after-opt.json'
+
+ad_form = '/Users/mricardo/compas_dev/compas_tno/data/CISM/form-temp.json'
+
+ad_form = '/Users/mricardo/compas_dev/compas_tno/data/CISM/form-Ecomp-linear-16-thk-0.5-corner-diagonal.json'
+ad_form = '/Users/mricardo/compas_dev/compas_tno/data/CISM/form-fan_fd-Ecomp-linear-16-thk-0.5-corner-diagonal.json'
+
+ad_form = '/Users/mricardo/compas_dev/me/anagni/top_vault_less_discr_form_min.json'
+ad_form = '/Users/mricardo/compas_dev/me/anagni/revision/top_vault_top_vault_less_discr_min.json'
+ad_form = '/Users/mricardo/compas_dev/me/anagni/revision/form_min_good_sol.json'
+
+ad_form = '/Users/mricardo/compas_dev/me/anagni/revision/form_min_good_sol.json'
+ad_form = '/Users/mricardo/compas_dev/me/anagni/revision/top_vault_mesh-B_min.json'
+ad_form = '/Users/mricardo/compas_dev/me/anagni/revision/sangelo_vault_top_final_mesh-B_min.json'
+
 form = FormDiagram.from_json(ad_form)
 force = ForceDiagram.from_json(ad_force)
 
@@ -29,14 +44,18 @@ print(force)
 #artist.redraw()
 
 artist = FormArtist(form)
-artist.layer = 'mesh-E'
+artist.layer = 'Mesh-working_nofill'
+#artist.pipes_scale = 0.003
 #artist.draw_reactions(scale=0.002)
 #artist.pipes_scale = 0.0001
-#artist.draw_forcepipes()
-#artist.redraw()
-
 artist.draw_thrust()
-#artist.draw_from_attributes(attribute='ub')
+#artist.draw_cracks()
+#artist.draw_forcepipes()
+
+#artist.draw_thrust()
+artist.draw_from_attributes(attribute='ub')
+artist.draw_from_attributes(attribute='lb')
+artist.redraw()
 
 #scale_loads = 0.1
 

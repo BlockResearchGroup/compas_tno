@@ -3,7 +3,9 @@ from numpy import zeros
 from numpy import vstack
 from numpy import hstack
 from numpy import identity
+from numpy import asarray
 from numpy.linalg import pinv
+from numpy.linalg import svd
 
 from scipy.sparse import csr_matrix
 from scipy.sparse import diags
@@ -17,13 +19,16 @@ from compas.utilities import reverse_geometric_key
 from compas.geometry import Point
 from compas.geometry import distance_point_point_xy
 
-from compas_tno.algorithms import find_independents
+from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import check_horizontal_loads
+from compas_tno.algorithms import find_independents_backward
+from compas_tno.algorithms import find_independents_forward
 
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
 from compas_tno.utilities import find_sym_axis_in_rect_patterns
 from compas_tno.utilities import build_symmetry_transformation
+from compas_tno.utilities import store_inds
 
 import time
 
@@ -388,7 +393,7 @@ def initialise_problem_general(form):
     return problem
 
 
-def adapt_problem_to_fixed_diagram(problem, form, printout=False):
+def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
     """Adapt the problem assuming that the form diagram is fixed in plan.
 
     Parameters
@@ -399,11 +404,13 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
         The form diagram to be analysed
     printout : bool, optional
         If prints should show in the screen, by default False
+    tool : float, optional
+        Tolerance of the singular values, by default None
 
     """
 
     ind = []
-    tol = 1e-3
+    tol_old_ind = 1e-3
 
     start_time = time.time()
 
@@ -414,14 +421,11 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
         indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes['indset']]
         ind = []
 
-        # for u, v in form.edges_where({'_is_edge': True}):
-        #     if geometric_key(form.edge_midpoint(u, v)[:2] + [0]) in form.attributes['indset']:
-        #         ind.append(problem.uv_i[(u, v)])
         for u, v in form.edges_where({'_is_edge': True}):
             index = problem.uv_i[(u, v)]
             edgemid = Point(*(form.edge_midpoint(u, v)[:2] + [0]))
             for pt in indset:
-                if distance_point_point_xy(edgemid, pt) < tol:
+                if distance_point_point_xy(edgemid, pt) < tol_old_ind:
                     ind.append(index)
                     break
             if index in ind:
@@ -432,9 +436,9 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
             print('Found {} independents in the new pattern'.format(len(ind)))
         if len(form.attributes['indset']) != len(ind):
             print('Did not match problem inds')
-            ind = find_independents(problem.E)  # see if it can be improved with crs matrix
+            ind = find_independents_forward(problem.E, tol=tol)
     else:
-        ind = find_independents(problem.E)  # see if it can be improved with crs matrix
+        ind = find_independents_forward(problem.E, tol=tol)
 
     k = len(ind)
     dep = list(set(range(problem.m)) - set(ind))
@@ -450,13 +454,14 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False):
         if problem.uv_i[(u, v)] in ind:
             form.edge_attribute((u, v), 'is_ind', True)
             points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
-            # gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
         else:
             form.edge_attribute((u, v), 'is_ind', False)
-    # form.attributes['indset'] = gkeys
     form.attributes['indset'] = points
 
-    Edinv = -csr_matrix(pinv(problem.E[:, dep]))
+    rcond = 1e-17
+    if tol:
+        rcond = tol
+    Edinv = -csr_matrix(pinv(problem.E[:, dep], rcond=rcond))
     Ei = csr_matrix(problem.E[:, ind])
     B = zeros((problem.m, k))
     B[dep] = Edinv.dot(Ei).toarray()
@@ -534,7 +539,7 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
     return
 
 
-def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False):
+def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False, tol=None):
     """ Adapt the problem assuming that the form diagram is symmetric and fixed in plane.
 
     Parameters
@@ -556,7 +561,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=Non
 
     start_time = time.time()
 
-    adapt_problem_to_fixed_diagram(problem, form, printout)
+    adapt_problem_to_fixed_diagram(problem, form, printout, tol=tol)
 
     apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
 
@@ -679,5 +684,73 @@ def check_bad_independents(problem, form, printout=False, eps=10e+6):
         problem.d += q0
         problem.k = len(inds)
         print('final inds', len(problem.ind), problem.ind)
+
+    return
+
+
+def plot_svds(M, tol=None):
+    """ Plot a diagram of SVD.
+
+    Parameters
+    ----------
+    M : Problem
+        The problem with matrices for calculation
+    tol : float (optional)
+        The tolerance to find the independents
+    """
+
+    import matplotlib.pyplot as plt
+    from numpy.linalg import matrix_rank
+
+    k = len(M.ind)
+    n, m = M.E.shape
+    mn_min = min(n, m)
+
+    _, s, _ = svd(asarray(M.E))
+    # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
+    print('max/min singular vectors E', max(s), min(s), len(s))
+    print('Shape E: {} | #ind: {} | rank : {}:'.format(M.E.shape, k, matrix_rank(M.E, tol=tol)))
+
+    mn = max(m - n, n - m)
+    zs = k - mn
+    print('# null-SVD:', zs)
+    print(k - mn)
+
+    # if zs + 3 > len(s):
+    #     print('Last {} SVs: {}'.format(len(s[-(zs + 3):]), s[-(zs + 3):]))
+    # print('ALL SVS:', s)
+
+    check = check_independents(M)
+    print('Check independents:', check)
+
+    if zs > 0:
+        first_zero = s[len(s)-zs]
+        last_non_zero = s[len(s)-zs - 1]
+
+        x_zs = list(range(len(s)))[-zs:]
+        y_zs = s[-zs:]
+
+        print('Last Non Zero:', last_non_zero)
+        print('First Zero SV:', first_zero)
+
+        # len_zero = len(s[s<1.0])
+        lin_x = len(s) - zs
+
+        porcentage_key = (last_non_zero - first_zero)/last_non_zero
+        print('percentage key is:', porcentage_key)
+
+        _, ax = plt.subplots()
+        ax.plot(s)
+        ax.scatter(x_zs, y_zs)
+        ax.plot([lin_x, lin_x], [0, 1.0], color='black')
+        ax.plot()
+        plt.show()
+
+    else:
+        print('EQ. Matrix is FULL rank: (k = m-n)')
+        _, ax = plt.subplots()
+        # ax.set_ylim(2.7, 3.0)
+        ax.plot(s)
+        plt.show()
 
     return

@@ -73,6 +73,7 @@ def sensitivities_wrapper(variables, M):
     nb = len(M.fixed)  # number of fixed vertices
     nbz = 0
     nbxy = 0
+    delta = 0.0
     thk = M.thk  # Introduce this because it might be necessary
     t = M.shape.datashape['t']
     lambdh = 1.0
@@ -116,6 +117,9 @@ def sensitivities_wrapper(variables, M):
         tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
         M.tub_reac = tub_reac
         check = check + 2*nb
+    if 'delta' in M.variables:
+        delta = float(variables[check: check + 1])
+        check = check + 1
 
     M.q = q_from_variables(qid, M.B, M.d)
 
@@ -234,10 +238,21 @@ def sensitivities_wrapper(variables, M):
 
         deriv = vstack([deriv, dslope_dind])
 
-        db = db_update(M.x0, M.y0, thk, M.fixed, M.shape, M.b, M.variables)
-        db_column = vstack([db[:, 0].reshape(-1, 1), db[:, 1].reshape(-1, 1)])
+        if 't' in M.variables or 'n' in M.variables:
+            db = db_update(M.x0, M.y0, thk, M.fixed, M.shape, M.b, M.variables)
+            db_column = vstack([db[:, 0].reshape(-1, 1), db[:, 1].reshape(-1, 1)])
 
         nlin_reacbounds = 2 * nb
+
+    if 'displ_map' in M.constraints:
+
+        if delta:
+            dhdq = M.E + delta * M.Ed
+        else:
+            dhdq = M.E
+        deriv = vstack([deriv, dhdq, -dhdq])
+
+        nlin_displ_map = 2 * dhdq.shape[0]
 
     # ------------ Adding columns to the jacobian matrix based on variables activated activated ------------
     # ------------ Note: length of the column to be defined through the "marking parameters" ---------------
@@ -253,6 +268,8 @@ def sensitivities_wrapper(variables, M):
                 addcolumn = vstack([addcolumn, A, -A])
             if 'reac_bounds' in M.constraints:
                 addcolumn = vstack([addcolumn, dslope_dzb])
+            if 'displ_map' in M.constraints:
+                addcolumn = vstack([addcolumn, zeros((nlin_displ_map, nb))])
             deriv = hstack([deriv, addcolumn])
 
     if 't' in M.variables or 'n' in M.variables:  # add a column to the derivatives to count the variable t (thickness)
@@ -263,6 +280,9 @@ def sensitivities_wrapper(variables, M):
 
         dXdt = vstack([zeros((nlin_fun + nlin_limitxy, 1)), -dzmindt, +dzmaxdt, db_column])
         deriv = hstack([deriv, dXdt])
+
+        if 'displ_map' in M.constraints:
+            raise NotImplementedError()
 
     if 'lambdh' in M.variables:  # add a column to the derivatives to count the variable lambd (hor-multiplier)
 
@@ -312,8 +332,8 @@ def sensitivities_wrapper(variables, M):
 
             dXdlambd = vstack([dXdlambd, dslope_dlambdh])
 
-        # if 'reac_bounds' in M.constraints:  # changed by above
-        #     dXdlambd = vstack([dXdlambd, dslope_dlambd])
+        if 'displ_map' in M.constraints:
+            raise NotImplementedError()
 
         deriv = hstack([deriv, dXdlambd])
 
@@ -330,7 +350,7 @@ def sensitivities_wrapper(variables, M):
                 dzmindlambd = dzmindx.dot(dxdlambd) + dzmindy.dot(dydlambd)
                 dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, - dzmindlambd, +dzmaxdlambd])
             else:
-                dXdlambd = vstack([zeros((nlin_fun, 1)), dxdlambd, - dxdlambd, dydlambd, - dydlambd, zeros((nlin_env, 1))])
+                dXdlambd = vstack([zeros((nlin_fun, 1)), zeros((nlin_limitxy, 1)), dzdlambdv, - dzdlambdv])
 
         if 'reac_bounds' in M.constraints:
             dRzdlambdv = CbQC.dot(dzdlambdv) - M.pzv[M.fixed]
@@ -345,6 +365,9 @@ def sensitivities_wrapper(variables, M):
                 dslope_dlambdv[i] = signe_z * zbi * abs(R[i, 0])/R[i, 2]**2 * dRzdlambdv[i]
                 dslope_dlambdv[i_] = signe_z * zbi * abs(R[i, 1])/R[i, 2]**2 * dRzdlambdv[i]
             dXdlambd = vstack([dXdlambd, dslope_dlambdv])
+
+        if 'displ_map' in M.constraints:
+            dXdlambd = vstack([dXdlambd, zeros((nlin_displ_map, 1))])
 
         deriv = hstack([deriv, dXdlambd])
 
@@ -363,6 +386,9 @@ def sensitivities_wrapper(variables, M):
 
         deriv = hstack([deriv, dXdtub])
 
+        if 'displ_map' in M.constraints:
+            raise NotImplementedError()
+
     if 'tlb' in M.variables:  # add a column to the derivatives to count the variable tub (max_section)
 
         nconst = deriv.shape[0]
@@ -378,6 +404,9 @@ def sensitivities_wrapper(variables, M):
 
         deriv = hstack([deriv, dXdtub])
 
+        if 'displ_map' in M.constraints:
+            raise NotImplementedError()
+
     if 'tub_reac' in M.variables:  # add a column to the derivatives to count the variable tub (max_section)
 
         nconst = deriv.shape[0]
@@ -392,5 +421,21 @@ def sensitivities_wrapper(variables, M):
         dXdtreacub[startline: endline, :] = Mt
 
         deriv = hstack([deriv, dXdtreacub])
+
+        if 'displ_map' in M.constraints:
+            raise NotImplementedError()
+
+    if 'delta' in M.variables:
+
+        nconst = deriv.shape[0]
+        addcolumn = zeros((nconst, 1))
+        startline = nlin_fun + nlin_limitxy + nlin_env + nlin_reacbounds
+        endline = startline + nlin_displ_map
+
+        dhddelta = M.Ed @ M.q
+        dhddelta = vstack([dhddelta, - dhddelta])
+        addcolumn[startline: endline] = dhddelta
+
+        deriv = hstack([deriv, addcolumn])
 
     return deriv

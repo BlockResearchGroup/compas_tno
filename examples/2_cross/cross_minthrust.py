@@ -11,10 +11,13 @@ import compas_tno
 import os
 
 thk = 0.50
-discretisation_shape = 14
+discretisation_shape = 28
 discretisation = 14
 type_structure = 'crossvault'
-type_formdiagram = 'cross_fd'  # write the type of form diagram you want and is in the file shape
+type_formdiagram = 'fan_fd'  # write the type of form diagram you want and is in the file shape
+delta = 0.5
+xyspan_shape = [[0.0 - delta, 10.0+delta], [0.0 - delta, 10.0 + delta]]
+xyspan = [[0.0, 10.0], [0.0, 10.0]]
 
 save = False
 solutions = {}
@@ -31,7 +34,7 @@ starting_point = 'loadpath'
 
 data_formdiagram = {
     'type': type_formdiagram,
-    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    'xy_span': xyspan,
     'x0': 0,
     'discretisation': discretisation,
     'fix': 'corners'
@@ -49,7 +52,7 @@ data_shape = {
     'type': type_structure,
     'thk': thk,
     'discretisation': [discretisation_shape, discretisation_shape],
-    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    'xy_span': xyspan_shape,
     't': 0.0,
 }
 
@@ -66,7 +69,7 @@ optimiser.settings['constraints'] = constraints
 optimiser.settings['variables'] = variables
 optimiser.settings['features'] = features
 optimiser.settings['objective'] = objective
-optimiser.settings['plot'] = False
+optimiser.settings['plot'] = True
 optimiser.settings['find_inds'] = False
 optimiser.settings['max_iter'] = 500
 optimiser.settings['gradient'] = True
@@ -89,12 +92,15 @@ analysis.run()
 
 # ----------------------- 6. additional thickness ----------------------
 
-view = Viewer(form, crossvault)
-view.settings['scale.loads'] = 0.5
-view.draw_loads()
+view = Viewer(form, show_grid=False)
+view.settings['scale.reactions'] = 0.005
+view.settings['camera.distance'] = 30
+view.settings['camera.target'] = [5, 5, 0]
+# view.draw_loads()
 view.draw_shape()
 view.draw_cracks()
 view.draw_thrust()
+view.draw_reactions()
 view.show()
 
 # print (pz_tot)

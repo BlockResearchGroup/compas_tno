@@ -4,6 +4,8 @@ from compas.geometry import Point
 from math import radians
 from math import sqrt
 
+from zmq import XPUB
+
 from compas_tno.shapes import Shape
 
 from compas_view2 import app
@@ -48,7 +50,7 @@ class Viewer(object):
 
             'camera.target': [0, 0, 0],
             'camera.distance': 40,
-            'camera.rx': -45,
+            'camera.rx': 45,
             'camera.rz': 45,
             'camera.fov': 40,
             'camera.show.grid': show_grid,
@@ -67,6 +69,7 @@ class Viewer(object):
 
             'scale.reactions': 0.01,
             'scale.loads': 0.01,
+            'scale.edge.thk_absolute': 1.0,
             'opacity.shapes': 0.5,
 
             'color.edges.thrust': Color.red(),
@@ -95,11 +98,11 @@ class Viewer(object):
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
-        # self.app.view.camera.rotation.x = radians(self.settings['camera.rx'])
-        # self.app.view.camera.rotation.z = radians(self.settings['camera.rz'])
+        self.app.view.camera.rotation.x = radians(self.settings['camera.rx'])
+        self.app.view.camera.rotation.z = radians(self.settings['camera.rz'])
         self.app.view.camera.fov = self.settings['camera.fov']
 
-    def show_solution(self):
+    def show_solution(self, **kwargs):
         """ Show the thrust network, with the shape according to the settings
 
         Returns
@@ -131,7 +134,7 @@ class Viewer(object):
 
         self.app.show()
 
-    def save(self, path='temp/fig.png'):
+    def save(self, path='temp/fig.png', **kwargs):
         """ Save to a path
 
         Returns
@@ -183,13 +186,33 @@ class Viewer(object):
 
         self.app.view.objects = {}
 
-    def draw_thrust(self, scale_width=True):
+    def draw_form(self, scale_width=True, absolute_scale=False, cull_negative=False, edges=None, **kwargs):
+        """Alias to draw thrust network according to the settings
+
+        Parameters
+        ----------
+        scale_width : bool, optional
+            If the lines of the form diagram should be scaled with regards to the force carried, by default True
+        absolute_scale : bool, optional
+            If the axial forces should be scaled according to an absoulte scale, by default False
+
+        Returns
+        -------
+        None
+            The viewer is updated in place
+        """
+
+        self.draw_thrust(scale_width=scale_width, absolute_scale=absolute_scale, cull_negative=cull_negative, edges=edges, **kwargs)
+
+    def draw_thrust(self, scale_width=True, absolute_scale=False, cull_negative=False, edges=None, **kwargs):
         """Draw thrust network according to the settings
 
         Parameters
         ----------
         scale_width : bool, optional
             If the lines of the form diagram should be scaled with regards to the force carried, by default True
+        absolute_scale : bool, optional
+            If the axial forces should be scaled according to an absoulte scale, by default False
 
         Returns
         -------
@@ -199,18 +222,29 @@ class Viewer(object):
 
         if not self.app:
             self.initiate_app()
+        edges = edges or list(self.thrust.edges_where({'_is_edge': True}))
 
         base_thick = self.settings['size.edge.base_thickness']
         max_thick = self.settings['size.edge.max_thickness']
+        thickness_abs = self.settings['scale.edge.thk_absolute']
 
         if scale_width:
             forces = [self.thrust.edge_attribute((u, v), 'q') * self.thrust.edge_length(u, v) for u, v in self.thrust.edges_where({'_is_edge': True})]
             fmax = sqrt(max(abs(max(forces)), abs(min(forces))))  # trying sqrt
 
-        for u, v in self.thrust.edges_where({'_is_edge': True}):
+        for u, v in edges:
             Xu = self.thrust.vertex_coordinates(u)
             Xv = self.thrust.vertex_coordinates(v)
             line = Line(Xu, Xv)
+            if cull_negative:
+                if min(Xu[2], Xv[2]) < 0:
+                    if Xu[2] > Xv[2]:
+                        Xa, Xb = Xu, Xv
+                    else:
+                        Xa, Xb = Xv, Xu
+                    coef = - Xb[2]/(Xa[2] - Xb[2])
+                    Xi = [Xb[0] + (Xa[0] - Xb[0]) * coef, Xb[1] + (Xa[1] - Xb[1]) * coef, 0.0]
+                    line = Line(Xa, Xi)
             if not scale_width:
                 self.app.add(line, name=str((u, v)), linewidth=base_thick, color=self.settings['color.edges.thrust'])
                 continue
@@ -218,10 +252,12 @@ class Viewer(object):
             length = self.thrust.edge_length(u, v)
             force = sqrt(abs(q*length))
             thk = force/fmax * max_thick
+            if absolute_scale:
+                thk = force * thickness_abs
             if force > self.settings['tol.forces']:
                 self.app.add(line, name=str((u, v)), linewidth=thk, color=self.settings['color.edges.thrust'])
 
-    def draw_cracks(self):
+    def draw_cracks(self, cull_negative=False, points=None, **kwargs):
         """Draw cracks according to the settings
 
         Returns
@@ -236,11 +272,15 @@ class Viewer(object):
         intrad = 1
         extrad = 1
         out = 1
+        points = points or list(self.thrust.vertices())
 
-        for key in self.thrust.vertices():
+        for key in points:
             lb = self.thrust.vertex_attribute(key, 'lb')
             ub = self.thrust.vertex_attribute(key, 'ub')
             x, y, z = self.thrust.vertex_coordinates(key)
+            if cull_negative:
+                if z <  0.0:
+                    continue
             if self.settings['show.cracks']:
                 if abs(ub - z) < self.settings['tol.forces']:
                     self.app.add(Point(x, y, z), name="Extrados (%s)" % extrad, color=self.settings['color.vertex.extrados'], size=self.settings['size.vertex'])
@@ -248,6 +288,19 @@ class Viewer(object):
                 elif abs(lb - z) < self.settings['tol.forces']:
                     self.app.add(Point(x, y, z), name="Intrados (%s)" % intrad, color=self.settings['color.vertex.intrados'], size=self.settings['size.vertex'])
                     intrad += 1
+                if self.thrust.vertex_attribute(key, 'is_fixed'):
+                    if z > 0.0:
+                        if self.thrust.vertex_attribute(key, 'b'):
+                            bx, by = self.thrust.vertex_attribute(key, 'b')
+                            rx, ry, rz = self.thrust.vertex_attribute(key, '_rx'), self.thrust.vertex_attribute(key, '_ry'), self.thrust.vertex_attribute(key, '_rz')
+                            scale = z/rz
+                            if abs(rx) < self.settings['tol.forces'] and abs(ry) < self.settings['tol.forces']:
+                                continue
+                            if abs(abs(bx) - abs(rx * scale)) < self.settings['tol.forces'] < self.settings['tol.forces'] or abs(abs(by) - abs(ry * scale)) < self.settings['tol.forces']:
+                                self.app.add(Point(x - rx * scale, y - ry * scale, 0.0), name="Extrados (%s)" % extrad,
+                                             color=self.settings['color.vertex.extrados'], size=self.settings['size.vertex'])
+                                extrad += 1
+
             if self.settings['show.vertex.outside']:
                 if z > ub:
                     self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, color=self.settings['color.vertex.outside'], size=self.settings['size.vertex'])
@@ -256,7 +309,7 @@ class Viewer(object):
                     self.app.add(Point(x, y, z), name="Outside - Extra (%s)" % out, color=self.settings['color.vertex.outside'], size=self.settings['size.vertex'])
                     out += 1
 
-    def draw_shape(self):
+    def draw_shape(self, **kwargs):
         """Draw the shape (intrados + extrados) according to the settings
 
         Returns
@@ -272,7 +325,7 @@ class Viewer(object):
             datashape = self.shape.datashape.copy()
             if datashape['type'] in ['dome']:
                 datashape['type'] = 'dome_polar'
-                datashape['discretisation'] =  [20, 20]
+                datashape['discretisation'] =  [50, 50]
                 shape = Shape.from_library(datashape)
                 print('Drawing nicer dome')
             # elif datashape['type'] == 'arch':
@@ -286,7 +339,7 @@ class Viewer(object):
         self.app.add(shape.intrados, name="Intrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.intrados'])
         self.app.add(shape.extrados, name="Extrados", show_edges=False, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.extrados'])
 
-    def draw_middle_shape(self):
+    def draw_middle_shape(self, **kwargs):
         """ Draw the middle of the shape according to the settings
 
         Returns
@@ -306,7 +359,7 @@ class Viewer(object):
         mesh_middle = Mesh.from_vertices_and_faces(vertices_middle, faces_middle)
         self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.middle'])
 
-    def draw_shape_normals(self):
+    def draw_shape_normals(self, **kwargs):
         """ Draw the shape normals at intrados and extrados surfaces
 
         Returns
@@ -334,7 +387,7 @@ class Viewer(object):
                 line = Line(pt0, pt1)
                 self.app.add(line, name='normal-{}'.format(key))
 
-    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5, color=(125, 125, 125)):
+    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5, color=(125, 125, 125), **kwargs):
         """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
 
         Parameters
@@ -363,7 +416,39 @@ class Viewer(object):
 
         self.app.add(mesh, show_edges=show_edges, opacity=opacity, color=color)
 
-    def draw_reactions(self, emerging_reactions=False):
+    def draw_thrustsurface(self, show_edges=False, show_faces=True, opacity=0.2, color=Color.from_rgb255(125, 125, 125), **kwargs):
+        """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
+
+        Parameters
+        ----------
+        mesh : Mesh, optional
+            Mesh to plot, by default None
+        show_faces : bool, optional
+            Whether or not faces are shown, by default True
+        show_edges : bool, optional
+            Whether or not edges are shown, by default False
+        opacity : float, optional
+            The opacity of the mesh, by default 0.5
+        color : Color, optional
+            Color of the mesh, by default grey
+
+        Returns
+        -------
+        None
+            The Viewer is updated in place.
+        """
+
+        if not self.app:
+            self.initiate_app()
+
+        mesh = self.thrust
+
+        vertices_mesh, faces_mesh = mesh.to_vertices_and_faces()
+        mesh = Mesh.from_vertices_and_faces(vertices_mesh, faces_mesh)
+
+        self.app.add(mesh, show_edges=show_edges, show_faces=show_faces, opacity=opacity, color=color)
+
+    def draw_reactions(self, emerging_reactions=False, supports=None, extend_reactions=False, **kwargs):
         """Draw the reaction vectors on the supports according to the settings
 
         Returns
@@ -378,18 +463,58 @@ class Viewer(object):
         if self.settings['show.reactions']:
             reaction_scale = self.settings['scale.reactions']
 
-            for key in self.thrust.vertices_where({'is_fixed': True}):
+            supports = supports or list(self.thrust.vertices_where({'is_fixed': True}))
+
+            for key in supports:
                 x, y, z = self.thrust.vertex_coordinates(key)
                 rx = self.thrust.vertex_attribute(key, '_rx') * reaction_scale
                 ry = self.thrust.vertex_attribute(key, '_ry') * reaction_scale
                 rz = self.thrust.vertex_attribute(key, '_rz') * reaction_scale
+                r = 1/reaction_scale * (rx**2 + ry**2 + rz**2)**(1/2)
+                if r < 1e-3:
+                    continue
+                if extend_reactions:
+                    if z < 0:
+                        continue
+                    rs = z / abs(self.thrust.vertex_attribute(key, '_rz'))
+                    rx, ry, rz = self.thrust.vertex_attribute(key, '_rx') * rs, self.thrust.vertex_attribute(key, '_ry') * rs, self.thrust.vertex_attribute(key, '_rz') * rs,
+                    max_thickness = self.settings['size.edge.max_thickness']
+                    max_f = max([abs(self.thrust.edge_attribute(edge, 'q') * self.thrust.edge_length(*edge)) for edge in self.thrust.edges()])
+                    thickness = r/max_f*max_thickness
+                    line = Line([x, y, z], [x - rx, y - ry, z - rz])
+                    self.app.add(line, linewidth=thickness, color=self.settings['color.edges.thrust'])
+                    continue
                 if emerging_reactions:
-                    arrow = Arrow([x, y, z], [-rx, -ry, -rz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
+                    arrow = Arrow([x, y, z], [-rx, -ry, -rz], head_width=self.settings['size.reaction.head_width'],
+                                  body_width=self.settings['size.reaction.body_width'])
                 else:
-                    arrow = Arrow([x - rx, y - ry , z - rz], [rx, ry, rz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
+                    arrow = Arrow([x - rx, y - ry, z - rz], [rx, ry, rz], head_width=self.settings['size.reaction.head_width'],
+                                  body_width=self.settings['size.reaction.body_width'])
                 self.app.add(arrow, color=self.settings['color.edges.reactions'])
 
-    def draw_loads(self):
+    def draw_vector(self, vector=None, base=None, **kwargs):
+        """Helper to add vectors to the plotter.
+
+        Parameters
+        ----------
+        vectors : Vector, optional
+            Vector to plot, by default None
+        bases : Point, optional
+            Point with the location of the base of the vector, by default None
+
+        Returns
+        -------
+        None
+            The plotter is updated in place
+        """
+
+        if not vector or not base:
+            raise ValueError()
+
+        arrow = Arrow(base, vector, head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
+        self.app.add(arrow, **kwargs)
+
+    def draw_loads(self, **kwargs):
         """Draw the externally applied loadss as vectors on the applied nodes
 
         Returns
@@ -412,7 +537,7 @@ class Viewer(object):
                 arrow = Arrow([x - px, y - py, z - pz], [px, py, pz], head_width=self.settings['size.reaction.head_width'], body_width=self.settings['size.reaction.body_width'])
                 self.app.add(arrow, color=self.settings['color.edges.reactions'])
 
-    def draw_reaction_label(self):
+    def draw_reaction_label(self, **kwargs):
         """Draw the reaction labels (force magnitude) on the supports according to the settings
 
         Returns
@@ -437,7 +562,7 @@ class Viewer(object):
                 text = Text(reaction, pt, height=self.settings['size.reactionlabel'])
                 self.app.add(text)
 
-    def draw_force(self, force=None, show_edges=True, opacity=0.5):
+    def draw_force(self, force=None, show_edges=True, opacity=0.5, **kwargs):
         """Add the ForceDiagram to the viewer, if no force is given the force diagram is recomputed in place.
 
         Parameters
@@ -476,7 +601,7 @@ class Viewer(object):
 
         self.app.add(force, show_edges=show_edges, opacity=opacity)
 
-    def draw_assembly(self, assembly):
+    def draw_assembly(self, assembly, **kwargs):
         """Draw the reaction labels (force magnitude) on the supports according to the settings
 
         Returns
@@ -489,4 +614,19 @@ class Viewer(object):
             self.initiate_app()
 
         for block in assembly.blocks():
-            self.add(block, opacity=0.5)
+            self.add(block, **kwargs)
+
+    def draw_b_constraint(self):
+
+        base_thick = self.settings['size.edge.base_thickness']
+        for key in self.thrust.vertices_where({'is_fixed': True}):
+            x, y, _ = self.thrust.vertex_coordinates(key)
+            b = self.thrust.vertex_attribute(key, 'b')
+            if b:
+                bx, by = b
+                if abs(bx) > 1e-4:
+                    line = Line([x, y, 0], [x + bx, y + by, 0])
+                    self.app.add(line, linewidth=base_thick)
+                if abs(by) > 1e-4:
+                    line = Line([x, y, 0], [x + bx, y + by, 0])
+                    self.app.add(line)

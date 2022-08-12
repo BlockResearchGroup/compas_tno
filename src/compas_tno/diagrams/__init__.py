@@ -28,6 +28,7 @@ Rectangular diagrams
     create_cross_with_diagonal
     create_fan_form
     create_ortho_form
+    create_parametric_form
 
 
 Circular diagrams
@@ -71,7 +72,8 @@ from .diagram_rectangular import (
     create_cross_diagonal,
     create_cross_with_diagonal,
     create_fan_form,
-    create_ortho_form
+    create_ortho_form,
+    create_parametric_form
 )
 
 __all__ = [
@@ -90,6 +92,7 @@ __all__ = [
     'create_cross_diagonal',
     'create_cross_with_diagonal',
     'create_fan_form',
-    'create_ortho_form'
+    'create_ortho_form',
+    'create_parametric_form'
 
 ]

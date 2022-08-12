@@ -31,7 +31,8 @@ Independents
     :toctree: generated/
     :nosignatures:
 
-    find_independents
+    find_independents_backward
+    find_independents_forward
     independents_exclude
     independents_include
     inds_incl_excl
@@ -80,7 +81,8 @@ if not compas.IPY:
         weights_from_xyz_dict
     )
     from .independents import (
-        find_independents,
+        find_independents_forward,
+        find_independents_backward,
         independents_exclude,
         independents_include,
         inds_incl_excl,
@@ -110,7 +112,8 @@ __all__ = [
     'weights_from_xyz',
     'weights_from_xyz_dict',
 
-    'find_independents',
+    'find_independents_forward',
+    'find_independents_backward',
     'independents_exclude',
     'independents_include',
     'inds_incl_excl',

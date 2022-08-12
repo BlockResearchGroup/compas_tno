@@ -315,6 +315,8 @@ def gradient_fmin(variables, M):
         gradient = vstack([gradient, gradient_xb, gradient_yb])
     if is_zb_var:
         gradient = vstack([gradient, zeros((nb, 1))])
+    if 'delta' in M.variables:
+        gradient = vstack([gradient, zeros((1, 1))])
 
     return array(gradient).flatten()
 

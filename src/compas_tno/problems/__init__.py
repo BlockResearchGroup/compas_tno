@@ -19,6 +19,9 @@ Initialisation
 .. autosummary::
     :toctree: generated/
 
+    initialize_fdm
+    initialize_tna
+    initialize_loadpath
     initialise_form
     initialise_problem_general
     adapt_problem_to_fixed_diagram
@@ -186,7 +189,8 @@ from .callbacks import (
 
 from .initialize import (
     initialize_loadpath,
-    initialize_tna
+    initialize_tna,
+    initialize_fdm
 )
 
 from .setup import (
@@ -253,6 +257,7 @@ __all__ = [
 
     'initialize_loadpath',
     'initialize_tna',
+    'initialize_fdm',
 
     'set_up_general_optimisation',
     'set_up_convex_optimisation',

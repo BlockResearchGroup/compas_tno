@@ -11,119 +11,140 @@ import os
 # Geometry parameters
 
 radius = 5.0
-thk = 0.5
-discretisation = [8, 10]
-discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
+thk = 0.50
+solutions = {}
 
-# Parameters Optimisations
+for np in [16]:
+    solutions[np] = {}
+    for nm in [20]:
 
-obj = 'max_load'
-solver = 'IPOPT'
-constraints = ['funicular', 'envelope', 'reac_bounds']
-variables = ['q', 'zb', 'lambdv']
-features = ['fixed']
-starting_point = 'loadpath'
-make_video = True
-autodiff = False
+        discretisation = [np, nm]
+        discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
-# Create shape/diagram
+        # Parameters Optimisations
 
-dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.0)
+        obj = 'max_load'
+        solver = 'IPOPT'
+        constraints = ['funicular', 'envelope', 'reac_bounds']
+        variables = ['q', 'zb', 'lambdv']
+        features = ['fixed']
+        starting_point = 'loadpath'
+        make_video = False
+        autodiff = False
 
-# form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius, diagonal=True, partial_diagonal='left')
-form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)
+        # Create shape/diagram
 
-plotter = Plotter()
-plotter.fontsize = 6
-artist = plotter.add(form)
-artist.draw_vertexlabels()
+        dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.5)
+        dome.ro = 20.0
 
-plotter.zoom_extents()
-plotter.show()
+        # form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius, diagonal=True, partial_diagonal='left')
+        form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)
 
-# form = FormDiagram.create_circular_spiral_form(discretisation=discretisation, radius=radius)
+        # plotter = Plotter()
+        # plotter.fontsize = 6
+        # artist = plotter.add(form)
+        # artist.draw_vertexlabels()
 
-# Maximum load magnitude
+        # plotter.zoom_extents()
+        # plotter.show()
 
-max_load_mult = 600.0
-n = form.number_of_vertices()
-pzv = zeros((n, 1))
-pzv[0] = -1.0
-# pzv[31] = -1.0
+        # form = FormDiagram.create_circular_spiral_form(discretisation=discretisation, radius=radius)
 
-plotter = TNOPlotter(form)
-plotter.draw_form(scale_width=False)
-plotter.draw_supports()
-plotter.show()
+        # Maximum load magnitude
 
-# Create optimiser
+        max_load_mult = 600.0
+        n = form.number_of_vertices()
+        pzv = zeros((n, 1))
+        pzv[0] = -1.0
+        # pzv[31] = -1.0
+        # pzv[101] = -1.0
 
-optimiser = Optimiser()
-optimiser.settings['objective'] = obj
-optimiser.settings['solver'] = solver
-optimiser.settings['constraints'] = constraints
-optimiser.settings['variables'] = variables
-optimiser.settings['features'] = features
-optimiser.settings['starting_point'] = starting_point
-optimiser.settings['derivative_test'] = False
-optimiser.settings['printout'] = True
-optimiser.settings['plot'] = True
-optimiser.settings['save_iterations'] = make_video
-optimiser.settings['autodiff'] = autodiff
+        # for i in range(38):
+        #     if i % 2 == 1 or i == 0:
+        #         pzv[i] = -1.0
 
-optimiser.settings['max_lambd'] = max_load_mult
-optimiser.settings['load_direction'] = pzv
+        sumpzv = float(abs(sum(pzv)))
+        print('Sum of pzv:', sumpzv)
 
-# Create analysis
+        plotter = TNOPlotter(form)
+        plotter.draw_form(scale_width=False)
+        plotter.draw_supports()
+        plotter.show()
 
-analysis = Analysis.from_elements(dome, form, optimiser)
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
+        # Create optimiser
 
-pz0 = form.vertex_attribute(0, 'pz')
+        optimiser = Optimiser()
+        optimiser.settings['objective'] = obj
+        optimiser.settings['solver'] = solver
+        optimiser.settings['constraints'] = constraints
+        optimiser.settings['variables'] = variables
+        optimiser.settings['features'] = features
+        optimiser.settings['starting_point'] = starting_point
+        optimiser.settings['derivative_test'] = False
+        optimiser.settings['printout'] = False
+        optimiser.settings['plot'] = False
+        optimiser.settings['save_iterations'] = make_video
+        optimiser.settings['autodiff'] = autodiff
 
-pzt = 0
-for key in form.vertices():
-    pz = form.vertex_attribute(key, 'pz')
-    pzt += pz
+        optimiser.settings['max_lambd'] = max_load_mult
+        optimiser.settings['load_direction'] = pzv
 
-print('Total load of:', pzt)
+        # Create analysis
 
-analysis.set_up_optimiser()
+        analysis = Analysis.from_elements(dome, form, optimiser)
+        analysis.apply_selfweight()
+        analysis.apply_envelope()
+        analysis.apply_reaction_bounds()
 
-# to view starting point
-view = Viewer(form, dome)
-view.draw_thrust()
-view.draw_shape()
-view.draw_force()
-view.show()
+        pz0 = form.vertex_attribute(0, 'pz')
 
-analysis.run()
+        pzt = 0
+        for key in form.vertices():
+            pz = form.vertex_attribute(key, 'pz')
+            pzt += pz
 
-fopt = analysis.optimiser.fopt
-exitflag = analysis.optimiser.exitflag
+        print('Total load of:', pzt)
 
-print('Exitflag is:', exitflag)
+        analysis.set_up_optimiser()
 
-pc = fopt/pzt
+        # # to view starting point
+        # view = Viewer(form, dome)
+        # view.draw_thrust()
+        # view.draw_shape()
+        # view.draw_force()
+        # view.show()
 
-print('Percentage of load added is:', round(pc*100, 3), '%')
+        analysis.run()
 
-folder = os.path.join('/Users/mricardo/compas_dev/me/max_load/dome/apex/', 'dome', 'radial_fd')
-os.makedirs(folder, exist_ok=True)
-title = 'dome' + '_' + 'radial_fd' + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '_pct_stw_' + str(pc) + '.json'
-save_form = os.path.join(folder, title)
-form.to_json(save_form)
+        fopt = analysis.optimiser.fopt
+        exitflag = analysis.optimiser.exitflag
 
-print('Solution Saved at:', save_form)
+        print('Exitflag is:', exitflag)
 
-plotter = TNOPlotter(form, dome)
-plotter.show_solution()
+        pc = fopt/pzt*sumpzv
 
-view = Viewer(form, dome)
-view.draw_force()
-view.show_solution()
+        print('Percentage of load added is:', round(pc*100, 3), '%')
+
+        if exitflag == 0:
+
+            folder = os.path.join('/Users/mricardo/compas_dev/me/max_load/dome/apex/sensitivity', 'dome', 'radial_fd')
+            os.makedirs(folder, exist_ok=True)
+            title = 'dome' + '_' + 'radial_fd' + '_discr_' + str(discretisation) + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '_pct_stw_' + str(round(pc,3)) + '.json'
+            save_form = os.path.join(folder, title)
+            form.to_json(save_form)
+
+            print('Solution Saved at:', save_form)
+
+            solutions[np][nm] = pc
+
+    print(solutions)
+
+# plotter = TNOPlotter(form, dome)
+# plotter.show_solution()
+
+# view = Viewer(form, dome)
+# view.draw_force()
+# view.show_solution()
 
 # if make_video:
 

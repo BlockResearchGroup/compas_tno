@@ -514,12 +514,12 @@ class FormArtist(DiagramArtist):
             r = self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz'])
             if not any(r):  # If receives null vector or None
                 continue
-            r = scale_vector(r, -1 * scale)
+            r = scale_vector(r, scale)
             if length_vector(r) < tol:
                 continue
 
             b = add_vectors(a, r)
-            lines.append({'start': a, 'end': b, 'color': color, 'arrow': "start"})
+            lines.append({'start': a, 'end': b, 'color': color, 'arrow': "end"})
             if draw_as_pipes:
                 force = self.pipes_scale * norm_vector(self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz']))
                 print(force)
@@ -531,7 +531,6 @@ class FormArtist(DiagramArtist):
                 })
 
         if draw_as_pipes:
-            print('ha')
             return compas_rhino.draw_cylinders(cylinders, self.layer, clear=False, redraw=False)
         else:
             return compas_rhino.draw_lines(lines, layer=self.layer, clear=False, redraw=False)

@@ -1,20 +1,28 @@
 
 from numpy import hstack
 from numpy import array
+from numpy import asarray
 from numpy import any
 from numpy.linalg import matrix_rank
+from numpy.linalg import svd
 from numpy.random import rand
 from math import sqrt
 from copy import deepcopy
 
 
-def find_independents(E):
-    """ Find independent edges in a given equilibrium matrix.
+def find_independents_forward(E, nind=None, tol=None):
+    """ Find independent edges of the matrix E with the forward method.
+    The matrix E is reconstructed column by column and the rank is computed at each step.
+    Everytime that a column is added and the rank does not increase, the edge corresp. that column is selected as independent.
 
     Parameters
     ----------
     E : array
         Equilibrium matrix.
+    nind : ind
+        Number of independent to stop the process, if known in advance, by default None.
+    tol : float
+        Tolerance for small Singular Values. Default is None.
 
     Returns
     -------
@@ -42,10 +50,66 @@ def find_independents(E):
     for i in internal[1:]:
         Etest = hstack([Etemp, E[:, [i]]])
         _, ncol = Etest.shape
-        if matrix_rank(Etest) < ncol:  # testing tol
+        if matrix_rank(Etest, tol=tol) < ncol:  # testing tol
             ind.append(i)
         else:
             Etemp = Etest
+        if nind:
+            if len(ind) == nind:
+                break
+
+    return ind
+
+
+def find_independents_backward(E, nind=None, tol=None):
+    """ Find independent edges of the matrix E with the backward method.
+    The last columns of the matrix are removed sequentially and the rank is checked.
+    Everytime thae rank does not decrease, the edge is selected as independent.
+
+    Parameters
+    ----------
+    E : array
+        Equilibrium matrix.
+    nind : ind
+        Number of independent to stop the process, if known in advance, by default None.
+    tol : float
+        Tolerance for small singular values. Default is None.
+
+    Returns
+    -------
+    ind : list
+        Independent columns.
+
+    """
+
+    ind = []
+    _, m = E.shape
+
+    # Take as independent all edges connecting supported points.
+
+    for i in range(m):
+        if any(E[:, i]):
+            pass
+        else:
+            ind.append(i)
+
+    internal = list(set(range(m)) - set(ind))
+    rank = matrix_rank(E, tol=tol)
+    print('Rank is {}'.format())
+
+    for i in range(m):
+        i_inv = m - i - 1
+        indices_red = [j for j in internal if not j == i_inv]
+        Ered = E[:, indices_red]
+        ri = matrix_rank(Ered, tol=tol)
+        if ri == rank:  # belongs to the nullspace
+            ind.append(i_inv)
+            internal.remove(i_inv)
+            rank = ri
+        if nind:
+            if len(ind) == nind:
+                break
+
 
     return ind
 
@@ -75,7 +139,7 @@ def independents_exclude(E, outs):
         ind = []
     else:
         print('Warning, could not exclude all')
-        return find_independents(E)
+        return find_independents_forward(E)
 
     for i in possible:
         Etest = hstack([Etemp, E[:, [i]]])
@@ -121,7 +185,7 @@ def independents_include(E, ins):
             return ins
         else:
             print('Warning, edges do not form an independent set')
-            return find_independents(E)
+            return find_independents_forward(E)
     ind = ins
     Etemp = E[:, [not_in[0]]]
     Etemp.shape
@@ -173,7 +237,7 @@ def inds_incl_excl(E, ins, outs):
             return ins
         else:
             print('Warning, edges do not form an independent set')
-            return find_independents(E)
+            return find_independents_forward(E)
     if matrix_rank(Eouts) == Eouts.shape[1]:
         Etemp = Eouts
         ind = ins
@@ -194,7 +258,7 @@ def inds_incl_excl(E, ins, outs):
     return ind
 
 
-def check_independents(args_inds, tol=0.001):
+def check_independents(M, tol=0.001):
     """ Run checks to verify the independennts.
 
     Parameters
@@ -212,19 +276,32 @@ def check_independents(args_inds, tol=0.001):
 
     """
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Citx, City, Cf, U, V, p, px, py, pz, z, free_x, free_y, fixed, lh, sym, k = args_inds
     checked = True
-    q_ = deepcopy(q)
     if tol > 0:
-        for i in range(10**3):
-            q_[ind, 0] = rand(k) * 10
-            q_[dep] = Edinv.dot(- p + Ei.dot(q_[ind]))
-            Rx = array(Citx.dot(U * q_.ravel()) - px[free_x].ravel())
-            Ry = array(City.dot(V * q_.ravel()) - py[free_y].ravel())
-            R = max(sqrt(max(Rx**2)), sqrt(max(Ry**2)))
+        for i in range(10**2):
+            qid = array(rand(M.k) * 10).reshape(-1, 1)
+            q_ = M.B @ qid + M.d
+            res_x = M.Citx.dot(M.U * q_.ravel()) - M.ph[:len(M.free_x)].ravel()
+            res_y = M.City.dot(M.V * q_.ravel()) - M.ph[:len(M.free_y)].ravel()
+            R = max(sqrt(max(res_x**2)), sqrt(max(res_y**2)))
             if R > tol:
                 checked = False
+                print('deviation exceeded limit:', R)
                 break
+
+    # checked = True
+    # q_ = deepcopy(M.q)
+    # if tol > 0:
+    #     for i in range(10**3):
+    #         q_[M.ind, 0] = rand(M.k) * 10
+    #         q_[M.dep] = M.Edinv.dot(- M.ph + M.Ei.dot(q_[M.ind]))
+    #         Rx = array(M.Citx.dot(M.U * q_.ravel()) - M.ph[:len(M.free_x)].ravel())
+    #         Ry = array(M.City.dot(M.V * q_.ravel()) - M.ph[len(M.free_y):].ravel())
+    #         R = max(sqrt(max(Rx**2)), sqrt(max(Ry**2)))
+    #         # print(R)
+    #         if R > tol:
+    #             checked = False
+    #             break
 
     return checked
 
@@ -255,3 +332,48 @@ def check_horizontal_loads(E, p):
         checked = False
 
     return checked
+
+
+def count_inds(E, tol=None):
+    """ Count the number of independent edges for a given singular value tolerance.
+
+    Parameters
+    ----------
+    E : array
+        Equilibrium matrix.
+    tol : float
+        Tolerance for small Singular Values. Default is None.
+
+    Returns
+    -------
+    k : int
+        number of independent edges
+    rd : int
+        Rank Deficiency of the Equilibrium Matrix.
+
+    """
+
+    nl, ncol = E.shape
+    k = max(nl, ncol) - matrix_rank(E, tol=tol)
+    rd = k - abs(nl - ncol)
+
+    return k, rd
+
+
+def matrix_svd(E):
+    """ Return the singular values of the matrix E.
+
+    Parameters
+    ----------
+    E : array
+        Matrix to compute the singular values.
+
+    Returns
+    -------
+    s : array
+        vector with the singular values/
+    """
+
+    _, s, _ = svd(asarray(E))
+
+    return s

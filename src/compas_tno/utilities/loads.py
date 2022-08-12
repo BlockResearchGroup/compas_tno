@@ -5,16 +5,6 @@ from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 from compas_tno.utilities.interpolation import get_shape_middle_pattern
 
 
-__all__ = [
-    'apply_selfweight_from_shape',
-    'apply_selfweight_from_pattern',
-    'apply_horizontal_multiplier',
-    'apply_fill_load',
-
-    'apply_selfweight_from_shape_proxy',
-]
-
-
 def apply_selfweight_from_shape_proxy(formdata, shapedata):
     """Apply selfweight to the nodes of the form diagram based on the shape from proxy
 
@@ -159,6 +149,37 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
 
     if plot:
         print('total load applied:', pzt)
+
+
+def apply_selfweight_from_thrust(form, thickness=0.5, density=20.0):
+    """Lump the selfweight in the nodes of the thrust network based on their current position.
+    The loads are computed based on the tributary area times the thickness times the density.
+    For variable thickness the nodal attribute `thk` is considered.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram to be considered
+    thickness : float, optional
+        The thickness of the problem, by default 0.50
+        If None is passed, the thickness is taken from the nodal attribute `thk`
+    density : float, optional
+        The density of the material, by default 20.0
+
+    Return
+    ------
+    None
+        The form diagram is updated in place
+    """
+
+    for key in form.vertices():
+        ai = form.vertex_area(key)
+        if thickness:
+            load = -1 * ai * thickness * density
+        else:
+            thk = form.vertex_attribute(key, 'thk')
+            load = -1 * ai * thk * density
+        form.vertex_attribute(key, 'pz', load)
 
 
 def apply_horizontal_multiplier(form, lambd=1.0, direction='x'):

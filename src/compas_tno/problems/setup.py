@@ -1,3 +1,5 @@
+from multiprocessing.sharedctypes import Value
+from compas_tno.algorithms.independents import check_independents
 from compas_tno.problems import initialise_problem_general
 
 from compas_tno.problems import adapt_problem_to_fixed_diagram
@@ -35,6 +37,9 @@ from numpy import append
 from numpy import array
 from numpy import zeros
 from numpy import vstack
+from numpy import diag
+
+from math import isnan
 
 
 def set_up_general_optimisation(analysis):
@@ -63,19 +68,20 @@ def set_up_general_optimisation(analysis):
     fjac = optimiser.settings.get('jacobian', False)
     starting_point = optimiser.settings.get('starting_point', 'current')
     find_inds = optimiser.settings.get('find_inds', False)
+    tol_inds = optimiser.settings.get('tol_inds', None)
     qmin = optimiser.settings.get('qmin', -1e+4)
     qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
     show_force_diagram = optimiser.settings.get('save_force_diagram', True)
-    solver_convex = optimiser.settings.get('solver-convex', 'matlab')
+    solver_convex = optimiser.settings.get('solver-convex', 'MATLAB')
     # thickness_type = optimiser.settings.get('thickness_type', 'constant')
     autodiff = optimiser.settings.get('autodiff', False)
 
     pattern_center = form.parameters.get('center', None)
 
     if shape:
-        thk = shape.datashape['thk']
+        thk = shape.datashape.get('thk', None)
     else:
         thk = 0.20
 
@@ -132,16 +138,20 @@ def set_up_general_optimisation(analysis):
 
     if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
-        adapt_problem_to_sym_and_fixed_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout)
+        adapt_problem_to_sym_and_fixed_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout, tol=tol_inds)
     elif 'sym' in features:
         # print('\n-------- Initialisation with sym form --------')
         adapt_problem_to_sym_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout)
     elif 'fixed' in features:
         # print('\n-------- Initialisation with fixed form --------')
-        adapt_problem_to_fixed_diagram(M, form, printout=printout)
+        adapt_problem_to_fixed_diagram(M, form, printout=printout, tol=tol_inds)
     else:
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
+
+    # if 'fixed' in features:
+    #     if not check_independents(M):
+    #         raise ValueError('Check the independent edges')
 
     # from scipy.sparse.linalg import svds
 
@@ -303,6 +313,21 @@ def set_up_general_optimisation(analysis):
         x0 = append(x0, lambd0).reshape(-1, 1)
         bounds = bounds + [[min_lambd, max_lambd]]
 
+    if 'delta' in variables:
+        dX = optimiser.settings['displ_map']
+        max_delta = optimiser.settings.get('max_delta', 1.0)
+        min_delta = 0.0
+        delta0 = optimiser.settings.get('delta0', 0.0)
+        M.dX = dX
+        x0 = append(x0, delta0).reshape(-1, 1)
+        bounds = bounds + [[min_delta, max_delta]]
+
+        Ud = diag(M.C @ dX[:, 0])
+        Vd = diag(M.C @ dX[:, 1])
+        Edx = M.Cit @ Ud
+        Edy = M.Cit @ Vd
+        M.Ed = vstack([Edx, Edy])
+
     if save_iterations:
         callback_create_json()
         optimiser.callback = callback_save_json
@@ -317,8 +342,13 @@ def set_up_general_optimisation(analysis):
             plotter.draw_form_sym()
             plotter.show()
 
+    if any([isnan(M.ub[i]) for i in range(len(M.ub))]) or any([isnan(M.lb[i]) for i in range(len(M.lb))]):
+        print('Is Nan for the bounds. Optimisation can not proceed')
+        raise ValueError('Check bounds that constraint nodes')
+
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)
+    print('g0shhape', g0.shape)
 
     if fgrad:
         grad = fgrad(x0, M)
@@ -358,6 +388,8 @@ def set_up_general_optimisation(analysis):
         print('Init. Objective Value: {0}'.format(f0))
         # if objective == 'Ecomp-nonlinear':
         #     print('Init. Linear Obj Func: {0}'.format(f_complementary_energy(x0, M)))
+        print(g0.shape)
+        print(max(g0), min(g0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         violated = []
         for i in range(len(g0)):
@@ -414,7 +446,7 @@ def set_up_convex_optimisation(analysis):
     if variables == ['q']:
         pass
     else:
-        print('Warning:  Non-convex problem for the variables: ', variables, '. Considering only \'q\' instead.')
+        print('Warning:  Non-convex problem for the variables: ', variables, '. Considering only \'q\' instead and assuming coplanar supports (zb=0).')
 
     if constraints == ['funicular']:
         pass

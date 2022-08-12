@@ -14,9 +14,14 @@ from compas_tno.utilities import apply_bounds_on_q
 from compas.colors import Color
 from compas.geometry import Translation
 from compas.geometry import Scale
+from compas.geometry import Point
+from compas.geometry import distance_point_point_xy
 from compas_view2.shapes import Arrow
+import compas_tno
 from numpy import zeros
 import os
+
+from compas.datastructures import mesh_weld
 
 # Geometry parameters
 
@@ -25,11 +30,13 @@ thk = 0.5
 discretisation = [8, 10]
 discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
+xp, yp = 7.5, 5.0
+
 # Parameters Optimisations
 
 obj = 'max_load'
 solver = 'IPOPT'
-constraints = ['funicular', 'envelope', 'reac_bounds']
+constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'displ_map'
 variables = ['q', 'zb', 'lambdv']  # zb, lambdv
 features = ['fixed']
 starting_point = 'loadpath'
@@ -41,13 +48,17 @@ autodiff = False
 dome = Shape.create_dome(thk=thk, radius=radius, discretisation=discretisation_shape, t=0.5)
 folder = '/Users/mricardo/compas_dev/compas_tno/data/'
 folder = '/Users/mricardo/compas_dev/me/pattern/singular/dome/'
+folder = '/Users/mricardo/compas_dev/me/max_load/dome/apex/dome/'
 
-for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
+for prob in ['H2']:  # ['A1', 'B1', 'C1', 'D1', 'E1']  # Then H and then > D3-diag whithout independent edges (overnight)
+    # Try this script and maybe try also with independent edges...
 
     mesh_file = folder + 'mesh-' + prob + '.json'
 
     mesh = Mesh.from_json(mesh_file)
     print('mesh faces:', mesh.number_of_faces())
+
+    mesh_weld(mesh)
 
     form = FormDiagram.from_mesh(mesh)
     print('form faces:', form.number_of_faces())
@@ -57,13 +68,7 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
 
     # form = FormDiagram.create_circular_radial_form(discretisation=discretisation, radius=radius)  # , diagonal=True, partial_diagonal='straight')
 
-    # helper to select node to load
-    plotter = Plotter()
-    plotter.fontsize = 12
-    artist = plotter.add(form)
-    artist.draw_vertexlabels()
-    plotter.zoom_extents()
-    plotter.show()
+    # # helper to select node to load
 
     # form = FormDiagram.create_circular_spiral_form(discretisation=discretisation, radius=radius)
 
@@ -72,43 +77,6 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
     max_load_mult = 600.0
     n = form.number_of_vertices()
     pzv = zeros((n, 1))
-
-    if prob == 'A' or prob == 'C' or prob == 'D':
-        load_node = 83
-    elif prob == 'B':
-        load_node = 37
-    elif prob == 'E' or prob == 'F':
-        load_node = 120
-    elif prob == 'A1':  # robin patterns
-        load_node = 28
-    elif prob == 'A2':
-        load_node = 148
-    elif prob == 'B1':
-        load_node = 70
-    elif prob == 'B2':
-        load_node = 50
-    elif prob == 'C1':
-        load_node = 19
-    elif prob == 'C2':
-        load_node = 87
-    elif prob == 'D1':
-        load_node = 22
-    elif prob == 'D2':
-        load_node = 86
-    elif prob == 'D3':
-        load_node = 234
-    elif prob == 'E1':
-        load_node = 98
-    elif prob == 'E2':
-        load_node = 158
-
-    # # pzv[0] = -1.0
-    # # pzv[48] = -1.0
-    # # pzv[37] = -1.0
-    # pzv[83] = -1.0
-    # # pzv[120] = -1.0
-
-    pzv[load_node] = -1.0
 
     bbox = form.bounding_box_xy()
     xmin, ymin = min([m[0] for m in bbox]), min([m[1] for m in bbox])
@@ -129,10 +97,30 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
         bbox = form.bounding_box_xy()
         print(bbox)
 
-    plotter = TNOPlotter(form)
-    plotter.draw_form(scale_width=False)
-    plotter.draw_supports()
-    plotter.show()
+    dist = 0.01
+    for key in form.vertices():
+        coords = form.vertex_coordinates(key)
+        print(key, coords, distance_point_point_xy(coords, [xp, yp]))
+        if distance_point_point_xy(coords, [xp, yp]) < dist:
+            load_node = key
+
+    if prob == 'D2-mod':
+        load_node = 101
+
+    # plotter = Plotter()
+    # plotter.fontsize = 9
+    # artist = plotter.add(form)
+    # artist.draw_vertexlabels()
+    # plotter.zoom_extents()
+    # plotter.show()
+
+    pzv[load_node] = -1.0
+
+    # plotter = TNOPlotter(form)
+    # plotter.draw_form(scale_width=False)
+    # plotter.draw_supports()
+    # plotter.add(Point(*form.vertex_coordinates(load_node)), facecolor=Color.red())
+    # plotter.show()
 
     # Create optimiser
 
@@ -145,8 +133,10 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
     optimiser.settings['starting_point'] = starting_point
     optimiser.settings['derivative_test'] = False
     optimiser.settings['printout'] = True
-    optimiser.settings['plot'] = True
+    optimiser.settings['find_inds'] = False
+    optimiser.settings['plot'] = False
     optimiser.settings['save_iterations'] = make_video
+    optimiser.settings['solver-convex'] = 'CVXPY'
     optimiser.settings['max_iter'] = 1000
     optimiser.settings['autodiff'] = autodiff
 
@@ -170,18 +160,11 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
         pz = form.vertex_attribute(key, 'pz')
         pzt += pz
 
-    plotter = Plotter()
-    plotter.fontsize = 9
-    artist = plotter.add(form)
-    artist.draw_vertexlabels(text={key: round(form.vertex_attribute(key, 'pz'), 1) for key in form.vertices()})
-    plotter.zoom_extents()
-    plotter.show()
-
     print('Total load of:', pzt)
 
     analysis.set_up_optimiser()
 
-    ad = '/Users/mricardo/compas_dev/compas_tno/data/analysis-dome' + prob + '.json'
+    ad = '/Users/mricardo/compas_dev/compas_tno/data/analysis-dome' + prob + '-with_inds.json'
     analysis.to_json(ad)
 
     # to view starting point
@@ -201,12 +184,12 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
     # view.draw_shape()
     # view.show()
 
-    plotter = TNOPlotter(form, figsize=(14, 6))
-    plotter.settings['size.edge.max_thickness'] = 8.0
-    plotter.draw_form(scale_width=True)
-    plotter.draw_supports()
-    plotter.draw_force()
-    plotter.show()
+    # plotter = TNOPlotter(form, figsize=(14, 6))
+    # plotter.settings['size.edge.max_thickness'] = 8.0
+    # plotter.draw_form(scale_width=True)
+    # plotter.draw_supports()
+    # plotter.draw_force()
+    # plotter.show()
 
     analysis.run()
 
@@ -218,6 +201,9 @@ for prob in ['E1']:  # ['A1', 'B1', 'C1', 'D1', 'E1']
     pc = fopt/pzt
 
     print('Percentage of load added is:', round(pc*100, 3), '%')
+
+    lastanalysis = compas_tno.get('form.json')
+    form.to_json(lastanalysis)
 
     if exitflag == 0:
 

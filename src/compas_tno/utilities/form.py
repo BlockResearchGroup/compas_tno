@@ -1,6 +1,78 @@
-from compas_tno.diagrams import FormDiagram
+# from compas_tno.diagrams import FormDiagram
 from compas.geometry import intersection_segment_segment_xy
 from compas.geometry import distance_point_point_xy
+from compas.geometry import Translation
+from compas.geometry import Scale
+from compas.geometry._core.distance import sort_points_xy
+from compas.geometry._core.distance import closest_point_in_cloud
+from compas.geometry import Point
+from compas.geometry import Frame
+
+from compas.datastructures import Mesh
+from numpy import zeros
+
+
+def is_point_in_cloud(point, cloud, tol=1e-6):
+    if len(cloud) == 0:
+        return False
+    return closest_point_in_cloud(point, cloud)[0] < tol
+
+
+def split_intersection_lines(lines, tol=1e-6):
+    """Split lines accorting to their intersection
+
+    Parameters
+    ----------
+    lines : [[list]]
+        List of lines
+
+    Returns
+    -------
+    clean_lines
+        Lines split at the intersections
+    """
+
+    lines = [[[pt1[0], pt1[1], 0.0], [pt2[0], pt2[1], 0.0]] for pt1, pt2 in lines]
+    clean_lines = []
+    dict_lines = {i: [] for i in range(len(lines))}  # dict to store the inner points intersected
+
+    # find intersections and store them as the inner points of given segments
+    i = 0
+    for line in lines:
+        for line_ in lines:
+            if line == line_:
+                continue
+            pt = intersection_segment_segment_xy(line, line_)
+            if pt:
+                if is_point_in_cloud(pt, line):
+                    continue
+                if not is_point_in_cloud(pt, dict_lines[i]):  # pt not in dict_lines[i]:
+                    dict_lines[i].append(pt)
+        i += 1
+
+    # split lines containing inner intersections
+    for key in dict_lines:
+        line = lines[key]
+        intpoints = dict_lines[key]
+        if intpoints:
+            np = len(intpoints)
+            intsorted = sort_points_xy(line[0], dict_lines[key])
+            startline = [line[0], intsorted[0][1]]
+            endline = [intsorted[-1][1], line[1]]
+            if distance_point_point_xy(*startline) > tol:
+                clean_lines.append(startline)
+            if distance_point_point_xy(*endline) > tol:
+                clean_lines.append(endline)
+            if np > 1:
+                for k in range(np - 1):
+                    intline = [intsorted[k][1], intsorted[k + 1][1]]
+                    if distance_point_point_xy(*intline) > tol:
+                        clean_lines.append(intline)
+        else:
+            if distance_point_point_xy(*line) > tol:
+                clean_lines.append(line)
+
+    return clean_lines
 
 
 def form_add_lines_support(form, loaded_node, supports):
@@ -260,17 +332,17 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
         The form diagram adopted
     corners : [pts]
         A list with four points for the corner
+    fix_corners : bool, optional
+        Whether or not the corners provided should be considered fixed
 
     Returns
     -------
-    trans : list
-        List of the translation factors
-    factors : list
-        List of the scaling factors
+    None
+        Form is updated in place
     """
 
     xmax_, ymax_ = max([a[0] for a in corners]), max([a[1] for a in corners])
-    tol = 10e-3
+    xmin_, ymin_ = min([a[0] for a in corners]), min([a[1] for a in corners])
 
     trans = []
     factors = []
@@ -279,8 +351,8 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
     xmin, ymin = min([m[0] for m in bbox]), min([m[1] for m in bbox])
     # print('bbox beginning', bbox)
 
-    if abs(xmin) > tol or abs(ymin) > tol:
-        dx, dy = -xmin, -ymin
+    if abs(xmin - xmin_) > 0.0 or abs(ymin - ymin_) > 0.0:
+        dx, dy = -(xmin - xmin_), -(ymin - ymin_)
         trans = [dx, dy, 0.0]
         translation = Translation.from_vector(trans)
         mesh.transform(translation)
@@ -290,9 +362,9 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
     # print('bbox 2', bbox)
     # print(xmax, ymax)
 
-    if abs(ymax_ - ymax) > tol or abs(xmax_ - xmax) > tol:
+    if abs(ymax_ - ymax) > 0.0 or abs(xmax_ - xmax) > 0.0:
         factors = [xmax_/xmax, ymax_/ymax, 0.0]
-        scale = Scale.from_factors(factors)
+        scale = Scale.from_factors(factors, frame=Frame(Point(xmin_, ymin_, 0.0), (1, 0, 0), (0, 1, 0)))
         mesh.transform(scale)
 
     if fix_corners:
@@ -304,7 +376,7 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
                     mesh.vertex_attribute(key, 'is_fixed', True)
                     break
 
-    return trans, factors
+    return
 
 
 def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0):

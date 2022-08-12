@@ -91,7 +91,7 @@ def apply_envelope_from_shape(form, shape):
     elif shape.datashape['type'] == 'pointed_arch':
         zub, zlb = pointed_arch_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], hc=shape.datashape['hc'], L=shape.datashape['L'], x0=shape.datashape['x0'])
     elif shape.datashape['type'] == 'pavillionvault':
-        zub, zlb = pavillionvault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'])
+        zub, zlb = pavillionvault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'], shape.datashape['spr_angle'])
     elif shape.datashape['type'] == 'general':
         XY = form.vertices_attributes('xy')
         zub = get_shape_ub_pattern(shape, XY)
@@ -336,6 +336,8 @@ def project_mesh_to_middle(mesh, shape=None):
     elif shape.datashape['type'] == 'pointed_crossvault':
         zt = pointed_vault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'],
                                          hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
+    elif shape.datashape['type'] == 'pavillionvault':
+        zt = pavillionvault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'], spr_angle=shape.datashape['spr_angle'])
     else:
         XY = mesh.vertices_attributes('xy')
         zt = get_shape_middle_pattern(shape, XY)

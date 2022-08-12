@@ -34,6 +34,9 @@ for prob in ['E']:  # ['A', 'B', 'C', 'D', 'E']
     mesh_file = '/Users/mricardo/compas_dev/me/freeform/meshes_square/mesh-' + prob + '.json'
     form_file = '/Users/mricardo/compas_dev/me/freeform/meshes_square/form-' + prob + '.json'
 
+    mesh_file = '/Users/mricardo/compas_dev/compas_tno/data/CISM/test-CROSSFAN.json'
+    form_file = '/Users/mricardo/compas_dev/compas_tno/data/CISM/form-CROSSFAN.json'
+
     mesh = Mesh.from_json(mesh_file)
     print('nedges', mesh.number_of_edges())
 
@@ -54,10 +57,10 @@ for prob in ['E']:  # ['A', 'B', 'C', 'D', 'E']
     bbox = mesh.bounding_box_xy()
     # print('New bbox:', bbox)
 
-    # plotter = Plotter()
-    # artist = plotter.add(mesh)
-    # plotter.zoom_extents()
-    # plotter.show()
+    plotter = Plotter()
+    artist = plotter.add(mesh)
+    artist.draw_vertexlabels()
+    plotter.show()
 
     form = FormDiagram.from_mesh(mesh)
 
@@ -77,6 +80,11 @@ for prob in ['E']:  # ['A', 'B', 'C', 'D', 'E']
     plotter.draw_supports()
     plotter.show()
 
+    plotter = Plotter()
+    artist = plotter.add(mesh)
+    artist.draw_vertexlabels()
+    plotter.show()
+
     dels = []
     for face in form.faces():
         area = form.face_area(face)
@@ -86,6 +94,11 @@ for prob in ['E']:  # ['A', 'B', 'C', 'D', 'E']
 
     for delete in dels:
         form.delete_face(delete)
+
+    plotter = Plotter()
+    artist = plotter.add(mesh)
+    artist.draw_vertexlabels()
+    plotter.show()
 
     form.to_json(form_file)
     print('Form Saved to:', form_file)

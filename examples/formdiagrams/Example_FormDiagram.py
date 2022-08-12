@@ -9,7 +9,7 @@ data = {
     'type': 'arch',
     'H': 1.0,
     'L': 2.0,
-    'total_nodes': 11,
+    'discretisation': 11,
     'x0': 0.0,
 }
 

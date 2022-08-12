@@ -99,7 +99,7 @@ class TNOPlotter(object):
             'color.edges.reactions': Color.from_rgb255(170, 170, 170),
             'color.edges.shape': Color.from_rgb255(200, 200, 200),
             'color.edges.form_base': Color.from_rgb255(200, 200, 200),
-            'color.edges.independent': Color.from_rgb255(255, 0, 120),
+            'color.edges.independent': Color.from_rgb255(0, 0, 255),
             'color.vertex.supports': Color.from_rgb255(170, 170, 170),
             'color.vertex.extrados': Color.from_rgb255(0, 125, 0),
             'color.vertex.intrados': Color.from_rgb255(0, 0, 255),
@@ -250,6 +250,13 @@ class TNOPlotter(object):
 
         """
 
+        # self.zoom_extents()
+
+        self.app.viewbox = ([10, 30],[-1, 10])
+        self.app.axes.set_xlim([10, 30])
+        self.app.axes.set_ylim([-1, 10])
+        self.app.axes.autoscale_view()
+
         self.app.save(filepath)
 
     def add(self, item, **kwargs):
@@ -269,7 +276,7 @@ class TNOPlotter(object):
 
         return self.app.add(item, **kwargs)
 
-    def draw_form(self, scale_width=True, absolute_scale=False, color=None, **kwargs):
+    def draw_form(self, scale_width=True, absolute_scale=False, edges=None, color=None, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
 
         Parameters
@@ -299,11 +306,10 @@ class TNOPlotter(object):
         else:
             edgewidths = base_thick
 
-        edges = []
         faces = []
 
         if self.settings['show.edges']:
-            edges = list(self.form.edges_where({'_is_edge': True}))
+            edges = edges or list(self.form.edges_where({'_is_edge': True}))
 
         if self.settings['show.faces']:
             faces = list(self.form.faces())
@@ -320,7 +326,7 @@ class TNOPlotter(object):
 
         self.formartist = formartist
 
-    def draw_cracks(self):
+    def draw_cracks(self, points=None, **kwargs):
         """Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados.
 
         Returns
@@ -335,8 +341,9 @@ class TNOPlotter(object):
         color_outside = self.settings['color.vertex.outside']
 
         cracks = []
+        points = points or list(self.form.vertices())
 
-        for key in self.form.vertices():
+        for key in points:
             x, y, z = self.form.vertex_coordinates(key)
             if self.settings['rotated']:
                 x, z, y = self.form.vertex_coordinates(key)
@@ -384,7 +391,6 @@ class TNOPlotter(object):
                 ry = self.form.vertex_attribute(key, '_ry') * reaction_scale
                 rz = self.form.vertex_attribute(key, '_rz') * reaction_scale
                 if abs(abs(rx) - b[0]) < tol:
-                    print('3')
                     cracks.append({
                         'key': key,
                         'xyz': [x - rx, y - ry, z - rz],
@@ -400,13 +406,15 @@ class TNOPlotter(object):
             pointartist = self.app.add(pt, facecolor=color, size=self.settings['size.vertex'])
             self._otherartists.append(pointartist)
 
-    def draw_supports(self, color=None):
+    def draw_supports(self, color=None, size=None):
         """Add the supports as points in the mesh.
 
         Parameters
         ----------
         color : Color, optional
             Color of the supports of the form diagram, this will overwrite the setting 'color.vertex.supports', by default None
+        size : float, optional
+            Size of the supports, this will overwrite the setting 'size.vertex', by default None
 
         Returns
         -------
@@ -416,12 +424,13 @@ class TNOPlotter(object):
 
         if self.settings['show.supports']:
             supportcolor = color or self.settings['color.vertex.supports']  # _norm(self.settings['color.vertex.supports'])
+            size = size or self.settings['size.vertex']
             rollercolor = Color.from_rgb255(255, 165, 0)
 
             for key in self.form.vertices_where({'is_fixed': True}):
                 x, y, z = self.form.vertex_coordinates(key)
                 pt = Point(x, y, z)
-                pointartist = self.app.add(pt, facecolor=supportcolor, size=self.settings['size.vertex'])
+                pointartist = self.app.add(pt, facecolor=supportcolor, size=size)
                 self._otherartists.append(pointartist)
 
             rollers = list(self.form.vertices_where({'rol_x': True})) + list(self.form.vertices_where({'rol_y': True}))
@@ -543,7 +552,7 @@ class TNOPlotter(object):
                      show_faces=show_faces
                      )
 
-    def draw_form_xz(self, scale_width=True):
+    def draw_form_xz(self, scale_width=True, edges=None, **kwargs):
         """Plot the form diagram rotated 90 degrees.
 
         Returns
@@ -556,7 +565,7 @@ class TNOPlotter(object):
         self.form = self.form.transformed(Rotation.from_axis_and_angle(axis, -math.pi/2))
         self.settings['rotated'] = True
 
-        self.draw_form(scale_width=scale_width)
+        self.draw_form(scale_width=scale_width, edges=edges, **kwargs)
 
     def draw_shape(self, update_from_parameters=True, **kwargs):
         """Adds the shape to the plot.
@@ -834,11 +843,13 @@ class TNOPlotter(object):
         if print_sym:
             self.formartist.draw_edgelabels(text=texts)
 
-    def draw_force(self, show_edges=True, show_vertices=False, show_faces=False, show_independents=False):
+    def draw_force(self, scale=None, show_edges=True, show_vertices=False, show_faces=False, show_independents=False):
         """Draw the force diagram associated with the form diagram.
 
         Parameters
         ----------
+        scale : float, optional
+            If a scale should be defined. If None, a convenient scale is compuuted, by default None
         show_edges : bool, optional
             Whether or not edges are shown in the force diagram, by default True
         show_vertices : bool, optional
@@ -883,7 +894,7 @@ class TNOPlotter(object):
             ymin_form, ymax_form = form_bbox[0][1], form_bbox[2][1]
             dx_form, dy_form = (xmax_form - xmin_form), (ymax_form - ymin_form)
 
-            scale = min(dy_form/dy_force, dx_form/dx_force)
+            scale = scale or min(dy_form/dy_force, dx_form/dx_force)
             print('Diagram scale factor:', scale)
 
             tx = dx_form * 1.2 + (xmax_form - xmin_force) * scale
@@ -909,6 +920,20 @@ class TNOPlotter(object):
                      edgecolor=edgecolor,
                      edgewidth=width,
                      )
+
+    def draw_vertexlabels(self, text=None):
+        """Draw Labels to the vertices
+
+        Parameters
+        ----------
+        text : dict, optional
+            The dictionary to print, if None, the keys are displayed, by default None
+        """
+
+        if not self.formartist:
+            return
+
+        self.formartist.draw_vertexlabels(text=text)
 
     def draw_arch_lines(self, H=1.00, L=2.0, x0=0.0, thk=0.20, total_nodes=50, stereotomy=False, close_bottom=True):
         """Helper to draw the lines of intrados and extrados of an arch for given parameters

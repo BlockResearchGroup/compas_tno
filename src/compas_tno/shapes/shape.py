@@ -215,7 +215,8 @@ class Shape(Datastructure):
             intrados, extrados, middle = cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
         elif typevault == 'pavillionvault':
             xy_span = data['xy_span']
-            intrados, extrados, middle = pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
+            spr_angle = data.get('spr_angle', 0.0)
+            intrados, extrados, middle = pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, spr_angle=spr_angle, expanded=expanded)
         elif typevault == 'dome':
             center = data['center']
             radius = data['radius']
@@ -356,6 +357,34 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
+    def create_dome_polar(cls, center=[5.0, 5.0, 0.0], radius=5.0, thk=0.5, discretisation=[16, 40], t=0.0):
+        """Create the shape representing a Hemispheric Dome
+
+        Parameters
+        ----------
+        center : [float, float, float], optional
+            Center of the dome, by default [5.0, 5.0, 0.0]
+        radius : float, optional
+            Central radius of the dome, by default 5.0
+        thk : float, optional
+            Thickness of the dome, by default 0.5
+        discretisation : [float, float], optional
+            Discretisation of the parallel and meridians, by default [16, 40]
+        t : float, optional
+            Negative thickness to consider if the intrados can not be interpolated in the point, by default 0.0
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        data = {'type': 'dome_polar', 'thk': thk, 'discretisation': discretisation, 'center': center, 'radius': radius, 't': t}
+
+        return cls().from_library(data)
+
+    @classmethod
     def create_arch(cls, H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, discretisation=100):
         """Create the shape representing a circular arch.
 
@@ -446,7 +475,7 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
-    def create_pavillionvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, discretisation=[100, 100], expanded=False):
+    def create_pavillionvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, discretisation=[100, 100], spr_angle=0.0, expanded=False):
         """Create the shape representing a Pavillion Vault
 
         Parameters
@@ -459,6 +488,10 @@ class Shape(Datastructure):
             Parameter for lower bound in nodes in the boundary, by default 0.0
         discretisation : list|int, optional
             Level of discretisation of the shape, by default [100, 100]
+        spr_angle : float, optional
+            Springing angle, by default 0.0
+        expanded : bool, optional
+            If the extrados should extend beyond the floor plan, by default False
 
         Returns
         -------
@@ -467,7 +500,7 @@ class Shape(Datastructure):
 
         """
 
-        data = {'type': 'pavillionvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t, 'expanded': expanded}
+        data = {'type': 'pavillionvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t, 'spr_angle': spr_angle, 'expanded': expanded}
 
         return cls().from_library(data)
 

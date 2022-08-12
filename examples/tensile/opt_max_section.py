@@ -51,7 +51,7 @@ data_diagram = {
     'H': H,
     'L': L,
     'x0': 0,
-    'total_nodes': discretisation,
+    'discretisation': discretisation,
 }
 
 form = FormDiagram.from_library(data_diagram)

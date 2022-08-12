@@ -24,11 +24,6 @@ from compas_plotters import Plotter
 import json
 import os
 
-
-# ----------------------------------------------------------------------
-# ----------- EXAMPLE OF MIN THRUST FOR DOME WITH RADIAL  FD -----------
-# ----------------------------------------------------------------------
-
 # Basic parameters
 
 thk = 0.25

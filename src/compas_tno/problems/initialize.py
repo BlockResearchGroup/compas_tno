@@ -1,9 +1,14 @@
 from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
 from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
+
+from compas_tno.algorithms import form_update_with_parallelisation
+from compas_tno.algorithms import equilibrium_fdm
+from compas_tno.algorithms import compute_reactions
+
 import importlib.util
 
 
-def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVX'):
+def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVXPY'):
     """Built-in function to optimise the loadpath considering diagram fixed projection.
     Note: This function will select the most appropriate solver (CVX or MOSEK)
 
@@ -16,7 +21,7 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVX'
     find_inds : bool, optional
         If independents need to be found before the loadpath computation, by default False
     solver_convex : str, optional
-        Solver to compute the convex optimisation, by default CVX
+        Solver to compute the convex optimisation, by default CVXPY
 
     Returns
     -------
@@ -33,15 +38,36 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVX'
             raise ValueError('CVXPY/MOSEK not configured. Try changing the <solver-convex> attribute.')
         problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds)
     else:
-        raise ValueError('Could not initilalise loadpath optimisation. Try changing the <solver-convex> attribute.')
+        raise ValueError('Could not initilalise loadpath optimisation with {}. Try changing the <solver-convex> attribute.'.format(solver_convex))
 
     return problem
 
 
 def initialize_tna(form, plot=False):
-    """ Built-in function to optimise the loadpath considering diagram fixed projection
+    """Initialize the equilibrium in a form diagram with applied loads using TNA interative solver procedure (form and force diagrams are parallel)
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram. Loads and support must already have been assigned
+    plot : bool, optional
+        Plots of the intermediare and final force diagrams to follow the process, by default False
     """
 
-    from compas_tno.algorithms import form_update_with_parallelisation
-
     form_update_with_parallelisation(form, plot=plot)
+
+    compute_reactions(form)
+
+
+def initialize_fdm(form):
+    """Initialize the equilibrium in a form diagram with applied loads using FDM approach for the q's stored in the form
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram. Loads, supports and force densities must already have been assigned
+    """
+
+    equilibrium_fdm(form)
+
+    compute_reactions(form)
