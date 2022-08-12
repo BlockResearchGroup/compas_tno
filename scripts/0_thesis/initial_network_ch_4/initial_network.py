@@ -14,6 +14,9 @@ print('Form weight is:', form.lumped_swt())
 
 
 
+
+
+
 plt = TNOPlotter(form)
 plt.draw_form(scale_width=False, color=Color.black())
 plt.draw_supports(color=Color.red())
