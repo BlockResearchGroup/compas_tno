@@ -15,11 +15,7 @@ from compas.datastructures import Mesh
 import math
 
 
-__all__ = ['MeshDos']
-
-
 class MeshDos(Mesh):
-
     """The ``MeshDos`` inherits compas ``Mesh`` object and add some features to create Intrados and Extrados.
 
     Notes
@@ -38,18 +34,17 @@ class MeshDos(Mesh):
 
     @classmethod
     def from_mesh(cls, mesh):
-        """
-        Construct object from an existing COMPAS mesh.
+        """ Construct object from an existing COMPAS mesh.
 
         Parameters
         ----------
-        obj : BaseMesh
+        mesh : Mesh
             Base mesh.
+
         Returns
         -------
-        obj
-            MeshDos.
-
+        mesh
+            A mesh MeshDos mesh.
         """
 
         vertices, faces = mesh.to_vertices_and_faces()
@@ -58,6 +53,20 @@ class MeshDos(Mesh):
 
     @classmethod
     def from_formdiagram_attribute(cls, formdiagram, attribute='lb'):
+        """Create a MeshDos object from a base form diagram and an attribute.
+
+        Parameters
+        ----------
+        formdiagram : FormDiagram
+            The form diagram to copy
+        attribute : str, optional
+            The attribute to carry to the ``z``, by default 'lb'
+
+        Returns
+        -------
+        mesh
+            MeshDos
+        """
 
         vertices, faces = formdiagram.to_vertices_and_faces()
         mesh = cls().from_vertices_and_faces(vertices, faces)
@@ -69,18 +78,21 @@ class MeshDos(Mesh):
         return mesh
 
     def offset_mesh(self, n=0.1, direction='up', t=0.0):
-        """
-        Offset the mesh upwards considering it as intrados.
+        """Offset the mesh upwards considering it as intrados.
 
         Parameters
         ----------
-        n : float
-            Distance to offset the mesh.
+        n : float, optional
+            Normal distance of offset, by default 0.1
+        direction : str, optional
+            Direction of the offset, by default 'up'
+        t : float, optional
+            Distance considered in the supports, by default 0.0
+
         Returns
         -------
-        obj
-            MeshDos.
-
+        mesh
+            MeshDos
         """
 
         offset_list = []
@@ -106,17 +118,19 @@ class MeshDos(Mesh):
         return mesh_copy
 
     def offset_up_and_down(self, n=1.0, t=0.0):
-        """
-        Offset the mesh up and down considering it as middle surface.
+        """Offset the mesh up and down considering it as middle surface.
 
         Parameters
         ----------
-        n : float
-            Percentage of the normal vector to use.
+        n : float, optional
+            Percentage of the normal vector to use, by default 1.0.
+        t : float, optional
+            Distance considered in the supports, by default 0.0
+
         Returns
         -------
-        obj
-            MeshDos.
+        mesh_ub, mesh_lb
+            Extrados mesh and intrados mesh.
 
         """
 
@@ -144,6 +158,22 @@ class MeshDos(Mesh):
         return mesh_ub, mesh_lb
 
     def store_normals(self, correct_creases=False, printout=False, plot=False):
+        """Store normals in a MeshDos object
+
+        Parameters
+        ----------
+        correct_creases : bool, optional
+            If creases should be corrected, by default False
+        printout : bool, optional
+            If prints should appear in the screen, by default False
+        plot : bool, optional
+            If plots with normals, by default False
+
+        Returns
+        -------
+        None
+            Normals added as attributes
+        """
 
         for key in self.vertices():
             self.vertex_attribute(key, 'n', self.vertex_normal(key))
@@ -153,14 +183,14 @@ class MeshDos(Mesh):
 
         return
 
-    def identify_creases_by_angle(self, deviation=20):
-        """
-        Identify creses in the structure based on a threshold angle limit.
+    def identify_creases_by_angle(self, deviation=20.0):
+        """ Identify creses in the structure based on a threshold angle limit.
 
         Parameters
         ----------
-        deviation : float
-            Angle (deg) deviation of normals along an edge so it is considered a crease.
+        deviation : float, optional
+            Angle (deg) deviation of normals along an edge so it is considered a crease. Default is 20.0.
+
         Returns
         -------
         obj
@@ -182,17 +212,17 @@ class MeshDos(Mesh):
         return
 
     def identify_creases_at_diagonals(self, xy_span=[[0.0, 10.0], [0.0, 10.0]]):
-        """
-        Identify creses in the structure based on the diagonal of a rectangular.
+        """Identify creses in the structure based on the diagonal of a rectangular.
 
         Parameters
         ----------
-        deviation : float
-            Angle (deg) deviation of normals along an edge so it is considered a crease.
+        xy_span : list, optional
+            Span of the pattern, by default [[0.0, 10.0], [0.0, 10.0]]
+
         Returns
         -------
-        obj
-            MeshDos.
+        None
+            Creases are marked with attributes
         """
 
         self.vertices_attribute('is_crease', False)
@@ -215,7 +245,9 @@ class MeshDos(Mesh):
 
         return
 
-    def magnify_normal_at_ribs(self, printout=False, plot=False):
+    def magnify_normal_at_ribs(self):
+        """Magnify normals at ribs.
+        """
 
         keys = list(self.vertices_where({'is_crease': True}))
 
@@ -250,10 +282,6 @@ class MeshDos(Mesh):
             n = scale_vector(normalize_vector(sum_vectors([normal_right, normal_left])), 1/math.cos(angle))
             self.vertex_attribute(vkey, 'n', n)
 
-            if printout:
-                x, y, z = self.vertex_coordinates(vkey)
-                print('x, y, n, norm', x, y, n, norm_vector(n))
-
         return
 
     def scale_normals_with_ub_lb(self, zub, zlb, tol=10e-3):
@@ -265,6 +293,8 @@ class MeshDos(Mesh):
             Height of the nodes of extrados.
         zlb : array (n x 1)
             Height of the nodes of intrados.
+        tol : float, optional
+            The tolerance, by default 10e-3
 
         """
 
@@ -287,18 +317,17 @@ class MeshDos(Mesh):
         return
 
     def get_xy_face_normals(self, XY):
-        """
-        Get normal based on the face normal in which the points are in the plan.
+        """ Get normal based on the face normal in which the points are in the plan.
 
         Parameters
         ----------
         XY : list
             List of Points
+
         Returns
         -------
         obj
             MeshDos.
-
         """
 
         face_coords = [self.face_coordinates(fkey) for fkey in self.faces()]
@@ -320,6 +349,18 @@ class MeshDos(Mesh):
 
     def round_xy_boundary(self, span=[[0, 10], [0, 10]], tol=10e-4):
         """Prevent rounding errors by rounding boundary vertices
+
+        Parameters
+        ----------
+        span : list, optional
+            Span of the pattern, by default [[0, 10], [0, 10]]
+        tol : float, optional
+            Tolerance, by default 10e-4
+
+        Returns
+        -------
+        None
+            Pattern modified in place
         """
 
         for key in self.vertices():

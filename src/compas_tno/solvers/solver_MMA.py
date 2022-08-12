@@ -7,23 +7,18 @@ from .post_process import post_process_general
 
 import time
 
-from compas_tno.problems import sensitivities_wrapper_general
+from compas_tno.problems import sensitivities_wrapper
 from compas_tno.problems import constr_wrapper
 
 try:
     from torch import tensor
 
-    from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch_MMA
-    from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
-    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
-    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
+    from compas_tno.autodiff.equilibrium_pytorch import f_constraints_pytorch_MMA
+    from compas_tno.autodiff.equilibrium_pytorch import f_objective_pytorch
+    from compas_tno.autodiff.equilibrium_pytorch import compute_autograd
+    from compas_tno.autodiff.equilibrium_pytorch import compute_autograd_jacobian
 except BaseException:
     pass
-
-
-__all__ = [
-    'run_optimisation_MMA'
-]
 
 
 def run_optimisation_MMA(analysis):
@@ -176,7 +171,7 @@ def analytical_f_g(xopt, *args):
     [fobj, _] = args[-1]
     args = args[:-1]
     f0val = fobj(xopt, *args)
-    fval = - 1 * constr_wrapper(xopt, *args)
+    fval = - 1 * constr_wrapper(xopt, *args)  # change args here
     return f0val, fval.reshape(-1, 1)
 
 
@@ -184,9 +179,9 @@ def analytical_f_g_df_dg(xopt, *args):
     [fobj, fgrad] = args[-1]
     args = args[:-1]
     f0val = fobj(xopt, *args)
-    fval = - 1 * constr_wrapper(xopt, *args)
+    fval = - 1 * constr_wrapper(xopt, *args)  # change args here
     df0dx = fgrad(xopt, *args)
-    dfdx = -1 * sensitivities_wrapper_general(xopt, *args)
+    dfdx = -1 * sensitivities_wrapper(xopt, *args)
     return f0val, df0dx, fval.reshape(-1, 1), dfdx
 
 

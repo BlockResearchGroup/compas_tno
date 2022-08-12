@@ -13,10 +13,15 @@ Equilibrium
     :toctree: generated/
     :nosignatures:
 
-    z_from_form
-    z_update
+    equilibrium_fdm
+    vertical_equilibrium_fdm
+    q_from_qid
+    q_from_variables
     xyz_from_q
-    reactions
+    xyz_from_xopt
+    weights_from_xyz
+    weights_from_xyz_dict
+    compute_reactions
 
 
 Independents
@@ -26,11 +31,13 @@ Independents
     :toctree: generated/
     :nosignatures:
 
-    find_independents
+    find_independents_backward
+    find_independents_forward
     independents_exclude
     independents_include
+    inds_incl_excl
     check_independents
-    check_horizontal
+    check_horizontal_loads
 
 
 Smoothing
@@ -62,11 +69,61 @@ from __future__ import absolute_import
 import compas
 
 if not compas.IPY:
-    from .equilibrium import *  # noqa: F401 F403
+    from .equilibrium import (
+        equilibrium_fdm,
+        vertical_equilibrium_fdm,
+        q_from_qid,
+        q_from_variables,
+        xyz_from_q,
+        compute_reactions,
+        xyz_from_xopt,
+        weights_from_xyz,
+        weights_from_xyz_dict
+    )
+    from .independents import (
+        find_independents_forward,
+        find_independents_backward,
+        independents_exclude,
+        independents_include,
+        inds_incl_excl,
+        check_independents,
+        check_horizontal_loads
+    )
+    from .smoothing import (
+        constrained_smoothing,
+        apply_sag
+    )
+    from .graphstatics import (
+        form_update_with_parallelisation,
+        force_update_from_form,
+        reciprocal_from_form
+    )
     # from .equilibrium_pytorch import *  # noqa: F401 F403
-    from .independents import *  # noqa: F401 F403
-    from .smoothing import *  # noqa: F401 F403
-    from .graphstatics import *  # noqa: F401 F403
 
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+__all__ = [
+    'equilibrium_fdm',
+    'vertical_equilibrium_fdm',
+    'q_from_qid',
+    'q_from_variables',
+    'xyz_from_q',
+    'compute_reactions',
+    'xyz_from_xopt',
+    'weights_from_xyz',
+    'weights_from_xyz_dict',
+
+    'find_independents_forward',
+    'find_independents_backward',
+    'independents_exclude',
+    'independents_include',
+    'inds_incl_excl',
+    'check_independents',
+    'check_horizontal_loads',
+
+    'constrained_smoothing',
+    'apply_sag',
+
+    'form_update_with_parallelisation',
+    'force_update_from_form',
+    'reciprocal_from_form'
+]

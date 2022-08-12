@@ -1,4 +1,4 @@
-from compas_tno.algorithms import zlq_from_qid
+
 from .post_process import post_process_general
 
 
@@ -8,7 +8,21 @@ __all__ = [
 
 
 def run_optimisation_pyOpt(analysis):
-    """ Run Optimisation using PyOpt (requires installation).
+    """Run Optimisation using PyOpt (requires installation).
+
+    Parameters
+    ----------
+    analysis : Analysis
+        The Analysis object to pass.
+
+    Returns
+    -------
+    None
+        Analysis is executed in place.
+
+    Note
+    -------
+        Requires pyOpt installation.
     """
 
     import pyOpt
@@ -119,6 +133,5 @@ def pyOpt_wrapper(x, **kwargs):
     # Temp
     f = fobj(x, *args)
     g = -1 * fconst(x, *args)  # pyOpt get constraints g1 <= 0 as default
-    print(max(g))
     fail = 0
     return f, g, fail

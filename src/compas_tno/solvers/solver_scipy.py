@@ -9,28 +9,17 @@ from .post_process import post_process_general
 import time
 
 
-__author__ = ['Ricardo Maia Avelino <mricardo@ethz.ch>']
-__copyright__ = 'Copyright 2019, BLOCK Research Group - ETH Zurich'
-__license__ = 'MIT License'
-__email__ = 'mricardo@ethz.ch'
-
-
-__all__ = [
-    'run_optimisation_scipy',
-]
-
-
 def run_optimisation_scipy(analysis):
-    """ Run nonlinear optimisation problem with scipy
+    """ Run nonlinear optimisation problem with SciPy.
 
     Parameters
     ----------
-    obj : analysis
+    analysis : Analysis
         Analysis object with information about optimiser, form and shape.
 
     Returns
     -------
-    obj : analysis
+    analysis : Analysis
         Analysis object optimised.
 
     """
@@ -48,7 +37,7 @@ def run_optimisation_scipy(analysis):
     grad_choice = optimiser.settings.get('gradient', False)
     jac_choice = optimiser.settings.get('jacobian', False)
     max_iter = optimiser.settings.get('max_iter', 500)
-    callback = optimiser.settings.get('callback', None)
+    callback = optimiser.callback
 
     if grad_choice is False:
         fgrad = None

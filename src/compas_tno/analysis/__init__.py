@@ -5,8 +5,8 @@ compas_tno.analysis
 
 .. currentmodule:: compas_tno.analysis
 
-Analysis
-========
+Classes
+=======
 
 .. autosummary::
     :toctree: generated/
@@ -14,9 +14,33 @@ Analysis
 
     Analysis
 
+Routines
+========
+
+.. autosummary::
+    :toctree: generated/
+    :nosignatures:
+
+    limit_analysis_GSF
+    thk_minmax_GSF
+    max_n_minmax_GSF
+
 """
-from __future__ import absolute_import
 
-from .analysis import *  # noqa: F401 F403
+from .analysis import (
+    Analysis
+)
 
-__all__ = [name for name in dir() if not name.startswith('_')]
+from.routines import(
+    limit_analysis_GSF,
+    thk_minmax_GSF,
+    max_n_minmax_GSF
+)
+
+__all__ = [
+    'Analysis',
+
+    'limit_analysis_GSF',
+    'thk_minmax_GSF',
+    'max_n_minmax_GSF'
+]

@@ -33,6 +33,8 @@ class FormObject(DiagramObject):
         'show.loadvectors': False,
         'show.reactionvectors': False,
 
+        'is.compression_negative': True,
+
         'color.vertices': (0, 0, 0),
         'color.vertexlabels': (255, 255, 255),
         'color.vertexloads': (255, 255, 255),
@@ -311,6 +313,7 @@ class FormObject(DiagramObject):
             guids = self.artist.draw_forcepipes(
                 color_compression=self.settings['color.compression'],
                 color_tension=self.settings['color.tension'],
+                compression_negative=self.settings['is.compression_negative'],
                 scale=self.settings['scale.forcepipes'],
                 tol=self.settings['tol.forces'])
 

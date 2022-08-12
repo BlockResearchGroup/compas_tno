@@ -8,22 +8,19 @@ from numpy import array
 try:
     from torch import tensor
 
-    from compas_tno.algorithms.equilibrium_pytorch import f_constraints_pytorch
-    from compas_tno.algorithms.equilibrium_pytorch import f_objective_pytorch
-    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd
-    from compas_tno.algorithms.equilibrium_pytorch import compute_autograd_jacobian
+    from compas_tno.autodiff.equilibrium_pytorch import f_constraints_pytorch
+    from compas_tno.autodiff.equilibrium_pytorch import f_objective_pytorch
+    from compas_tno.autodiff.equilibrium_pytorch import compute_autograd
+    from compas_tno.autodiff.equilibrium_pytorch import compute_autograd_jacobian
 except BaseException:
     pass  # Module tensor not available
 
 from .post_process import post_process_general
 
 
-__all__ = [
-    'run_optimisation_ipopt'
-]
-
-
-class wrapper_ipopt(object):
+class Wrapper_ipopt_autodiff(object):
+    """Wrapper to send to IPOPT using autodifferentiation
+    """
     def __init__(self):
         self.fobj = None
         self.fconstr = None
@@ -35,70 +32,154 @@ class wrapper_ipopt(object):
         pass
 
     def objective(self, x):
-        #
-        # The callback for calculating the objective
-        #
+        """The callback for calculating the objective
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        fopt : float
+            The objective function value at x.
+        """
+
         variables = tensor(x.reshape(-1, 1))
         return array(self.fobj(variables, *self.args_obj))
 
     def gradient(self, x):
-        #
-        # The callback for calculating the gradient
-        #
+        """The callback for calculating the gradient
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        grad : array
+            The gradient of the objective function at x.
+        """
+
         variables = tensor(x.reshape(-1, 1), requires_grad=True)
         f = self.fobj(variables, *self.args_obj)
         return array(compute_autograd(variables, f))
 
     def constraints(self, x):
-        #
-        # The callback for calculating the constraints
-        #
+        """The callback for calculating the constraints
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        constr : array
+            The constraints of the objective function at x.
+        """
+
         variables = tensor(x.reshape(-1, 1))
         return array(self.fconstr(variables, *self.args_constr))
 
     def jacobian(self, x):
-        #
-        # The callback for calculating the Jacobian
-        #
+        """The callback for calculating the jacobian
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        jac : array
+            The gradient of the jacobian matrix at x.
+        """
         variables = tensor(x.reshape(-1, 1), requires_grad=True)
         constraints = self.fconstr(variables, *self.args_constr)
         return array(compute_autograd_jacobian(variables, constraints)).flatten()
 
 
-class wrapper_ipopt_analytical(object):
+class Wrapper_ipopt(object):
+    """Wrapper to send to IPOPT using analytical derivatives
+    """
     def __init__(self):
         self.fobj = None
         self.fconstr = None
         self.args = None
         self.fgrad = None
         self.bounds = None
+        self.callback = None
         self.x0 = None
         self.eps = 1e-8
         self.fjac = None
         pass
 
     def objective(self, x):
-        #
-        # The callback for calculating the objective
-        #
+        """The callback for calculating the objective
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        fopt : float
+            The objective function value at x.
+        """
+
+        if self.callback:
+            self.callback(x, *self.args)
         return self.fobj(x, *self.args)
 
     def gradient(self, x):
-        #
-        # The callback for calculating the gradient
-        #
+        """The callback for calculating the gradient
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        grad : array
+            The gradient of the objective function at x.
+        """
+
         return self.fgrad(x, *self.args)
 
     def constraints(self, x):
-        #
-        # The callback for calculating the constraints
-        #
+        """The callback for calculating the constraints
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        constr : array
+            The constraints of the objective function at x.
+        """
+
         return self.fconstr(x, *self.args).reshape(-1, 1)
 
     def jacobian(self, x):
-        #
-        # The callback for calculating the Jacobian
-        #
+        """The callback for calculating the jacobian
+
+        Parameters
+        ----------
+        x : array
+            The variabless passed to IPOPT
+
+        Returns
+        -------
+        jac : array
+            The gradient of the jacobian matrix at x.
+        """
+
         return self.fjac(x, *self.args).flatten()
 
 
@@ -124,6 +205,7 @@ def run_optimisation_ipopt(analysis):
     printout = optimiser.settings.get('printout', False)
     gradients = optimiser.settings.get('gradient', False)
     variables = optimiser.settings['variables']
+    callback = optimiser.callback
 
     bounds = optimiser.bounds
     x0 = optimiser.x0
@@ -160,7 +242,7 @@ def run_optimisation_ipopt(analysis):
         args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
                        ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
 
-        problem_obj = wrapper_ipopt()
+        problem_obj = Wrapper_ipopt_autodiff()
         problem_obj.fobj = f_objective_pytorch
         problem_obj.fconstr = f_constraints_pytorch
         problem_obj.args_obj = args_obj
@@ -174,13 +256,14 @@ def run_optimisation_ipopt(analysis):
 
     else:
 
-        problem_obj = wrapper_ipopt_analytical()
+        problem_obj = Wrapper_ipopt()
         problem_obj.fobj = optimiser.fobj
         problem_obj.fconstr = optimiser.fconstr
         problem_obj.fjac = optimiser.fjac
         problem_obj.args = args
         problem_obj.fgrad = optimiser.fgrad
         problem_obj.bounds = bounds
+        problem_obj.callback = callback
         problem_obj.x0 = x0
 
         if printout:
@@ -235,6 +318,20 @@ def run_optimisation_ipopt(analysis):
 
 
 def _nlp_options(nlp, optimiser):
+    """Set NLP options for IPOPT
+
+    Parameters
+    ----------
+    nlp : obj
+        IPOPT object
+    optimiser : Optimiser
+        The Optimiser object
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
     # Link to instructions: https://coin-or.github.io/Ipopt/OPTIONS.html
 

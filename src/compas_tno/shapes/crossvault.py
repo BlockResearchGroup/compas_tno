@@ -10,15 +10,31 @@ from compas_tno.shapes import MeshDos
 import math
 
 
-__all__ = ['cross_vault_highfields_proxy',
-           'cross_vault_highfields',
-           'crossvault_ub_lb_update',
-           'crossvault_middle_update',
-           'crossvault_dub_dlb'
-           ]
-
-
 def cross_vault_highfields_proxy(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, tol=10e-6, t=0.0, discretisation=[100, 100], *args, **kwargs):
+    """Function that computes the highfield of cross vaults through the proxy
+
+    Parameters
+    ----------
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    thk : float, optional
+        The thickness of the vault, by default 0.5
+    tol : float, optional
+        Tolerance, by default 10e-6
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+    discretisation : list|int, optional
+        Level of discretisation of the shape, by default [100, 100]
+
+    Returns
+    -------
+    intradosdata
+        Data to a Mesh for the intrados of the shape
+    extradosdata
+        Data to a Mesh for the extrados of the shape
+    middledata
+        Data to a Mesh for the middle of the shape
+    """
     intrados, extrados, middle = cross_vault_highfields(xy_span=xy_span, thk=thk, tol=tol, t=t, discretisation=discretisation, expanded=False)
     return intrados.to_data(), extrados.to_data(), middle.to_data()
 
@@ -28,29 +44,25 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, tol=10e
 
     Parameters
     ----------
-    xy_span : list
-        List with initial- and end-points of the vault [(x0,x1),(y0,y1)].
-
-    thk : float (optional)
-        Thickness of the vault - perpendicular to the middle surface
-
-    tol : float (optional)
-        Approximates the equations avoiding negative square-roots.
-
-    discretisation: list
-        Density of the grid that approximates the surfaces in x- and y- directions.
-
-    t: float
-        Negative lower-bound for the reactions position.
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    thk : float, optional
+        The thickness of the vault, by default 0.5
+    tol : float, optional
+        Tolerance, by default 10e-6
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 0.0
+    discretisation : list|int, optional
+        Level of discretisation of the shape, by default [100, 100]
 
     Returns
     -------
-    intrados: Mesh
-        Mesh representing the intrados of the structure
-    extrados: Mesh
-        Mesh representing the extrados of the structure
-    middle: Mesh
-        Mesh representing the middle of the structure
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
 
     Notes
     ----------------------
@@ -98,7 +110,31 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, tol=10e
     return intrados, extrados, middle
 
 
-def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):  # Tentative to update ub and lb in one loop
+def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):
+    """Update upper and lower bounds of an crossvault based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
+    """
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -177,6 +213,30 @@ def crossvault_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], to
 
 
 def crossvault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):
+    """Computes the sensitivities of upper and lower bounds in the x, y coordinates and thickness specified.
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    dub : array
+        Values of the sensitivities for the upper bound in the points
+    dlb : array
+        Values of the sensitivities for the lower bound in the points
+    """
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]
@@ -290,6 +350,28 @@ def crossvault_dub_dlb(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-
 
 
 def crossvault_middle_update(x, y, t, xy_span=[[0.0, 10.0], [0.0, 10.0]], tol=1e-6):
+    """Update middle of a crossvault based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    xy_span : [list[float], list[float]], optional
+        xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+    tol : float, optional
+        Tolerance, by default 10e-6
+
+    Returns
+    -------
+    z : array
+        Values of the middle surface in the points
+    """
 
     y1 = xy_span[1][1]
     y0 = xy_span[1][0]

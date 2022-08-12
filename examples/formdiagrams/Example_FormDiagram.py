@@ -1,5 +1,5 @@
 from compas_tno.diagrams import FormDiagram
-from compas_tno.plotters import plot_form
+from compas_tno.plotters import TNOPlotter
 
 # ------------------------------------------------
 # --------- CREATING ARCH FORM DIAGRAM -----------
@@ -9,16 +9,24 @@ data = {
     'type': 'arch',
     'H': 1.0,
     'L': 2.0,
-    'total_nodes': 11,
+    'discretisation': 11,
     'x0': 0.0,
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
-print(form.vertices_attribute('x'))
+# or
+
+form = FormDiagram.create_arch()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
 
 # ------------------------------------------------
 # --------- CREATING ORTHO FORM DIAGRAM ----------
@@ -32,9 +40,18 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
+# or
+
+form = FormDiagram.create_ortho_form()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING CROSS FORM DIAGRAM ----------
@@ -48,9 +65,18 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
+# or
+
+form = FormDiagram.create_cross_form()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING FAN FORM DIAGRAM ------------
@@ -60,13 +86,22 @@ data = {
     'type': 'fan_fd',
     'xy_span': [[0, 10], [0, 10]],
     'discretisation': [10, 10],
-    'fix': 'all',
+    'fix': 'corners',
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
+# or
+
+form = FormDiagram.create_fan_form()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # -----------------------------------------------------------
 # --------- CREATING CROSS DIAGONAL FORM DIAGRAM ------------
@@ -80,8 +115,18 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
+# or
+
+form = FormDiagram.create_cross_diagonal()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING RADIAL FORM DIAGRAM ---------
@@ -95,10 +140,18 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
+# or
+
+form = FormDiagram.create_circular_radial_form()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --- CREATING RADIAL FORM DIAGRAM W DIAGONALS ---
@@ -115,9 +168,19 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
+# or
+
+form = FormDiagram.create_circular_radial_form(discretisation=data['discretisation'], r_oculus=data['r_oculus'], diagonal=data['diagonal'], partial_diagonal=data['partial_diagonal'])
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
 # ------------------------------------------------
 # --------- CREATING RADIAL SPACED DIAGRAM ---------
 # ------------------------------------------------
@@ -134,10 +197,18 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
+# or
+
+form = FormDiagram.create_circular_radial_form()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # ------------------------------------------------
 # --------- CREATING SPIRAL FORM DIAGRAM ---------
@@ -153,9 +224,18 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
+
+# or
+
+form = FormDiagram.create_circular_spiral_form()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
 # -----------------------------------------------------------
 # --------- CREATING CROSS W DIAGONAL FORM DIAGRAM ------------
@@ -169,10 +249,15 @@ data = {
 }
 
 form = FormDiagram.from_library(data)
-print(form)
-plot_form(form, show_q=False).show()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()
 
-form = FormDiagram.from_library(data)
-print(form)
-form.overview_forces()
-plot_form(form, show_q=False).show()
+# or
+
+form = FormDiagram.create_cross_with_diagonal()
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_supports()
+plotter.show()

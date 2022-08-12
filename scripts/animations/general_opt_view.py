@@ -21,12 +21,12 @@ file_Xforce = '/Users/mricardo/compas_dev/compas_tno/data/output_200it_force.jso
 # from compas_plotters import MeshPlotter
 
 # from compas_tno.viewers import view_shapes
-# from compas_tno.viewers import view_thrust
+# from compas_tno.viewers import draw_thrust
 # from compas_tno.viewers import view_bestfit_solution
-# from compas_tno.viewers import view_thrust_as_lines
+# from compas_tno.viewers import draw_thrust_as_lines
 # from compas_tno.plotters import plot_form
 # from compas_tno.plotters import plot_superimposed_diagrams
-# from compas_tno.algorithms import z_from_form
+# from compas_tno.algorithms import equilibrium_fdm
 # import compas
 # import json
 

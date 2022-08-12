@@ -41,7 +41,7 @@ starting_point = 'loadpath'
 
 if objective == ['t']:
     variables.append(objective[0])
-if objective == ['lambd']:
+if objective == ['lambdh']:
     variables.append(objective[0])
     lambd = 0.1
 
@@ -92,7 +92,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             apply_envelope_from_shape(form, vault)
             apply_selfweight_from_shape(form, vault)
-            if 'lambd' in variables:
+            if 'lambdh' in variables:
                 apply_horizontal_multiplier(form, lambd=lambd)
 
             if 'envelopexy' in constraints:

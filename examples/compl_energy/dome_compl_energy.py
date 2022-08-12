@@ -1,7 +1,5 @@
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
-from compas_tno.plotters import plot_form
-from compas_tno.plotters import plot_superimposed_diagrams
 from compas_tno.viewers import Viewer
 
 from compas_tno.utilities import apply_envelope_from_shape
@@ -12,6 +10,9 @@ from compas_tno.utilities import apply_bounds_on_q
 
 from compas_tno.optimisers import Optimiser
 from compas_tno.analysis import Analysis
+
+from compas.geometry import Vector
+from compas.geometry import Point
 
 from compas.geometry import normalize_vector
 from numpy import array
@@ -33,7 +34,7 @@ Ecomp_method = 'complete'
 solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb']
-features = ['fixed']
+features = []
 axis_sym = None
 # axis_sym = [[0.0, 5.0], [10.0, 5.0]]
 # axis_sym = [[5.0, 0.0], [5.0, 10.0]]
@@ -43,7 +44,7 @@ starting_point = 'loadpath'
 
 if objective == ['t']:
     variables.append(objective[0])
-if objective == ['lambd']:
+if objective == ['lambdh']:
     variables.append(objective[0])
     lambd = 0.1
 
@@ -90,7 +91,7 @@ for c in [0.1]:  # set the distance that the nodes can move
 
             apply_envelope_from_shape(form, vault)
             apply_selfweight_from_shape(form, vault)
-            if 'lambd' in variables:
+            if 'lambdh' in variables:
                 apply_horizontal_multiplier(form, lambd=lambd)
 
             if 'envelopexy' in constraints:
@@ -105,6 +106,8 @@ for c in [0.1]:  # set the distance that the nodes can move
 
                 lines = []
                 vector_supports = []
+                vectors = []
+                bases = []
 
                 sign = -1  # +1 for outwards / -1 for inwards
 
@@ -141,23 +144,30 @@ for c in [0.1]:  # set the distance that the nodes can move
                     #     dXbi = [0, 0, 0]
 
                     vector_supports.append(dXbi)
-                    lines.append({
-                        'start': [x, y, z],
-                        'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
-                        'width': 3
-                    })
+                    vectors.append(Vector(*dXbi))
+                    bases.append(Point(x, y, z))
+                    # lines.append({
+                    #     'start': [x, y, z],
+                    #     'end': [x + dXbi[0], y + dXbi[1], z + dXbi[2]],
+                    #     'width': 3
+                    # })
 
                 dXb = array(vector_supports)
                 print(dXb)
 
-                from compas_plotters import MeshPlotter
+                from compas_tno.plotters import TNOPlotter
 
-                key_index = form.key_index()
-                plotter = MeshPlotter(form)
-                plotter.draw_edges()
-                plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
-                plotter.draw_arrows(lines)
+                plotter = TNOPlotter(form)
+                plotter.draw_mesh()
+                plotter.draw_vectors(vectors, bases)
                 plotter.show()
+
+                # key_index = form.key_index()
+                # plotter = MeshPlotter(form)
+                # plotter.draw_edges()
+                # plotter.draw_vertices(keys=form.fixed(), facecolor={key: '000000' for key in form.vertices_where({'is_fixed': True})})
+                # plotter.draw_arrows(lines)
+                # plotter.show()
 
             # ------------------------------------------------------------
             # ------------------- Proper Implementation ------------------
@@ -172,7 +182,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['objective'] = obj
             optimiser.settings['plot'] = False
             optimiser.settings['find_inds'] = False
-            optimiser.settings['axis_symmetry'] = axis_sym
+            optimiser.settings['axis_sym'] = axis_sym
             optimiser.settings['max_iter'] = 500
             optimiser.settings['gradient'] = True
             optimiser.settings['jacobian'] = True
@@ -182,6 +192,7 @@ for c in [0.1]:  # set the distance that the nodes can move
             optimiser.settings['starting_point'] = starting_point
             optimiser.settings['support_displacement'] = dXb
             optimiser.settings['Ecomp_method'] = Ecomp_method
+            optimiser.settings['save_iterations'] = True
 
             # --------------------- 5. Set up and run analysis ---------------------
 
@@ -216,29 +227,29 @@ for c in [0.1]:  # set the distance that the nodes can move
             save_form = os.path.join(folder, title)
             address = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
 
-            plot_superimposed_diagrams(form, form_base).show()
+            # plot_superimposed_diagrams(form, form_base).show()
             # view = Viewer(form)
             # view.show_solution()
 
             print('Optimiser exitflag:', optimiser.exitflag)
 
-            if optimiser.exitflag == 0:
-                solutions[c][obj][thk] = thrust/weight * 100
-                img_file = save_form + '_' + optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.png'
-                if save:
-                    form.to_json(address)
-                    print('Saved to: ', address)
-                    plot_superimposed_diagrams(form, form_base, save=img_file).show()
-                    plot_form(form, show_q=False, cracks=True).show()
-            else:
-                plot_superimposed_diagrams(form, form_base).show()
-                view = Viewer(form)
-                view.show_solution()
-                break
+    view = Viewer(form, shape=vault)
+    view.draw_thrust()
+    view.draw_force()
+    view.draw_cracks()
+    view.draw_shape()
+    view.draw_reactions()
+    view.show()
 
-    view = Viewer(form)
-    view.show_solution()
+    plotter = TNOPlotter(form)
+    plotter.draw_form()
+    plotter.draw_vectors(vectors, bases)
+    plotter.draw_cracks()
+    plotter.show()
 
+    import compas_tno
+    location = compas_tno.get('form.json')
+    form.to_json(location)
 
 print(solutions)
 print('\n')

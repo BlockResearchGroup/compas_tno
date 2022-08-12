@@ -4,42 +4,28 @@ from compas.datastructures import Mesh
 from compas.geometry import intersection_line_line_xy
 
 
-__all__ = [
-    'create_circular_radial_form',
-    'create_circular_radial_spaced_form',
-    'create_circular_spiral_form',
-]
-
-
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
-    """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan.
+    """Construct a circular radial FormDiagram with hoops not equally spaced in plan.
 
     Parameters
     ----------
     center : list, optional
-        Planar coordinates of the form-diagram [xc, yc].
-        The default values is ``[5.0, 5.0]``.
+        Planar coordinates of the form-diagram [xc, yc], by default [5.0, 5.0]
     radius : float, optional
-        Radius of the form-diagram
-        The default values is ``5.0``.
+        Radius of the form diagram, by default 5.0
     discretisation : list, optional
-        Number of meridians, and of spikes from the center on the dome form-diagram.
-        The default values is ``[8, 20]``.
+        Number of hoops, and of parallels of the dome form diagram], by default [8, 20]
     r_oculus : float, optional
-        Value of the radius of the oculus, if no oculus is present should be set to zero.
-        The default values is ``0.0``.
+        Value of the radius of the oculus, if no oculus is present should be set to zero, by default 0.0
     diagonal : bool, optional
-        Activate diagonal in the quads.
-        The default values is ``False``.
+        Activate diagonal in the quads, by default False
     partial_diagonal : bool, optional
-        Activate diagonals to the 'right' or 'left' in the patttern.
-        The default values is ``False``.
+        Activate partial diagonal in the quads, by default False
 
     Returns
     -------
-    form: FormDiagram
-        The FormDiagram generated.
-
+    FormDiagram
+        The FormDiagram created.
     """
 
     xc = center[0]
@@ -95,6 +81,8 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
                             lines.append([[xa_, ya_, 0.0], [xb, yb, 0.0]])
                         else:
                             lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
+                    elif partial_diagonal == 'rotation':
+                        lines.append([[xa, ya, 0.0], [xb_, yb_, 0.0]])
                     elif partial_diagonal == 'straight':
                         midx, midy, _ = intersection_line_line_xy([[xa, ya], [xb_, yb_]], [[xa_, ya_], [xb, yb]])
                         lines.append([[xa, ya, 0.0], [midx, midy, 0.0]])
@@ -128,34 +116,27 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
 
 
 def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
-    """ Helper to construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.
+    """ Construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.
 
     Parameters
     ----------
     center : list, optional
-        Planar coordinates of the form-diagram [xc, yc].
-        The default values is ``[5.0, 5.0]``.
+        Planar coordinates of the form-diagram [xc, yc], by default [5.0, 5.0]
     radius : float, optional
-        Radius of the form-diagram
-        The default values is ``5.0``.
+        Radius of the form diagram, by default 5.0
     discretisation : list, optional
-        Number of meridians, and of spikes from the center on the dome form-diagram.
-        The default values is ``[8, 20]``.
+        Number of hoops, and of parallels of the dome form diagram], by default [8, 20]
     r_oculus : float, optional
-        Value of the radius of the oculus, if no oculus is present should be set to zero.
-        The default values is ``0.0``.
+        Value of the radius of the oculus, if no oculus is present should be set to zero, by default 0.0
     diagonal : bool, optional
-        Activate diagonal in the quads.
-        The default values is ``False``.
+        Activate diagonal in the quads, by default False
     partial_diagonal : bool, optional
-        Activate diagonals to the 'right' or 'left' in the patttern.
-        The default values is ``False``.
+        Activate partial diagonal in the quads, by default False
 
     Returns
     -------
-    form: FormDiagram
-        The FormDiagram generated.
-
+    FormDiagram
+        The FormDiagram created.
     """
 
     xc = center[0]
@@ -243,28 +224,23 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
 
 
 def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0):
-    """ Helper to create a spiral Form-diagram and set common attributes.
+    """ Construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.
 
     Parameters
     ----------
     center : list, optional
-        Planar coordinates of the form-diagram [xc, yc].
-        The default values is ``[5.0, 5.0]``.
+        Planar coordinates of the form-diagram [xc, yc], by default [5.0, 5.0]
     radius : float, optional
-        Radius of the form-diagram
-        The default values is ``5.0``.
+        Radius of the form diagram, by default 5.0
     discretisation : list, optional
-        Number of meridians, and of spikes from the center on the dome form-diagram.
-        The default values is ``[8, 20]``.
+        Number of hoops, and of parallels of the dome form diagram], by default [8, 20]
     r_oculus : float, optional
-        Value of the radius of the oculus, if no oculus is present should be set to zero.
-        The default values is ``0.0``.
+        Value of the radius of the oculus, if no oculus is present should be set to zero, by default 0.0
 
     Returns
     -------
-    form: FormDiagram
-        The FormDiagram generated.
-
+    FormDiagram
+        The FormDiagram created.
     """
 
     xc = center[0]

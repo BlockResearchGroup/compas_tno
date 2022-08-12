@@ -5,19 +5,14 @@ import time
 
 from numpy import array
 
-from compas_tno.algorithms import reactions
+from compas_tno.algorithms import compute_reactions
 
 from compas_tno.problems import initialise_problem_general
 from compas_tno.problems import adapt_problem_to_fixed_diagram
 
-__all__ = [
-    'run_optimisation_MATLAB',
-    'run_loadpath_from_form_MATLAB'
-]
-
 
 def run_optimisation_MATLAB(analysis):
-    """ Run convex optimisation problem with MATLAB.
+    """ Run convex optimisation problem with MATLAB after going through the optimisation set up.
 
     Parameters
     ----------
@@ -26,43 +21,19 @@ def run_optimisation_MATLAB(analysis):
 
     Returns
     -------
-    obj : analysis
-        Analysis object optimised.
+    obj : dict
+        Dictionary with the returned values from the convex optimisation.
 
     """
 
-    # Initiate Matlab Engine
-
-    # future = matlab.engine.connect_matlab(background=True)
-    future = matlab.engine.start_matlab(background=True)
-    eng = future.result()
-
     form = analysis.form
-    optimiser = analysis.optimiser
-    args_cvx = optimiser.args
-    indset = form.attributes['indset']
-    find_inds = optimiser.settings['find_inds']
-    objective = optimiser.settings['objective']
-    printout = optimiser.settings['printout']
-    plot = optimiser.settings['plot']
+    problem = analysis.optimiser.M
+    find_inds = analysis.optimiser.settings.get('find_inds', False)
+    printout = analysis.optimiser.settings.get('printout', False)
 
-    i_k = form.index_key()
-    i_uv = form.index_uv()
+    problem = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
 
-    q, ind = args_cvx[:2]
-    args_cvx_ = list(args_cvx)
-    args_cvx_.append(eng)
-    args_cvx = tuple(args_cvx_)
-    args = args_cvx[:22]
-
-    fopt, exitflag = call_and_output_CVX_MATLAB(form, find_inds, indset, printout, plot, objective, args_cvx, args, ind, i_uv, i_k)
-
-    optimiser.exitflag = exitflag
-    optimiser.fopt = fopt
-    analysis.form = form
-    reactions(form, plot=plot)
-
-    return analysis
+    return problem
 
 
 def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=False):
@@ -73,15 +44,21 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     ----------
     form : FormDiagram
         FormDiagram object with form containing full information.
+    problem : Problem, optional
+        The problem with matrices of interest, by default None
+    find_inds : bool, optional
+        Whether or not independents must be computed before the analysis, by default False
+    printout : bool, optional
+        Whether or not print results, by default False
 
     Returns
     -------
-    obj : analysis
-        Analysis object optimised.
-
+    obj : dict
+        Dictionary with the returned values from the convex optimisation.
     """
 
-    future = matlab.engine.start_matlab(background=True)
+    future = matlab.engine.connect_matlab(background=True)
+    # future = matlab.engine.start_matlab(background=True)
 
     eng = future.result()
 
@@ -91,12 +68,30 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     if find_inds:
         adapt_problem_to_fixed_diagram(problem, form)
 
-    output = call_and_output_CVX_MATLAB(form, problem, eng)
+    problem = call_and_output_CVX_MATLAB(form, problem, eng, printout=printout)
 
-    return output
+    return problem
 
 
 def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
+    """Call and output the loadpath optimisation with CVX from MATLAB
+
+    Parameters
+    ----------
+    form : ::class:: FormDiagram
+        The form Diagram of the analysis
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors
+    eng : matlab.engine
+        The matlab engine initiated to call the analysis
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    obj : dict
+        Dictionary with the returned values from the convex optimisation.
+    """
 
     if len(problem.ind) < problem.m:
         print('Calling LP-Optimisation via CVX (MATLAB) with independents')
@@ -126,14 +121,8 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         form.edge_attribute((u, v), 'q', float(qi))
         form.edge_attribute((u, v), 'f', float(qi*li))
 
-    # print(problem.q)
-    # from compas_plotters import MeshPlotter
-    # plotter = MeshPlotter(form)
-    # plotter.draw_edges(text={edge: round(form.edge_attribute(edge, 'q'), 2) for edge in form.edges()})
-    # plotter.show()
-
     form.attributes['loadpath'] = form.loadpath()
-    reactions(form)
+    compute_reactions(form)
 
     summary = True
 
@@ -156,10 +145,35 @@ def call_and_output_CVX_MATLAB(form, problem, eng, printout=False):
         print('sol. time : {0:.3f} sec'.format(sol_time))
         print('-' * 50 + '\n')
 
-    return output
+    return problem
 
 
 def call_cvx(problem, eng, printout=False):
+    """Call matlab with the matrices for the analysis
+
+    Parameters
+    ----------
+    eng : matlab.engine
+        The matlab engine initiated to call the analysis
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+
+    """
 
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, qmax, i_uv, k_i, eng = args_cvx
 
@@ -172,16 +186,12 @@ def call_cvx(problem, eng, printout=False):
     eng.workspace['Cb'] = matlab.double(problem.Cb.toarray().tolist())
     eng.workspace['E'] = matlab.double(problem.E.tolist())
 
-    # load_csr_matrix_to_matlab(problem.E, 'E', eng)
-
-    # print(problem.qmin.shape, problem.qmax.shape, problem.q.shape)
-
     eng.workspace['xt'] = matlab.double(problem.X[:, 0].reshape(-1, 1).transpose().tolist())
     eng.workspace['yt'] = matlab.double(problem.X[:, 1].reshape(-1, 1).transpose().tolist())
     eng.workspace['xb'] = matlab.double(problem.X[:, 0][problem.fixed].reshape(-1, 1).tolist())
     eng.workspace['yb'] = matlab.double(problem.X[:, 1][problem.fixed].reshape(-1, 1).tolist())
     eng.workspace['pz'] = matlab.double(problem.P[:, 2][problem.free].reshape(-1, 1).tolist())
-    eng.workspace['p'] = matlab.double(problem.P[problem.free, :2].flatten('F').reshape((-1, 1)).tolist())
+    eng.workspace['p'] = matlab.double(problem.ph.reshape(-1, 1).tolist())
 
     eng.workspace['qmax'] = matlab.double(problem.qmax.reshape(-1, 1).tolist())
     eng.workspace['qmin'] = matlab.double(problem.qmin.reshape(-1, 1).tolist())
@@ -195,6 +205,15 @@ def call_cvx(problem, eng, printout=False):
         eng.cvx_begin(nargout=0)
     else:
         eng.cvx_begin('quiet', nargout=0)
+    # eng.cvx_begin(nargout=0)
+    # eng.eval('cvx_begin', nargout=0)
+
+    # Run the following lines in the terminal if you have trouble
+    # future = matlab.engine.connect_matlab(background=True)
+    # eng = future.result()
+    # eng.cvx_begin(nargout=0)
+    # print(matlab.engine.find_matlab())
+
     eng.variable('q(double(m))', nargout=0)
     # if objective == 'loadpath':
     eng.minimize('matrix_frac(pz, -(transpose(Ci)*diag(q)*Ci)) - xt*transpose(C)*diag(q)*Cb*xb - yt*transpose(C)*diag(q)*Cb*yb', nargout=0)
@@ -224,6 +243,31 @@ def call_cvx(problem, eng, printout=False):
 
 
 def call_cvx_ind(problem, eng, printout=True):
+    """Call matlab considering independent edges.
+
+    Parameters
+    ----------
+    eng : matlab.engine
+        The matlab engine initiated to call the analysis
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Independent Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+
+    """
 
     # q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, qmax, i_uv, k_i, eng = args_cvx
 
@@ -231,12 +275,6 @@ def call_cvx_ind(problem, eng, printout=True):
     dep_ = [x+1 for x in problem.dep]
 
     start_time = time.time()
-
-    # load_csr_matrix_to_matlab(problem.C, 'C', eng)
-    # load_csr_matrix_to_matlab(problem.Ci, 'Ci', eng)
-    # load_csr_matrix_to_matlab(problem.Cb, 'Cb', eng)
-    # load_csr_matrix_to_matlab(problem.Edinv, 'Edinv', eng)
-    # load_csr_matrix_to_matlab(problem.Ei, 'Ei', eng)
 
     eng.workspace['C'] = matlab.double(problem.C.toarray().tolist())
     eng.workspace['Ci'] = matlab.double(problem.Ci.toarray().tolist())
@@ -248,7 +286,7 @@ def call_cvx_ind(problem, eng, printout=True):
 
     eng.workspace['dep'] = matlab.double(dep_)
     eng.workspace['ind'] = matlab.double(ind_)
-    eng.workspace['p'] = matlab.double(problem.P[problem.free, :2].flatten('F').reshape((-1, 1)).tolist())
+    eng.workspace['p'] = matlab.double(problem.ph.reshape(-1, 1).tolist())
     eng.workspace['xt'] = matlab.double(problem.X[:, 0].reshape(-1, 1).transpose().tolist())
     eng.workspace['yt'] = matlab.double(problem.X[:, 1].reshape(-1, 1).transpose().tolist())
     eng.workspace['xb'] = matlab.double(problem.X[:, 0][problem.fixed].reshape(-1, 1).tolist())
@@ -280,8 +318,8 @@ def call_cvx_ind(problem, eng, printout=True):
     elapsed_time = time.time() - start_time
     print('Elapsed time on LP:', elapsed_time)
 
-    # If intended to save the MATLAB engine
-    eng.save('/Users/mricardo/Documents/MATLAB/data.mat', nargout=0)
+    # # If intended to save the MATLAB engine
+    # eng.save('/Users/mricardo/Documents/MATLAB/data.mat', nargout=0)
 
     if status != 'Infeasible':
         exitflag = 0
@@ -289,24 +327,3 @@ def call_cvx_ind(problem, eng, printout=True):
         exitflag = 1
 
     return fopt, qopt, exitflag, niter, status, sol_time
-
-
-def load_csr_matrix_to_matlab(mat, name, eng):
-
-    (m, n) = mat.shape
-    s = mat.data
-    i = mat.tocoo().row
-    j = mat.indices
-
-    i_ = [x+1 for x in i]
-    j_ = [x+1 for x in j]
-
-    eng.workspace['m_'] = matlab.double([m])
-    eng.workspace['n_'] = matlab.double([n])
-    eng.workspace['s'] = matlab.double(s.tolist())
-    eng.workspace['i_'] = matlab.double(i_)
-    eng.workspace['j_'] = matlab.double(j_)
-
-    eng.eval(name + ' = sparse(i_, j_, s, m_, n_, m_*n_);', nargout=0)
-
-    return

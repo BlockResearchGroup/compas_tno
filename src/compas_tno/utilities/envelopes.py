@@ -12,6 +12,9 @@ from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 from compas_tno.shapes.circular_arch import arch_ub_lb_update
 from compas_tno.shapes.pointed_arch import pointed_arch_ub_lb_update
 
+from compas_tno.shapes.pavillionvault import pavillionvault_ub_lb_update
+from compas_tno.shapes.pavillionvault import pavillionvault_middle_update
+
 from compas_tno.utilities.interpolation import get_shape_ub_pattern
 from compas_tno.utilities.interpolation import get_shape_lb_pattern
 from compas_tno.utilities.interpolation import get_shape_middle_pattern
@@ -31,17 +34,19 @@ __all__ = [
 
 
 def apply_envelope_from_shape_proxy(formdata, shapedata):
-    """ Normalise the color in RGB dividing each component by 255
+    """ Apply an envelope (intrados and extrados) to the FormDiagram based on the input shape data
 
     Parameters
     ----------
-    rgb : tuple
-        Tuple with RBG colors.
+    formdata : dict
+        The data of the form diagram
+    shapedata : dict
+        The data of the shape
 
     Returns
     ----------
-    norm_rgb : tuple
-        The normalised color.
+    formdata : dict
+        The data of the form diagram after assigning the envelope
     """
 
     from compas_tno.diagrams import FormDiagram
@@ -60,9 +65,9 @@ def apply_envelope_from_shape(form, shape):
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         The input FormDiagram.
-    shape : ::Shape::
+    shape : Shape
         The input Shape with intrados and extrardos.
 
     Returns
@@ -85,6 +90,8 @@ def apply_envelope_from_shape(form, shape):
         zub, zlb = arch_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], H=shape.datashape['H'], L=shape.datashape['L'], x0=shape.datashape['x0'])
     elif shape.datashape['type'] == 'pointed_arch':
         zub, zlb = pointed_arch_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], hc=shape.datashape['hc'], L=shape.datashape['L'], x0=shape.datashape['x0'])
+    elif shape.datashape['type'] == 'pavillionvault':
+        zub, zlb = pavillionvault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'], shape.datashape['spr_angle'])
     elif shape.datashape['type'] == 'general':
         XY = form.vertices_attributes('xy')
         zub = get_shape_ub_pattern(shape, XY)
@@ -110,10 +117,10 @@ def apply_envelope_on_xy(form, c=0.5):
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         The input FormDiagram.
-    c : float
-        The maximum allowed movement of the nodes in ``x`` or ``y``.
+    c : float, optional
+        The maximum allowed movement of the nodes in ``x`` or ``y``, by default 0.5
 
     Returns
     ----------
@@ -135,12 +142,12 @@ def apply_envelope_on_xy_from_base(form, form_base, c=0.5):
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         The input FormDiagram.
-    form_base : ::FormDiagram::
-        The input FormDiagram.
-    c : float
-        The maximum allowed movement of the nodes in ``x`` or ``y``.
+    form_base ::FormDiagram
+        The base FormDiagram to consider.
+    c : float, optional
+        The maximum allowed movement of the nodes in ``x`` or ``y``, by default 0.5
 
     Returns
     ----------
@@ -157,17 +164,17 @@ def apply_envelope_on_xy_from_base(form, form_base, c=0.5):
     return
 
 
-def apply_bounds_on_q(form, qmin=-1e+4, qmax=1e-8):  # Convention compression negative
+def apply_bounds_on_q(form, qmin=-1e+4, qmax=1e-8):
     """ Apply bounds on the magnitude of the edges'force densities.
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         The input FormDiagram
-    qmin : float
-        The minimum allowed force density ``qmin``.
-    qmax : float
-        The maximum allowed force density ``qmax``.
+    qmin : float, optional
+        The minimum allowed force density ``qmin``, by default -1e+4
+    qmax : float, optional
+        The maximum allowed force density ``qmax``, by default 1e-8
 
     Returns
     ----------
@@ -192,12 +199,12 @@ def apply_bounds_reactions(form, shape, assume_shape=None):
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         The input FormDiagram
-    shape : ::Shape::
+    shape : Shape
         The shape of masonry to constraint the form diagram to.
     assume_shape : dict, optional
-        Whether or not consider the settings of a different shape on the process.
+        Whether or not consider the settings of a different shape on the process, by default None
 
     Returns
     ----------
@@ -283,7 +290,7 @@ def apply_bounds_tub_tlb(form, tubmax=0.5, tlbmax=0.5):
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         The input FormDiagram
     tubmax : float, optional
         The maximum increase in thickness of the extrados. The default value is ``0.5``.
@@ -308,10 +315,10 @@ def project_mesh_to_middle(mesh, shape=None):
 
     Parameters
     ----------
-    mesh : ::Mesh::
+    mesh : Mesh
         The input Mesh.
-    shape : ::Shape::
-        The input Shape with a middle surface.
+    shape : Shape
+        The input Shape with a middle surface, by default None.
 
     Returns
     ----------
@@ -329,6 +336,8 @@ def project_mesh_to_middle(mesh, shape=None):
     elif shape.datashape['type'] == 'pointed_crossvault':
         zt = pointed_vault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'],
                                          hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
+    elif shape.datashape['type'] == 'pavillionvault':
+        zt = pavillionvault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'], spr_angle=shape.datashape['spr_angle'])
     else:
         XY = mesh.vertices_attributes('xy')
         zt = get_shape_middle_pattern(shape, XY)

@@ -5,21 +5,27 @@ from compas.geometry import norm_vector
 import math
 
 
-__all__ = [
-    'general_ub_lb_update_with_t_middle_constant',
-    'general_db_with_t_middle_constant',
-    'general_ub_lb_update_with_t_middle_variable',
-    'general_db_with_t_middle_variable',
-    'general_ub_lb_update_with_t_intrados',
-    'general_db_with_t_intrados',
-    'general_ub_lb_update_with_s',
-    'general_dub_dlb_with_s',
-    'general_ub_lb_update_with_n',
-    'general_dub_dlb_with_n'
-    ]
-
-
 def general_ub_lb_update_with_t_middle_constant(thk, s, middle, t):
+    """Update upper and lower bounds for a general surface for a given middle surface.
+
+    Parameters
+    ----------
+    thk : float
+        Thickness of the structure
+    s : float
+        Middle surface heights
+    middle : MeshDos
+        Middle surface mesh
+    t : float
+        Value to assumed to vertices without intrados projection
+
+    Returns
+    -------
+    ub_update : array
+        Upper bound limits updated
+    lb_update : array
+        Lower bound limits updated
+    """
 
     ub_update = zeros((len(s), 1))
     lb_update = zeros((len(s), 1))
@@ -39,6 +45,22 @@ def general_ub_lb_update_with_t_middle_constant(thk, s, middle, t):
 
 
 def general_db_with_t_middle_constant(s, middle):
+    """Update sensitivity in the upper and lower bounds for a general surface for a given middle surface.
+
+    Parameters
+    ----------
+    s : float
+        Middle surface heights
+    middle : MeshDos
+        Middle surface mesh
+
+    Returns
+    -------
+    dub : array
+        Sensitivities of the upper bound
+    dlb : array
+        Sensitivities of the lower bound
+    """
 
     dub = zeros((len(s), 1))
     dlb = zeros((len(s), 1))
@@ -58,7 +80,25 @@ def general_db_with_t_middle_constant(s, middle):
 
 
 def general_ub_lb_update_with_t_middle_variable(thk_alfa, s, middle, t):
-    """ This general  update takes into consideration nub and nlb. scaled, so t is a (%)
+    """Update upper and lower bounds for a general surface for a given middle surface. This general  update takes into consideration nub and nlb. scaled, so t is a (%)
+
+    Parameters
+    ----------
+    thk_alfa : float
+        Thickness of the structure as a percentage of nub, nlb
+    s : float
+        Middle surface heights
+    middle : MeshDos
+        Middle surface mesh
+    t : float
+        Value to assumed to vertices without intrados projection
+
+    Returns
+    -------
+    ub_update : array
+        Upper bound limits updated
+    lb_update : array
+        Lower bound limits updated
     """
 
     ub_update = zeros((len(s), 1))
@@ -84,6 +124,22 @@ def general_ub_lb_update_with_t_middle_variable(thk_alfa, s, middle, t):
 
 
 def general_db_with_t_middle_variable(s, middle):
+    """Update sensitivity in the upper and lower bounds for a general surface for a given middle surface considering the variable as a percentage.
+
+    Parameters
+    ----------
+    s : float
+        Middle surface heights
+    middle : MeshDos
+        Middle surface mesh
+
+    Returns
+    -------
+    dub : array
+        Sensitivities of the upper bound
+    dlb : array
+        Sensitivities of the lower bound
+    """
 
     dub = zeros((len(s), 1))
     dlb = zeros((len(s), 1))
@@ -106,6 +162,26 @@ def general_db_with_t_middle_variable(s, middle):
 
 
 def general_ub_lb_update_with_t_intrados(thk, lb, intrados, t):
+    """Update upper and lower bounds for a general surface for a given lower bound (intrados) surface.
+
+    Parameters
+    ----------
+    thk_alfa : float
+        Thickness of the structure as a percentage of nub, nlb
+    s : float
+        Middle surface heights
+    middle : MeshDos
+        Middle surface mesh
+    t : float
+        Value to assumed to vertices without intrados projection
+
+    Returns
+    -------
+    ub_update : array
+        Upper bound limits updated
+    lb_update : array
+        Lower bound limits updated
+    """
 
     ub_update = zeros((len(lb), 1))
     lb_update = lb
@@ -121,6 +197,23 @@ def general_ub_lb_update_with_t_intrados(thk, lb, intrados, t):
 
 
 def general_db_with_t_intrados(lb, intrados):
+    """Update sensitivity in the upper and lower bounds for a general surface for a given lower bound (intrados) surface.
+
+    Parameters
+    ----------
+    s : float
+        Middle surface heights
+    middle : MeshDos
+        Middle surface mesh
+
+    Returns
+    -------
+    dub : array
+        Sensitivities of the upper bound
+    dlb : array
+        Sensitivities of the lower bound
+    """
+
 
     dub = zeros((len(lb), 1))
     dlb = zeros((len(lb), 1))
@@ -135,7 +228,25 @@ def general_db_with_t_intrados(lb, intrados):
     return dub, dlb
 
 
-def general_ub_lb_update_with_s(ub, lb, s):  # s represents the "half-portion" of the section that is still remaining
+def general_ub_lb_update_with_s(ub, lb, s):
+    """Update upper and lower bounds for a general surface based on upper and lower bounds that are squized by the ``s`` variable.
+
+    Parameters
+    ----------
+    ub : array
+        Upper bound original limits
+    lb : array
+        Lower bound original limits
+    s : float
+        Parameter to reduce the thickness (as a percentual of the original section)
+
+    Returns
+    -------
+    ub_update : array
+        Upper bound limits updated
+    lb_update : array
+        Lower bound limits updated
+    """
 
     ub_update = zeros((len(ub), 1))
     lb_update = zeros((len(ub), 1))
@@ -148,6 +259,22 @@ def general_ub_lb_update_with_s(ub, lb, s):  # s represents the "half-portion" o
 
 
 def general_dub_dlb_with_s(ub, lb):
+    """Update sensitivity in the upper and lower bounds for a general surface for a given lower bound (intrados) surface.
+
+    Parameters
+    ----------
+    ub : array
+        Current bound limits
+    lb : array
+        Current bound limits
+
+    Returns
+    -------
+    dub : array
+        Sensitivities of the upper bound
+    dlb : array
+        Sensitivities of the lower bound
+    """
 
     dub = zeros((len(ub), 1))
     dlb = zeros((len(ub), 1))
@@ -159,7 +286,31 @@ def general_dub_dlb_with_s(ub, lb):
     return dub, dlb
 
 
-def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represents the magnitude of the normal offset vector
+def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):
+    """Update upper and lower bounds for a general surface for two given upper and lower bound surfaces.
+
+    Parameters
+    ----------
+    ub : array
+        Current bound limits
+    lb : array
+        Current bound limits
+    n : float
+        Magnitude of the offset from the original bounds
+    intrados : MeshDos
+        Intrados surface mesh
+    extrados : MeshDos
+        Extrados surface mesh
+    t : float
+        Value to assumed to vertices without intrados projection
+
+    Returns
+    -------
+    ub_update : array
+        Upper bound limits updated
+    lb_update : array
+        Lower bound limits updated
+    """
 
     ub_update = zeros((len(ub), 1))
     lb_update = zeros((len(ub), 1))
@@ -185,6 +336,30 @@ def general_ub_lb_update_with_n(ub, lb, n, intrados, extrados, t):  # n represen
 
 
 def general_dub_dlb_with_n(ub, lb, n, intrados, extrados, t):
+    """Sensitivity upper and lower bounds for a general surface for two given upper and lower bound surfaces.
+
+    Parameters
+    ----------
+    ub : array
+        Current bound limits
+    lb : array
+        Current bound limits
+    n : float
+        Magnitude of the offset from the original bounds
+    intrados : MeshDos
+        Intrados surface mesh
+    extrados : MeshDos
+        Extrados surface mesh
+    t : float
+        Value to assumed to vertices without intrados projection
+
+    Returns
+    -------
+    dub : array
+        Sensitivity of upper bound limits
+    dlb : array
+        Sensitivity of lower bound limits
+    """
 
     dub = zeros((len(ub), 1))
     dlb = zeros((len(ub), 1))

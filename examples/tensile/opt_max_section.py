@@ -18,7 +18,7 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 10
+discretisation = 20
 type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
 type_structure = 'arch'
 thk = 0.20
@@ -34,10 +34,10 @@ solutions = {}
 objective = 'max_section'  # try 'max'
 solver = 'IPOPT'  # try SLSQP
 constraints = ['funicular', 'envelope', 'reac_bounds']
-variables = ['q', 'zb', 'tub', 'tub_reac']  # in the future add 'tlb' as variables
+variables = ['q', 'zb', 'tub']  # in the future add 'tlb' as variables
 features = ['fixed']
 axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
-starting_point = 'loadpath'
+starting_point = 'current'
 
 # Set the maximum allowable increase of each thickness
 tubmax = 0.5
@@ -51,7 +51,7 @@ data_diagram = {
     'H': H,
     'L': L,
     'x0': 0,
-    'total_nodes': discretisation,
+    'discretisation': discretisation,
 }
 
 form = FormDiagram.from_library(data_diagram)
@@ -149,5 +149,5 @@ view.settings['scale.loads'] = 1.0
 view.view_loads()
 view.view_shape()
 view.view_cracks()
-view.view_thrust()
+view.draw_thrust()
 view.show()

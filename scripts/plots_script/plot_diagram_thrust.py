@@ -18,13 +18,13 @@ from compas.geometry import intersection_line_line_xy
 # plt.rcParams["font.family"] = "Times"
 
 
-def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=True, xy_limits=None, x_label=None, show_legend=True, show_GSFscale=False, GSF_ticks=False, save=False):
-    """ Plot a diagram of Thrusts based on the collected data from (n) points.
+def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=True, xy_limits=None, x_label=None, show_legend=True, show_GSFscale=False, GSF_ticks=False, save=False, interval_x = 0.05, interval_y = 20):
+    """Plot a diagram of Thrusts based on the collected data from (n) points.
 
     Parameters
     ----------
     thicknesses : list of lists [[n],[m]]
-        Points with discretised solutions for minimum/maximum thrust.
+        Points with discretised solutions for minimum/maximum thrust .
     solutions : list of lists [[n],[m]]
         Adimensional thrust over weight for minimum/maximum thrust.
     limit_state : bool
@@ -33,14 +33,25 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=True, xy_li
         If yes, it fills bewteen the curves of min and max.
     xy_limits : list of lists
         Freezes the axis of the graphs.
-    save : str
-        Path to save the graph.
+    x_label : str, optional
+        Whether or not labels should be activated in the x-axis, by default None
+    show_legend : bool, optional
+        Whether or not legend should be shown, by default True
+    show_GSFscale : bool, optional
+        Whether or not show the GSF scale, by default False
+    GSF_ticks : bool, optional
+        List with the ticks for the GSF plot, by default False
+    save : str, optional
+        Whether plot is to besaved, by default False
+    interval_x : float, optional
+        Default ticks in the x-axis, by default 0.05
+    interval_y : int, optional
+        Default ticks in the y-axis, by default 20
 
     Returns
     -------
     obj
         Plotter object.
-
     """
     thicknesses_min, thicknesses_max = thicknesses
     min_sol, max_sol = solutions
@@ -83,8 +94,6 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=True, xy_li
     size_axis_data = 12
     size_legend = 12
 
-    interval_x = 0.05
-    interval_y = 10
     if xy_limits:
         [[max_x, min_x], [max_y, min_y]] = xy_limits
     else:
@@ -119,7 +128,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=True, xy_li
         ax.plot(x_, y_, 'o', ls=' ', markersize=7, color='black', label='limit state')
         ax.plot(extrapolation_x_max, extrapolation_max, '', ls='--', color='red')
         ax.plot(extrapolation_x_min, extrapolation_min, '', ls='--', color='blue')
-        ax.annotate(str(round(max_x/x_, 2)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
+        ax.annotate(str(round(max_x/x_, 1)), (x_, y_), textcoords="offset points", xytext=(0, 10), ha='center')
 
     if fill:
         ax.fill(append(xmin_, xmax_[::-1]), append(fmin_, fmax_[::-1]), color="grey", alpha=0.2)
@@ -134,7 +143,7 @@ def diagram_of_thrust(thicknesses, solutions, limit_state=True, fill=True, xy_li
     if x_label:
         ax.set_xlabel(x_label, size=size_axis_label, labelpad=8)
     else:
-        ax.set_xlabel(r'$\mathbf{t}$', size=size_axis_label, labelpad=8)
+        ax.set_xlabel(r'$\mathbf{t/s}$', size=size_axis_label, labelpad=8)
     ax.set_ylabel(r'$\mathbf{T_i/W_i}$ [%]', size=size_axis_label, labelpad=8)
     ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))  # Check if this is necessary
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.0f'))

@@ -1,366 +1,306 @@
+from compas_tno.algorithms import xyz_from_q
+from compas_tno.algorithms import compute_reactions
+
+from compas_tno.problems import initialise_problem_general
+from compas_tno.problems import adapt_problem_to_fixed_diagram
+
 import cvxpy as cp
 from cvxpy import diag
 from cvxpy import matrix_frac
 from cvxpy import Minimize
 from cvxpy import Problem
 
-from numpy import hstack
 
-from compas_tno.algorithms import z_from_form
-from compas_tno.algorithms import zlq_from_qid
-from compas_tno.algorithms import zlq_from_q
-from compas_tno.problems import initialise_problem
+def run_optimisation_CVXPY(analysis):
+    """ Run convex optimisation problem with CVXPY after going through the optimisation set up.
 
-from compas.numerical import equilibrium_matrix
+    Parameters
+    ----------
+    analysis : Analysis
+        Analysis object with information about optimiser, form and shape.
 
-from numpy import zeros
-from numpy import ones
-from numpy import array
+    """
 
-import matlab.engine
+    form = analysis.form
+    problem = analysis.optimiser.M
+    find_inds = analysis.optimiser.settings.get('find_inds', False)
+    printout = analysis.optimiser.settings.get('printout', False)
 
-from compas.utilities import geometric_key
-from compas_tno.algorithms.equilibrium import reactions
+    problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
 
-
-__all__ = [
-    'optimise_convex',
-    'call_cvx',
-    'call_cvx_ind',
-    'min_loadpath',
-    'min_thrust',
-    'min_thrust',
-    'feasibility'
-]
+    return problem
 
 
-def optimise_convex(form, qmin=1e-6, qmax=10, find_inds=True, tol=0.001,
-                    printout=1, plot=False, indset=None, tension=False, planar=False,
-                    translation=None, summary=True, objective='loadpath'):
+def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=False):
+    """ Run convex optimisation problem with CVXPY directly from the Form Diagram
+    OBS: Requires installation of CVXPY and MOSEK
 
-    # Mapping
+    Parameters
+    ----------
+    form : FormDiagram
+        FormDiagram object with form containing full information.
+    problem : Problem, optional
+        The problem with matrices of interest, by default None
+    find_inds : bool, optional
+        Whether or not independents must be computed before the analysis, by default False
+    printout : bool, optional
+        Whether or not print results, by default False
 
-    k_i = form.key_index()
-    i_k = form.index_key()
-    i_uv = form.index_uv()
+    Returns
+    -------
+    obj : analysis
+        Analysis object optimised.
+    """
 
-    # Set-up of the problem and start matlab engine
+    if not problem:
+        problem = initialise_problem_general(form)
 
-    future = matlab.engine.start_matlab(background=True)
-    eng = future.result()
+    if find_inds:
+        adapt_problem_to_fixed_diagram(problem, form)
 
-    args = initialise_problem(form, indset=indset, printout=printout, find_inds=find_inds, tol=tol)
-    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y,
-     free_x, free_y, rol_x, rol_y, Citx, City, Cfx, Cfy) = args
+    problem = call_and_output_CVXPY(form, problem, printout=printout)
 
-    # Problem specifities
+    return problem
 
-    args_cvx = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, eng, qmax, i_uv, k_i)
 
-    # Select Objetive and Constraints
+def call_and_output_CVXPY(form, problem, printout=False):
+    """Call and output the loadpath optimisation with CVXPY
 
-    if find_inds or indset:
-        print('Calling CVX WITH independents')
-        fopt, qopt, exitflag, niter = call_cvx_ind(objective, args_cvx)
-        z, _, q, q_ = zlq_from_qid(qopt[ind], args)
+    Parameters
+    ----------
+    form : ::class:: FormDiagram
+        The form Diagram of the analysis
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors`
+    printout : bool, optional
+        Whether or not print results, by default False
+
+    Returns
+    -------
+    output: dict
+        Dictionary with results.
+    """
+
+    if len(problem.ind) < problem.m:
+        print('Calling LP-Optimisation via CVXPY with independents')
+        fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy_ind(problem, printout=printout)
     else:
-        print('Calling CVX with NO independents')
-        fopt, qopt, exitflag, niter = call_cvx(objective, args_cvx)
-        z, _, q, q_ = zlq_from_q(qopt, args)
+        print('Calling LP-Optimisation via CVXPY with NO independents')
+        fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy(problem, printout=printout)
 
-    # Recalculate equilibrium and update form-diagram
+    problem.q = qopt
+    Xfinal = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
+    problem.X[problem.free, 2] = Xfinal[:, 2]
 
-    gkeys = []
-    for i in ind:
-        u, v = i_uv[i]
-        gkeys.append(geometric_key(form.edge_midpoint(u, v)[:2] + [0]))
-    form.attributes['indset'] = gkeys
+    # Update form diagram optimised
 
-    for i in range(form.number_of_vertices()):
-        key = i_k[i]
-        form.vertex_attribute(key=key, name='z', value=float(z[i]))
+    i_uv = problem.i_uv
 
-    for c, qi in enumerate(list(q_.ravel())):
+    i = 0
+    for key in form.vertices():
+        # form.vertex_attribute(key, 'x', problem.X[i, 0])
+        # form.vertex_attribute(key, 'y', problem.X[i, 1])
+        form.vertex_attribute(key, 'z', problem.X[i, 2])
+        i = i + 1
+
+    for c, qi in enumerate(list(problem.q.ravel())):
         u, v = i_uv[c]
+        li = form.edge_length(u, v)
         form.edge_attribute((u, v), 'q', float(qi))
+        form.edge_attribute((u, v), 'f', float(qi*li))
 
-    lp = 0
-    for u, v in form.edges():
-        if form.edge_attribute((u, v), 'is_symmetry') is False:
-            qi = form.edge_attribute((u, v), 'q')
-            li = form.edge_length(u, v)
-            lp += abs(qi) * li**2
-    form.attributes['loadpath'] = lp
+    form.attributes['loadpath'] = form.loadpath()
+    compute_reactions(form)
 
-    form.attributes['iter'] = niter
-    form.attributes['exitflag'] = exitflag
-    reactions(form, plot=plot)
+    summary = True
 
-    if summary:
+    # Output dictionary
+
+    output = {}
+    output['fopt'] = fopt
+    output['exitflag'] = exitflag
+    output['status'] = status
+    output['niter'] = niter
+    output['sol_time'] = sol_time
+
+    if printout or summary:
         print('\n' + '-' * 50)
-        print('qid range : {0:.3f} : {1:.3f}'.format(min(q[ind])[0], max(q[ind])[0]))
-        print('q range   : {0:.3f} : {1:.3f}'.format(min(q)[0], max(q)[0]))
-        print('zb range : {0:.3f} : {1:.3f}'.format(min(z[fixed])[0], max(z[fixed])[0]))
-        print('fopt      : {0:.3f}'.format(fopt))
+        print('LOADPATH OPTIMISATION WITH CVXPY')
+        print('status    :', status)
+        print('fopt (lp) : {0:.3f}'.format(fopt))
+        print('n-iter    : {0}'.format(niter))
+        print('q range   : {0:.3f} : {1:.3f}'.format(min(qopt), max(qopt)))
+        print('sol. time : {0:.3f} sec'.format(sol_time))
         print('-' * 50 + '\n')
 
-    return fopt, q[ind], z[fixed], exitflag
+    return problem
 
 
-def call_cvx(objective, args_cvx):
+def call_cvxpy(problem, printout=False):
+    """Call and output the loadpath optimisation with CVXPY
 
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, eng, qmax, i_uv, k_i = args_cvx
+    Parameters
+    ----------
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors`
+    printout : bool, optional
+        Whether or not print results, by default False
 
-    eng.workspace['m'] = int(len(q))
-    eng.workspace['C'] = matlab.double(C.toarray().tolist())
-    eng.workspace['Ci'] = matlab.double(Ci.toarray().tolist())
-    eng.workspace['Cf'] = matlab.double(Cf.toarray().tolist())
-    eng.workspace['Cit'] = matlab.double(Cit.toarray().tolist())
-    eng.workspace['xt'] = matlab.double(x.transpose().tolist())
-    eng.workspace['yt'] = matlab.double(y.transpose().tolist())
-    eng.workspace['xb'] = matlab.double(x[fixed].tolist())
-    eng.workspace['yb'] = matlab.double(y[fixed].tolist())
-    eng.workspace['pz'] = matlab.double(pz[free].tolist())
-    eng.workspace['qmax'] = float(qmax)
-    eng.workspace['E'] = matlab.double(E.tolist())
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Independent Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+    """
 
-    eng.save('/Users/mricardo/Documents/MATLAB/optimisation/discretize/form2.mat', nargout=0)
+    # Retrieve important vector and matrices
+    q = problem.q
+    E = problem.E
+    C = problem.C
+    Ci = problem.Ci
+    Cit = problem.Cit
+    Cb = problem.Cb
+    pz = problem.P[:, 2].reshape(-1, 1)
+    ph = problem.ph
+    free = problem.free
+    fixed = problem.fixed
+    qmin = problem.qmin
+    qmax = problem.qmax
+    x = problem.x0
+    y = problem.y0
+    m = problem.m
 
-    print('Solving with SDPT3')
-    eng.cvx_begin(nargout=0)
-    eng.variable('q(double(m))', nargout=0)
-    if objective == 'loadpath':
-        eng.minimize('matrix_frac(pz,(Cit*diag(q)*Ci)) + xt*transpose(C)*diag(q)*Cf*xb + yt*transpose(C)*diag(q)*Cf*yb', nargout=0)
-    if objective == 'feasibility':
-        eng.minimize('1', nargout=0)
-    eng.eval('q >= -0.001', nargout=0)
-    eng.eval('q <= qmax', nargout=0)
-    eng.eval('E * q == 0.0', nargout=0)
-    eng.cvx_end(nargout=0)
+    # # If need to store the matrices/vectors in
+    # dict_parameters = {}
+    # dict_parameters['q'] = q.tolist()
+    # dict_parameters['qmin'] = qmin.tolist()
+    # dict_parameters['qmax'] = qmax.tolist()
+    # dict_parameters['E'] = E.tolist()
+    # dict_parameters['C'] = C.todense().tolist()
+    # dict_parameters['Ci'] = Ci.todense().tolist()
+    # dict_parameters['Cit'] = Cit.todense().tolist()
+    # dict_parameters['Cb'] = Cb.todense().tolist()
+    # dict_parameters['pz'] = pz.tolist()
+    # dict_parameters['free'] = free
+    # dict_parameters['fixed'] = fixed
+    # dict_parameters['x'] = x.tolist()
+    # dict_parameters['y'] = y.tolist()
+    # dict_parameters['m'] = m
 
-    fopt = eng.workspace['cvx_optval']
-    qopt = array(eng.workspace['q'])
-    status = eng.workspace['cvx_status']
-    niter = eng.workspace['cvx_slvitr']
+    # import json
 
-    if status != 'Infeasible':
-        exitflag = 0
-    else:
-        exitflag = 1
+    # with open('/Users/mricardo/compas_dev/compas_tno/data/data.json', 'w') as outfile:
+    #     json.dump(dict_parameters, outfile)
 
-    return fopt, qopt, exitflag, niter
-
-
-def call_cvx_ind(fobj, args_cvx):
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, eng, qmax, i_uv, k_i = args_cvx
-    ind_ = [x+1 for x in ind]
-    dep_ = [x+1 for x in dep]
-
-    eng.workspace['m'] = int(len(q))
-    eng.workspace['C'] = matlab.double(C.toarray().tolist())
-    eng.workspace['Ci'] = matlab.double(Ci.toarray().tolist())
-    eng.workspace['Cf'] = matlab.double(Cf.toarray().tolist())
-    eng.workspace['dep'] = matlab.double(dep_)
-    eng.workspace['ind'] = matlab.double(ind_)
-    eng.workspace['Edinv'] = matlab.double(Edinv.toarray().tolist())
-    eng.workspace['Ei'] = matlab.double(Ei.tolist())
-    eng.workspace['p'] = matlab.double(p.tolist())
-    eng.workspace['Cit'] = matlab.double(Cit.toarray().tolist())
-    eng.workspace['xt'] = matlab.double(x.transpose().tolist())
-    eng.workspace['yt'] = matlab.double(y.transpose().tolist())
-    eng.workspace['xb'] = matlab.double(x[fixed].tolist())
-    eng.workspace['yb'] = matlab.double(y[fixed].tolist())
-    eng.workspace['pz'] = matlab.double(pz[free].tolist())
-    eng.workspace['qmax'] = float(qmax)
-    eng.workspace['E'] = matlab.double(E.tolist())
-
-    eng.cvx_begin(nargout=0)
-    eng.variable('q(double(m))', nargout=0)
-    eng.minimize('matrix_frac(pz,(Cit*diag(q)*Ci)) + xt*transpose(C)*diag(q)*Cf*xb + yt*transpose(C)*diag(q)*Cf*yb', nargout=0)
-    eng.eval('q >= 0.0', nargout=0)
-    eng.eval('q <= qmax', nargout=0)
-    eng.eval('q(dep) == - Edinv*(p - Ei*q(ind))', nargout=0)
-    eng.cvx_end(nargout=0)
-
-    fopt = eng.workspace['cvx_optval']
-    status = eng.workspace['cvx_status']
-    qopt = array(eng.workspace['q'])
-    niter = eng.workspace['cvx_slvitr']
-
-    if status == 'Infeasible':
-        exitflag = 0
-    else:
-        exitflag = 1
-
-    return fopt, qopt, exitflag, niter
-
-
-# -----------------------
-# -----------------------
-# ALL OF THE BELOW IMPLEMENT THE CONVEX OPTIMISATION WITH CVX_PY -> THERE'S NO SOLVER SDPT3 ON THAT -> VERIFY IF SHOULD DELETE
-# -----------------------
-# -----------------------
-
-
-def min_loadpath(form, args, printout=False):
-
-    uv_i = form.uv_index()
-
-    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
-     s, Wfree, anchors, x, y, b) = args
-    m = form.number_of_edges()
     q = cp.Variable(m)
-
-    # -------- OBJECTIVE FUNCTION
-
-    fobj = matrix_frac(pz[free], Cit*cp.diag(q)*Ci) + x.T*C.T*diag(q)*Cf*x[fixed] + y.T*C.T*diag(q)*Cf*y[fixed]
+    # fobj = matrix_frac(pz[free], Cit@cp.diag(q)@Ci) + x.T@C.T@diag(q)@Cb@x[fixed] + y.T@C.T@diag(q)@Cb@y[fixed]  # for q positive
+    fobj = matrix_frac(pz[free], - Cit@cp.diag(q)@Ci) - x.T@C.T@diag(q)@Cb@x[fixed] - y.T@C.T@diag(q)@Cb@y[fixed]  # for q negative
     objective = Minimize(fobj)
 
-    # -------- CONSTRAINTS
+    horz = E@q == ph.flatten()
+    pos = q >= qmin.flatten()
+    maxq = q <= qmax.flatten()
 
-    horz = E*q == 0
-    # horz = q[dep] == -Edinv*(p - Ei*q[ind])
-    pos = q >= 0
-    maxq = q <= 2000.0
-
-    zmin = zeros(len(free)).reshape(len(free), 1)
-    zmax = 2.0*ones(len(free)).reshape(len(free), 1)
-    lower = pz[free]-Cit*diag(q)*Ci*zmin >= 0
-    upper = pz[free]-Cit*diag(q)*Ci*zmax <= 0
-    constraints = [horz, pos, maxq, upper, lower]
-
-    # ---------- ASSEMBLE PROBLEM
+    constraints = [horz, pos, maxq]
 
     prob = Problem(objective, constraints)
+    prob.solve(verbose=printout)
+    # prob.solve(verbose=True)
 
-    # import sdpt3glue
-    # matfile_target = '/Users/mricardo/Documents/MATLAB/optimisation/test_SDPT3_in.mat'
-    # output_target = '/Users/mricardo/Documents/MATLAB/optimisation/test_SDPT3_out.mat'
+    # save output
+    fopt = prob.value
+    qopt = q.value
+    status = prob.status
+    niter = prob.solver_stats.num_iters
+    sol_time = prob.solver_stats.solve_time
 
-    # sdpt3glue.sdpt3_solve_problem(prob, sdpt3glue.MATLAB, matfile_target,
-    #                                    output_target=output_target)
+    if status not in ["infeasible", "unbounded"]:
+        exitflag = 1
+    else:
+        exitflag = 0
 
-    # -------- SOLVE
-
-    form.attributes['loadpath'] = prob.solve(verbose=printout)
-    form.attributes['solve'] = prob.solver_stats
-
-    for u, v in form.edges():
-        i = uv_i[(u, v)]
-        qi = q.value[i]
-        form.edge_attribute((u, v), 'q', qi)
-
-    form = z_from_form(form)
-
-    return form
+    return fopt, qopt, exitflag, niter, status, sol_time
 
 
-def min_thrust(form, args, zmin, zmax, printout=False):
+def call_cvxpy_ind(problem, printout=False):
+    """Call and output the loadpath optimisation with CVXPY using independents
 
-    uv_i = form.uv_index()
+    Parameters
+    ----------
+    problem : ::class:: Problem
+        The Problem with relevant matrices and vectors`
+    printout : bool, optional
+        Whether or not print results, by default False
 
-    (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
-     s, Wfree, anchors, x, y, b) = args
-    m = form.number_of_edges()
+    Returns
+    -------
+    fopt : float
+        Objective function value. Loadpath.
+    qopt : array
+        Independent Force densities in the optimum.
+    exitflag : int
+        Whether or not optimisation worked.
+    niter : int
+        Number of iterations.
+    status : str
+        Message with statuss.
+    sol_time : dict
+        Time to solve optimisation.
+    """
+
+    # Retrieve important vector and matrices
+    q = problem.q
+    Edinv = problem.Edinv
+    Ei = problem.Ei
+    ph = problem.ph
+    C = problem.C
+    Ci = problem.Ci
+    Cit = problem.Cit
+    Cb = problem.Cb
+    pz = problem.P[:, 2].reshape(-1, 1)
+    free = problem.free
+    fixed = problem.fixed
+    dep = problem.dep
+    ind = problem.ind
+    qmin = problem.qmin
+    qmax = problem.qmax
+    x = problem.x0
+    y = problem.y0
+    m = problem.m
+
     q = cp.Variable(m)
 
-    # -------- OBJECTIVE FUNCTION
+    fobj = matrix_frac(pz[free], -Cit@cp.diag(q)@Ci) - x.T@C.T@diag(q)@Cb@x[fixed] - y.T@C.T@diag(q)@Cb@y[fixed]
+    objective = Minimize(fobj)
 
-    fobj = x.T*C.T*diag(q)*Cf*x[fixed] + y.T*C.T*diag(q)*Cf*y[fixed]
-    objective = cp.Minimize(fobj)
+    horz = q[dep] == Edinv@(Ei@q[ind] - ph.flatten())
+    pos = q >= qmin.flatten()
+    maxq = q <= qmax.flatten()
 
-    # -------- CONSTRAINTS
+    constraints = [horz, pos, maxq]
 
-    horz = E*q == 0
-    pos = q >= 0
-    # Add constraints on Heights...
-    zmin = zeros(len(free)).reshape(len(free), 1)
-    zmax = 2.0*ones(len(free)).reshape(len(free), 1)
-    upper = pz[free]-Cit*diag(q)*Ci*zmin >= 0
-    lower = pz[free]-Cit*diag(q)*Ci*zmax <= 0
-    constraints = [horz, pos, upper, lower]
+    prob = Problem(objective, constraints)
+    prob.solve(verbose=True)
 
-    # ---------- ASSEMBLE PROBLEM
+    # save output
+    fopt = prob.value
+    qopt = q.value
+    status = prob.status
+    niter = prob.solver_stats.num_iters
+    sol_time = prob.solver_stats.solve_time
 
-    prob = cp.Problem(objective, constraints)
+    if status not in ["infeasible", "unbounded"]:
+        exitflag = 1
+    else:
+        exitflag = 0
 
-    # -------- SOLVE
-
-    lp = prob.solve(verbose=printout)
-    form.attributes['solve'] = prob.solver_stats
-    form.attributes['loadpath'] = lp
-
-    for u, v in form.edges():
-        i = uv_i[(u, v)]
-        qi = q.value[i]
-        form.edge_attribute((u, v), 'q', qi)
-
-    form = z_from_form(form)
-
-    return form
-
-
-def max_thrust(form, args):
-
-    (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
-     s, Wfree, anchors, x, y, b) = args
-    xy = hstack([x, y])
-    E = equilibrium_matrix(C, xy, free, 'csr')
-    m = form.number_of_edges()
-    q = cp.Variable(m)
-
-    # -------- OBJECTIVE FUNCTION
-
-    fobj = x.T*C.T*diag(q)*Cf*x[fixed] + y.T*C.T*diag(q)*Cf*y[fixed]
-    objective = cp.Minimize(fobj)
-
-    # -------- CONSTRAINTS
-
-    horz = E*q == 0
-    pos = q >= 0
-    # Add constraints on Heights...
-    constraints = [horz, pos]
-
-    # ---------- ASSEMBLE PROBLEM
-
-    prob = cp.Problem(objective, constraints)
-
-    # -------- SOLVE
-
-    lp = prob.solve()
-    form.attributes['loadpath'] = lp
-
-    return q.value
-
-
-def feasibility(form, args):
-
-    (q, ind, dep, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, tol, z, free, fixed, planar, lh, sym, tension, k, lb, ub, lb_ind, ub_ind, opt_max, target,
-     s, Wfree, anchors, x, y, b) = args
-    xy = hstack([x, y])
-    E = equilibrium_matrix(C, xy, free, 'csr')
-    m = form.number_of_edges()
-    q = cp.Variable(m)
-
-    # -------- OBJECTIVE FUNCTION
-
-    fobj = 1.0
-    objective = cp.Minimize(fobj)
-
-    # -------- CONSTRAINTS
-
-    horz = E*q == 0
-    pos = q >= 0
-    constraints = [horz, pos]
-
-    # ---------- ASSEMBLE PROBLEM
-
-    prob = cp.Problem(objective, constraints)
-
-    # -------- SOLVE
-
-    lp = prob.solve()
-    form.attributes['loadpath'] = lp
-
-    return q.value
+    return fopt, qopt, exitflag, niter, status, sol_time

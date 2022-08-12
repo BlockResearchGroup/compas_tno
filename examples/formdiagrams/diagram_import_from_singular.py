@@ -2,7 +2,7 @@ from compas_tno.diagrams import FormDiagram
 from compas.datastructures import Mesh
 from compas_plotters import MeshPlotter
 from compas_tno.plotters import plot_form
-from compas_tno.viewers import view_thrust
+from compas_tno.viewers import draw_thrust
 from compas.datastructures import mesh_delete_duplicate_vertices
 
 mesh = Mesh.from_json('/Users/mricardo/compas_dev/compas_tno/data/dome/singular/test.json')
@@ -18,4 +18,4 @@ form = form.form_update_with_parallelisation(plot=True, alpha=90.0)
 plot_form(form, show_q=False).show()
 
 form.to_json('/Users/mricardo/compas_dev/compas_tno/data/dome/singular/form1.json')
-view_thrust(form).show()
+draw_thrust(form).show()

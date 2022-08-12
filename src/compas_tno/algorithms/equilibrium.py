@@ -3,32 +3,26 @@ from numpy import array
 from numpy import float64
 from numpy import newaxis
 from numpy import zeros
-from numpy import hstack
+# from numpy import hstack
+from numpy import cross
+from numpy.linalg import norm
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import splu
-from scipy.sparse.linalg import lsqr
+# from scipy.sparse.linalg import lsqr
 from scipy.sparse import diags
 
 from compas.numerical import fd_numpy
 from compas.numerical import connectivity_matrix
 
-from compas_plotters import MeshPlotter
+from compas.geometry import subtract_vectors
+from compas.geometry import length_vector
+from compas.geometry import cross_vectors
+from compas.geometry import centroid_points
 
 
-__all__ = [
-    'z_from_form',
-    'z_update',
-    'zlq_from_qid',
-    'zq_from_qid',
-    'q_from_qid',
-    'xyz_from_q',
-    'reactions',
-]
-
-
-def z_from_form(form):
-    """ Relaxation of Form-Diagram. FDM with 'q's stored in the form (All coordinates can change).
+def equilibrium_fdm(form):
+    """ Compute equilibrium of the form diagram using the force density method (FDM) with 'q's stored in the form (All coordinates can change).
 
     Parameters
     ----------
@@ -66,12 +60,12 @@ def z_from_form(form):
     return form
 
 
-def z_update(form, zmax=None):
-    """ Built-in update of the heights in the Form-Diagram (only z-coordinates can change).
+def vertical_equilibrium_fdm(form, zmax=None):
+    """ Compute equilibrium of the form diagram using the force density method (FDM) and update only the z-coordinates.
 
     Parameters
     ----------
-    form : obj
+    form : FormDiagram
         The FormDiagram.
     zmax : float, optional
         The maximum height of the diagram.
@@ -79,7 +73,7 @@ def z_update(form, zmax=None):
 
     Returns
     -------
-    form : obj
+    form : FormDiagram
         The scaled form diagram.
 
     """
@@ -123,72 +117,7 @@ def z_update(form, zmax=None):
     return form
 
 
-def zlq_from_qid(qid, args):  # deprecated remove on next clean up
-    """ Calculate z's from independent edges.
-
-    Parameters
-    ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    l2 : array
-        Lenghts squared
-    q : array
-        Force densities without symetrical edges (q[sym] = 0)
-    q_ : array
-        Force densities with symetrical edges
-
-    """
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym = args[:22]
-    q[ind] = array(qid).reshape(-1, 1)
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    q_ = 1 * q
-    q[sym] *= 0
-
-    # if not planar:
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-    l2 = lh + C.dot(z)**2
-
-    return z, l2, q, q_
-
-
-def zq_from_qid(qid, args):  # deprecated remove on next clean up
-    """ Calculate z's from independent edges.
-
-    Parameters
-    ----------
-    qid : list
-        Force densities of the independent edges.
-    args : tuple
-        Arrays and matrices relevant to the operation.
-
-
-    Returns
-    -------
-    z : array
-        Heights of the nodes
-    q : array
-        Force densities
-
-    """
-
-    q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed = args[:20]
-    q[ind] = array(qid).reshape(-1, 1)
-    q[dep] = Edinv.dot(- p + Ei.dot(q[ind]))
-    z[free, 0] = spsolve(Cit.dot(diags(q.flatten())).dot(Ci), pz[free] - Cit.dot(diags(q.flatten())).dot(Cf).dot(z[fixed]))
-
-    return z, q
-
-
-def q_from_qid(q, ind, Edinv, Ei, ph):  # deprecated remove on next clean up
+def q_from_qid(q, ind, Edinv, Ei, ph):
     r""" Calculate q's from all qid's.
 
     Parameters
@@ -215,64 +144,160 @@ def q_from_qid(q, ind, Edinv, Ei, ph):  # deprecated remove on next clean up
     $\mathbf{q}_\mathrm{id} = - mathbf{Ed}_\mathrm{id}$(\mathbf{E}_\mathrm{i} * \mathbf{q}_\mathrm{i} - \mathbf{p}_\mathrm{h})
 
     Reference
-    -------
+    ---------
     Block and Lachauer, 2014...
 
     """
 
     m = len(q)
     dep = list(set(range(m)) - set(ind))
-    q[dep] = Edinv.dot(- ph + Ei.dot(q[ind]))
+    q[dep] = Edinv.dot(Ei.dot(q[ind]) - ph.reshape(-1, 1))
 
     return q
 
 
-def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb):
+def q_from_variables(qid, B, d):
+    r""" Calculate q's from the force parameters (independent edges).
+
+    Parameters
+    ----------
+    qid : array [kx1]
+        Force density vector.
+    B : array [m x k]
+        The linear map on the force densities.
+    d : array [mx1]
+        A particular solution of the equilibrium.
+
+    Returns
+    -------
+    q : array [m x 1]
+        Force densities on all edges.
+
+    Reference
+    ---------
+    Block and Lachauer, 2014...
+
+    """
+
+    q = B @ qid + d
+
+    return q
+
+
+def xyz_from_q(q, Pi, Xb, Ci, Cit, Cb, SPLU_D=None):
     """ Calculate coordinates's xyz the q's.
 
     Parameters
     ----------
-    q : array (m)
+    q : array [m x 1]
         Force densities of all edges.
-    Pi : array (ni x 3)
+    Pi : array [ni x 3]
         External forces applied to the free vertices.
-    Xb : array (nb x 3)
+    Xb : array [nb x 3]
         Position of the fixed vertices.
-    Ci : array (m x ni)
+    Ci : array [m x ni]
         Connectivity matrix on the free vertices
-    Cit : array (ni x m)
+    Cit : array [ni x m]
         Transpose of connectivity matrix on the free vertices
-    Cb : array (m x nb)
+    Cb : array [m x nb]
         Connectivity matrix on the fixed vertices
+    SPLU_D : callable, optional
+        Sparse LU decomposition of CitQCi to speed up optimisation, by default None
 
     Returns
     -------
-    Xfree : array (ni)
+    Xfree : array [ni x 3]
         x, y, z coordinates of the nodes
 
     """
 
-    CiQCb = Cit.dot(diags(q.flatten())).dot(Cb)
-    CiQCi = Cit.dot(diags(q.flatten())).dot(Ci)
-    try:
-        SPLU_D = splu(CiQCi)
-        Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
-    except BaseException:
-        A = CiQCi
-        b = Pi - CiQCb.dot(Xb)
-        resx = lsqr(A, b[:, 0])
-        resy = lsqr(A, b[:, 1])
-        resz = lsqr(A, b[:, 2])
-        print('* Warning: System might be bad conditioned - recured to LSQR')
-        xfree = resx[0].reshape(-1, 1)
-        yfree = resy[0].reshape(-1, 1)
-        zfree = resz[0].reshape(-1, 1)
-        Xfree = hstack([xfree, yfree, zfree])
+    CiQCb = Cit @ diags(q.flatten()) @ Cb
+    if not SPLU_D:
+        CitQCi = Cit @ diags(q.flatten()) @ Ci
+        SPLU_D = splu(CitQCi)
+    Xfree = SPLU_D.solve(Pi - CiQCb.dot(Xb))
 
     return Xfree
 
 
-def reactions(form, plot=False):
+def weights_from_xyz_dict(xyz, tributary_dict, thk=0.5, density=20.0):
+    """Compute the trbutary weights based on the geometry of the structure and a tributary dictionary.
+
+    Parameters
+    ----------
+    xyz : array [n x 3]
+        The XYZ coordinates of the thrust network
+    tributary_dict : dict
+        The dictionary with the list of the triangles to compute the tributary area
+    thk : float, optional
+        The thickness of the structure to compute the tributary volumes, by default 0.5
+    density : float, optional
+        The density of the structure to compute the applied vertical loads, by default 20.0
+
+    Returns
+    -------
+    pz : array [n x 1]
+        The vertical loads applied ar each node
+    """
+
+    from numpy import zeros
+
+    pz = zeros((len(xyz), 1))
+
+    for i in tributary_dict:
+        p0 = xyz[i]
+        area = 0
+        for j in tributary_dict[i]:
+            pj = xyz[j]
+            for face in tributary_dict[i][j]:
+                face_coord = [xyz[pt] for pt in face]
+                pf = centroid_points(face_coord)
+                v1 = subtract_vectors(pj, p0)
+                v2 = subtract_vectors(pf, p0)
+                area += length_vector(cross_vectors(v1, v2))
+        pz[i] = 0.25 * area * thk * density
+
+    return pz
+
+
+def weights_from_xyz(xyz, F, V0, V1, V2, thk=0.5, density=20.0):
+    """Compute the tributary weights based on the assembled sparse matrices linking the topology
+
+    Parameters
+    ----------
+    xyz : array [n x 3]
+        The XYZ coordinates of the thrust network
+    F : array [f x n]
+        Linear transformation from ``X`` [n x 3] to ``c`` [f x 3] with the position of the centroids
+    V0 : array [g x n]
+        Mark the influence of the original point in the calculation
+    V1 : array [g x n]
+        Mark the influence of the neighbor points the calculation
+    V2 : array [g x f]
+        Mark the influence of the centroid points the calculation
+    thk : float, optional
+        The thickness of the structure to compute the tributary volumes, by default 0.5
+    density : float, optional
+        The density of the structure to compute the applied vertical loads, by default 20.0
+
+    Returns
+    -------
+    pz : array [n x 1]
+        The vertical loads applied ar each node
+    """
+
+    v0 = V0.dot(xyz)
+    v1 = V1.dot(xyz) - v0
+    v2 = V2.dot(F).dot(xyz) - v0
+
+    ag = norm(cross(v1, v2), axis=1)
+
+    pz = 0.25 * thk * density * V0.transpose().dot(ag)
+
+    return pz
+
+
+def compute_reactions(form, plot=False):
     """ Compute and plot the reaction on the supports.
 
     Parameters
@@ -359,10 +384,70 @@ def reactions(form, plot=False):
             print('Reactions in Partial Y-Key: {0} :'.format(key))
             print(Ry[i])
 
-    if plot:
-        plotter = MeshPlotter(form, figsize=(10, 7), fontsize=8)
-        plotter.draw_vertices(text=eq_node)
-        plotter.draw_edges()
-        plotter.show()
-
     return
+
+
+def xyz_from_xopt(variables, M):
+    """Compute the nodal position and relevant parameters and from the variables of the optimisation and the class of matrices (M)
+
+    Parameters
+    ----------
+    variables : array
+        The ``n`` variables of the optimisation process
+    M : class
+        The relevant matrices to be stored
+
+    Returns
+    -------
+    M
+        The updated relevant matrices
+    """
+
+    if isinstance(M, list):
+        M = M[0]
+
+    # variables
+    k = M.k  # number of force variables
+    n = M.n  # number of vertices
+    nb = len(M.fixed)  # number of fixed vertices
+    t = M.shape.datashape['t']
+
+    qid = variables[:k]
+    check = k
+
+    if 'xyb' in M.variables:
+        xyb = variables[check:check + 2*nb]
+        check = check + 2*nb
+        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
+        nbxy = nb
+    if 'zb' in M.variables:
+        zb = variables[check: check + nb]
+        check = check + nb
+        M.X[M.fixed, [2]] = zb.flatten()
+    if 't' in M.variables or 'n' in M.variables:
+        thk = variables[check: check + 1]
+        check = check + 1
+    if 'lambdh' in M.variables:
+        lambdh = variables[check: check + 1]
+        M.P[:, [0]] = lambdh * M.px0
+        M.P[:, [1]] = lambdh * M.py0
+        M.d = lambdh * M.d0
+    if 'tub' in M.variables:
+        tub = variables[check: check + n]
+        M.tub = tub
+        check = check + n
+    if 'tlb' in M.variables:
+        tlb = variables[check: check + n]
+        M.tlb = tlb
+        check = check + n
+    if 'tub_reac' in M.variables:
+        tub_reac = variables[check: check + 2*nb].reshape(-1, 1)
+        M.tub_reac = tub_reac
+        check = check + 2*nb
+
+    M.q = q_from_variables(qid, M.B, M.d)
+
+    # update geometry
+    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+
+    return M

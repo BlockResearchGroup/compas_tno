@@ -17,8 +17,6 @@ by Arjen Deetman.
 
 """
 
-__all__ = ['mma_numpy']
-
 
 def mma_numpy(f_g_eval, f_df_g_dg_eval, x0, bounds, args=(), kkttol=1e-6, maxoutit=100, plot='2'):
     """Method of Moving Asymptotes (MMA) implementation from K. Svanberg.

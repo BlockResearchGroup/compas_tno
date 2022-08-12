@@ -12,7 +12,7 @@ import importlib
 
 
 PLUGIN_NAME = "TNO"
-PACKAGES = ['compas', 'compas_tno', 'compas_ags', 'compas_rhino', 'compas_tna', 'compas_cloud']  # 'compas_skeleton', 'compas_singular', 'compas_rv2'
+PACKAGES = ['compas', 'compas_tno', 'compas_ags', 'compas_rhino', 'compas_tna', 'compas_cloud', 'compas_ui']  # 'compas_skeleton', 'compas_singular', 'compas_rv2'
 
 
 def is_editable(project_name):
@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--remove_plugins', action='store_true', help="remove all existing plugins")
     parser.add_argument('--remove_packages', action='store_true', help="remove all existing compas packages")
-    parser.add_argument('--rhino_version', default='6.0', choices=['6.0', '7.0'], help="remove all existing compas packages")
+    parser.add_argument('--rhino_version', default='7.0', choices=['6.0', '7.0'], help="remove all existing compas packages")
     args = parser.parse_args()
 
     print("\n", "-"*10, "Checking packages", "-"*10)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
     if args.remove_plugins:
         print("\n", "-"*10, "Removing existing plugins", "-"*10)
-        python_plugins_path = compas_rhino._get_python_plugins_path(args.rhino_version)
+        python_plugins_path = compas_rhino._get_rhino_pythonplugins_path(args.rhino_version)
         print("Plugin location: ", python_plugins_path)
         plugins = os.listdir(python_plugins_path)
         for p in plugins:
@@ -67,7 +67,7 @@ if __name__ == '__main__':
     plugin_path = os.path.abspath(plugin_path)
 
     if os.path.exists(plugin_path):
-        python_plugins_path = compas_rhino._get_python_plugins_path(args.rhino_version)
+        python_plugins_path = compas_rhino._get_rhino_pythonplugins_path(args.rhino_version)
         print("Plugin path:", python_plugins_path)
         install_plugin(plugin_path, version=args.rhino_version)
     else:

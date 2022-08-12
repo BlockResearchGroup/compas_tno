@@ -9,36 +9,34 @@ from compas_tno.shapes import MeshDos
 import math
 
 
-__all__ = ['pointed_arch_shape',
-           'pointed_arch_ub_lb_update',
-           'pointed_arch_dub_dlb'
-           ]
-
-
 def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
-    """ Helper to create meshes to define upper and lower bounds of 2D pointed arch.
+    """Function to create meshes to define upper and lower bounds of 2D pointed arch.
 
     Parameters
     ----------
-    hc : float
-        Rise of the arch measured with regards to the center line.
-    L : float
-        Span of the arch considered as center, to center. (L <= 2*H).
-    x0: float
-        Beginning of the linear form diagram.
-    thk: float
-        Thickness of the arch
-    b: float
-        Out of plane dimension of the arch
-
-    total_nodes : int
-        Numbers of nodes to be considered in the form diagram.
+    hc : float, optional
+        Rise of the arch measured with regards to the center line, by default 1.00
+    L : float, optional
+        Span of the arch considered as center, to center. (L <= 2*H), by default 2.0
+    x0 : float, optional
+        Beginning of the linear form diagram, by default 0.0
+    thk : float, optional
+        Thickness of the arch, by default 0.20
+    b : float, optional
+        Out of plane dimension of the arch, by default 0.5
+    t : float, optional
+        Parameter for lower bound in nodes in the boundary, by default 5.0
+    total_nodes : int, optional
+        Numbers of nodes to be considered in the form diagram, by default 100
 
     Returns
     -------
-    obj
-        FormDiagram.
-
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
     """
 
     radius = 1/L * (hc**2 + L**2/4)
@@ -95,6 +93,32 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
 
 
 def pointed_arch_ub_lb_update(x, y, thk, t, hc, L, x0):
+    """Update upper and lower bounds of a pointed arch based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    hc : float
+        Rise of the arch measured with regards to the center line
+    L : float
+        Span of the arch considered as center, to center. (L <= 2*H)
+    x0 : float
+        Beginning of the linear form diagram
+
+    Returns
+    -------
+    ub : array
+        Values of the upper bound in the points
+    lb : array
+        Values of the lower bound in the points
+    """
 
     radius = 1/L * (hc**2 + L**2/4)
     ri = radius - thk/2
@@ -120,6 +144,32 @@ def pointed_arch_ub_lb_update(x, y, thk, t, hc, L, x0):
 
 
 def pointed_arch_dub_dlb(x, y, thk, t, hc, L, x0):
+    """Computes the sensitivities of upper and lower bounds of a pointed arch based in the parameters
+
+    Parameters
+    ----------
+    x : list
+        x-coordinates of the points
+    y : list
+        y-coordinates of the points
+    thk : float
+        Thickness of the arch
+    t : float
+        Parameter for lower bound in nodes in the boundary
+    hc : float
+        Rise of the arch measured with regards to the center line
+    L : float
+        Span of the arch considered as center, to center. (L <= 2*H)
+    x0 : float
+        Beginning of the linear form diagram
+
+    Returns
+    -------
+    dub : array
+        Values of the sensitivities for the upper bound in the points
+    dlb : array
+        Values of the sensitivities for the lower bound in the points
+    """
 
     radius = 1/L * (hc**2 + L**2/4)
     ri = radius - thk/2

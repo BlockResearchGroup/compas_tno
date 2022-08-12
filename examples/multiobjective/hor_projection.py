@@ -7,12 +7,12 @@ from compas_tno.shapes import Shape
 from compas_plotters import MeshPlotter
 
 from compas_tno.viewers import view_shapes
-from compas_tno.viewers import view_thrust
+from compas_tno.viewers import draw_thrust
 from compas_tno.viewers import view_bestfit_solution
-from compas_tno.viewers import view_thrust_as_lines
+from compas_tno.viewers import draw_thrust_as_lines
 from compas_tno.plotters import plot_form
 from compas_tno.plotters import plot_superimposed_diagrams
-from compas_tno.algorithms import z_from_form
+from compas_tno.algorithms import equilibrium_fdm
 import compas
 
 # Load and print useful INFO
@@ -75,9 +75,9 @@ c = 0.05
 
 form_base = form.copy()
 
-# z_from_form(form)
+# equilibrium_fdm(form)
 # plot_superimposed_diagrams(form, form_base, max_width=3.0).show()
-# view_thrust(form).show()
+# draw_thrust(form).show()
 
 # Creating Analysis and Running
 
@@ -87,7 +87,7 @@ optimiser.settings['solver'] = solver
 optimiser.settings['constraints'] = constraints
 optimiser.settings['variables'] = variables
 optimiser.settings['features'] = features
-optimiser.settings['axis_symmetry'] = axis_sym
+optimiser.settings['axis_sym'] = axis_sym
 optimiser.settings['objective'] = obj
 optimiser.settings['plot'] = True
 optimiser.settings['printout'] = True
@@ -106,4 +106,4 @@ analysis.run()
 form.to_json(solution)
 
 # view_bestfit_solution(form).show()
-view_thrust(form).show()
+draw_thrust(form).show()

@@ -25,7 +25,6 @@ compas_tno
 from __future__ import print_function
 
 import os
-os.environ['QT_MAC_WANTS_LAYER'] = '1'
 
 __author__ = ["Ricardo Maia Avelino"]
 __copyright__ = "Block Research Group - ETH Zurich"
@@ -77,7 +76,44 @@ def get(filename):
 
     localpath = os.path.abspath(os.path.join(DATA, filename))
 
-    if os.path.exists(localpath):
-        return localpath
-    else:
-        return "https://raw.githubusercontent.com/BlockResearchGroup/compas_tno/master/data/{}".format(filename)
+    return localpath
+
+    # if os.path.exists(localpath):
+    #     return localpath
+    # else:
+    #     return "https://raw.githubusercontent.com/BlockResearchGroup/compas_tno/master/data/{}".format(filename)
+
+
+def wakeup_matlab():
+    """ Method to wake up matlab in the background.
+
+    Note: This function has to be called directly from the terminal.
+    """
+
+    import matlab.engine
+    future = matlab.engine.connect_matlab(background=True)
+    eng = future.result()
+    eng.cvx_begin(nargout=0)
+    print(matlab.engine.find_matlab())
+
+    return eng
+
+
+def open_dialog():
+    """Method to open a dialog window to find the path of a file.
+
+    Returns
+    -------
+    file_path
+        The path of the file selected
+    """
+
+    import tkinter as tk
+    from tkinter import filedialog
+
+    root = tk.Tk()
+    root.withdraw()
+
+    file_path = filedialog.askopenfilename()
+
+    return file_path

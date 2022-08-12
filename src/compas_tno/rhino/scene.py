@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import compas_rhino
 from compas_tno.rhino.diagramobject import DiagramObject
-from compas_rhino.objects import BaseObject
+from compas_ui.objects import Object
 import scriptcontext as sc
 
 __all__ = ['Scene']
@@ -67,9 +67,9 @@ class Scene(object):
         """
         guid = uuid4()
         if name == 'Shape':
-            obj = BaseObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
+            obj = Object.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
         elif name == 'Optimiser':
-            obj = BaseObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
+            obj = Object.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
         else:
             obj = DiagramObject.build(item, scene=self, name=name, layer=layer, visible=visible, settings=settings)
         self.objects[guid] = obj
@@ -182,7 +182,7 @@ class Scene(object):
                         'data': obj.diagram.to_data(),
                     },
                 })
-            elif type(obj) == BaseObject:
+            elif type(obj) == Object:
                 state.append({
                     'object': {
                         'name': obj.name,

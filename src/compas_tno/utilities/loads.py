@@ -5,17 +5,21 @@ from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 from compas_tno.utilities.interpolation import get_shape_middle_pattern
 
 
-__all__ = [
-    'apply_selfweight_from_shape',
-    'apply_selfweight_from_pattern',
-    'apply_horizontal_multiplier',
-    'apply_fill_load',
-
-    'apply_selfweight_from_shape_proxy',
-]
-
-
 def apply_selfweight_from_shape_proxy(formdata, shapedata):
+    """Apply selfweight to the nodes of the form diagram based on the shape from proxy
+
+    Parameters
+    ----------
+    formdata : dict
+        Data of the form diagram to apply the selfweight.
+    shapedata : Shape
+        Data of the shape of the masonry.
+
+    Returns
+    -------
+    formdata
+        Data of the form diagram with loads applied
+    """
 
     from compas_tno.diagrams import FormDiagram
     from compas_tno.shapes import Shape
@@ -28,29 +32,32 @@ def apply_selfweight_from_shape_proxy(formdata, shapedata):
     return form.to_data()
 
 
-def apply_selfweight_from_shape(form, shape, pz_negative=True):
+def apply_selfweight_from_shape(form, shape, pz_negative=True, normalize=True):
     """Apply selfweight to the nodes of the form diagram based on the shape
 
     Parameters
     ----------
-    form : ::FormDiagram::
-        Form diagram to apply the selfweight.
-    shape : ::Shape::
-        Shape of the masonry.
-    pz_negative : bool
-        Wether or not the vertical loads are negative.
-        The default value is ``True``.
+    form : FormDiagram
+        Form diagram to apply the selfweight
+    shape : Shape
+        Shape of the masonry
+    pz_negative : bool, optional
+        Wether or not the vertical loads are negative, by default True
+    normalize : bool, optional
+        Wether or not normalise the selfweight to match shape.total_weight, by default True
 
     Returns
     -------
     None
-        The FormDiagram is modified in place.
+        The FormDiagram is modified in place
     """
 
     form_ = form.copy()
     total_selfweight = shape.compute_selfweight()
+    ro = shape.ro
+    thk = shape.datashape['thk']
 
-    x = form.vertices_attribute('x')  # check if array is necessary here
+    x = form.vertices_attribute('x')
     y = form.vertices_attribute('y')
 
     if shape.datashape['type'] == 'dome':
@@ -85,15 +92,15 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True):
                 form.vertex_attribute(key, 'pz', value=0.5)
             pzt += form.vertex_attribute(key, 'pz')
 
-    factor = total_selfweight/pzt
+    factor = 1.0 * ro * thk  # Transform tributary area in tributary load
+    if normalize:
+        factor = total_selfweight/pzt
+    if pz_negative:
+        factor *= -1  # make loads negative
 
     for key in form.vertices():
         pzi = factor * form.vertex_attribute(key, 'pz')
-        if pz_negative:
-            pzi *= -1  # make loads negative
         form.vertex_attribute(key, 'pz', value=pzi)
-
-    return
 
 
 def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, tol=10e-4):
@@ -102,19 +109,16 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         Form diagram to apply the selfweight.
-    pattern : ::Mesh::
+    pattern : Mesh
         Mesh in which the forces should be based.
-    plot : bool
-        Whether or not plot the diagrams and its overlap.
-        The default value is ``False``.
-    pz_negative : bool
-        Wether or not the vertical loads are negative.
-        The default value is ``True``.
-    tol : float
-        Tolerance for the nodal position match of form and pattern.
-        The default value is ``10e-4``.
+    plot : bool, optional
+        Whether or not plot the diagrams and its overlap, by False
+    pz_negative : bool, optional
+        Wether or not the vertical loads are negative by default ``True``.
+    tol : float, optional
+        Tolerance for the nodal position match of form and pattern, by default ``10e-4``.
 
     Returns
     -------
@@ -142,43 +146,53 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
             pz *= -1  # make loads negative
         form.vertex_attribute(key, 'pz', value=pz)
         pzt += pz
-    print('total load applied:', pzt)
 
     if plot:
-
-        from compas_plotters import MeshPlotter
-
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text=key_real_to_key)
-        plotter.show()
-
-        plotter = MeshPlotter(form_, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: key for key in form_.vertices()})
-        plotter.show()
-
-        plotter = MeshPlotter(form, figsize=(10, 10))
-        plotter.draw_edges()
-        plotter.draw_vertices(text={key: round(form.vertex_attribute(key, 'pz'), 1) for key in form.vertices()})
-        plotter.show()
-
-        return
+        print('total load applied:', pzt)
 
 
-def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
+def apply_selfweight_from_thrust(form, thickness=0.5, density=20.0):
+    """Lump the selfweight in the nodes of the thrust network based on their current position.
+    The loads are computed based on the tributary area times the thickness times the density.
+    For variable thickness the nodal attribute `thk` is considered.
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram to be considered
+    thickness : float, optional
+        The thickness of the problem, by default 0.50
+        If None is passed, the thickness is taken from the nodal attribute `thk`
+    density : float, optional
+        The density of the material, by default 20.0
+
+    Return
+    ------
+    None
+        The form diagram is updated in place
+    """
+
+    for key in form.vertices():
+        ai = form.vertex_area(key)
+        if thickness:
+            load = -1 * ai * thickness * density
+        else:
+            thk = form.vertex_attribute(key, 'thk')
+            load = -1 * ai * thk * density
+        form.vertex_attribute(key, 'pz', load)
+
+
+def apply_horizontal_multiplier(form, lambd=1.0, direction='x'):
     """Modify the applied loads considering a load multiplier.
 
     Parameters
     ----------
-    form : ::FormDiagram::
+    form : FormDiagram
         Form diagram to apply the horizontal multiplier.
-    lambd : float
-        Value of the horizontal multiplier.
-        The default value is ``0.1``.
-    direction : str
-        direction to apply the loads.
-        The default value is ``x``.
+    lambd : float, optional
+        Value of the horizontal multiplier, by default ``1.0``.
+    direction : str, optional
+        Direction to apply the loads, ``x`` or ``y``, by default ``x``.
 
     Returns
     -------
@@ -192,61 +206,18 @@ def apply_horizontal_multiplier(form, lambd=0.1, direction='x'):
         pz = form.vertex_attribute(key, 'pz')
         form.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
 
-    return
-
 
 def apply_fill_load(form):
+    """Modify the applied loads considering a fill.
 
-    print('Non implemented')
+    Parameters
+    ----------
+    form : FormDiagram
+        Form diagram to apply the horizontal multiplier.
 
-    return
+    Note
+    -------
+        In development.
+    """
 
-
-# def vertex_projected_area(form, key):  # Modify to compute the projected aerea of all and save as an attribute
-#     """Compute the projected tributary area of a vertex.
-
-#     Parameters
-#     ----------
-#     key : int
-#         The identifier of the vertex.
-
-#     Returns
-#     -------
-#     float
-#         The projected tributary area.
-
-#     Example
-#     -------
-#     >>>
-
-#     """
-
-#     from compas.geometry import subtract_vectors
-#     from compas.geometry import length_vector
-#     from compas.geometry import cross_vectors
-
-#     area = 0.
-
-#     p0 = form.vertex_coordinates(key)
-#     p0[2] = 0
-
-#     for nbr in form.halfedge[key]:
-#         p1 = form.vertex_coordinates(nbr)
-#         p1[2] = 0
-#         v1 = subtract_vectors(p1, p0)
-
-#         fkey = form.halfedge[key][nbr]
-#         if fkey is not None:
-#             p2 = form.face_centroid(fkey)
-#             p2[2] = 0
-#             v2 = subtract_vectors(p2, p0)
-#             area += length_vector(cross_vectors(v1, v2))
-
-#         fkey = form.halfedge[nbr][key]
-#         if fkey is not None:
-#             p3 = form.face_centroid(fkey)
-#             p3[2] = 0
-#             v3 = subtract_vectors(p3, p0)
-#             area += length_vector(cross_vectors(v1, v3))
-
-#     return 0.25 * area
+    raise NotImplementedError('Not implemented')

@@ -1,7 +1,6 @@
 
 from compas_tno.shapes import Shape
-from compas_tno.viewers.shapes import view_shapes
-from compas_tno.viewers.shapes import view_middle
+from compas_tno.viewers import Viewer
 import math
 
 # --------------------------------------------------------------
@@ -10,13 +9,13 @@ import math
 
 n = 10
 
-data = {
-    'type': 'crossvault',
-    'thk': 0.5,
-    'discretisation': [n, n],
-    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-    't': 0.0,
-}
+# data = {
+#     'type': 'crossvault',
+#     'thk': 0.5,
+#     'discretisation': [n, n],
+#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+#     't': 0.0,
+# }
 
 # data = {
 #     'type': 'pointed_crossvault',
@@ -28,7 +27,6 @@ data = {
 #     'hm': None,
 #     'he': None,
 # }
-
 
 # data = {
 #     'type': 'pointed_crossvault',
@@ -77,18 +75,18 @@ data = {
 #     'discretisation': [25, 50],
 #     'center': [5.0, 5.0],
 #     'radius': 5.0,
-#     'theta': [k1 * pi/2, k2 * pi/2],
+#     'theta': [k1 * math.pi/2, k2 * math.pi/2],
 #     't': 0.0,
 # }
 
-# data = {
-#     'type': 'dome',
-#     'thk': 0.15,
-#     'discretisation': [50, 50],
-#     't' : 0.0,
-#     'center': [5.0, 5.0],
-#     'radius': 5.0,
-# }
+data = {
+    'type': 'dome',
+    'thk': 0.50,
+    'discretisation': [50, 50],
+    't' : 0.0,
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+}
 
 # data = {
 #     'type': 'domicalvault',
@@ -118,44 +116,46 @@ data = {
 
 # data = {
 #     'type': 'dome_polar',
-#     'thk': 0.15,
+#     'thk': 0.50,
 #     'discretisation': [8*n, 20*n],
-#     't' : 1.0,
+#     't' : 0.0,
 #     'center': [5.0, 5.0],
 #     'radius': 5.0,
 # }
 
 # data = {
 #     'type': 'arch',
-#     'H': 0.50,
+#     'H': 1.0,
 #     'L': 2.0,
 #     'thk': 0.10,
 #     'discretisation': 13,
 #     'b': 0.5,
-#     't': 0.4,
+#     't': 0.0,
 #     'x0': 0.0,
 # }
 
 vault = Shape.from_library(data)
 
-# print(vault)
-# print(vault.data)
-print(len(vault.data))
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
 
-for key in vault.data:
-    print(key)
+# print(len(vault.data))
 
-x = vault.to_data()
+# for key in vault.data:
+#     print(key)
 
-# print(x)
-print(len(x))
+# x = vault.to_data()
 
-for key in x:
-    print(key)
+# # print(x)
+# print(len(x))
 
-vault2 = Shape.from_data(x)
+# for key in x:
+#     print(key)
 
-print()
+# vault2 = Shape.from_data(x)
+
+# print()
 
 # print('Evaluate Height of some points:')
 
