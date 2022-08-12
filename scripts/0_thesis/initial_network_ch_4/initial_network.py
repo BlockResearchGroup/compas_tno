@@ -12,6 +12,8 @@ apply_selfweight_from_thrust(form, thickness=1.0, density=20.0)
 
 print('Form weight is:', form.lumped_swt())
 
+
+
 plt = TNOPlotter(form)
 plt.draw_form(scale_width=False, color=Color.black())
 plt.draw_supports(color=Color.red())
