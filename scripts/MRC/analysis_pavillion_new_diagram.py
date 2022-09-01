@@ -22,6 +22,9 @@ x0 = 0.0
 yf = 10.0
 y0 = 0.0
 
+xc = (xf - x0)/2
+yc = (yf - y0)/2
+
 spr_angle = 30.0
 discretisation = 14
 
@@ -35,12 +38,30 @@ for thk in [0.50]:
     form = FormDiagram.create_cross_form(fix='all', discretisation=discretisation)
     # form = FormDiagram.create_cross_with_diagonal(fix='all', discretisation=discretisation)
 
+    # delta = 10/14/2
+
+    # yc = xc = (yf - y0)/2
+    # for vertex in form.vertices_where({'is_fixed': False}):
+    #     x, y, _ = form.vertex_coordinates(vertex)
+    #     dy = min(y - y0, yf - y)
+    #     if abs(dy) > 1e-3:
+    #         dx = delta * (1 - ((dy - yc)/yc)**2)
+    #         if (x - xc) < - 0.01:
+    #             form.vertex_attribute(vertex, 'x', x + dx)
+    #         elif (x - xc) > 0.01:
+    #             form.vertex_attribute(vertex, 'x', x - dx)
+
+    # plotter = TNOPlotter(form)
+    # plotter.draw_form(scale_width=False)
+    # plotter.draw_supports()
+    # plotter.show()
+
     coef = 1/math.cos(math.radians(spr_angle))
 
     for key in form.vertices_where({'is_fixed': True}):
         x, y, _ = form.vertex_coordinates(key)
-        bx = 0
-        by = 0
+        bx = 0.001
+        by = 0.001
         if abs(x - xf) < 1e-3:
             bx = + coef * thk / 2
         if abs(x - x0) < 1e-3:
@@ -80,10 +101,21 @@ for thk in [0.50]:
     for key in form.vertices_where({'is_fixed': True}):
         x, y, z = form.vertex_coordinates(key)
         dXbi = [0, 0, 0]
-        if abs(x - xf) < 0.01:
-            dXbi = [1, 0, 0]
-            vectors_plot.append(Vector(dXbi[0], dXbi[2], 0.0))
+        # if abs(x - xf) < 0.01:
+        #     dXbi = [+1, 0, 0]
+        #     vectors_plot.append(Vector(dXbi[0], dXbi[2], 0.0))
+        #     base_plot.append(Point(x, y, z - 0.2))
+
+        if abs(x - xf) < 0.01 and y - yc > 0.0:
+            dXbi = [+1, 0, 0]
+            vectors_plot.append(Vector(dXbi[0], dXbi[1], 0.0))
             base_plot.append(Point(x, y, z - 0.2))
+        if abs(y - yf) < 0.01 and x - xc > 0.0:
+            print('haaaaa', x, y)
+            dXbi = [0, +1, 0]
+            vectors_plot.append(Vector(dXbi[0], dXbi[1], 0.0))
+            base_plot.append(Point(x, y, z - 0.2))
+
         # if abs(x - x0) < 0.01:
         #     dXbi = [-1, 0, 0]
         #     vectors_plot.append(Vector(dXbi[0], dXbi[2], 0.0))
@@ -93,10 +125,20 @@ for thk in [0.50]:
 
     dXb = array(vector_supports)
 
+    plotter: TNOPlotter = TNOPlotter(form)
+    plotter.draw_form(scale_width=False)
+    plotter.draw_supports()
+    for i in range(len(vectors_plot)):
+        vector = vectors_plot[i]
+        base = base_plot[i]
+        plotter.draw_vector(vector=vector, base=base)
+    plotter.show()
+
     constraints = ['funicular', 'envelope', 'reac_bounds']
-    # features = ['fixed', 'sym']
-    features = ['fixed']
-    axis_sym = [[[0.0, 5.0, 0.0], [10.0, 5.0, 0.0]], [[5.0, 0.0, 0.0], [5.0, 10.0, 0.0]]]
+    features = ['fixed', 'sym']
+    # features = ['fixed']
+    # axis_sym = [[[0.0, 5.0, 0.0], [10.0, 5.0, 0.0]], [[5.0, 0.0, 0.0], [5.0, 10.0, 0.0]]]
+    axis_sym = [[[0.0, 5.0, 0.0], [10.0, 5.0, 0.0]]]
     starting = 'loadpath'
     # starting = 'current'
     # constraints = ['funicular', 'envelope']
@@ -118,6 +160,8 @@ for thk in [0.50]:
     analysis.apply_selfweight()
     analysis.apply_envelope()
 
+    print('SWT:', form.lumped_swt())
+
     # for key in form.vertices_where({'is_fixed': True}):
     #     lb = form.vertex_attribute(key, 'lb')
     #     form.vertex_attribute(key, 'lb', lb - 0.5)
@@ -135,15 +179,15 @@ for thk in [0.50]:
     # form.to_json(address)
     # print('Saved Last iteration to:', address)
 
-    # folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/pavillion/wall_open', form.parameters['type']) + '/'
-    # os.makedirs(folder, exist_ok=True)
-    # title = pavillion.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation)
-    # if spr_angle:
-    #     title = pavillion.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation) + '_spr_' + str(spr_angle)
-    # address = folder + title + '_' + analysis.optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
-    # if analysis.optimiser.exitflag == 0:
-    #     print('Saving form to:', address)
-    #     form.to_json(address)
+    folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/pavillion/wall_open', form.parameters['type']) + '/'
+    os.makedirs(folder, exist_ok=True)
+    title = 'inverse_displ_' + pavillion.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation)
+    if spr_angle:
+        title = pavillion.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation) + '_spr_' + str(spr_angle)
+    address = folder + title + '_' + analysis.optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
+    if analysis.optimiser.exitflag == 0:
+        print('Saving form to:', address)
+        form.to_json(address)
 
 plotter = TNOPlotter(form)
 for i in range(len(vectors_plot)):

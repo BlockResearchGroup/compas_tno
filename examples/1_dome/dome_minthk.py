@@ -15,10 +15,10 @@ discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
 # Parameters Optimisations
 
-obj = 'max'
+obj = 't'
 solver = 'SLSQP'
-constraints = ['funicular', 'envelope', 'reac_bounds']
-variables = ['q', 'zb']
+constraints = ['funicular', 'envelope']
+variables = ['q', 'zb', 't']
 features = ['fixed']
 starting_point = 'loadpath'
 make_video = True

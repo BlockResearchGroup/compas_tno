@@ -181,6 +181,39 @@ class Optimiser(Datastructure):
         return optimiser
 
     @classmethod
+    def create_maxhrust_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath'):
+        """Create a maximum thickness optimiser to be sent with instructions to the Analysis.
+
+        Parameters
+        ----------
+        solver : str, optional
+            Which solver to use, by default 'SLSQP'. See Solvers page for more information.
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        optimiser = cls().create_minthrust_optimiser(solver=solver,
+                                                     max_iter=max_iter,
+                                                     printout=printout,
+                                                     plot=plot,
+                                                     starting_point=starting_point)
+        optimiser.set_objective('max')
+
+        return optimiser
+
+    @classmethod
     def create_lp_optimiser(cls, solver='MATLAB', printout=False, plot=False, max_iter=500):
         """Create a loadpath optimisation optimiser to be sent with instructions to the Analysis.
 

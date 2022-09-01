@@ -15,8 +15,8 @@ from compas_tno.utilities import apply_selfweight_from_shape
 
 radius = 5.0
 thk = 0.5
-discretisation = 10
-discretisation_shape = 20
+discretisation = 16
+discretisation_shape = 32
 type_vault = 'crossvault'
 type_formdiagram = 'cross_fd'
 
@@ -54,6 +54,8 @@ data_diagram = {
 vault = Shape.from_library(data_shape)
 
 form = FormDiagram.from_library(data_diagram)
+
+vault= Shape.create_crossvault(discretisation=discretisation_shape)
 
 plotter = Plotter()
 plotter.fontsize = 12

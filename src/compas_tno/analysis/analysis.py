@@ -165,7 +165,7 @@ class Analysis(Data):
         return analysis
 
     @classmethod
-    def create_minthk_analysis(cls, form, shape, printout=False, plot=False , max_iter=500, starting_point='loadpath'):
+    def create_minthk_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP'):
         """Create a minimum thickness analysus from the elements of the problem (form and shape)
 
         Parameters
@@ -195,7 +195,8 @@ class Analysis(Data):
         optimiser = Optimiser.create_minthk_optimiser(printout=printout,
                                                       plot=plot,
                                                       max_iter=max_iter,
-                                                      starting_point=starting_point)
+                                                      starting_point=starting_point,
+                                                      solver=solver)
 
         print('-'*20)
         print('Optimiser created for the a minimum thickness analysis')
@@ -206,8 +207,8 @@ class Analysis(Data):
         return analysis
 
     @classmethod
-    def create_minthrust_analysis(cls, form, shape, printout=False, plot=False , max_iter=500, starting_point='loadpath'):
-        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+    def create_minthrust_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath'):
+        """Create a minimum thickness analysis from the elements of the problem (form and shape)
 
         Parameters
         ----------
@@ -234,9 +235,9 @@ class Analysis(Data):
         analysis = cls().from_form_and_shape(form, shape)
 
         optimiser = Optimiser.create_minthrust_optimiser(printout=printout,
-                                                      plot=plot,
-                                                      max_iter=max_iter,
-                                                      starting_point=starting_point)
+                                                         plot=plot,
+                                                         max_iter=max_iter,
+                                                         starting_point=starting_point)
 
         print('-'*20)
         print('Optimiser created for the a minimum thrust analysis')
@@ -246,9 +247,50 @@ class Analysis(Data):
 
         return analysis
 
+    @classmethod
+    def create_maxthrust_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath'):
+        """Create a maximum thickness analysis from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape
+            The shape cconstraining the problemf
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        optimiser = Optimiser.create_maxhrust_optimiser(printout=printout,
+                                                        plot=plot,
+                                                        max_iter=max_iter,
+                                                        starting_point=starting_point)
+
+        print('-'*20)
+        print('Optimiser created for the a minimum thrust analysis')
+        print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
 
     @classmethod
-    def create_compl_energy_analysis(cls, form, shape, printout=False, solver='IPOPT', plot=False , max_iter=500, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
+    def create_compl_energy_analysis(cls, form, shape, printout=False, solver='IPOPT', plot=False, max_iter=500, starting_point='loadpath',
+                                     support_displacement=None, Emethod='simplified'):
         """Create a complementary energy analysis from the elements of the problem (form and shape)
 
         Parameters
@@ -291,9 +333,9 @@ class Analysis(Data):
 
         return analysis
 
-
     @classmethod
-    def create_quad_compl_energy_analysis(cls, form, shape, printout=False, solver='IPOPT', plot=False , max_iter=500, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
+    def create_quad_compl_energy_analysis(cls, form, shape, printout=False, solver='IPOPT', plot=False, max_iter=500,
+                                          starting_point='loadpath', support_displacement=None, Emethod='simplified'):
         """Create a complementary energy analysis including a quadratic term from the elements of the problem (form and shape)
 
         Parameters
@@ -335,7 +377,6 @@ class Analysis(Data):
         analysis.optimiser = optimiser
 
         return analysis
-
 
     @classmethod
     def create_lp_analysis(cls, form, shape=None, solver='MATLAB', printout=False, plot=False, max_iter=500):

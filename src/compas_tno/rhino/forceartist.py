@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 from compas_tno.rhino.diagramartist import DiagramArtist
-
+from compas.colors import Color
 from compas.utilities import is_color_rgb
 
 
@@ -46,6 +46,7 @@ class ForceArtist(DiagramArtist):
         self._vertexlabelcollection = None
         self._edgelabelcollection = None
         self._facelabelcollection = None
+        self.default_color = Color.black()
 
         self.mesh = force
 

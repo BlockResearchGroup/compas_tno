@@ -22,6 +22,7 @@ Equilibrium
     weights_from_xyz
     weights_from_xyz_dict
     compute_reactions
+    equilibrium_residual
 
 
 Independents
@@ -78,7 +79,8 @@ if not compas.IPY:
         compute_reactions,
         xyz_from_xopt,
         weights_from_xyz,
-        weights_from_xyz_dict
+        weights_from_xyz_dict,
+        equilibrium_residual
     )
     from .independents import (
         find_independents_forward,
@@ -111,6 +113,7 @@ __all__ = [
     'xyz_from_xopt',
     'weights_from_xyz',
     'weights_from_xyz_dict',
+    'equilibrium_residual',
 
     'find_independents_forward',
     'find_independents_backward',

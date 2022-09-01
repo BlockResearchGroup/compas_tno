@@ -3,12 +3,11 @@ from compas_tno.shapes import Shape
 from compas_tno.viewers import Viewer
 from compas_tno.plotters import TNOPlotter
 from compas_tno.diagrams import FormDiagram
-from compas_tno.utilities import apply_bounds_reactions
-from compas_tno.utilities import apply_envelope_from_shape
-from compas_tno.utilities import apply_selfweight_from_shape
+from compas_tno.algorithms import compute_reactions
 
 from compas.geometry import Vector
 from compas.geometry import Point
+from compas.geometry import normalize_vector
 
 from compas.geometry import Scale
 from compas.colors import Color
@@ -38,17 +37,12 @@ vector_supports = []
 vectors_plot = []
 base_plot = []
 
+sign = 1.0
 for key in form.vertices_where({'is_fixed': True}):
     x, y, z = form.vertex_coordinates(key)
-    dXbi = [0, 0, 0]
-    if x - xc > 0.1:
-        dXbi = [1, 0, 0]
-        vectors_plot.append(Vector(*dXbi))
-        base_plot.append(Point(x, y, z))
-    if x - xc < -0.1:
-        dXbi = [-1, 0, 0]
-        vectors_plot.append(Vector(*dXbi))
-        base_plot.append(Point(x, y, z))
+    dXbi = normalize_vector([sign*(x - xc), sign*(y - yc), 0.0])
+    vectors_plot.append(Vector(*dXbi))
+    base_plot.append(Point(x, y, z))
 
     vector_supports.append(dXbi)
 
@@ -75,7 +69,7 @@ print('SWT:', swt)
 
 analysis.run()
 
-folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/dome/split', form.parameters['type']) + '/'
+folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/dome/outwards', form.parameters['type']) + '/'
 os.makedirs(folder, exist_ok=True)
 title = dome.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation)
 address = folder + title + '_' + analysis.optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'

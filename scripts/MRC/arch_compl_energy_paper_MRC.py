@@ -22,33 +22,36 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 20
+discretisation = 50
 type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
 type_structure = 'arch'
-thk = 1.0
+thk = 1.0  # t/R = 0.20
+thk = 0.75  # t/R = 0.15
 
-save = True
+save = False
 solutions = {}
 
 objective = ['Ecomp-linear']
 Ecomp_method = 'complete'
-solver = 'SLSQP'
+solver = 'IPOPT'
 constraints = ['funicular', 'envelope', 'reac_bounds']  # , 'envelopexy'
 variables = ['q', 'zb']
 features = ['fixed']
 axis_sym = None
-starting_point = 'current'
+starting_point = 'loadpath'
 
 Xc = [0.5, 0.0, 0.0]
 
 c = 0
 
-for i_angle in [0, 18, 27]: # range(36):  # set the distance that the nodes can move
+# for i_angle in [0, 9, 18, 27]: # range(36):  # set the distance that the nodes can move
+for i_angle in [11, 25]: # range(36):  # set the distance that the nodes can move
+# for i_angle in range(36):  # range(36):  # set the distance that the nodes can move
     theta = math.radians(i_angle*10.0)
     solutions[i_angle] = {}
 
     for obj in objective:  # set the objective
-        solutions[i_angle][obj] = {}
+        # solutions[i_angle][obj] = {}
 
         for thk in [thk]:  # thickness of the problem
 
@@ -88,7 +91,7 @@ for i_angle in [0, 18, 27]: # range(36):  # set the distance that the nodes can 
                                                              shape,
                                                              printout=True,
                                                              support_displacement=dXb,
-                                                             max_iter=2000,
+                                                             max_iter=10000,
                                                              Emethod=Ecomp_method,
                                                              solver=solver,
                                                              starting_point=starting_point)
@@ -109,29 +112,46 @@ for i_angle in [0, 18, 27]: # range(36):  # set the distance that the nodes can 
             for key in form.vertices():
                 weight += form.vertex_attribute(key, 'pz')
 
+            print('Weight:', weight)
+            left_support = []
+            right_support = []
+
             CEnergy = 0.0
 
+            left = True
             for i, key in enumerate(form.vertices_where({'is_fixed': True})):
                 rx = form.vertex_attribute(key, '_rx')
                 ry = form.vertex_attribute(key, '_ry')
                 rz = form.vertex_attribute(key, '_rz')
+                x, y, z = form.vertex_coordinates(key)
+                if left:
+                    left_support = [x, rx, ry, rz]
+                    left = False
+                else:
+                    right_support = [x, rx, ry, rz]
+                    T = rx
+                    V = rz
                 CEnergy += - dXb[i][0] * rx - dXb[i][1] * ry - dXb[i][2] * rz
 
-            T = form.vertex_attribute(sup_key, '_rx')
-            V = form.vertex_attribute(sup_key, '_rz')
+            print('left', left_support)
+            print('right', right_support)
 
-            solutions[i_angle]['T/W'] = abs(T/weight)
-            solutions[i_angle]['V/W'] = abs(V/weight)
+            solutions[i_angle]['T/W'] = rx
+            solutions[i_angle]['V/W'] = rz
             solutions[i_angle]['weight'] = abs(weight)
-            solutions[i_angle]['CEnergy'] = CEnergy
-            solutions[i_angle]['lp'] = form.loadpath()
+            print(vector_supports)
+            solutions[i_angle]['ux'] = vector_supports[1][0]
+            solutions[i_angle]['uz'] = vector_supports[1][2]
 
-            thrust = form.thrust()
-            print('Thrust/2:', thrust/2)
-            print('Thrust/Weight/2:', thrust/weight/2)
+            # solutions[i_angle]['CEnergy'] = CEnergy
+            # solutions[i_angle]['lp'] = form.loadpath()
 
-            print('CEnergy:', CEnergy)
-            print('Ratio CEnergy/Weight:', CEnergy/weight)
+            # thrust = form.thrust()
+            # print('Thrust/2:', thrust/2)
+            # print('Thrust/Weight/2:', thrust/weight/2)
+
+            # print('CEnergy:', CEnergy)
+            # print('Ratio CEnergy/Weight:', CEnergy/weight)
 
             # folder = os.path.join('/Users/mricardo/compas_dev/me', 'compl_energy', 'assym', type_structure, type_formdiagram)
             # if 'ind' in optimiser.settings['variables']:
@@ -143,64 +163,48 @@ for i_angle in [0, 18, 27]: # range(36):  # set the distance that the nodes can 
 
             # print('Optimiser exitflag:', analysis.optimiser.exitflag)
 
-            p0 = [-1.1, -1.1]
-            p1 = [11.1, -1.1]
-            p2 = [11.1, 6]
-            p3 = [-1.1, 6]
+            margin = 2.0
+            p0 = [-margin, -margin]
+            p1 = [span + margin, -margin]
+            p2 = [span + margin, span/2 + margin]
+            p3 = [-margin, span/2 + margin]
             lines_around = [[p0, p1], [p1, p2], [p2, p3], [p3, p0]]
 
             for u, v in form.edges():
                 uz = form.vertex_attribute(u, 'z')
                 vz = form.vertex_attribute(v, 'z')
-                print(u, v, uz, vz)
 
             print('Plot for i_angle', i_angle)
+
+            if save:
+                path = '/Users/mricardo/compas_dev/me/compl_energy/arch/solution-i={}.json'.format(i_angle)
+                form.to_json(path)
+                print('Saved to:', path)
 
             # folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/arch/imgs')
             # pic = folder + '/fig-' + str(i_angle) + '.png'
             # print('Picture saved to:', pic)
 
-            # plotter = TNOPlotter(form, shape=shape, figsize=(12, 8))
-            plotter = TNOPlotter(form, shape=shape, figsize=(8, 4))
-            plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
-            plotter.settings['show.reactions.extended'] = True
-            plotter.settings['show.reactions.asarrows'] = False
-            plotter.draw_form_xz()
-            for i in range(len(vectors_plot)):
-                vector = vectors_plot[i]
-                base = base_plot[i]
-                plotter.draw_vector(vector=vector, base=base)
-            plotter.draw_shape_xz()
-            plotter.draw_cracks()
-            plotter.draw_reactions()
-            plotter.draw_lines(lines=lines_around)
-            # plotter.save(pic)
-            plotter.show()
-
-            plotter = TNOPlotter(form, shape=shape)
-            plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
-            plotter.settings['show.reactions.extended'] = True
-            plotter.settings['show.reactions.asarrows'] = False
-            plotter.draw_form_xz(scale_width=False)
+            # plotter = TNOPlotter(form, shape=shape, figsize=(10, 8))
+            # # plotter = TNOPlotter(form, shape=shape, figsize=(8, 4))
+            # plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
+            # plotter.settings['show.reactions.extended'] = True
+            # plotter.settings['show.reactions.asarrows'] = False
+            # plotter.settings['size.edge.base_thickness'] = 2.0
+            # plotter.settings['scale.reactions'] = 0.02
+            # plotter.draw_form_xz(scale_width=False)
             # for i in range(len(vectors_plot)):
             #     vector = vectors_plot[i]
             #     base = base_plot[i]
             #     plotter.draw_vector(vector=vector, base=base)
-            plotter.draw_shape_xz()
-            plotter.draw_cracks()
-            plotter.draw_reactions(scale_width=False)
+            # plotter.draw_shape_xz()
+            # plotter.draw_cracks()
+            # plotter.draw_reactions(scale_width=False)
             # plotter.draw_lines(lines=lines_around)
-            # plotter.save(pic)
-            plotter.show()
+            # # plotter.save(pic)
+            # plotter.show()
 
 
 for i in solutions:
-    print(i, solutions[i]['weight'], solutions[i]['CEnergy'], solutions[i]['T/W'], solutions[i]['V/W'], solutions[i]['lp'])
+    print(i, solutions[i]['weight'], solutions[i]['T/W'], solutions[i]['V/W'], solutions[i]['ux'], solutions[i]['uz'])
 
-
-print(solutions)
-print('\n')
-
-for key in solutions:
-    for key2 in solutions[key]:
-        print(key, key2, solutions[key][key2])

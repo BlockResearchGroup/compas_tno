@@ -15,6 +15,8 @@ from compas_tno.diagrams.diagram_rectangular import create_parametric_form
 
 from compas_tna.diagrams import FormDiagram
 
+from compas.geometry import Point
+
 import math
 
 
@@ -612,6 +614,65 @@ class FormDiagram(FormDiagram):
         pz0 = self.vertex_attribute(key, 'pz')
         self.vertex_attribute(key, 'pz', pz0 + force)
 
+    def assign_inds(self, edges=None, printout=True):
+        """Assign manually independent edges to the pattern
+
+        Parameters
+        ----------
+        edges : [edges], optional
+            List of edges to be assigned as independents, by default None
+        printout : bool, optional
+            Whether the number of assigned independent edges should appear, by default True
+
+        """
+
+        if not edges:
+            return
+
+        self.edges_attribute('is_ind', False)
+
+        i = 0
+        for edge in edges:
+            self.edge_attribute(edge, 'is_ind', True)
+            i += 1
+
+        self.store_indset(edges)
+
+        if printout:
+            print('Assigned {} independent edges to the pattern.'.format(i))
+
+    def store_indset(self, edges=None):
+        """Store the indset with the information about the independent edges (used within algorithms)
+
+        Parameters
+        ----------
+        edges : [edges], optional
+            List of edges to be assigned as independents, by default None
+
+        """
+
+        if not edges:
+            self.attributes['indset'] = None
+            return
+
+        points = []
+        for edge in edges:
+            points.append(Point(*(self.edge_midpoint(*edge)[:2] + [0])))
+
+        self.attributes['indset'] = points
+
+    def update_indset(self):
+        """Update the indset with the information about the independent edges (used within algorithms)
+        """
+
+        edges = list(self.edges_where({'is_ind': True}))
+
+        if not edges:
+            self.attributes['indset'] = None
+            return
+
+        self.store_indset(edges)
+
     def tributary_dict(self):
         """Make a tributary dictionary to help in the calculation of the tributary weights to the nodes afterwards.
 
@@ -836,7 +897,7 @@ class FormDiagram(FormDiagram):
 
     def number_of_independents(self):
         """ Compute the number of independent edges."""
-        return len(list(self.vertices_where({'is_ind': True})))
+        return len(list(self.edges_where({'is_ind': True})))
 
     # --------------------------------------------------------------- #
     # -----------------------BOUNDARIES------------------------------ #

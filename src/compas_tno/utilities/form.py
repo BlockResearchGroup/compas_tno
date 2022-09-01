@@ -379,7 +379,7 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
     return
 
 
-def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0):
+def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
     """Apply a parabolic sliding to the nodes towards +x direction. Sliding profile is defined upon pattern's height (y-coordinate)
 
     Parameters
@@ -398,8 +398,13 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0):
     for vertex in form.vertices_where({'is_fixed': False}):
         x, y, _ = form.vertex_coordinates(vertex)
         dy = min(y - y0, y1 - y)
+        if tappered:
+            delta_i = delta * (x - y0)/(y1 - y0)
+        else:
+            delta_i = delta
         if abs(dy) > 1e-3:
-            dx = delta * (1 - ((dy - yc)/yc)**2)
+            # dx = delta * (1 - ((dy - yc)/yc)**2)
+            dx = delta_i * (1 - ((dy - yc)/yc)**2)
             form.vertex_attribute(vertex, 'x', x + dx)
 
 

@@ -6,6 +6,7 @@ from numpy import zeros
 # from numpy import hstack
 from numpy import cross
 from numpy.linalg import norm
+from math import sqrt
 
 from scipy.sparse.linalg import spsolve
 from scipy.sparse.linalg import splu
@@ -385,6 +386,32 @@ def compute_reactions(form, plot=False):
             print(Ry[i])
 
     return
+
+
+def equilibrium_residual(q, M):
+    """Computes equilibrium residual
+
+    Parameters
+    ----------
+    q : array [m x 1]
+        Force densities
+    M : Problem
+        Problem class with matrices
+
+    Returns
+    -------
+    Rmax
+        Maximum nodal residual
+    """
+
+    res_x = M.Citx.dot(M.U * q.ravel()) - M.ph[:len(M.free_x)].ravel()
+    res_y = M.City.dot(M.V * q.ravel()) - M.ph[:len(M.free_y)].ravel()
+    Rmax = max(sqrt(max(res_x**2)), sqrt(max(res_y**2)))
+    Rsum = sum(res_x**2 + res_y**2)
+
+    print('residual', Rmax, Rsum)
+
+    return Rmax
 
 
 def xyz_from_xopt(variables, M):

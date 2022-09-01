@@ -23,6 +23,7 @@ from compas_tno.utilities import apply_selfweight_from_shape
 from compas_tno.utilities import slide_diagram
 from compas_tno.utilities import move_pattern_to_origin
 
+
 # Geometry parameters
 
 delta = 1.0
