@@ -4,13 +4,15 @@ from compas.geometry import Point
 from math import radians
 from math import sqrt
 
-from zmq import XPUB
+import json
 
 from compas_tno.shapes import Shape
 
 from compas_view2 import app
 from compas_view2.shapes import Arrow
 from compas_view2.shapes import Text
+from compas_view2.objects import LineObject
+from compas_view2.objects import PointObject
 
 from compas.colors import Color
 
@@ -190,7 +192,11 @@ class Viewer(object):
 
         self.app.view.objects = {}
 
-    def draw_form(self, scale_width=True, absolute_scale=False, cull_negative=False, edges=None, **kwargs):
+    def scale_edge_thickness(self, factor=1.0):
+
+        self.settings['scale.edge.thk_absolute'] = self.settings['scale.edge.thk_absolute'] * factor
+
+    def draw_form(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, **kwargs):
         """Alias to draw thrust network according to the settings
 
         Parameters
@@ -236,6 +242,9 @@ class Viewer(object):
             forces = [self.thrust.edge_attribute((u, v), 'q') * self.thrust.edge_length(u, v) for u, v in self.thrust.edges_where({'_is_edge': True})]
             fmax = sqrt(max(abs(max(forces)), abs(min(forces))))  # trying sqrt
 
+        thks = []
+        forces = []
+
         for u, v in edges:
             Xu = self.thrust.vertex_coordinates(u)
             Xv = self.thrust.vertex_coordinates(v)
@@ -258,8 +267,13 @@ class Viewer(object):
             thk = force/fmax * max_thick
             if absolute_scale:
                 thk = force * thickness_abs
+            forces.append(force)
+            thks.append(thk)
             if force > self.settings['tol.forces'] * 2:
                 self.app.add(line, name=str((u, v)), linewidth=thk, color=self.settings['color.edges.thrust'])
+
+        print('Min / Max thks:', min(thks), max(thks))
+        print('Min / Max forces:', min(forces), max(forces))
 
     def draw_cracks(self, cull_negative=False, points=None, **kwargs):
         """Draw cracks according to the settings
@@ -300,10 +314,23 @@ class Viewer(object):
                             scale = z/rz
                             if abs(rx) < self.settings['tol.cracks'] and abs(ry) < self.settings['tol.cracks']:
                                 continue
-                            if abs(abs(bx) - abs(rx * scale)) < self.settings['tol.cracks'] < self.settings['tol.cracks'] or abs(abs(by) - abs(ry * scale)) < self.settings['tol.cracks']:
-                                self.app.add(Point(x - rx * scale, y - ry * scale, 0.0), name="Extrados (%s)" % extrad,
+                            # print('Reaction', key, rx, ry, rz)
+                            crack_Rx = abs(bx) - abs(rx * scale)  # must be >= 0
+                            crack_Ry = abs(by) - abs(ry * scale)  # must be >= 0
+
+                            # print('Cracks:', key, crack_Rx, crack_Ry)
+
+                            if crack_Rx > self.settings['tol.cracks'] and crack_Ry > self.settings['tol.cracks']:  # it is not a crack
+                                continue
+                            crack_point = Point(x - rx * scale, y - ry * scale, 0.0)
+                            if abs(abs(bx) - abs(rx * scale)) < self.settings['tol.cracks'] or abs(abs(by) - abs(ry * scale)) < self.settings['tol.cracks']:
+                                self.app.add(crack_point, name="Extrados (%s)" % extrad,
                                              color=self.settings['color.vertex.extrados'], size=self.settings['size.vertex'])
                                 extrad += 1
+                            else:
+                                self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, color=self.settings['color.vertex.outside'], size=self.settings['size.vertex'])
+                                out += 1
+
 
             if self.settings['show.vertex.outside']:
                 if z > ub:
@@ -466,6 +493,7 @@ class Viewer(object):
 
         if self.settings['show.reactions']:
             reaction_scale = scale or self.settings['scale.reactions']
+            thickness_scale = self.settings['scale.edge.thk_absolute']
 
             supports = supports or list(self.thrust.vertices_where({'is_fixed': True}))
 
@@ -485,6 +513,9 @@ class Viewer(object):
                     max_thickness = self.settings['size.edge.max_thickness']
                     max_f = max([abs(self.thrust.edge_attribute(edge, 'q') * self.thrust.edge_length(*edge)) for edge in self.thrust.edges()])
                     thickness = r/max_f*max_thickness
+
+                    thickness = thickness_scale*sqrt(r)
+
                     line = Line([x, y, z], [x - rx, y - ry, z - rz])
                     self.app.add(line, linewidth=thickness, color=self.settings['color.edges.thrust'])
                     continue
@@ -637,8 +668,43 @@ class Viewer(object):
 
     def to_objects(self):
         """Generate General objects (dicts) from the added elements in the viewer (WIP).
+
+        Returns
+        -------
+        data
+            Raw geometry objects in a .
         """
 
         objects = self.app.view.objects
+
+        print(objects)
+
         data = {}
+        lines = []
+        points = []
+
+        for obj in objects:
+            if isinstance(obj, LineObject):
+                lines.append({'start': [obj._data[0].x, obj._data[0].y, obj._data[0].z],
+                              'end': [obj._data[1].x, obj._data[1].y, obj._data[1].z],
+                              'color': (255*obj.linecolor).tolist(),
+                              'width': obj.linewidth
+                              })
+            if isinstance(obj, PointObject):
+                points.append({'pos': [obj._data.x, obj._data.y, obj._data.z],
+                               'color': (255*obj.pointcolor).tolist()
+                               })
+
+        data['lines'] = lines
+        data['points'] = points
+
+        return data
+
+    def to_json(self, file="out.json"):
+
+        data = self.to_objects()
+        print(data)
+
+        with open(file, "w") as outfile:
+            json.dump(data, outfile)
 

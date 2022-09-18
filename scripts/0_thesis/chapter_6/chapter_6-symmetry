@@ -1,0 +1,47 @@
+from compas_tno import analysis
+from compas_tno.diagrams import FormDiagram
+from compas_tno.optimisers import Optimiser
+from compas_tno.shapes import Shape
+from compas_tno.viewers import Viewer
+from compas_tno.plotters import TNOPlotter
+from compas_tno.analysis import Analysis
+
+form = FormDiagram.create_circular_radial_form(discretisation=[8, 12],
+                                               diagonal=True,
+                                               partial_diagonal='right')
+
+form = FormDiagram.create_cross_with_diagonal(discretisation=10)
+
+form = FormDiagram.create_fan_form(discretisation=10)
+
+shape = Shape.create_dome(radius=10)
+
+axis = [[[0, 5, 0], [10, 5, 0]]]
+axis = [[[0, 5, 0], [10, 5, 0]], [[5, 0, 0], [5, 10, 0]], [[0, 0, 0], [10, 10, 0]]]
+
+analysis: Analysis = Analysis.create_minthrust_analysis(form,
+                                                        shape,
+                                                        solver='IPOPT',
+                                                        starting_point='current',
+                                                        plot=True)
+
+optimiser: Optimiser = analysis.optimiser
+optimiser.set_features(['fixed', 'sym'])
+optimiser.set_axis_symmetry(axis)
+
+analysis.apply_selfweight()
+analysis.apply_envelope()
+analysis.set_up_optimiser()
+# analysis.run()
+
+plotter = TNOPlotter(form)
+plotter.draw_form_sym(True)
+plotter.show()
+
+plotter = TNOPlotter(form)
+plotter.draw_form_sym(False)
+plotter.show()
+
+# view = Viewer(form)
+# view.draw_thrust()
+# view.show()

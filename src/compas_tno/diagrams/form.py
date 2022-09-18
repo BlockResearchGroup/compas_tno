@@ -633,7 +633,11 @@ class FormDiagram(FormDiagram):
 
         i = 0
         for edge in edges:
-            self.edge_attribute(edge, 'is_ind', True)
+            u, v = edge
+            try:
+                self.edge_attribute((u, v), 'is_ind', True)
+            except:
+                self.edge_attribute((v, u), 'is_ind', True)
             i += 1
 
         self.store_indset(edges)

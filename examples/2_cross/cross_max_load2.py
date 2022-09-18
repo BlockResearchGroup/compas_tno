@@ -15,6 +15,7 @@ from compas.geometry import norm_vector
 from numpy import array
 from numpy import zeros
 from compas_plotters import Plotter
+from compas.colors import Color
 # from compas_tno.utilities import apply_envelope_from_shape
 sols = {}
 
@@ -75,7 +76,7 @@ def form_add_lines_support(form, loaded_node, supports):
 
     return form
 
-for j in [1, 2, 3, 4]:  # range(6):
+for j in [4]:  # range(6):
 
     delta = 1.0
     span = 10.0
@@ -95,7 +96,7 @@ for j in [1, 2, 3, 4]:  # range(6):
         'type': 'cross_fd',
         'xy_span': [xspan, yspan],
         'thk': thk,
-        'discretisation': 10,
+        'discretisation': 12,
         'fix': 'corners'
     }
 
@@ -112,6 +113,22 @@ for j in [1, 2, 3, 4]:  # range(6):
     features = ['fixed']
     axis_sym = None  # [[0.0, 5.0], [10.0, 5.0]]
     starting_point = 'loadpath'
+
+    plotter = Plotter()
+    plotter.fontsize = 6
+    artist = plotter.add(form)
+    # for line in support_lines:
+    #     plotter.add(Line(line[0], line[1]), zorder=100000, width=5.0, draw_as_segment=True)
+
+    # for line in new_lines:
+    #     plotter.add(Line(line[0], line[1]), zorder=100000, width=5.0, draw_as_segment=True)
+    # for pt in points:
+    #     pt = Point(pt[0], pt[1], pt[2])
+    #     plotter.add(pt, zorder=100001, width=5.0)
+    artist.draw_vertexlabels()
+    artist.draw_facelabels()
+    plotter.zoom_extents()
+    plotter.show()
 
     optimiser = Optimiser()
     optimiser.settings['library'] = solver
@@ -130,10 +147,12 @@ for j in [1, 2, 3, 4]:  # range(6):
     optimiser.settings['sym_loads'] = False
 
     loaded_node = 59 - j
+    loaded_node = 80
 
     # adding a line to the supports
 
     supports = [0, 109]
+    supports = [0, 155]
 
     form = form_add_lines_support(form, loaded_node, supports)
 
@@ -163,8 +182,8 @@ for j in [1, 2, 3, 4]:  # range(6):
     plotter.show()
 
     plotter = TNOPlotter(form)
-    plotter.draw_form(scale_width=False)
-    plotter.draw_supports()
+    plotter.draw_form(scale_width=False, color=Color.black())
+    plotter.draw_supports(color=Color.red())
     plotter.show()
 
     analysis = Analysis.from_elements(vault, form, optimiser)

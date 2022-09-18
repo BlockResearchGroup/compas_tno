@@ -807,7 +807,7 @@ class TNOPlotter(object):
                     polygon = polygon.transformed(T)
                     self.app.add(polygon, linewidth=base_thick * 3, facecolor=(0.8, 0.8, 0.8))
 
-    def draw_form_sym(self, print_sym=True):
+    def draw_form_sym(self, print_sym=False):
         """Draw the form diagram symmetry edges with the respective colors.
 
         Parameters

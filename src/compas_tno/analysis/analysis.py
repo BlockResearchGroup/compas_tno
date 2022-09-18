@@ -165,7 +165,7 @@ class Analysis(Data):
         return analysis
 
     @classmethod
-    def create_minthk_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP'):
+    def create_minthk_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP', derivatives=True):
         """Create a minimum thickness analysus from the elements of the problem (form and shape)
 
         Parameters
@@ -196,18 +196,20 @@ class Analysis(Data):
                                                       plot=plot,
                                                       max_iter=max_iter,
                                                       starting_point=starting_point,
-                                                      solver=solver)
+                                                      solver=solver,
+                                                      derivatives=derivatives)
 
-        print('-'*20)
-        print('Optimiser created for the a minimum thickness analysis')
-        print(optimiser)
+        if printout:
+            print('-'*20)
+            print('Minimum thickness analysis created')
+            print(optimiser)
 
         analysis.optimiser = optimiser
 
         return analysis
 
     @classmethod
-    def create_minthrust_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath'):
+    def create_minthrust_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP'):
         """Create a minimum thickness analysis from the elements of the problem (form and shape)
 
         Parameters
@@ -237,18 +239,20 @@ class Analysis(Data):
         optimiser = Optimiser.create_minthrust_optimiser(printout=printout,
                                                          plot=plot,
                                                          max_iter=max_iter,
-                                                         starting_point=starting_point)
+                                                         starting_point=starting_point,
+                                                         solver=solver)
 
-        print('-'*20)
-        print('Optimiser created for the a minimum thrust analysis')
-        print(optimiser)
+        if printout:
+            print('-'*20)
+            print('Minimum thrust analysis created')
+            print(optimiser)
 
         analysis.optimiser = optimiser
 
         return analysis
 
     @classmethod
-    def create_maxthrust_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath'):
+    def create_maxthrust_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP'):
         """Create a maximum thickness analysis from the elements of the problem (form and shape)
 
         Parameters
@@ -276,13 +280,80 @@ class Analysis(Data):
         analysis = cls().from_form_and_shape(form, shape)
 
         optimiser = Optimiser.create_maxhrust_optimiser(printout=printout,
-                                                        plot=plot,
-                                                        max_iter=max_iter,
-                                                        starting_point=starting_point)
+                                                         plot=plot,
+                                                         max_iter=max_iter,
+                                                         starting_point=starting_point,
+                                                         solver=solver)
 
-        print('-'*20)
-        print('Optimiser created for the a minimum thrust analysis')
-        print(optimiser)
+        if printout:
+            print('-'*20)
+            print('Maximium thrust analysis created')
+            print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+    @classmethod
+    def create_max_load_analysis(cls, form, shape, printout=False, plot=False, horizontal=False, max_iter=500, starting_point='loadpath',
+                                 solver='IPOPT', derivatives=True, load_direction=None, max_lambd=1.0):
+        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : FormDiagram
+            _description_
+        shape : Shape
+            The shape cconstraining the problem
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        plot : bool, optional
+            Whether or load applied is horizontal, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysiss
+            The Anallysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        if horizontal:
+            optimiser = Optimiser.create_max_horload_optimiser(printout=printout,
+                                                               plot=plot,
+                                                               max_iter=max_iter,
+                                                               starting_point=starting_point,
+                                                               solver=solver,
+                                                               derivatives=derivatives,
+                                                               load_direction=load_direction,
+                                                               max_lambd=max_lambd)
+
+            if printout:
+                print('-'*20)
+                print('Max horizontal load analysis created')
+                # print(optimiser)
+
+        else:
+            optimiser = Optimiser.create_max_vertload_optimiser(printout=printout,
+                                                                plot=plot,
+                                                                max_iter=max_iter,
+                                                                starting_point=starting_point,
+                                                                solver=solver,
+                                                                derivatives=derivatives,
+                                                                load_direction=load_direction,
+                                                                max_lambd=max_lambd)
+
+            if printout:
+                print('-'*20)
+                print('Max vertical load analysis created')
+                # print(optimiser)
 
         analysis.optimiser = optimiser
 
@@ -325,9 +396,10 @@ class Analysis(Data):
                                                             Emethod=Emethod,
                                                             solver=solver)
 
-        print('-'*20)
-        print('Optimiser created for the a Linear Complementary Energy analysis')
-        print(optimiser)
+        if printout:
+            print('-'*20)
+            print('Complementary energy created')
+            print(optimiser)
 
         analysis.optimiser = optimiser
 
@@ -370,17 +442,18 @@ class Analysis(Data):
                                                             Emethod=Emethod,
                                                             solver=solver)
 
-        print('-'*20)
-        print('Optimiser created for the a Linear Complementary Energy analysis')
-        print(optimiser)
+        if printout:
+            print('-'*20)
+            print('Complementary energy analysis created')
+            print(optimiser)
 
         analysis.optimiser = optimiser
 
         return analysis
 
     @classmethod
-    def create_lp_analysis(cls, form, shape=None, solver='MATLAB', printout=False, plot=False, max_iter=500):
-        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+    def create_lp_analysis(cls, form, shape=None, solver='CVXPY', printout=False, plot=False, max_iter=500):
+        """Create a minimum thickness analysis from the elements of the problem (form and shape)
 
         Parameters
         ----------
@@ -414,9 +487,10 @@ class Analysis(Data):
         else:
             analysis = cls().from_form_and_optimiser(form, optimiser)
 
-        print('-'*20)
-        print('Optimiser created for a load-path analysis')
-        print(optimiser)
+        if printout:
+            print('-'*20)
+            print('Load path analysiss created')
+            print(optimiser)
 
         analysis.optimiser = optimiser
 
@@ -435,6 +509,13 @@ class Analysis(Data):
             return True
         else:
             return False
+
+    def set_optimiser_options(self, **kwargs):
+        """Set the additional options of the optimisation.
+        """
+
+        if kwargs:
+            self.optimiser.set_additional_options(**kwargs)
 
     def clear_previous_results(self):
         """Clear Previous results stored in the Analysis object. Necessary to perform sequential optimisation with the same analysis object

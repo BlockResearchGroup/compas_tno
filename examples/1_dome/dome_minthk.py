@@ -43,6 +43,8 @@ optimiser.settings['derivative_test'] = True
 optimiser.settings['printout'] = True
 optimiser.settings['save_iterations'] = make_video
 optimiser.settings['autodiff'] = autodiff
+optimiser.settings['gradients'] = False
+optimiser.settings['derivatives'] = False
 
 # Create analysis
 

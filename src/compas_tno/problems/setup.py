@@ -73,8 +73,8 @@ def set_up_general_optimisation(analysis):
     qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
-    show_force_diagram = optimiser.settings.get('save_force_diagram', True)
-    solver_convex = optimiser.settings.get('solver-convex', 'MATLAB')
+    # show_force_diagram = optimiser.settings.get('save_force_diagram', True)
+    solver_convex = optimiser.settings.get('solver_convex', 'MATLAB')
     # thickness_type = optimiser.settings.get('thickness_type', 'constant')
     autodiff = optimiser.settings.get('autodiff', False)
 
@@ -82,8 +82,9 @@ def set_up_general_optimisation(analysis):
 
     if shape:
         thk = shape.datashape.get('thk', None)
+        form.attributes['thk'] = thk  # for ssafety storing the thk. If optimisation is minthk, this will be overwritten
     else:
-        thk = 0.20
+        thk = 0.50
 
     objective = optimiser.settings['objective']
     variables = optimiser.settings['variables']
@@ -125,7 +126,8 @@ def set_up_general_optimisation(analysis):
         apply_sag(form, boundary_force=50.0)  # the issue here is that after the sag the M.x0, M.y0 are not updated
         initialize_tna(form)
     elif starting_point == 'loadpath':
-        initialize_loadpath(form, problem=M, find_inds=find_inds, solver_convex=solver_convex)
+        printout_loadpath = False  # this need to be a proper verbose level
+        initialize_loadpath(form, problem=M, find_inds=find_inds, solver_convex=solver_convex, printout=printout_loadpath)
     elif starting_point == 'relax':
         equilibrium_fdm(form)
         initialize_tna(form)
@@ -250,7 +252,6 @@ def set_up_general_optimisation(analysis):
     if 't' in variables:
         min_thk = optimiser.settings.get('min_thk', 0.001)
         max_thk = optimiser.settings.get('max_thk', thk)
-        print('max thickness', max_thk)
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, max_thk]]
 
@@ -348,7 +349,6 @@ def set_up_general_optimisation(analysis):
 
     f0 = fobj(x0, M)
     g0 = fconstr(x0, M)
-    print('g0shhape', g0.shape)
 
     if fgrad:
         grad = fgrad(x0, M)
@@ -363,8 +363,8 @@ def set_up_general_optimisation(analysis):
     if plot:
         view = Viewer(form)
         view.draw_thrust()
-        if show_force_diagram:
-            view.draw_force()
+        # if show_force_diagram:
+        #     view.draw_force()
         view.show()
 
     if printout:

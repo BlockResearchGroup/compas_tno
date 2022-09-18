@@ -7,37 +7,72 @@ import math
 # -----------PARAMERIC SHAPES (uncomment data) -----------------
 # --------------------------------------------------------------
 
-n = 10
+n = 50
 
-# data = {
-#     'type': 'crossvault',
-#     'thk': 0.5,
-#     'discretisation': [n, n],
-#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-#     't': 0.0,
-# }
+data = {
+    'type': 'crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0,
+}
 
-# data = {
-#     'type': 'pointed_crossvault',
-#     'thk': 0.5,
-#     'discretisation': [n, n],
-#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-#     't': 1.0,
-#     'hc': 8.0,
-#     'hm': None,
-#     'he': None,
-# }
+vault = Shape.from_library(data)
 
-# data = {
-#     'type': 'pointed_crossvault',
-#     'thk': 0.5,
-#     'discretisation': [n, n],
-#     'xy_span': [[0.0, 6.0], [0.0, 10.0]],
-#     't': 0.0,
-#     'hc': 6.0,
-#     'hm': None,
-#     'he': [5, 5, 5, 5],
-# }
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
+
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 1.0,
+    'hc': 8.0,
+    'hm': None,
+    'he': None,
+}
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
+
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 1.0,
+    'hc': 8.0,
+    'hm': None,
+    'he': [6, 6, 6, 6],
+}
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
+
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [n, n],
+    'xy_span': [[0.0, 6.0], [0.0, 10.0]],
+    't': 0.0,
+    'hc': 6.0,
+    'hm': None,
+    'he': [5, 5, 5, 5],
+}
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
 
 # data = {
 #     'type': 'parabolic_shell',
@@ -48,45 +83,75 @@ n = 10
 #     'hc': 6.0,
 # }
 
-# data = {
-#     'type': 'pavillionvault',
-#     'thk': 0.20,
-#     'discretisation': [50, 50],
-#     'xy_span': [[0.0,10.0],[0.0,10.0]],
-#     't' : 0.0
-# }
+# vault = Shape.from_library(data)
 
-# data = {
-#     'type': 'pointed_crossvault',
-#     'thk': 0.5,
-#     'discretisation': [50, 50],
-#     'xy_span': [[0.0, 10.0], [0.0, 10.0]],
-#     't': 0.0,
-#     'hc': 5.00,
-#     'hm': [8.66]*4,
-#     'he': [5.0, 5.0, 5.0, 5.0],
-# }
+# viewer = Viewer(shape=vault)
+# viewer.draw_shape()
+# viewer.show()
 
-# k1 = 0.0
-# k2 = 0.5  # Percentage of the dome to consider
-# data = {
-#     'type': 'dome_spr',
-#     'thk': 0.25,
-#     'discretisation': [25, 50],
-#     'center': [5.0, 5.0],
-#     'radius': 5.0,
-#     'theta': [k1 * math.pi/2, k2 * math.pi/2],
-#     't': 0.0,
-# }
+data = {
+    'type': 'pavillionvault',
+    'thk': 0.20,
+    'discretisation': [50, 50],
+    'xy_span': [[0.0,10.0],[0.0,10.0]],
+    't' : 0.0
+}
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
+
+data = {
+    'type': 'pointed_crossvault',
+    'thk': 0.5,
+    'discretisation': [50, 50],
+    'xy_span': [[0.0, 10.0], [0.0, 10.0]],
+    't': 0.0,
+    'hc': 5.00,
+    'hm': [8.66]*4,
+    'he': [5.0, 5.0, 5.0, 5.0],
+}
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
+
+k1 = 0.0
+k2 = 0.5  # Percentage of the dome to consider
+data = {
+    'type': 'dome_spr',
+    'thk': 0.25,
+    'discretisation': [25, 50],
+    'center': [5.0, 5.0],
+    'radius': 5.0,
+    'theta': [k1 * math.pi/2, k2 * math.pi/2],
+    't': 0.0,
+}
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
 
 data = {
     'type': 'dome',
     'thk': 0.50,
     'discretisation': [50, 50],
-    't' : 0.0,
+    't': 0.0,
     'center': [5.0, 5.0],
     'radius': 5.0,
 }
+
+vault = Shape.from_library(data)
+
+viewer = Viewer(shape=vault)
+viewer.draw_shape()
+viewer.show()
 
 # data = {
 #     'type': 'domicalvault',
@@ -133,12 +198,6 @@ data = {
 #     't': 0.0,
 #     'x0': 0.0,
 # }
-
-vault = Shape.from_library(data)
-
-viewer = Viewer(shape=vault)
-viewer.draw_shape()
-viewer.show()
 
 # print(len(vault.data))
 

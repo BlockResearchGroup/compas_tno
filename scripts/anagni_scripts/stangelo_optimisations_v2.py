@@ -39,7 +39,7 @@ yspan = [14.968, 18.312]
 
 fill_loads = False
 # diagram_name = 'parametric'
-diagram_name = 'mesh-B'
+diagram_name = 'mesh-D3'
 
 x0 = 0.0
 xf = xspan[1] - xspan[0]
@@ -112,7 +112,7 @@ else:
 # plotter.draw_form(scale_width=False)
 # plotter.show()
 
-trans, factors = move_pattern_to_origin(form, corners)
+move_pattern_to_origin(form, corners)
 
 lines = []
 vector_supports = []
@@ -315,15 +315,15 @@ print('T/W:', thrust/pztfinal)
 
 folder = os.path.join(folder, 'revision')
 
-if optimiser.exitflag == 0:
-    os.makedirs(os.path.join(folder, diagram_name), exist_ok=True)
-    file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_' + objective + '.json')
-    if fill_loads:
-        file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_with_fill_' + objective + '.json')
+# if optimiser.exitflag == 0:
+#     os.makedirs(os.path.join(folder, diagram_name), exist_ok=True)
+#     file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_' + objective + '.json')
+#     if fill_loads:
+#         file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_with_fill_' + objective + '.json')
 
-    form.to_json(file_solution)
+#     form.to_json(file_solution)
 
-    print('Saved solution to:', file_solution)
+#     print('Saved solution to:', file_solution)
 
 viewer = Viewer(form, shape=vault, show_grid=False)
 viewer.settings['camera.target'] = [2.8, 1.6, 12]

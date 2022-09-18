@@ -136,7 +136,7 @@ for prob in ['H2']:  # ['A1', 'B1', 'C1', 'D1', 'E1']  # Then H and then > D3-di
     optimiser.settings['find_inds'] = False
     optimiser.settings['plot'] = False
     optimiser.settings['save_iterations'] = make_video
-    optimiser.settings['solver-convex'] = 'CVXPY'
+    optimiser.settings['solver_convex'] = 'CVXPY'
     optimiser.settings['max_iter'] = 1000
     optimiser.settings['autodiff'] = autodiff
 

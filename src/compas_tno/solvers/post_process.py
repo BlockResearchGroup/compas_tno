@@ -5,6 +5,7 @@ from compas_tno.shapes import Shape
 from compas_tno.shapes.meshdos import MeshDos
 from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.problems import save_geometry_at_iterations
+from compas_tno.utilities.envelopes import apply_bounds_reactions
 
 
 def post_process_general(analysis):
@@ -136,6 +137,7 @@ def post_process_general(analysis):
             shape.datashape['thk'] = thk
             shape = Shape.from_library(shape.datashape)
             apply_envelope_from_shape(form, shape)  # Check if this is ok for adapted pattern
+            apply_bounds_reactions(form, shape)
             i = 0
             for key in form.vertices():  # this resolve the problem due to the adapted pattern
                 form.vertex_attribute(key, 'ub', float(M.ub[i]))
@@ -179,6 +181,15 @@ def post_process_general(analysis):
         for i, key in enumerate(form.vertices_where({'is_fixed': True})):
             print(i, key, tub_reac)
             form.vertex_attribute(key, 'tub_reac', [tub_reac[i], tub_reac[i + M.nb]])
+
+    if 'lambdv' in M.variables:
+        added_load = lambdv * M.pzv
+        for i, key in enumerate(form.vertices()):
+            p_added = added_load[i]
+            form.vertex_attribute(key, 'pzext', p_added)
+
+    if 'lambdh' in M.variables:
+        form.attributes['lambdh'] = lambdh  # can be improved. It currently takes fopt, but if loads at start are 0.1*SWT, the obj is lambd/0.1
 
     analysis.form = form
     analysis.optimiser = optimiser

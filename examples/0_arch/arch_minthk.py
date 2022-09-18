@@ -11,52 +11,61 @@ from compas_tno.utilities import apply_bounds_reactions
 from compas_tno.problems import initialise_form
 from compas.colors import Color
 
-form = FormDiagram.create_arch(discretisation=50)
+for i in range(49, 100):
 
-# form = FormDiagram.create_circular_radial_form(discretisation=discr)
-shape = Shape.create_arch()
+    form = FormDiagram.create_arch(discretisation=i)
 
-# apply_envelope_from_shape(form, shape)
-# apply_bounds_reactions(form, shape)
+    # form = FormDiagram.create_circular_radial_form(discretisation=discr)
+    shape = Shape.create_arch()
 
-# initialise_form(form)  # compute the independent edges
+    shape.ro = 1.0
 
-# plotter = TNOPlotter(form, shape)
-# plotter.draw_form_independents()
-# plotter.draw_supports(color=Color.red())
-# plotter.show()
+    # apply_envelope_from_shape(form, shape)
+    # apply_bounds_reactions(form, shape)
 
-analysis = Analysis.create_minthk_analysis(form, shape, printout=True)
+    # initialise_form(form)  # compute the independent edges
 
-analysis.optimiser.set_constraints(['funicular', 'envelope'])
+    # plotter = TNOPlotter(form, shape)
+    # plotter.draw_form_independents()
+    # plotter.draw_supports(color=Color.red())
+    # plotter.show()
 
-analysis.apply_selfweight()
-analysis.apply_envelope()
-analysis.apply_reaction_bounds()
-analysis.set_up_optimiser()
-analysis.run()
+    analysis = Analysis.create_minthk_analysis(form, shape, printout=True)
 
-plotter = TNOPlotter(form, shape)
-plotter.draw_form()
-plotter.draw_cracks()
-plotter.draw_supports()
-plotter.show()
+    # analysis.optimiser.set_constraints(['funicular', 'envelope', 'reac_bounds'])
+    analysis.optimiser.set_constraints(['funicular', 'envelope', 'reac_bounds'])
 
-plotter = TNOPlotter(form, shape)
-plotter.draw_form_xz()
-plotter.draw_shape_xz()
-plotter.draw_cracks()
-plotter.draw_supports()
-plotter.show()
+    analysis.apply_selfweight()
+    analysis.apply_envelope()
+    analysis.apply_reaction_bounds()
+    analysis.set_up_optimiser()
+    analysis.run()
 
-view = Viewer(form, shape=shape)
-view.settings['camera.show.grid'] = False
-view.settings['camera.distance'] = 35
-view.settings['camera.target'] = [5, 5, 0]
-view.settings['camera.rz'] = 45
-view.settings['camera.rx'] = 60
-view.draw_form(cull_negative=True)
-view.draw_cracks(cull_negative=True)
-view.draw_reactions(extend_reactions=True)
-view.draw_shape()
-view.show()
+    # plotter = TNOPlotter(form, shape)
+    # plotter.draw_form()
+    # plotter.draw_cracks()
+    # plotter.draw_supports()
+    # plotter.show()
+
+    print('i=', i)
+
+    plotter = TNOPlotter(form, shape)
+    plotter.settings['show.reactions.asarrows'] = False
+    plotter.draw_form_xz(scale_width=False)
+    plotter.draw_shape_xz()
+    plotter.draw_cracks()
+    plotter.draw_reactions(scale_width=False)
+    # plotter.draw_supports()
+    plotter.show()
+
+    # view = Viewer(form, shape=shape)
+    # view.settings['camera.show.grid'] = False
+    # view.settings['camera.distance'] = 35
+    # view.settings['camera.target'] = [5, 5, 0]
+    # view.settings['camera.rz'] = 45
+    # view.settings['camera.rx'] = 60
+    # view.draw_form(cull_negative=True)
+    # view.draw_cracks(cull_negative=True)
+    # view.draw_reactions(extend_reactions=True)
+    # view.draw_shape()
+    # view.show()

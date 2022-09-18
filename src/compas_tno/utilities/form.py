@@ -408,6 +408,25 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
             form.vertex_attribute(vertex, 'x', x + dx)
 
 
+def slide_pattern_inwards(form, delta= 0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.01):
+
+    radius = ((x1 - x0)**2 + (y1 - y0)**2)**(1/2)
+    k = 1/radius**2
+    xc = (x0 + x1)/2
+    yc = (y0 + y1)/2
+
+    for i, vertex in enumerate(form.vertices()):
+        if form.vertex_attribute(vertex, 'is_fixed'):
+            continue
+        x, y, _ = form.vertex_coordinates(vertex)
+        dxi = k * (x - xc) ** 2 * 2 * (xc - x)/ radius
+        dyi = k * (y - yc) ** 2 * 2 * (yc - y)/ radius
+
+        form.vertex_attribute(vertex, 'x', x + delta*dxi)
+        form.vertex_attribute(vertex, 'y', y + delta*dyi)
+
+
+
 def displacement_map_parabola(form, y0=0.0, y1=10.0):
     """Create the displacement map for a 1D parabola sliding of the structural pattern.
 

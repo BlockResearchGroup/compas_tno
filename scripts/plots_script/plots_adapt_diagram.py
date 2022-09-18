@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from compas_tno.plotters import open_csv_row
+from compas_tno.utilities import open_csv_row
 # from compas_tno.plotters import diagram_of_thrust
 # from compas_tno.plotters import diagram_of_multiple_thrust
 from matplotlib.ticker import FormatStrFormatter
@@ -542,7 +542,7 @@ for type_formdiagram in ['fan_fd', 'cross_fd']:
 
     legendaddpt = ['B1', 'B2', 'D3', 'D4']
 
-    diagram_of_multiple_thrust(thicknesses_all, solutions_all, legend_all, save=img_graph,
+    diagram_of_multiple_thrust(thicknesses_all, solutions_all, legend_all,
                                fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors_all, addpt=x_y_add, legendaddpt=legendaddpt).show()
     # diagram_of_multiple_thrust(thicknesses_all, solutions_all, legends[type_formdiagram], save=img_graph, fill=True, xy_limits=xy_limits, GSF_ticks=GSF_ticks, colors=colors[type_formdiagram]).show()
 

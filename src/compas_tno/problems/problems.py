@@ -193,7 +193,7 @@ class Problem():
         return problem
 
 
-def initialise_form(form, find_inds=True, printout=False):
+def initialise_form(form, find_inds=True, printout=False, tol=None):
     """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
@@ -204,6 +204,8 @@ def initialise_form(form, find_inds=True, printout=False):
         Whether or not independents should be found (fixed diagram), by default True
     printout : bool, optional
         Whether or not prints should appear on the screen, by default False
+    tool : float, optional
+        Tolerance od independents, by default None
 
     Returns
     -------
@@ -219,7 +221,7 @@ def initialise_form(form, find_inds=True, printout=False):
     M = initialise_problem_general(form)
 
     if find_inds:
-        adapt_problem_to_fixed_diagram(M, form, printout=printout)
+        adapt_problem_to_fixed_diagram(M, form, printout=printout, tol=tol)
 
     return M
 
@@ -284,6 +286,8 @@ def initialise_problem_general(form):
         py[i] = vertex.get('py', 0)
         pz[i] = vertex.get('pz', 0)
         s[i] = vertex.get('target', 0)
+        if abs(s[i]) < 1e-6:
+            s[i] = 0.0
         xlimits[i, 0] = vertex.get('xmin', None)
         xlimits[i, 1] = vertex.get('xmax', None)
         ylimits[i, 0] = vertex.get('ymin', None)
@@ -404,7 +408,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
         The form diagram to be analysed
     printout : bool, optional
         If prints should show in the screen, by default False
-    tool : float, optional
+    tol : float, optional
         Tolerance of the singular values, by default None
 
     """
@@ -461,6 +465,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
     rcond = 1e-17
     if tol:
         rcond = tol
+    Ed = problem.E[:, dep]
     Edinv = -csr_matrix(pinv(problem.E[:, dep], rcond=rcond))
     Ei = csr_matrix(problem.E[:, ind])
     B = zeros((problem.m, k))
@@ -482,6 +487,7 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
     problem.dep = dep
     problem.B = B
     problem.Edinv = Edinv
+    problem.Ed = Ed
     problem.Ei = Ei
     problem.d = d
     problem.d0 = d
@@ -722,6 +728,7 @@ def plot_svds(M, tol=None):
 
     check = check_independents(M)
     print('Check independents:', check)
+    print('Shape/ Rank Ed:', M.Ed.shape, matrix_rank(M.Ed))
 
     if zs > 0:
         first_zero = s[len(s)-zs]

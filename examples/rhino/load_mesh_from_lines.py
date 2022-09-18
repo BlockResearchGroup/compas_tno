@@ -3,8 +3,11 @@ import compas_tno
 import os
 import compas_rhino
 from compas_rhino.conversions import RhinoLine
+from compas_rhino.conversions import RhinoPoint
 from compas_rhino.utilities import get_objects
 from compas_rhino.utilities import select_lines
+from compas_rhino.utilities import select_points
+from compas.geometry import distance_point_point
 from compas.datastructures import Mesh
 from compas.geometry import Point
 from compas.geometry import distance_point_point_xy
@@ -36,29 +39,49 @@ compas_mesh = Mesh.from_lines(lines, delete_boundary_face=True)
 ni = 4
 ns = 2
 
-title = 'circular_sigularity_ni_{}_ns_{}.json'.format(ni, ns)
+# title = 'circular_sigularity_ni_{}_ns_{}.json'.format(ni, ns)
 
 # jsonpath = '/Users/mricardo/compas_dev/me/freeform/meshes_square/mesh-E.json'
 # jsonpath = '/Users/mricardo/compas_dev/me/anagni/meshes/CISM/mesh-B7-maxload.json'
 # jsonpath = '/Users/mricardo/compas_dev/compas_tno/data/form-hor_load.json'
 
-jsonpath= '/Users/mricardo/compas_dev/me/pattern/dome/split_support/parametric/'+title+'.json'
+# jsonpath= '/Users/mricardo/compas_dev/me/pattern/dome/split_support/parametric/'+title+'.json'
 # jsonpath= '/Users/mricardo/compas_dev/me/pattern/singular/dome/mesh-D3-diag.json'
 
 # jsonpath= '/Users/mricardo/compas_dev/me/pattern/parametric/form_lambd_0.5_from_rhino.json'
 
-compas_mesh.to_json(jsonpath)
+#jsonpath = '/Users/mricardo/compas_dev/me/hor-loads/cross/mixed3.json'
 
-print(compas_mesh)
+#compas_mesh.to_json(jsonpath)
 
-print('Mesh saved @', jsonpath)
+#print(compas_mesh)
+
+#print('Mesh saved @', jsonpath)
+
 
 from compas_tno.diagrams import FormDiagram
 
 form = FormDiagram.from_mesh(compas_mesh)
 
-form.set_boundary_supports()
-form.delete_boundary_edges()
+guids = select_points(message='Select the Supports in the Form Diagram')
+
+if not guids:
+    form.set_boundary_supports()
+    form.delete_boundary_edges()
+else:
+    supports = []
+    for guid in guids:
+        rhinopoint = RhinoPoint.from_guid(guid)
+        compaspoint = rhinopoint.to_compas()
+        supports.append(compaspoint)
+
+    compas_rhino.rs.UnselectObjects(guids)
+    
+    for key in form.vertices():
+        pt = form.vertex_coordinates(key)
+        for support in supports:
+            if distance_point_point(support, pt) < 1e-3:
+                form.vertex_attribute(key, 'is_fixed', True)
 
 indset = [line.midpoint for line in independent_lines]
 tol_old_ind = 1e-3
@@ -71,7 +94,9 @@ for u, v in form.edges_where({'_is_edge': True}):
 
 form.assign_inds(inds)
 
-formpath= '/Users/mricardo/compas_dev/me/pattern/dome/split_support/parametric/form-'+title+'.json'
+# formpath= '/Users/mricardo/compas_dev/me/pattern/dome/split_support/parametric/form-'+title+'.json'
+
+formpath = '/Users/mricardo/compas_dev/me/anagni/meshes/CISM/mesh-X.json'
 
 form.to_json(formpath)
 

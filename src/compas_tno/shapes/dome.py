@@ -623,7 +623,7 @@ def dome_b_update(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
 
 
 def dome_db(x, y, thk, fixed, center=[5.0, 5.0], radius=5.0):
-    """Updates the ``b`` parameter of a dome for a given thickness
+    """Updates the ``db`` parameter of a dome for a given thickness
 
     Parameters
     ----------

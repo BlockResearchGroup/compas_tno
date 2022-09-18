@@ -30,6 +30,7 @@ displ_type = 'two'
 for thk in [0.50]:
 
     pavillion = Shape.create_pavillionvault(thk=thk, spr_angle=spr_angle, expanded=True)
+    pavillion.ro = 20.0
 
     # form = FormDiagram.create_ortho_form(fix='all', discretisation=discretisation)
     form = FormDiagram.create_cross_form(fix='all', discretisation=discretisation)
