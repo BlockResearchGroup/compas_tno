@@ -19,15 +19,12 @@ radius = 5.0
 thk = 0.5
 lambd0 = 0.1
 max_lambd = 500.0
-scale_problem = 20.0
+scale_problem = 0.1
 
 solutions = {}
 
-for np in [12, 16]:  # [12, 16, 20, 24]
-    for nm in [12]:
-
-        if [np, nm] in [[12, 16], [12, 20], [16, 20]]:
-            continue
+for np in [24]:  # [12, 16, 20, 24]
+    for nm in [20]:
 
         discretisation = [np, nm]
 
@@ -59,14 +56,15 @@ for np in [12, 16]:  # [12, 16, 20, 24]
                                                     load_direction=load_direction,
                                                     max_lambd=max_lambd,
                                                     solver='IPOPT',
-                                                    plot=False,
+                                                    plot=True,
                                                     printout=True,
                                                     max_iter=5000
                                                     )
         problem.apply_envelope()
         problem.apply_reaction_bounds()
         problem.optimiser.set_constraints(['funicular', 'envelope', 'reac_bounds'])
-        problem.optimiser.set_features(['fixed'])
+        problem.optimiser.set_features(['fixed', 'sym'])
+        # problem.optimiser.set_features(['fixed'])
         problem.set_up_optimiser()
 
         pz0 = form.vertex_attribute(0, 'pz')

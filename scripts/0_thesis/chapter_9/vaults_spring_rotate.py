@@ -1,107 +1,136 @@
-from compas_tno import analysis
 from compas_tno.analysis.analysis import Analysis
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.viewers import Viewer
+from compas.geometry import norm_vector
+from compas.geometry import Line, Point, Vector
+from compas_tno.utilities.form import slide_pattern_inwards
+from compas.colors import Color
 import math
+from numpy import array
 
-form = FormDiagram.create_cross_form()
-vault = Shape.create_pointedcrossvault()
+discretisation = 14
+spr_angle = 30.0
+R_over_L = 0.5
 
-R_over_L = 0.2
-lambd = 0.8
-thk_0 = 0.5
-spr_angle = 30
+L_form = 10.0
+xf = L_form
+x0 = 0.0
+xc = yc = (x0 + xf)/2
+printout = False
+starting = 'loadpath'
+solver = 'IPOPT'
 
-phi = {}
+cos = math.cos(math.radians(spr_angle))
+fact = 2 * (R_over_L * (cos - 1) + 1/2)
+L = L_form/fact
+R = L * R_over_L
+Ldiff = L - L_form
+xyspan_shape = [[-Ldiff/2, xf + Ldiff/2], [-Ldiff/2, xf + Ldiff/2]]
 
-for spr_angle in [30]:
+results = {}
 
-    results[spr_angle] = {}
+vault = Shape.create_crossvault(discretisation=discretisation*2, xy_span=xyspan_shape)
+vault.ro = 0.1
 
-    for lambd in [0.0]:
-        # for lambd in [0.9]:
+ro = 45.0
+delta = 0.714
 
-        print('-'*10, ' Analysis for lambda= ', lambd)
+for lambd in [0.0]:
 
-        results[spr_angle][lambd] = {}
+    form = FormDiagram.create_cross_form(discretisation=discretisation)
+    # form = FormDiagram.create_fan_form(discretisation=discretisation)
+    # form = FormDiagram.create_parametric_form(lambd=lambd, discretisation=discretisation)
 
-        discr = 14
-        L_form = 10.0
-        xf = L_form
-        x0 = 0.0
-        xc = yc = (x0 + xf)/2
-        xyspan = [[x0, xf], [x0, xf]]
+    # form = FormDiagram.create_cross_with_diagonal(discretisation=discretisation)
+    # slide_pattern_inwards(form, delta=delta)
+    # form_base = FormDiagram.create_cross_form(discretisation=discretisation)
+    # slide_pattern_inwards(form_base, delta=delta)
 
-        # form = FormDiagram.create_parametric_form(xy_span=xyspan, lambd=lambd, discretisation=discr)
-        form = FormDiagram.create_cross_form(xy_span=xyspan, discretisation=discr)
+    starting = 'loadpath'
 
-        i = 0
-        for R_over_L in [0.5]:
-        # for R_over_L in [0.5]:
+    print('-'*10, ' Analysis for lambda= ', lambd)
 
-            if i == 0:
-                starting = 'loadpath'
-            else:
-                starting = 'current'
+    results[lambd] = {}
 
-            alpha = 1/math.cos(math.radians(spr_angle))
-            L = xf * alpha
-            R = L * R_over_L
-            Ldiff = L - xf
-            xyspan_shape = [[-Ldiff/2, xf + Ldiff/2], [-Ldiff/2, xf + Ldiff/2]]
+    # for i in range(36):
+    for i in [19]:
 
-            hc = math.sqrt(R**2 - (R - L/2)**2)
+        phi = 10 * i
+        results[lambd][phi] = {}
 
-            vault = Shape.create_pointedcrossvault(xy_span=xyspan_shape, discretisation=discr*2, hc=hc, thk=thk_0)
-            vault.ro = 0.1  # really important to IPOPT solution
+        print('-'*10, ' Analysis for i/phi= ',i, phi)
 
-            vector_supports = []
-            lines = []
-            plots_vectors = []
-            for key in form.vertices_where({'is_fixed': True}):
-                x, y, z = form.vertex_coordinates(key)
-                dXbi = [0, 0, 0]
-                if x > xc and y < yc:
-                    dXbi = normalize_vector([1, -1, 0])
-                if norm_vector(dXbi) > 1e-3:
-                    start = [x, y, z]
-                    end = [x + dXbi[0], y + dXbi[1], z + dXbi[2]]
-                    lines.append(Line(start, end))
-                    plots_vectors.append([Point(*start), Vector(*dXbi)])
-                vector_supports.append(dXbi)
+        key_sup = None
+        vector_supports = []
+        lines = []
+        plots_vectors = []
+        for key in form.vertices_where({'is_fixed': True}):
+            x, y, z = form.vertex_coordinates(key)
+            dXbi = [0, 0, 0]
+            if x > xc and y > yc:
+                key_sup = key
+                dXbi = [math.cos(math.radians(ro)) * math.cos(math.radians(-phi)), math.cos(math.radians(ro)) * math.cos(math.radians(-phi)),  math.sin(math.radians(-phi))]
+                print('Norm of vector:', dXbi, norm_vector(dXbi))
+                start = [x, y, z]
+                end = [x + dXbi[0], y + dXbi[1], z + dXbi[2]]
+                lines.append(Line(start, end))
+                plots_vectors.append([Point(*start), Vector(*dXbi)])
+            vector_supports.append(dXbi)
 
+        dXb = array(vector_supports)
+        # print(dXb)
 
+        problem: Analysis = Analysis.create_compl_energy_analysis(form, vault,
+                                                                  printout=printout,
+                                                                  starting_point=starting,
+                                                                  support_displacement=dXb,
+                                                                  solver=solver)
+        problem.apply_selfweight()
+        # problem.apply_selfweight_from_pattern(form_base)
+        problem.apply_envelope()
+        problem.set_up_optimiser()
+        problem.run()
 
-            problem: Analysis = Analysis.create_minthk_analysis(form, vault, printout=False, solver='IPOPT', starting_point=starting)
-            problem.apply_selfweight()
-            problem.apply_envelope()
-            problem.set_up_optimiser()
-            problem.run()
+        swt = abs(form.lumped_swt())
+        # print('SWT:', swt)
 
-            i += 1
+        fopt = problem.optimiser.fopt
+        rx = form.vertex_attribute(key_sup, '_rx')
+        ry = form.vertex_attribute(key_sup, '_ry')
+        V = abs(form.vertex_attribute(key_sup, '_rz'))
+        T = math.sqrt(rx**2 + ry**2)
 
-            minthk = problem.optimiser.fopt
-            t_over_s = minthk/L_form
+        results[lambd][phi]['fopt'] = ' '
+        results[lambd][phi]['V/W'] = ' '
+        results[lambd][phi]['T/W'] = ' '
 
-            if problem.optimiser.exitflag == 0:
-                results[spr_angle][lambd][R_over_L] = t_over_s
+        if problem.optimiser.exitflag == 0:
+            print('Solved for i=', i)
+            starting = 'current'
+            results[lambd][phi]['fopt'] = fopt
+            results[lambd][phi]['V/W'] = V/swt
+            results[lambd][phi]['T/W'] = T/swt
 
-# shape_nice = Shape.from_formdiagram_and_attributes(form)
+        else:
+            print('No sol for i=', i)
+            starting = 'loadpath'
 
-# view: Viewer = Viewer(form, show_grid=False)
-# view.draw_thrust()
-# view.draw_shape()
-# view.draw_cracks()
-# view.show()
+        view: Viewer = Viewer(form)
+        # view.scale_edge_thickness(10.0)
+        # view.draw_thrust()
+        view.draw_shape()
+        # view.draw_cracks()
+        # for base, vector in plots_vectors:
+        #     base_sup = Point(*form.vertex_coordinates(key_sup))
+        #     view.draw_vector(vector, base_sup, color=Color.black())
+        view.show()
 
-for spr_angle in results:
+    print(results)
+
+for lambd in results:
     print('-'*20)
-    print('-'*20)
-    print(spr_angle)
-    for lambd in results[spr_angle]:
-        print('-'*20)
-        print(lambd)
-        for R_over_L in results[spr_angle][lambd]:
-            print(R_over_L, results[spr_angle][lambd][R_over_L])
+    print('lambd:', lambd)
+    for phi in results[lambd]:
+        print(phi, results[lambd][phi]['fopt'], results[lambd][phi]['V/W'], results[lambd][phi]['T/W'])
 

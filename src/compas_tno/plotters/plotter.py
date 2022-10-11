@@ -539,7 +539,7 @@ class TNOPlotter(object):
             linecompas = Line(line[0], line[1])
             self.app.add(linecompas, draw_as_segment=True)
 
-    def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False):
+    def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False, **kwargs):
         """Initiate the Plotter with the default camera options.
 
         Parameters
@@ -564,7 +564,8 @@ class TNOPlotter(object):
         self.app.add(mesh,
                      show_edges=show_edges,
                      show_vertices=show_vertices,
-                     show_faces=show_faces
+                     show_faces=show_faces,
+                     **kwargs
                      )
 
     def draw_form_xz(self, scale_width=True, edges=None, **kwargs):

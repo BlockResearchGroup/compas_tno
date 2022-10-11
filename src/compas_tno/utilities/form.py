@@ -1,4 +1,5 @@
 # from compas_tno.diagrams import FormDiagram
+from symbol import factor
 from compas.geometry import intersection_segment_segment_xy
 from compas.geometry import distance_point_point_xy
 from compas.geometry import Translation
@@ -291,19 +292,19 @@ def mesh_remove_two_valent_nodes(mesh, cls=Mesh, delete_boundary_face=True):
     return mesh
 
 
-def form_parabolic_slide(delta, y0, y1, form):
+def form_parabolic_slide(form, delta, y0=0.0, y1=10.0):
     """Modify the form diagram applying a parabolic displacement profile to the nodes
 
     Parameters
     ----------
+    form : FormDiagram
+        The Form Diagram
     delta : float
         Maximum distance applied to the nodes
     y0 : float
         Start ordinate to apply the parabolic pattern
     y1 : float
         End ordinate to apply the parabolic pattern
-    form : FormDiagram
-        The Form Diagram
 
     Returns
     -------
@@ -409,22 +410,86 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
 
 
 def slide_pattern_inwards(form, delta= 0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.01):
+    """ Set parabolic vault heights.
 
-    radius = ((x1 - x0)**2 + (y1 - y0)**2)**(1/2)
-    k = 1/radius**2
+    Parameters
+    ----------
+
+    Returns
+    -------
+    intrados
+        A MeshDos for the intrados of the shape
+    extrados
+        A MeshDos for the extrados of the shape
+    middle
+        A MeshDos for the middle of the shape
+
+    Notes
+    ----------------------
+    Position of the quadrants is as in the schema below:
+
+        Q3
+    Q2      Q1
+        Q4
+
+    """
+
     xc = (x0 + x1)/2
     yc = (y0 + y1)/2
 
-    for i, vertex in enumerate(form.vertices()):
+    for vertex in form.vertices():
         if form.vertex_attribute(vertex, 'is_fixed'):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
-        dxi = k * (x - xc) ** 2 * 2 * (xc - x)/ radius
-        dyi = k * (y - yc) ** 2 * 2 * (yc - y)/ radius
 
-        form.vertex_attribute(vertex, 'x', x + delta*dxi)
-        form.vertex_attribute(vertex, 'y', y + delta*dyi)
+        quad = None
+        dxi = 0.0
+        dyi = 0.0
 
+        if y <= y0 + (y1 - y0)/(x1 - x0) * (x - x0) - tol and y >= y1 - (y1 - y0)/(x1 - x0) * (x - x0) + tol:  # Q1
+            quad = 'Q1'
+        elif y >= y0 + (y1 - y0)/(x1 - x0) * (x - x0) + tol and y >= y1 - (y1 - y0)/(x1 - x0) * (x - x0) + tol:  # Q3
+            quad = 'Q3'
+        elif y >= y0 + (y1 - y0)/(x1 - x0) * (x - x0) + tol and y <= y1 - (y1 - y0)/(x1 - x0) * (x - x0) - tol:  # Q2
+            quad = 'Q2'
+        elif y <= y0 + (y1 - y0)/(x1 - x0) * (x - x0) - tol and y <= y1 - (y1 - y0)/(x1 - x0) * (x - x0) - tol:  # Q4
+            quad = 'Q4'
+        else:  # diagonals
+            continue
+
+        # factor = ((xc - dx)/xc)
+        dy = min(y - y0, y1 - y)/yc  # 1 in center and 0 in corners (linear) - x
+        dx = min(x - x0, x1 - x)/xc  # 1 in center and 0 in corners (linear) - y
+        x0_par = y0_par = x0 + (1 - dy/yc)
+        x1_par = y1_par = x1 - (1 - dy/yc)
+        dy_par = dy * (1 + (dx)/xc)
+        dx_par = dx * (1 + (dy)/yc)
+        if quad in ['Q3', 'Q4']:
+            dxa = (dx - dy) * 1/(1 - dy)
+            mag_y = delta * (1 - ((1) - dxa)**2) * (1 - dy)
+        if quad in ['Q1', 'Q2']:
+            dya = (dy - dx) * 1/(1 - dx)
+            mag_x = delta * (1 - ((1) - dya)**2) * (1 - dx)
+        # mag_x = delta * (1 - ((dy - yc)/yc)**2) * ((xc - dx)/xc)
+        # mag_y = delta * (1 - ((dx - xc)/xc)**2) * ((yc - dy)/yc)
+        # mag_x = delta * (1 - ((1) - dya)**2) #* (1 - dx)
+        # mag_y = delta * (1 - ((1) - dxa)**2) #* (1 - dy)
+
+        if quad == 'Q1':
+            dxi = - mag_x
+        elif quad == 'Q3':
+            dyi = - mag_y
+        elif quad == 'Q2':  # Q2
+            dxi = + mag_x
+        elif quad == 'Q4':  # Q4
+            dyi = mag_y
+        else:  # diagonals
+            continue
+
+        # print(vertex, 'x, y;', x, y, 'mag xy:', mag_x, mag_y)
+
+        form.vertex_attribute(vertex, 'x', x + dxi)
+        form.vertex_attribute(vertex, 'y', y + dyi)
 
 
 def displacement_map_parabola(form, y0=0.0, y1=10.0):

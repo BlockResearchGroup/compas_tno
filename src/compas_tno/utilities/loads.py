@@ -142,8 +142,8 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
     pzt = 0
     for key in key_real_to_key:
         pz = form_.vertex_attribute(key_real_to_key[key], 'pz')
-        if pz_negative:
-            pz *= -1  # make loads negative
+        # if pz_negative:
+        #     pz *= -1  # make loads negative
         form.vertex_attribute(key, 'pz', value=pz)
         pzt += pz
 

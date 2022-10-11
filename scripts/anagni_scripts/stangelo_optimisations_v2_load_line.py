@@ -42,7 +42,7 @@ xspan = [-4.431, 1.313]
 yspan = [14.968, 18.312]
 
 fill_loads = True
-diagram_name = 'mesh-A'
+diagram_name = 'mesh-B'
 
 x0 = 0.0
 xf = xspan[1] - xspan[0]
@@ -101,7 +101,7 @@ else:
     vertices, faces = mesh.to_vertices_and_faces()
     form = FormDiagram.from_vertices_and_faces(vertices, faces)
 
-trans, factors = move_pattern_to_origin(form, corners)
+move_pattern_to_origin(form, corners)
 
 n = form.number_of_vertices()
 pzv = zeros((n, 1))
@@ -326,15 +326,15 @@ print('T/W:', thrust/pztfinal)
 
 folder = os.path.join(folder, 'revision')
 
-if optimiser.exitflag == 0:
-    os.makedirs(os.path.join(folder, diagram_name), exist_ok=True)
-    file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_' + objective + '.json')
-    if fill_loads:
-        file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_with_fill_' + objective + '.json')
+# if optimiser.exitflag == 0:
+#     os.makedirs(os.path.join(folder, diagram_name), exist_ok=True)
+#     file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_' + objective + '.json')
+#     if fill_loads:
+#         file_solution = os.path.join(folder, diagram_name, file_name + '_' + diagram_name + '_with_fill_' + objective + '.json')
 
-    form.to_json(file_solution)
+#     form.to_json(file_solution)
 
-    print('Saved solution to:', file_solution)
+#     print('Saved solution to:', file_solution)
 
 viewer = Viewer(form, shape=vault, show_grid=False)
 viewer.settings['camera.target'] = [2.8, 1.6, 12]

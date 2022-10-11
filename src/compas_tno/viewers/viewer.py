@@ -36,7 +36,7 @@ class Viewer(object):
 
     def __init__(self, thrust=None, shape=None, force=None, show_grid=False, **kwargs):
 
-        super().__init__(**kwargs)
+        super().__init__()  # **kwargs
         self.title = 'Viewer'
         self.app = None
         self.thrust = thrust
@@ -91,7 +91,7 @@ class Viewer(object):
             'tol.cracks': 1e-3,
         }
 
-    def initiate_app(self):
+    def initiate_app(self, **kwargs):
         """ Initiate the App with the default camera options
 
         Returns
@@ -100,7 +100,7 @@ class Viewer(object):
             The objects are updated in place
         """
 
-        self.app = app.App(width=1600, height=900, show_grid=self.settings['camera.show.grid'])
+        self.app = app.App(width=1600, height=900, show_grid=self.settings['camera.show.grid'], **kwargs)
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
@@ -272,8 +272,8 @@ class Viewer(object):
             if force > self.settings['tol.forces'] * 2:
                 self.app.add(line, name=str((u, v)), linewidth=thk, color=self.settings['color.edges.thrust'])
 
-        print('Min / Max thks:', min(thks), max(thks))
-        print('Min / Max forces:', min(forces), max(forces))
+        # print('Min / Max thks:', min(thks), max(thks))
+        # print('Min / Max forces:', min(forces), max(forces))
 
     def draw_cracks(self, cull_negative=False, points=None, **kwargs):
         """Draw cracks according to the settings
@@ -388,7 +388,7 @@ class Viewer(object):
 
         vertices_middle, faces_middle = shape.middle.to_vertices_and_faces()
         mesh_middle = Mesh.from_vertices_and_faces(vertices_middle, faces_middle)
-        self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.middle'])
+        self.app.add(mesh_middle, name="Middle", show_edges=True, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.middle'])
 
     def draw_shape_normals(self, **kwargs):
         """ Draw the shape normals at intrados and extrados surfaces

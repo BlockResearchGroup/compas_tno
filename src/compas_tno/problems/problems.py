@@ -717,10 +717,10 @@ def plot_svds(M, tol=None):
     print('max/min singular vectors E', max(s), min(s), len(s))
     print('Shape E: {} | #ind: {} | rank : {}:'.format(M.E.shape, k, matrix_rank(M.E, tol=tol)))
 
-    mn = max(m - n, n - m)
+    # mn = max(m - n, n - m)
+    mn = max(m - n, 0)
     zs = k - mn
     print('# null-SVD:', zs)
-    print(k - mn)
 
     # if zs + 3 > len(s):
     #     print('Last {} SVs: {}'.format(len(s[-(zs + 3):]), s[-(zs + 3):]))

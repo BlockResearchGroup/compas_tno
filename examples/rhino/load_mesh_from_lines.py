@@ -96,7 +96,7 @@ form.assign_inds(inds)
 
 # formpath= '/Users/mricardo/compas_dev/me/pattern/dome/split_support/parametric/form-'+title+'.json'
 
-formpath = '/Users/mricardo/compas_dev/me/anagni/meshes/CISM/mesh-X.json'
+formpath = '/Users/mricardo/compas_dev/me/anagni/meshes/CISM/mesh-Z.json'
 
 form.to_json(formpath)
 

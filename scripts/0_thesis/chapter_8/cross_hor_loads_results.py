@@ -55,18 +55,17 @@ for slide in slides:
 
     # type_diagram = form.parameters['type']
     # type_diagram = 'mixed'
-    type_diagram = 'robin'
+    # type_diagram = 'sag'
 
-    path = '/Users/mricardo/compas_dev/me/anagni/meshes/CISM/mesh-Z.json'
-    form = FormDiagram.from_json(path)
+    # path = '/Users/mricardo/compas_dev/me/hor-loads/cross/mixed_form3.json'
+    # form = FormDiagram.from_json(path)
 
-    move_pattern_to_origin(form)
+    # move_pattern_to_origin(form)
 
     # title = 'cross_discr_{}_full_slide_{}_lambdh.json'.format(discretisation, slide)
-    title = type_diagram + '.json'
     # title = type_diagram + '_discr_{}_tappered_{}_slide_{}_lambdh.json'.format(discretisation, tappered, slide)
 
-    # slide_diagram(form, delta=-slide, tappered=tappered)
+    slide_diagram(form, delta=-slide, tappered=tappered)
 
     plot = TNOPlotter(form)
     plot.draw_form(scale_width=False)
@@ -107,7 +106,7 @@ for slide in slides:
     problem.optimiser.set_features(['fixed', 'sym'])
     problem.optimiser.set_axis_symmetry(axis_sym)
     # problem.optimiser.set_additional_options(tol_inds=1e-6)
-    # problem.optimiser.set_additional_options(solver_convex='MATLAB')
+    problem.optimiser.set_additional_options(solver_convex='MATLAB')
     problem.set_up_optimiser()
     plot_svds(problem.optimiser.M)
     problem.run()
@@ -129,15 +128,15 @@ for slide in slides:
     # view.draw_cracks()
     # view.show()
 
-    if problem.optimiser.exitflag == 0:
-        save_json = folder + title
-        form.to_json(save_json)
+    # if problem.optimiser.exitflag == 0:
+    #     save_json = folder + title
+    #     form.to_json(save_json)
 
-        print('Saved at:', save_json)
+    #     print('Saved at:', save_json)
 
-        solutions[slide] = lambd_opt
-    else:
-        print('Problem did not find solution')
+    #     solutions[slide] = lambd_opt
+    # else:
+    #     print('Problem did not find solution')
 
 # # for slide in solutions:
 # #     print(slide, solutions[slide])

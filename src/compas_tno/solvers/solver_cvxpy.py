@@ -88,7 +88,6 @@ def call_and_output_CVXPY(form, problem, printout=False):
         print('Calling LP-Optimisation via CVXPY with NO independents')
         fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy(problem, printout=printout)
 
-    print('qopt', qopt)
     problem.q = qopt
     Xfinal = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
     problem.X[problem.free, 2] = Xfinal[:, 2]
