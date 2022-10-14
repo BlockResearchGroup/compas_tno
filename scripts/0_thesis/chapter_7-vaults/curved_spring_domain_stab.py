@@ -16,6 +16,8 @@ R_over_L = 0.2
 # lambd = 0.8
 thk_0 = 0.5
 
+# tests
+
 printout = False
 
 results = {}
