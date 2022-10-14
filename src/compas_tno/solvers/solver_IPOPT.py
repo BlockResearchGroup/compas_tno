@@ -271,10 +271,10 @@ def run_optimisation_ipopt(analysis):
 
     cu = [10e10]*len(g0)
     cl = [0.0]*len(g0)
-    if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
-        nsym = Asym.shape[0]
-        cu[-nsym:] = [0.0]*nsym
-        cl[-nsym:] = [0.0]*nsym
+    # if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
+    #     nsym = Asym.shape[0]
+    #     cu[-nsym:] = [0.0]*nsym
+    #     cl[-nsym:] = [0.0]*nsym
 
     nlp = cyipopt.Problem(
         n=len(x0),
@@ -350,6 +350,8 @@ def _nlp_options(nlp, optimiser):
     # nlp.add_option('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
     # nlp.add_option('max_iter', 500)
 
+    scaling = optimiser.settings.get('nlp_scaling_method', None)
+
     if not optimiser.settings['printout']:
         nlp.add_option('print_level', 0)
     if optimiser.settings.get('derivative_test', None):
@@ -358,5 +360,8 @@ def _nlp_options(nlp, optimiser):
         # nlp.add_option('derivative_test_print_all', 'yes')
     if optimiser.settings.get('max_iter', None):
         nlp.add_option('max_iter', optimiser.settings['max_iter'])
+    if scaling:
+        print('Applied sollver scaling:', scaling)
+        nlp.add_option('nlp_scaling_method', scaling)
 
     return nlp

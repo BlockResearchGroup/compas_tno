@@ -30,6 +30,7 @@ displ_type = 'two'
 for thk in [0.50]:
 
     pavillion = Shape.create_pavillionvault(thk=thk, spr_angle=spr_angle, expanded=True)
+    pavillion.ro = 20.0
 
     # form = FormDiagram.create_ortho_form(fix='all', discretisation=discretisation)
     form = FormDiagram.create_cross_form(fix='all', discretisation=discretisation)
@@ -109,7 +110,7 @@ for thk in [0.50]:
                                                      plot=True,
                                                      support_displacement=dXb,
                                                      max_iter=1000,
-                                                     solver='SLSQP',
+                                                     solver='IPOPT',
                                                      starting_point=starting)
 
     analysis.optimiser.set_constraints(constraints)
@@ -124,6 +125,10 @@ for thk in [0.50]:
 
     # analysis.apply_reaction_bounds()
     analysis.set_up_optimiser()
+
+    from compas_tno.problems.problems import plot_svds
+    M = analysis.optimiser.M
+    plot_svds(M)
 
     analysis.run()
 

@@ -8,46 +8,20 @@ from compas.geometry import Line
 from compas_view2.shapes import Arrow
 from compas.geometry import normalize_vector
 from compas.geometry import norm_vector
+from compas.geometry import distance_point_point_xy
 from numpy import array
 from numpy import zeros
 import math
 # from compas_tno.utilities import apply_envelope_from_shape
 
-delta = 1.0
-span = 10.0
-discr = 16
-# xspan = yspan = [0.0, span]
-# xspan_vault = yspan_vault = [- delta, span + delta]
 thk = 0.50
-
-# type_form = 'cross_fd'
-
-# data_vault = {
-#     'type': 'crossvault',
-#     'xy_span': [xspan_vault, yspan_vault],
-#     'thk': thk,
-#     'discretisation': discr,
-#     't': 0.0
-# }
-
-# data_diagram = {
-#     'type': type_form,
-#     'xy_span': [xspan, yspan],
-#     'thk': thk,
-#     'discretisation': discr,
-#     'fix': 'corners'
-# }
-
-# vault = Shape.from_library(data_vault)
-# form = FormDiagram.from_library(data_diagram)
-
-
+spr_angle = 30
 discr = 16
 xf = 10.0
 x0 = 0.0
+
 xc = yc = (x0 + xf)/2
 xyspan = [[x0, xf], [x0, xf]]
-spr_angle = 30
 alpha = 1/math.cos(math.radians(spr_angle))
 L = xf * alpha
 Ldiff = L - xf
@@ -81,8 +55,12 @@ optimiser.settings['starting_point'] = starting_point
 optimiser.settings['sym_loads'] = False
 
 if objective == 'max_load':
-    # loaded_node = 58
-    loaded_node = 92
+    xp, yp = (5.0, 2.5)
+    tol = 1e-3
+    for key in form.vertices():
+        xi, yi, _ = form.vertex_coordinates(key)
+        if distance_point_point_xy([xi, yi], [xp, yp]) < tol:
+            loaded_node = key
     max_load_mult = 2000.0
     n = form.number_of_vertices()
     pzv = zeros((n, 1))
@@ -100,10 +78,11 @@ if objective == 'Ecomp-linear':
         x, y, z = form.vertex_coordinates(key)
         xi, yi, zi = vault.intrados.vertex_coordinates(key)
 
-        # dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])  # 4 corners
+        dXbi = normalize_vector([sign*(x - Xc[0]), sign*(y - Xc[1]), sign*(z - Xc[2])])  # 4 corners
 
         if x > Xc[0] and y < Xc[1]:             # vertical settlement
-            dXbi = normalize_vector([0, 0, -1])
+            # dXbi = normalize_vector([0, 0, -1])
+            pass
         else:
             dXbi = [0, 0, 0]
 
@@ -131,13 +110,16 @@ vault0 = Shape.from_formdiagram_and_attributes(form)
 # print('Form saved to:', form_path)
 # analysis.to_json(analysis_path)
 
-
+# this is the solution for visualise the vault with a diagonal pull
 form = FormDiagram.from_json('/Users/mricardo/compas_dev/compas_tno/data/CISM/form-general1-Ecomp-linear-10-thk-0.5-corner-diagonal.json')
+
+# this is the solution for visualise the
+form = FormDiagram.from_json('/Users/mricardo/compas_dev/compas_tno/data/CISM/form-direct_path-max_load-16-thk-0.5.json')
+
+# form = FormDiagram.from_json('/Users/mricardo/compas_dev/compas_tno/data/CISM/form-appliedload.json')
 
 vault2 = Shape.from_formdiagram_and_attributes(form)
 viewer = Viewer(form, vault2)
-viewer.settings['camera.show.grid'] = False
-viewer.settings['camera.distance'] = 35
 
 viewer.draw_thrust()
 # viewer.draw_middle_shape()
@@ -170,17 +152,10 @@ if objective == 'Ecomp-linear':
 
 viewer.show()
 
-
 vault0 = Shape.from_formdiagram_and_attributes(form)
 viewer = Viewer(form, vault0)
-viewer.settings['camera.show.grid'] = False
-viewer.settings['camera.distance'] = 35
-viewer.settings['camera.target'] = [5, 5, 0]
-viewer.settings['scale.reactions'] = 0.005
-viewer.settings['scale.reactions'] = 0.005/3
-# viewer.settings['scale.reactions'] = 0.005*2
-viewer.settings['opacity.shapes'] =  0.3
-viewer.draw_thrust()
+
+viewer.settings['scale.reactions'] = 0.005/8
 
 viewer.draw_thrust()
 viewer.draw_cracks()
@@ -228,6 +203,7 @@ view.settings['camera.target'] = [5, 5, 0]
 view.settings['camera.rz'] = 45
 view.settings['camera.rx'] = 90.0
 view.settings['camera.ry'] = 0.0
+viewer.settings['scale.reactions'] = 0.005/3
 view.draw_form(edges=edges, cull_negative=True)
 view.draw_cracks(points=points, cull_negative=True)
 # view.draw_reactions(supports=supports, extend_reactions=False)

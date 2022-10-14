@@ -28,7 +28,7 @@ import time
 xspan = [0, 10]
 yspan = [0, 10]
 folder = '/Users/mricardo/compas_dev/me/pattern/singular/dome/'
-prob = 'D3'
+prob = 'A2-sym'
 mesh_file = folder + 'mesh-' + prob + '.json'
 
 mesh = Mesh.from_json(mesh_file)

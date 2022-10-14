@@ -19,59 +19,59 @@ import numpy as np
 discretisation = 10
 form = FormDiagram.create_cross_form(discretisation=discretisation)
 
-for lambd in [0.0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
+# for lambd in [0.0, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]:
 
-    form = FormDiagram.create_parametric_form(discretisation=discretisation, lambd=lambd)
+#     form = FormDiagram.create_parametric_form(discretisation=discretisation, lambd=lambd)
 
-    # # ---------- EXAMPLE 1
+#     # # ---------- EXAMPLE 1
 
-    M = initialise_form(form, find_inds=True, printout=True)
-    k = len(M.ind)
-    print(M.ind)
+#     M = initialise_form(form, find_inds=True, printout=True)
+#     k = len(M.ind)
+#     print(M.ind)
 
-    n, m = M.E.shape
-    print(M.E.shape)
+#     n, m = M.E.shape
+#     print(M.E.shape)
 
-    plotter = TNOPlotter(form)
-    plotter.draw_form_independents()
-    plotter.show()
+#     plotter = TNOPlotter(form)
+#     plotter.draw_form_independents()
+#     plotter.show()
 
-    _, s, _ = svd(asarray(M.E))
-    # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
-    print('max/min singular vectors E', max(s), min(s), len(s))
+#     _, s, _ = svd(asarray(M.E))
+#     # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
+#     print('max/min singular vectors E', max(s), min(s), len(s))
 
-    mn = max(m - n, n - m)
-    zs = k - mn
-    print('ZS:', zs)
-    print(k - mn)
-    print('Non zero SVs:', s[:len(s)-zs][:6], '...')
-    print('Zero SVs:', s[-zs:])
+#     mn = max(m - n, n - m)
+#     zs = k - mn
+#     print('ZS:', zs)
+#     print(k - mn)
+#     print('Non zero SVs:', s[:len(s)-zs][:6], '...')
+#     print('Zero SVs:', s[-zs:])
 
-    check = check_independents(M)
-    print('Check independents:', check)
+#     check = check_independents(M)
+#     print('Check independents:', check)
 
-    if zs > 0:
-        last_zero = s[len(s)-zs]
-        first_non_zero = s[len(s)-zs - 1]
+#     if zs > 0:
+#         last_zero = s[len(s)-zs]
+#         first_non_zero = s[len(s)-zs - 1]
 
-        print('First Non Zero:', first_non_zero)
-        print('Last Zero SV:', last_zero)
+#         print('First Non Zero:', first_non_zero)
+#         print('Last Zero SV:', last_zero)
 
-        len_zero = len(s[s<1.0])
-        lin_x = len_zero - zs
+#         len_zero = len(s[s<1.0])
+#         lin_x = len_zero - zs
 
-        porcentage_key = (first_non_zero - last_zero)/first_non_zero
-        print('percentage key is:', porcentage_key)
+#         porcentage_key = (first_non_zero - last_zero)/first_non_zero
+#         print('percentage key is:', porcentage_key)
 
-        fig, ax = plt.subplots()
-        ax.plot(s[s<1.0])
-        ax.plot([lin_x, lin_x], [0, 1.0], color='black')
-        plt.show()
+#         fig, ax = plt.subplots()
+#         ax.plot(s[s<1.0])
+#         ax.plot([lin_x, lin_x], [0, 1.0], color='black')
+#         plt.show()
 
-    else:
-        fig, ax = plt.subplots()
-        ax.plot(s[s<1.0])
-        plt.show()
+#     else:
+#         fig, ax = plt.subplots()
+#         ax.plot(s[s<1.0])
+#         plt.show()
 
 # # ---------- EXAMPLE 3
 

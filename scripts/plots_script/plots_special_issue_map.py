@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
 import numpy as np
-from compas_tno.plotters import open_csv_row
-from compas_tno.plotters import diagram_of_thrust
-from compas_tno.plotters import diagram_of_multiple_thrust
+# from compas_tno.utilities import open_csv_row
+# from compas_tno.utilities import diagram_of_thrust
+# from compas_tno.utilities import diagram_of_multiple_thrust
 from matplotlib.ticker import PercentFormatter
 import csv
 

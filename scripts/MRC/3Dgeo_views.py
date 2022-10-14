@@ -100,6 +100,19 @@ for i in range(len(vectors_plot)):
     view.draw_vector(vector=vector, base=base)
 view.show()
 
+view = Viewer(form, shape=pavillion)
+view.settings['camera.show.grid'] = False
+view.settings['camera.distance'] = 35
+view.settings['camera.target'] = [5, 5, 0]
+view.settings['camera.rz'] = 45
+view.settings['camera.rx'] = 60
+view.draw_shape()
+    # for i in rang{{{e(len(vectors_plot)):
+    #     vector = vectors_plot[i]
+    #     base = base_plot[i]
+    #     view.dr}}}aw_vector(vector=vector, base=base)
+view.show()
+
 
 # OLD PAVILLION
 
@@ -225,4 +238,17 @@ for i in range(len(vectors_plot)):
     vector = vectors_plot[i]
     base = base_plot[i]
     view.draw_vector(vector=vector, base=base)
+view.show()
+
+view = Viewer(form, shape=cross)
+view.settings['camera.show.grid'] = False
+view.settings['camera.distance'] = 35
+view.settings['camera.target'] = [5, 5, 0]
+view.settings['camera.rz'] = 45
+view.settings['camera.rx'] = 60
+view.draw_shape()
+# for i in range(len(vectors_plot)):
+#     vector = vectors_plot[i]
+#     base = base_plot[i]
+#     view.draw_vector(vector=vector, base=base)
 view.show()

@@ -27,6 +27,13 @@ dome = Shape.create_dome(thk=thk, radius=radius, t=1.0)
 
 form = FormDiagram.create_circular_radial_form(discretisation=discretisation)
 
+# form = FormDiagram.from_json('/Users/mricardo/compas_dev/me/pattern/dome/split_support/form_sigularity_half.json')
+
+# plotter = TNOPlotter(form)
+# plotter.draw_form(scale_width=False)
+# plotter.draw_supports()
+# plotter.show()
+
 vector_supports = []
 vectors_plot = []
 base_plot = []
@@ -54,7 +61,7 @@ analysis = Analysis.create_compl_energy_analysis(form,
                                                  printout=True,
                                                  support_displacement=dXb,
                                                  max_iter=2000,
-                                                 solver='SLSQP',
+                                                 solver='IPOPT',
                                                  starting_point='loadpath')
 
 analysis.optimiser.set_constraints(constraints)
@@ -63,15 +70,18 @@ analysis.apply_envelope()
 analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 
+swt = form.lumped_swt()
+print('SWT:', swt)
+
 analysis.run()
 
-# folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/dome/split', form.parameters['type']) + '/'
-# os.makedirs(folder, exist_ok=True)
-# title = dome.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation)
-# address = folder + title + '_' + analysis.optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
-# if analysis.optimiser.exitflag == 0:
-#     print('Saving form to:', address)
-#     form.to_json(address)
+folder = os.path.join('/Users/mricardo/compas_dev/me/compl_energy/dome/split', form.parameters['type']) + '/'
+os.makedirs(folder, exist_ok=True)
+title = dome.datashape['type'] + '_' + form.parameters['type'] + '_discr_' + str(discretisation)
+address = folder + title + '_' + analysis.optimiser.settings['objective'] + '_thk_' + str(100*thk) + '.json'
+if analysis.optimiser.exitflag == 0:
+    print('Saving form to:', address)
+    form.to_json(address)
 
 plotter = TNOPlotter(form)
 for i in range(len(vectors_plot)):

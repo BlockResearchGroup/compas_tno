@@ -50,7 +50,7 @@ folder = '/Users/mricardo/compas_dev/compas_tno/data/'
 folder = '/Users/mricardo/compas_dev/me/pattern/singular/dome/'
 folder = '/Users/mricardo/compas_dev/me/max_load/dome/apex/dome/'
 
-for prob in ['H2']:  # ['A1', 'B1', 'C1', 'D1', 'E1']  # Then H and then > D3-diag whithout independent edges (overnight)
+for prob in ['A2-sym']:  # ['A1', 'B1', 'C1', 'D1', 'E1']  # Then H and then > D3-diag whithout independent edges (overnight) >>> H2 BEST
     # Try this script and maybe try also with independent edges...
 
     mesh_file = folder + 'mesh-' + prob + '.json'
@@ -136,7 +136,7 @@ for prob in ['H2']:  # ['A1', 'B1', 'C1', 'D1', 'E1']  # Then H and then > D3-di
     optimiser.settings['find_inds'] = False
     optimiser.settings['plot'] = False
     optimiser.settings['save_iterations'] = make_video
-    optimiser.settings['solver-convex'] = 'CVXPY'
+    optimiser.settings['solver_convex'] = 'CVXPY'
     optimiser.settings['max_iter'] = 1000
     optimiser.settings['autodiff'] = autodiff
 

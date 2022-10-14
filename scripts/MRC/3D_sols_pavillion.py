@@ -79,8 +79,27 @@ for thk in [0.50]:
     title = shape_type + '_' + form_type + '_discr_' + str(discretisation) + '_spr_' + str(spr_angle)
     address = folder + title + '_' + objective + '_thk_' + str(100*thk) + '.json'
 
+    address = '/Users/mricardo/compas_dev/me/compl_energy/pavillion/wall_open/cross_fd/hor_loads/pavillionvault_cross_fd_discr_14_spr_30.0_Ecomp-linear_thk_50.0.json'
+
     form = FormDiagram.from_json(address)
     print('Loaded form diagram from:', address)
+
+    i = 0
+    dic = {}
+    for key in form.vertices_where({'is_fixed': True}):
+        x, y, z = form.vertex_coordinates(key)
+        rx, ry, rz = form.vertex_attributes(key, ['_rx', '_ry', '_rz'])
+        print(i, key, rx, ry, rz, x, y, z)
+        dic[key] = i
+        i += 1
+
+    plotter = TNOPlotter(form)
+    plotter.draw_form()
+    plotter.draw_cracks()
+    # plotter.draw_form_independents()
+    plotter.draw_vertexlabels(dic, 20)
+    plotter.draw_supports()
+    plotter.show()
 
     vector_supports = []
     vectors_plot = []
@@ -105,28 +124,23 @@ for thk in [0.50]:
             zmax = z
     print('Maximum Z:', zmax)
 
-    # plot: TNOPlotter = TNOPlotter(form)
-    # plot.draw_form(scale_width=False, color=Color.black())
-    # plot.draw_supports(color=Color.red())
-    # plot.show()
-
-    # view: Viewer = Viewer(form, shape=pavillion)
-    # view.settings['camera.show.grid'] = False
-    # view.settings['camera.distance'] = 35
-    # view.settings['size.vertex'] = 16.0
+    view: Viewer = Viewer(form, shape=pavillion)
+    view.settings['camera.show.grid'] = False
+    view.settings['camera.distance'] = 35
+    view.settings['size.vertex'] = 16.0
     # view.settings['size.edge.max_thickness'] = 12.0
-    # view.settings['camera.target'] = [5, 5, 0]
-    # view.settings['camera.rz'] = 45
-    # view.settings['camera.rx'] = 60
-    # view.draw_form(cull_negative=True)
-    # view.draw_cracks(cull_negative=True)
-    # view.draw_reactions(extend_reactions=True)
-    # view.draw_shape()
-    # for i in range(len(vectors_plot)):
-    #     vector = vectors_plot[i]
-    #     base = base_plot[i]
-    #     view.draw_vector(vector=vector, base=base)
-    # view.show()
+    view.settings['camera.target'] = [5, 5, 0]
+    view.settings['camera.rz'] = 45
+    view.settings['camera.rx'] = 60
+    view.draw_form(cull_negative=True)
+    view.draw_cracks(cull_negative=True)
+    view.draw_reactions(extend_reactions=True)
+    view.draw_shape()
+    for i in range(len(vectors_plot)):
+        vector = vectors_plot[i]
+        base = base_plot[i]
+        view.draw_vector(vector=vector, base=base)
+    view.show()
 
     points = []
     supports = []
@@ -154,9 +168,9 @@ for thk in [0.50]:
         if Xf[1] < yc:
             delete_faces.append(face)
 
-    for face in delete_faces:
-        pavillion.intrados.delete_face(face)
-        pavillion.extrados.delete_face(face)
+    # for face in delete_faces:
+    #     pavillion.intrados.delete_face(face)
+    #     pavillion.extrados.delete_face(face)
 
     view: Viewer = Viewer(form, shape=pavillion)
     view.settings['camera.show.grid'] = False
@@ -183,4 +197,15 @@ for thk in [0.50]:
     # # plot.draw_supports(color=Color.red())
     # plot.show()
 
+    plotter = TNOPlotter(form, pavillion)
+    plotter.draw_form()
+    plotter.draw_cracks()
+    plotter.draw_supports()
+    plotter.draw_force()
+    plotter.show()
+
+    force = plotter.force
+    force_path = address.split('.')[0] + '_force.json'
+    force.to_json(force_path)
+    print('Force:', force_path)
 

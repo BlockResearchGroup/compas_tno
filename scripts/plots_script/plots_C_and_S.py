@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from compas_tno.plotters import open_csv_row
+from compas_tno.utilities import open_csv_row
 # from compas_tno.plotters import diagram_of_thrust
 # from compas_tno.plotters import diagram_of_multiple_thrust
 from matplotlib.ticker import FormatStrFormatter

@@ -15,9 +15,9 @@ discretisation_shape = [2*discretisation[0], 2*discretisation[1]]
 
 # Parameters Optimisations
 
-obj = 'min'
+obj = 'max'
 solver = 'SLSQP'
-constraints = ['funicular', 'envelope']
+constraints = ['funicular', 'envelope', 'reac_bounds']
 variables = ['q', 'zb']
 features = ['fixed']
 starting_point = 'loadpath'

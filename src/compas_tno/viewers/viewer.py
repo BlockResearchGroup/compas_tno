@@ -4,13 +4,15 @@ from compas.geometry import Point
 from math import radians
 from math import sqrt
 
-from zmq import XPUB
+import json
 
 from compas_tno.shapes import Shape
 
 from compas_view2 import app
 from compas_view2.shapes import Arrow
 from compas_view2.shapes import Text
+from compas_view2.objects import LineObject
+from compas_view2.objects import PointObject
 
 from compas.colors import Color
 
@@ -32,14 +34,17 @@ class Viewer(object):
 
     """
 
-    def __init__(self, thrust=None, shape=None, force=None, show_grid=True, **kwargs):
+    def __init__(self, thrust=None, shape=None, force=None, show_grid=False, **kwargs):
 
-        super().__init__(**kwargs)
+        super().__init__()  # **kwargs
         self.title = 'Viewer'
         self.app = None
         self.thrust = thrust
         self.shape = shape
         self.force = force
+        # self.lines = []
+        # self.points = []
+        # self.vectors = []
         self.settings = {
             'show.thrust': True,
             'show.shape': True,
@@ -48,8 +53,8 @@ class Viewer(object):
             'show.cracks': True,
             'show.vertex.outside': True,
 
-            'camera.target': [0, 0, 0],
-            'camera.distance': 40,
+            'camera.target': [5, 5, 0],
+            'camera.distance': 35,
             'camera.rx': 45,
             'camera.rz': 45,
             'camera.fov': 40,
@@ -70,7 +75,7 @@ class Viewer(object):
             'scale.reactions': 0.01,
             'scale.loads': 0.01,
             'scale.edge.thk_absolute': 1.0,
-            'opacity.shapes': 0.5,
+            'opacity.shapes': 0.3,  # before 0.5
 
             'color.edges.thrust': Color.red(),
             'color.edges.reactions': Color.grey().lightened(80),
@@ -82,10 +87,11 @@ class Viewer(object):
             'color.mesh.middle': Color.from_rgb255(125, 125, 125),
             'color.mesh.general': Color.from_rgb255(0, 0, 0),
 
-            'tol.forces': 1e-3,
+            'tol.forces': 1e-2,
+            'tol.cracks': 1e-3,
         }
 
-    def initiate_app(self):
+    def initiate_app(self, **kwargs):
         """ Initiate the App with the default camera options
 
         Returns
@@ -94,7 +100,7 @@ class Viewer(object):
             The objects are updated in place
         """
 
-        self.app = app.App(width=1600, height=900, show_grid=self.settings['camera.show.grid'])
+        self.app = app.App(width=1600, height=900, show_grid=self.settings['camera.show.grid'], **kwargs)
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
@@ -186,7 +192,11 @@ class Viewer(object):
 
         self.app.view.objects = {}
 
-    def draw_form(self, scale_width=True, absolute_scale=False, cull_negative=False, edges=None, **kwargs):
+    def scale_edge_thickness(self, factor=1.0):
+
+        self.settings['scale.edge.thk_absolute'] = self.settings['scale.edge.thk_absolute'] * factor
+
+    def draw_form(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, **kwargs):
         """Alias to draw thrust network according to the settings
 
         Parameters
@@ -204,7 +214,7 @@ class Viewer(object):
 
         self.draw_thrust(scale_width=scale_width, absolute_scale=absolute_scale, cull_negative=cull_negative, edges=edges, **kwargs)
 
-    def draw_thrust(self, scale_width=True, absolute_scale=False, cull_negative=False, edges=None, **kwargs):
+    def draw_thrust(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, **kwargs):
         """Draw thrust network according to the settings
 
         Parameters
@@ -232,6 +242,9 @@ class Viewer(object):
             forces = [self.thrust.edge_attribute((u, v), 'q') * self.thrust.edge_length(u, v) for u, v in self.thrust.edges_where({'_is_edge': True})]
             fmax = sqrt(max(abs(max(forces)), abs(min(forces))))  # trying sqrt
 
+        thks = []
+        forces = []
+
         for u, v in edges:
             Xu = self.thrust.vertex_coordinates(u)
             Xv = self.thrust.vertex_coordinates(v)
@@ -254,8 +267,13 @@ class Viewer(object):
             thk = force/fmax * max_thick
             if absolute_scale:
                 thk = force * thickness_abs
-            if force > self.settings['tol.forces']:
+            forces.append(force)
+            thks.append(thk)
+            if force > self.settings['tol.forces'] * 2:
                 self.app.add(line, name=str((u, v)), linewidth=thk, color=self.settings['color.edges.thrust'])
+
+        # print('Min / Max thks:', min(thks), max(thks))
+        # print('Min / Max forces:', min(forces), max(forces))
 
     def draw_cracks(self, cull_negative=False, points=None, **kwargs):
         """Draw cracks according to the settings
@@ -282,10 +300,10 @@ class Viewer(object):
                 if z <  0.0:
                     continue
             if self.settings['show.cracks']:
-                if abs(ub - z) < self.settings['tol.forces']:
+                if abs(ub - z) < self.settings['tol.cracks']:
                     self.app.add(Point(x, y, z), name="Extrados (%s)" % extrad, color=self.settings['color.vertex.extrados'], size=self.settings['size.vertex'])
                     extrad += 1
-                elif abs(lb - z) < self.settings['tol.forces']:
+                elif abs(lb - z) < self.settings['tol.cracks']:
                     self.app.add(Point(x, y, z), name="Intrados (%s)" % intrad, color=self.settings['color.vertex.intrados'], size=self.settings['size.vertex'])
                     intrad += 1
                 if self.thrust.vertex_attribute(key, 'is_fixed'):
@@ -294,12 +312,25 @@ class Viewer(object):
                             bx, by = self.thrust.vertex_attribute(key, 'b')
                             rx, ry, rz = self.thrust.vertex_attribute(key, '_rx'), self.thrust.vertex_attribute(key, '_ry'), self.thrust.vertex_attribute(key, '_rz')
                             scale = z/rz
-                            if abs(rx) < self.settings['tol.forces'] and abs(ry) < self.settings['tol.forces']:
+                            if abs(rx) < self.settings['tol.cracks'] and abs(ry) < self.settings['tol.cracks']:
                                 continue
-                            if abs(abs(bx) - abs(rx * scale)) < self.settings['tol.forces'] < self.settings['tol.forces'] or abs(abs(by) - abs(ry * scale)) < self.settings['tol.forces']:
-                                self.app.add(Point(x - rx * scale, y - ry * scale, 0.0), name="Extrados (%s)" % extrad,
+                            # print('Reaction', key, rx, ry, rz)
+                            crack_Rx = abs(bx) - abs(rx * scale)  # must be >= 0
+                            crack_Ry = abs(by) - abs(ry * scale)  # must be >= 0
+
+                            # print('Cracks:', key, crack_Rx, crack_Ry)
+
+                            if crack_Rx > self.settings['tol.cracks'] and crack_Ry > self.settings['tol.cracks']:  # it is not a crack
+                                continue
+                            crack_point = Point(x - rx * scale, y - ry * scale, 0.0)
+                            if abs(abs(bx) - abs(rx * scale)) < self.settings['tol.cracks'] or abs(abs(by) - abs(ry * scale)) < self.settings['tol.cracks']:
+                                self.app.add(crack_point, name="Extrados (%s)" % extrad,
                                              color=self.settings['color.vertex.extrados'], size=self.settings['size.vertex'])
                                 extrad += 1
+                            else:
+                                self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, color=self.settings['color.vertex.outside'], size=self.settings['size.vertex'])
+                                out += 1
+
 
             if self.settings['show.vertex.outside']:
                 if z > ub:
@@ -357,7 +388,7 @@ class Viewer(object):
 
         vertices_middle, faces_middle = shape.middle.to_vertices_and_faces()
         mesh_middle = Mesh.from_vertices_and_faces(vertices_middle, faces_middle)
-        self.app.add(mesh_middle, name="Middle", show_edges=False, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.middle'])
+        self.app.add(mesh_middle, name="Middle", show_edges=True, opacity=self.settings['opacity.shapes'], color=self.settings['color.mesh.middle'])
 
     def draw_shape_normals(self, **kwargs):
         """ Draw the shape normals at intrados and extrados surfaces
@@ -448,7 +479,7 @@ class Viewer(object):
 
         self.app.add(mesh, show_edges=show_edges, show_faces=show_faces, opacity=opacity, color=color)
 
-    def draw_reactions(self, emerging_reactions=False, supports=None, extend_reactions=False, **kwargs):
+    def draw_reactions(self, emerging_reactions=False, supports=None, extend_reactions=False, scale=None, **kwargs):
         """Draw the reaction vectors on the supports according to the settings
 
         Returns
@@ -461,7 +492,8 @@ class Viewer(object):
             self.initiate_app()
 
         if self.settings['show.reactions']:
-            reaction_scale = self.settings['scale.reactions']
+            reaction_scale = scale or self.settings['scale.reactions']
+            thickness_scale = self.settings['scale.edge.thk_absolute']
 
             supports = supports or list(self.thrust.vertices_where({'is_fixed': True}))
 
@@ -481,6 +513,9 @@ class Viewer(object):
                     max_thickness = self.settings['size.edge.max_thickness']
                     max_f = max([abs(self.thrust.edge_attribute(edge, 'q') * self.thrust.edge_length(*edge)) for edge in self.thrust.edges()])
                     thickness = r/max_f*max_thickness
+
+                    thickness = thickness_scale*sqrt(r)
+
                     line = Line([x, y, z], [x - rx, y - ry, z - rz])
                     self.app.add(line, linewidth=thickness, color=self.settings['color.edges.thrust'])
                     continue
@@ -630,3 +665,46 @@ class Viewer(object):
                 if abs(by) > 1e-4:
                     line = Line([x, y, 0], [x + bx, y + by, 0])
                     self.app.add(line)
+
+    def to_objects(self):
+        """Generate General objects (dicts) from the added elements in the viewer (WIP).
+
+        Returns
+        -------
+        data
+            Raw geometry objects in a .
+        """
+
+        objects = self.app.view.objects
+
+        print(objects)
+
+        data = {}
+        lines = []
+        points = []
+
+        for obj in objects:
+            if isinstance(obj, LineObject):
+                lines.append({'start': [obj._data[0].x, obj._data[0].y, obj._data[0].z],
+                              'end': [obj._data[1].x, obj._data[1].y, obj._data[1].z],
+                              'color': (255*obj.linecolor).tolist(),
+                              'width': obj.linewidth
+                              })
+            if isinstance(obj, PointObject):
+                points.append({'pos': [obj._data.x, obj._data.y, obj._data.z],
+                               'color': (255*obj.pointcolor).tolist()
+                               })
+
+        data['lines'] = lines
+        data['points'] = points
+
+        return data
+
+    def to_json(self, file="out.json"):
+
+        data = self.to_objects()
+        print(data)
+
+        with open(file, "w") as outfile:
+            json.dump(data, outfile)
+

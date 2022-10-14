@@ -350,7 +350,7 @@ for normal in [0.09, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03, 0.02, 0.01]:  # [0.01, 
     objective = 'max'
     optimiser.settings['objective'] = objective
     optimiser.settings['variables'] = ['ind', 'zb']
-    optimiser.settings['solver-convex'] = 'MATLAB'
+    optimiser.settings['solver_convex'] = 'MATLAB'
     optimiser.M = None
 
     analysis = Analysis.from_elements(vault, form, optimiser)

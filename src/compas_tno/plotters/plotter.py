@@ -314,17 +314,29 @@ class TNOPlotter(object):
         if self.settings['show.faces']:
             faces = list(self.form.faces())
 
-        formartist = self.app.add(
-            self.form,
-            vertices=[],
+        formartist = self.app.add(  # change this to a bunch of lines.... Better to edit
+            self.form,              # add cull_negative option to cull the thrust line below a value...
+            # vertices=[],
             edges=edges,
             faces=faces,
             edgewidth=edgewidths,
             edgecolor=edgecolor,
+            show_vertices=False,
             **kwargs
         )
 
         self.formartist = formartist
+
+        # artist = self.app.add(
+        #     self.form,
+        #     edges=edges,
+        #     edgewidth=width,
+        #     edgetext=text,
+        #     edgecolor=color,
+        #     show_vertices=False,
+        #     show_faces=False
+        # )
+        # self.formartist = artist
 
     def draw_cracks(self, points=None, **kwargs):
         """Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados.
@@ -440,7 +452,7 @@ class TNOPlotter(object):
                 pointartist = self.app.add(pt, facecolor=rollercolor, size=self.settings['size.vertex'])
                 self._otherartists.append(pointartist)
 
-    def draw_reactions(self):
+    def draw_reactions(self, scale_width=True):
         """Add to the plots the vector of the reaction forces.
 
         Returns
@@ -478,7 +490,10 @@ class TNOPlotter(object):
                     pt2 = Point(x - rx, y - ry, z - rz)
                     line = Line(pt1, pt2)
                     max_f = max([abs(self.form.edge_attribute(edge, 'q') * self.form.edge_length(*edge)) for edge in self.form.edges()])
-                    width = max_f/norm*self.settings['size.edge.max_thickness']
+                    if scale_width:
+                        width = max_f/norm*self.settings['size.edge.max_thickness']
+                    else:
+                        width = self.settings['size.edge.base_thickness']
                     self.app.add(line,
                                  draw_as_segment=True,
                                  color=self.settings['color.edges.form'],
@@ -524,7 +539,7 @@ class TNOPlotter(object):
             linecompas = Line(line[0], line[1])
             self.app.add(linecompas, draw_as_segment=True)
 
-    def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False):
+    def draw_mesh(self, mesh=None, show_edges=True, show_vertices=False, show_faces=False, **kwargs):
         """Initiate the Plotter with the default camera options.
 
         Parameters
@@ -549,7 +564,8 @@ class TNOPlotter(object):
         self.app.add(mesh,
                      show_edges=show_edges,
                      show_vertices=show_vertices,
-                     show_faces=show_faces
+                     show_faces=show_faces,
+                     **kwargs
                      )
 
     def draw_form_xz(self, scale_width=True, edges=None, **kwargs):
@@ -703,7 +719,7 @@ class TNOPlotter(object):
                     for line in lines:
                         self.app.add(line, draw_as_segment=True, color=self.settings['color.edges.form_base'])
 
-    def draw_form_independents(self, color=None, show_text=True):
+    def draw_form_independents(self, color=None, show_text=True, **kwargs):
         """Draw the form diagram with highlight in the independent edges.
 
         Parameters
@@ -792,7 +808,7 @@ class TNOPlotter(object):
                     polygon = polygon.transformed(T)
                     self.app.add(polygon, linewidth=base_thick * 3, facecolor=(0.8, 0.8, 0.8))
 
-    def draw_form_sym(self, print_sym=True):
+    def draw_form_sym(self, print_sym=False):
         """Draw the form diagram symmetry edges with the respective colors.
 
         Parameters
@@ -921,7 +937,7 @@ class TNOPlotter(object):
                      edgewidth=width,
                      )
 
-    def draw_vertexlabels(self, text=None):
+    def draw_vertexlabels(self, text=None, fontsize=12):
         """Draw Labels to the vertices
 
         Parameters
@@ -933,7 +949,22 @@ class TNOPlotter(object):
         if not self.formartist:
             return
 
+        self.formartist.plotter.fontsize = fontsize
         self.formartist.draw_vertexlabels(text=text)
+
+    def draw_edgelabels(self, text=None):
+        """Draw Labels to the vertices
+
+        Parameters
+        ----------
+        text : dict, optional
+            The dictionary to print, if None, the keys are displayed, by default None
+        """
+
+        if not self.formartist:
+            return
+
+        self.formartist.draw_edgelabels(text=text)
 
     def draw_arch_lines(self, H=1.00, L=2.0, x0=0.0, thk=0.20, total_nodes=50, stereotomy=False, close_bottom=True):
         """Helper to draw the lines of intrados and extrados of an arch for given parameters

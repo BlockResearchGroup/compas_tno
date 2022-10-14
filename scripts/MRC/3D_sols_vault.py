@@ -104,13 +104,22 @@ cross = Shape.from_formdiagram_and_attributes(form)
 path = '/Users/mricardo/compas_dev/me/compl_energy/crossvault/corner/cross_fd/crossvault_cross_fd_discr_14_Ecomp-linear_thk_50.0.json'
 form = FormDiagram.from_json(path)
 
-# plotter = TNOPlotter(form)
-# plotter.settings['color.edges.independent'] = Color.blue()
-# plotter.settings['color.vertex.supports']  = Color.red()
-# plotter.settings['size.vertex'] = 6.0
+i = 0
+dic = {}
+for key in form.vertices_where({'is_fixed': True}):
+    x, y, z = form.vertex_coordinates(key)
+    rx, ry, rz = form.vertex_attributes(key, ['_rx', '_ry', '_rz'])
+    print(i, key, rx, ry, rz, x, y, z)
+    dic[key] = i
+    i += 1
+
+plotter = TNOPlotter(form)
+plotter.draw_form()
+plotter.draw_cracks()
 # plotter.draw_form_independents()
-# plotter.draw_supports()
-# plotter.show()
+plotter.draw_vertexlabels(dic, 20)
+plotter.draw_supports()
+plotter.show()
 
 zi = [cross.intrados.vertex_attribute(key, 'z') for key in cross.intrados.vertices()]
 ze = [cross.extrados.vertex_attribute(key, 'z') for key in cross.extrados.vertices()]
@@ -264,3 +273,24 @@ for i in range(len(vectors_plot)):
     base = base_plot[i]
     view.draw_vector(vector=vector, base=base)
 view.show()
+
+plotter = TNOPlotter(form, cross)
+plotter.draw_form()
+plotter.draw_cracks()
+plotter.draw_supports()
+plotter.draw_force()
+plotter.show()
+
+force = plotter.force
+force_path = path.split('.')[0] + '_force.json'
+force.to_json(force_path)
+print('Force:', force_path)
+
+from compas_plotters import Plotter
+from compas_tno.diagrams import ForceDiagram
+force = ForceDiagram.from_json(force_path)
+
+plotter = Plotter()
+plotter.add(force)
+# plotter.draw_mesh()
+plotter.show()

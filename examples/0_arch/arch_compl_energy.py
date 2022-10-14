@@ -22,7 +22,7 @@ import os
 
 span = 10.0
 k = 1.0
-discretisation = 50
+discretisation = 20
 type_formdiagram = 'arch'  # write the type of form diagram you want and is in the file shape
 type_structure = 'arch'
 thk = 1.0
@@ -174,6 +174,22 @@ for i_angle in [0, 18, 27]: # range(36):  # set the distance that the nodes can 
             plotter.draw_cracks()
             plotter.draw_reactions()
             plotter.draw_lines(lines=lines_around)
+            # plotter.save(pic)
+            plotter.show()
+
+            plotter = TNOPlotter(form, shape=shape)
+            plotter.settings['color.edges.shape'] = (0.0, 0.0, 0.0)
+            plotter.settings['show.reactions.extended'] = True
+            plotter.settings['show.reactions.asarrows'] = False
+            plotter.draw_form_xz(scale_width=False)
+            # for i in range(len(vectors_plot)):
+            #     vector = vectors_plot[i]
+            #     base = base_plot[i]
+            #     plotter.draw_vector(vector=vector, base=base)
+            plotter.draw_shape_xz()
+            plotter.draw_cracks()
+            plotter.draw_reactions(scale_width=False)
+            # plotter.draw_lines(lines=lines_around)
             # plotter.save(pic)
             plotter.show()
 

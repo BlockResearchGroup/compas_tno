@@ -9,6 +9,7 @@ from compas.geometry import Point
 from compas.geometry import Line
 from compas.geometry import norm_vector
 from compas.geometry import normalize_vector
+from compas.geometry import distance_point_point_xy
 from compas.colors import Color
 
 from numpy import array
@@ -26,7 +27,15 @@ L = xf * alpha
 Ldiff = L - xf
 xyspan_shape = [[-Ldiff/2, xf + Ldiff/2], [-Ldiff/2, xf + Ldiff/2]]
 
+path = '/Users/mricardo/compas_dev/me/pattern/crossvault/form-cross+crack.json'
+
 form = FormDiagram.create_cross_form(xy_span=xyspan, discretisation=discr)
+
+form = FormDiagram.from_json(path)
+for key in form.vertices():
+    Xi = form.vertex_coordinates(key)
+    distance_point_point_xy(Xi, [x0, xf])
+
 shape = Shape.create_crossvault(xy_span=xyspan_shape, discretisation=discr*2)
 
 vector_supports = []

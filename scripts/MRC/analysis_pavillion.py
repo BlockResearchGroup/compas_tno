@@ -122,7 +122,7 @@ analysis = Analysis.create_compl_energy_analysis(form,
                                                  solver='IPOPT',
                                                  starting_point='loadpath')
 
-analysis.optimiser.settings['solver-convex'] = 'MATLAB'
+analysis.optimiser.settings['solver_convex'] = 'MATLAB'
 # analysis.optimiser.set_constraints(constraints)
 # analysis.apply_selfweight()
 # analysis.apply_envelope()
