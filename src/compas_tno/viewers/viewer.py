@@ -331,7 +331,6 @@ class Viewer(object):
                                 self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, color=self.settings['color.vertex.outside'], size=self.settings['size.vertex'])
                                 out += 1
 
-
             if self.settings['show.vertex.outside']:
                 if z > ub:
                     self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, color=self.settings['color.vertex.outside'], size=self.settings['size.vertex'])
@@ -356,7 +355,7 @@ class Viewer(object):
             datashape = self.shape.datashape.copy()
             if datashape['type'] in ['dome']:
                 datashape['type'] = 'dome_polar'
-                datashape['discretisation'] =  [50, 50]
+                datashape['discretisation'] = [50, 50]
                 shape = Shape.from_library(datashape)
                 print('Drawing nicer dome')
             # elif datashape['type'] == 'arch':
