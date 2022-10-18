@@ -259,7 +259,7 @@ class Viewer(object):
                     Xi = [Xb[0] + (Xa[0] - Xb[0]) * coef, Xb[1] + (Xa[1] - Xb[1]) * coef, 0.0]
                     line = Line(Xa, Xi)
             if not scale_width:
-                self.app.add(line, name=str((u, v)), linewidth=base_thick, color=self.settings['color.edges.thrust'])
+                self.app.add(line, name=str((u, v)), linewidth=base_thick, linecolor=self.settings['color.edges.thrust'])
                 continue
             q = self.thrust.edge_attribute((u, v), 'q')
             length = self.thrust.edge_length(u, v)
@@ -270,7 +270,7 @@ class Viewer(object):
             forces.append(force)
             thks.append(thk)
             if force > self.settings['tol.forces'] * 2:
-                self.app.add(line, name=str((u, v)), linewidth=thk, color=self.settings['color.edges.thrust'])
+                self.app.add(line, name=str((u, v)), linewidth=thk, linecolor=self.settings['color.edges.thrust'])
 
         # print('Min / Max thks:', min(thks), max(thks))
         # print('Min / Max forces:', min(forces), max(forces))

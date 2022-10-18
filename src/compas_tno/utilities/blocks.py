@@ -2,8 +2,6 @@ from compas.datastructures import mesh_dual
 from compas.datastructures import Mesh
 from compas.geometry import add_vectors, scale_vector
 
-from compas_assembly.datastructures import Assembly
-
 
 def extended_dual(form, cls=None):
     """Create the extended dual of the mesh, which is the centroid dual added with the faces in the boundary.
@@ -57,6 +55,8 @@ def extended_dual(form, cls=None):
 def blocks_from_dual(dual, thk):
     idos = dual.copy()
     edos = dual.copy()
+
+    from compas_assembly.datastructures import Assembly
 
     assembly = Assembly()
 
