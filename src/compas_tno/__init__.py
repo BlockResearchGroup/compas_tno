@@ -44,7 +44,7 @@ TEMP = os.path.abspath(os.path.join(HOME, "temp"))
 __all__ = ["HOME", "DATA", "DOCS", "TEMP"]
 
 
-def get(filename):
+def get(filename=''):
     """Get the full path to one of the sample data files.
     Parameters
     ----------

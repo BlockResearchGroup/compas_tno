@@ -8,4 +8,5 @@ The current example creates one sample for each parametric shape implemented. (N
     :figclass: figure
     :class: figure-img img-fluid
 
-.. literalinclude:: ../../examples/Example_Shapes.py
+..
+    literalinclude:: ../../examples/Example_Shapes.py
