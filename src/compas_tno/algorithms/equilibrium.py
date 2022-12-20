@@ -141,12 +141,8 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
 
     Notes
     -------
-    Solver of thhe following equation:
+    Solver of the following equation:
     $\mathbf{q}_\mathrm{id} = - mathbf{Ed}_\mathrm{id}$(\mathbf{E}_\mathrm{i} * \mathbf{q}_\mathrm{i} - \mathbf{p}_\mathrm{h})
-
-    Reference
-    ---------
-    Block and Lachauer, 2014...
 
     """
 

@@ -8,4 +8,5 @@ The current example creates one sample for each parametric Form Diagram implemen
     :figclass: figure
     :class: figure-img img-fluid
 
-.. literalinclude:: ../../examples/Example_FormDiagram.py
+..
+    literalinclude:: ../../examples/Example_FormDiagram.py

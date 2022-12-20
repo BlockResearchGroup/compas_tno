@@ -1,6 +1,9 @@
 from compas_tno.algorithms import xyz_from_q
 
-import matlab.engine
+try:
+    import matlab.engine
+except:
+    print('matlab not available in the system')
 import time
 
 from numpy import array

@@ -13,7 +13,7 @@ We highly recommend to install ``compas_tno`` and related packages in a separate
 
 In this guide, we will create and use an environmenment based on Python 3.8 with the name ``tno``.
 
-Open your terminal and type the following to create a new environmenment and install the dependencies `COMPAS <https://compas.dev>`_ and `triangle <https://www.cs.cmu.edu/~quake/triangle.html>`_:
+Open your terminal and type the following to create a new environmenment and install the dependencies `COMPAS <https://compas.dev>`_,  `triangle <https://www.cs.cmu.edu/~quake/triangle.html>`_ and the COMPAS Standalone `Viewer <https://github.com/compas-dev/compas_view2>`_:
 
 .. raw:: html
 
@@ -37,7 +37,7 @@ Open your terminal and type the following to create a new environmenment and ins
 
 .. code-block:: bash
 
-    conda create -n tno -c conda-forge python=3.8 COMPAS triangle
+    conda create -n tno -c conda-forge python COMPAS triangle compas_view2
 
 .. raw:: html
 
@@ -46,7 +46,7 @@ Open your terminal and type the following to create a new environmenment and ins
 
 .. code-block:: bash
 
-    conda create -n tno -c conda-forge python=3.8 python.app COMPAS triangle
+    conda create -n tno -c conda-forge python python.app COMPAS triangle compas_view2
 
 .. raw:: html
 

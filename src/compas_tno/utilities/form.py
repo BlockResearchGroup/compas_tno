@@ -1,5 +1,4 @@
 # from compas_tno.diagrams import FormDiagram
-from symbol import factor
 from compas.geometry import intersection_segment_segment_xy
 from compas.geometry import distance_point_point_xy
 from compas.geometry import Translation

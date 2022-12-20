@@ -9,4 +9,4 @@ The current example finds minimum and maximum thrust for a circular arch based o
     :class: figure-img img-fluid
 
 
-.. literalinclude:: ../../examples/Example_arch.py
+.. literalinclude:: ../../examples/_tutorial/0_arch.py
