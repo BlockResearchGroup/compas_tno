@@ -56,6 +56,7 @@ class Viewer(object):
             'camera.target': [5, 5, 0],
             'camera.distance': 35,
             'camera.rx': 45,
+            'camera.ry': 0,
             'camera.rz': 45,
             'camera.fov': 40,
             'camera.show.grid': show_grid,
@@ -104,8 +105,11 @@ class Viewer(object):
 
         self.app.view.camera.target = self.settings['camera.target']
         self.app.view.camera.distance = self.settings['camera.distance']
-        self.app.view.camera.rx = radians(self.settings['camera.rx'])
-        self.app.view.camera.rz = radians(self.settings['camera.rz'])
+        # self.app.view.camera.rx = radians(self.settings['camera.rx'])
+        # self.app.view.camera.rz = radians(self.settings['camera.rz'])
+        self.app.view.camera.rotation = [radians(self.settings['camera.rx']),
+                                       radians(self.settings['camera.ry']),
+                                       radians(self.settings['camera.rz'])]
         self.app.view.camera.fov = self.settings['camera.fov']
 
     def show_solution(self, **kwargs):
@@ -359,8 +363,10 @@ class Viewer(object):
                 datashape['discretisation'] = [50, 50]
                 shape = Shape.from_library(datashape)
                 print('Drawing nicer dome')
-            # elif datashape['type'] == 'arch':
-            #     print('WIP = Special Plot for arch')
+            elif datashape['type'] == 'arch':
+                datashape['type'] = 'arch_polar'
+                shape = Shape.from_library(datashape)
+                print('Drawing nicer arch')
             else:
                 shape = self.shape
 

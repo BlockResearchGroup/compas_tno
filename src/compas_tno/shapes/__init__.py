@@ -40,6 +40,7 @@ Circular Arch
     :nosignatures:
 
     arch_shape
+    arch_shape_polar
     arch_ub_lb_update
     arch_dub_dlb
     arch_b_update
@@ -158,6 +159,7 @@ import compas
 if not compas.IPY:
     from .circular_arch import (
         arch_shape,
+        arch_shape_polar,
         arch_ub_lb_update,
         arch_dub_dlb,
         arch_b_update,
@@ -231,6 +233,7 @@ __all__ = [
     'rectangular_topology',
 
     'arch_shape',
+    'arch_shape_polar',
     'arch_ub_lb_update',
     'arch_dub_dlb',
     'arch_b_update',
