@@ -22,7 +22,6 @@ for i, j, lambd in [[2, 6, 0.40]]:  # [0, 2, 6]
         form.edge_attribute(edge, 'q', -1 * q)
         
     artist = FormArtist(form)
-
     artist.pipes_scale = 0.02
 
     artist.draw_forcepipes(tol=1e-4)

@@ -4,6 +4,7 @@ from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.viewers import Viewer
 from compas_tno.plotters import TNOPlotter
+from compas.colors import Color
 import math
 import csv
 import os
@@ -16,8 +17,8 @@ lambd = 0.8
 thk_0 = 0.5
 discr = 14
 
-lambds = [1.0]
-R_over_Ls = [0.794]
+lambds = [0.7]
+R_over_Ls = [0.71]
 
 results = {}
 
@@ -35,6 +36,11 @@ for lambd in lambds:
             save_img = os.path.join(folder, img)
 
             form = FormDiagram.from_json(load_form)
+
+            plot = TNOPlotter(form)
+            plot.draw_form(scale_width=False)
+            plot.draw_supports(color=Color.red())
+            plot.show()
 
             shape_nice = Shape.from_formdiagram_and_attributes(form)
 
