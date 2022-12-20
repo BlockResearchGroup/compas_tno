@@ -702,7 +702,6 @@ class Viewer(object):
     def to_json(self, file="out.json"):
 
         data = self.to_objects()
-        print(data)
 
         with open(file, "w") as outfile:
             json.dump(data, outfile)

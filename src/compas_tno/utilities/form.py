@@ -409,7 +409,7 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
             form.vertex_attribute(vertex, 'x', x + dx)
 
 
-def slide_pattern_inwards(form, delta= 0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.01):
+def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.01):
     """ Set parabolic vault heights.
 
     Parameters
