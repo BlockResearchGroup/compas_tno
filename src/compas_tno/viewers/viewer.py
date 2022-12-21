@@ -54,7 +54,7 @@ class Viewer(object):
             'show.vertex.outside': True,
 
             'camera.target': [5, 5, 0],
-            'camera.distance': 35,
+            'camera.distance': 20,  #35,
             'camera.rx': 45,
             'camera.ry': 0,
             'camera.rz': 45,
