@@ -104,14 +104,14 @@
 <span class="sig-prename descclassname"><span class="pre">ForceDiagram.</span></span><span class="sig-name descname"><span class="pre">slice_plane</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plane</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/force.py#L10"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Slice a mesh with a plane and construct the resulting submeshes.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>mesh</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – The original mesh.</p></li>
-<li><p><strong>plane</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.geometry.Plane.html#compas.geometry.Plane" title="(in COMPAS v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plane</span></code></a>) – The cutting plane.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – The original mesh.</p></li>
+<li><p><strong>plane</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.geometry.Plane.html#compas.geometry.Plane" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Plane</span></code></a>) – The cutting plane.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>tuple[<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>, <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>] | None – The “positive” and “negative” submeshes.
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tuple[<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>, <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>] | None – The “positive” and “negative” submeshes.
 If the mesh and plane do not intersect,
 or if the intersection is degenerate (point or line),
 the function returns None.</p>
@@ -182,6 +182,7 @@ the function returns None.</p>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.plotters.html">compas_tno.plotters</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
 </ul>

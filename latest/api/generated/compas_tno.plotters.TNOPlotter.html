@@ -100,10 +100,10 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="compas_tno.plotters.TNOPlotter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.plotters.</span></span><span class="sig-name descname"><span class="pre">TNOPlotter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">form_base</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(8,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/plotters/plotter.py#L20"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>TNO helper to plot forms and shapes</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>form</strong> (<em>FormDiagram, optional</em>) – The form diagram to be plotted, by default None</p></li>
 <li><p><strong>shape</strong> (<em>Shape, optional</em>) – The shape of the masonry constraining the solution, by default None</p></li>
@@ -112,12 +112,16 @@
 <li><p><strong>figsize</strong> (<em>tuple, optional</em>) – The size of the plot, by default (8, 8)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dt class="field-even">Attributes</dt>
 <dd class="field-even"><p><strong>None</strong></p>
 </dd>
 </dl>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.add.html#compas_tno.plotters.TNOPlotter.add" title="compas_tno.plotters.TNOPlotter.add"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add</span></code></a></p></td>
 <td><p>Add an item to the plotter.</p></td>
@@ -137,64 +141,67 @@
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_cracks.html#compas_tno.plotters.TNOPlotter.draw_cracks" title="compas_tno.plotters.TNOPlotter.draw_cracks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_cracks</span></code></a></p></td>
 <td><p>Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_force.html#compas_tno.plotters.TNOPlotter.draw_force" title="compas_tno.plotters.TNOPlotter.draw_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_force</span></code></a></p></td>
-<td><p>Draw the force diagram associated with the form diagram.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form.html#compas_tno.plotters.TNOPlotter.draw_form" title="compas_tno.plotters.TNOPlotter.draw_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form</span></code></a></p></td>
-<td><p>Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form_independents.html#compas_tno.plotters.TNOPlotter.draw_form_independents" title="compas_tno.plotters.TNOPlotter.draw_form_independents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form_independents</span></code></a></p></td>
-<td><p>Draw the form diagram with highlight in the independent edges.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form_sym.html#compas_tno.plotters.TNOPlotter.draw_form_sym" title="compas_tno.plotters.TNOPlotter.draw_form_sym"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form_sym</span></code></a></p></td>
-<td><p>Draw the form diagram symmetry edges with the respective colors.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form_xz.html#compas_tno.plotters.TNOPlotter.draw_form_xz" title="compas_tno.plotters.TNOPlotter.draw_form_xz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form_xz</span></code></a></p></td>
-<td><p>Plot the form diagram rotated 90 degrees.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_lines.html#compas_tno.plotters.TNOPlotter.draw_lines" title="compas_tno.plotters.TNOPlotter.draw_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_lines</span></code></a></p></td>
-<td><p>Helper to add vectors to the plotter.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_mesh.html#compas_tno.plotters.TNOPlotter.draw_mesh" title="compas_tno.plotters.TNOPlotter.draw_mesh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_mesh</span></code></a></p></td>
-<td><p>Initiate the Plotter with the default camera options.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_reactions.html#compas_tno.plotters.TNOPlotter.draw_reactions" title="compas_tno.plotters.TNOPlotter.draw_reactions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_reactions</span></code></a></p></td>
-<td><p>Add to the plots the vector of the reaction forces.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_shape.html#compas_tno.plotters.TNOPlotter.draw_shape" title="compas_tno.plotters.TNOPlotter.draw_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_shape</span></code></a></p></td>
-<td><p>Adds the shape to the plot.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_shape_xz.html#compas_tno.plotters.TNOPlotter.draw_shape_xz" title="compas_tno.plotters.TNOPlotter.draw_shape_xz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_shape_xz</span></code></a></p></td>
-<td><p>Adds the shape to the plot rotated 90 degrees.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_supports.html#compas_tno.plotters.TNOPlotter.draw_supports" title="compas_tno.plotters.TNOPlotter.draw_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_supports</span></code></a></p></td>
-<td><p>Add the supports as points in the mesh.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_vector.html#compas_tno.plotters.TNOPlotter.draw_vector" title="compas_tno.plotters.TNOPlotter.draw_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_vector</span></code></a></p></td>
-<td><p>Helper to add vectors to the plotter.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_vertexlabels.html#compas_tno.plotters.TNOPlotter.draw_vertexlabels" title="compas_tno.plotters.TNOPlotter.draw_vertexlabels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_vertexlabels</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_edgelabels.html#compas_tno.plotters.TNOPlotter.draw_edgelabels" title="compas_tno.plotters.TNOPlotter.draw_edgelabels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_edgelabels</span></code></a></p></td>
 <td><p>Draw Labels to the vertices</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.highlight_vertices.html#compas_tno.plotters.TNOPlotter.highlight_vertices" title="compas_tno.plotters.TNOPlotter.highlight_vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">highlight_vertices</span></code></a></p></td>
-<td><p>Highlight a vertex in the form diagram and in the force diagram (if they have been previously added to the plotter)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_force.html#compas_tno.plotters.TNOPlotter.draw_force" title="compas_tno.plotters.TNOPlotter.draw_force"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_force</span></code></a></p></td>
+<td><p>Draw the force diagram associated with the form diagram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.initiate_app.html#compas_tno.plotters.TNOPlotter.initiate_app" title="compas_tno.plotters.TNOPlotter.initiate_app"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initiate_app</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form.html#compas_tno.plotters.TNOPlotter.draw_form" title="compas_tno.plotters.TNOPlotter.draw_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form</span></code></a></p></td>
+<td><p>Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form_independents.html#compas_tno.plotters.TNOPlotter.draw_form_independents" title="compas_tno.plotters.TNOPlotter.draw_form_independents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form_independents</span></code></a></p></td>
+<td><p>Draw the form diagram with highlight in the independent edges.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form_sym.html#compas_tno.plotters.TNOPlotter.draw_form_sym" title="compas_tno.plotters.TNOPlotter.draw_form_sym"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form_sym</span></code></a></p></td>
+<td><p>Draw the form diagram symmetry edges with the respective colors.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_form_xz.html#compas_tno.plotters.TNOPlotter.draw_form_xz" title="compas_tno.plotters.TNOPlotter.draw_form_xz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_form_xz</span></code></a></p></td>
+<td><p>Plot the form diagram rotated 90 degrees.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_lines.html#compas_tno.plotters.TNOPlotter.draw_lines" title="compas_tno.plotters.TNOPlotter.draw_lines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_lines</span></code></a></p></td>
+<td><p>Helper to add vectors to the plotter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_mesh.html#compas_tno.plotters.TNOPlotter.draw_mesh" title="compas_tno.plotters.TNOPlotter.draw_mesh"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_mesh</span></code></a></p></td>
 <td><p>Initiate the Plotter with the default camera options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.make_gif.html#compas_tno.plotters.TNOPlotter.make_gif" title="compas_tno.plotters.TNOPlotter.make_gif"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_gif</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_reactions.html#compas_tno.plotters.TNOPlotter.draw_reactions" title="compas_tno.plotters.TNOPlotter.draw_reactions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_reactions</span></code></a></p></td>
+<td><p>Add to the plots the vector of the reaction forces.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_shape.html#compas_tno.plotters.TNOPlotter.draw_shape" title="compas_tno.plotters.TNOPlotter.draw_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_shape</span></code></a></p></td>
+<td><p>Adds the shape to the plot.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_shape_xz.html#compas_tno.plotters.TNOPlotter.draw_shape_xz" title="compas_tno.plotters.TNOPlotter.draw_shape_xz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_shape_xz</span></code></a></p></td>
+<td><p>Adds the shape to the plot rotated 90 degrees.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_supports.html#compas_tno.plotters.TNOPlotter.draw_supports" title="compas_tno.plotters.TNOPlotter.draw_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_supports</span></code></a></p></td>
+<td><p>Add the supports as points in the mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_vector.html#compas_tno.plotters.TNOPlotter.draw_vector" title="compas_tno.plotters.TNOPlotter.draw_vector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_vector</span></code></a></p></td>
+<td><p>Helper to add vectors to the plotter.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.draw_vertexlabels.html#compas_tno.plotters.TNOPlotter.draw_vertexlabels" title="compas_tno.plotters.TNOPlotter.draw_vertexlabels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">draw_vertexlabels</span></code></a></p></td>
+<td><p>Draw Labels to the vertices</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.highlight_vertices.html#compas_tno.plotters.TNOPlotter.highlight_vertices" title="compas_tno.plotters.TNOPlotter.highlight_vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">highlight_vertices</span></code></a></p></td>
+<td><p>Highlight a vertex in the form diagram and in the force diagram (if they have been previously added to the plotter)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.initiate_app.html#compas_tno.plotters.TNOPlotter.initiate_app" title="compas_tno.plotters.TNOPlotter.initiate_app"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initiate_app</span></code></a></p></td>
+<td><p>Initiate the Plotter with the default camera options.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.make_gif.html#compas_tno.plotters.TNOPlotter.make_gif" title="compas_tno.plotters.TNOPlotter.make_gif"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_gif</span></code></a></p></td>
 <td><p>Make a gif from a list of image files</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.save.html#compas_tno.plotters.TNOPlotter.save" title="compas_tno.plotters.TNOPlotter.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.save.html#compas_tno.plotters.TNOPlotter.save" title="compas_tno.plotters.TNOPlotter.save"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save</span></code></a></p></td>
 <td><p>Save the plotter window as an image.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.show.html#compas_tno.plotters.TNOPlotter.show" title="compas_tno.plotters.TNOPlotter.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.show.html#compas_tno.plotters.TNOPlotter.show" title="compas_tno.plotters.TNOPlotter.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a></p></td>
 <td><p>Display the plotter in the screen.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.show_solution.html#compas_tno.plotters.TNOPlotter.show_solution" title="compas_tno.plotters.TNOPlotter.show_solution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_solution</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.show_solution.html#compas_tno.plotters.TNOPlotter.show_solution" title="compas_tno.plotters.TNOPlotter.show_solution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show_solution</span></code></a></p></td>
 <td><p>Show the thrust network, with the shape according to the settings.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.zoom_extents.html#compas_tno.plotters.TNOPlotter.zoom_extents" title="compas_tno.plotters.TNOPlotter.zoom_extents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zoom_extents</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.plotters.TNOPlotter.zoom_extents.html#compas_tno.plotters.TNOPlotter.zoom_extents" title="compas_tno.plotters.TNOPlotter.zoom_extents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zoom_extents</span></code></a></p></td>
 <td><p>Wrapper to extend the objects in the active view.</p></td>
 </tr>
 </tbody>
@@ -252,6 +259,7 @@
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item active"><a class="nav-link reference internal" href="../compas_tno.plotters.html">compas_tno.plotters</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
 </ul>

@@ -99,14 +99,14 @@
 <h1>FormDiagram</h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="compas_tno.diagrams.FormDiagram">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.diagrams.</span></span><span class="sig-name descname"><span class="pre">FormDiagram</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/form.py#L21"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">FormDiagram</span></code></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.diagrams.</span></span><span class="sig-name descname"><span class="pre">FormDiagram</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/form.py#L24"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">compas_tna.diagrams.formdiagram.FormDiagram</span></code></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> represents the projection of the internal force network within the structure.</p>
 <p>The class imports the attributes and set ups from <code class="docutils literal notranslate"><span class="pre">compas_tna.diagrams.FormDiagram</span></code> and include some
 functionalities useful for the assessment of masonry structures. Most relevant edge and vertex attributes
 are listed below:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>*   Vertex attributes</strong></p></li>
 <li><p><strong>x</strong> (<em>float</em>) – x-coordinate of the vertex.</p></li>
@@ -133,39 +133,49 @@ are listed below:</p>
 </div>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.add_pz.html#compas_tno.diagrams.FormDiagram.add_pz" title="compas_tno.diagrams.FormDiagram.add_pz"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_pz</span></code></a></p></td>
 <td><p>_summary_</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.build_complete_dual.html#compas_tno.diagrams.FormDiagram.build_complete_dual" title="compas_tno.diagrams.FormDiagram.build_complete_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_complete_dual</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.assign_inds.html#compas_tno.diagrams.FormDiagram.assign_inds" title="compas_tno.diagrams.FormDiagram.assign_inds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_inds</span></code></a></p></td>
+<td><p>Assign manually independent edges to the pattern</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.build_complete_dual.html#compas_tno.diagrams.FormDiagram.build_complete_dual" title="compas_tno.diagrams.FormDiagram.build_complete_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_complete_dual</span></code></a></p></td>
 <td><p>Build the dual of the form diagram considering half-faces in the edges on the perimeter.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.build_dual.html#compas_tno.diagrams.FormDiagram.build_dual" title="compas_tno.diagrams.FormDiagram.build_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_dual</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.build_dual.html#compas_tno.diagrams.FormDiagram.build_dual" title="compas_tno.diagrams.FormDiagram.build_dual"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_dual</span></code></a></p></td>
 <td><p>Build the dual of the form diagram.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.build_symmetry_map.html#compas_tno.diagrams.FormDiagram.build_symmetry_map" title="compas_tno.diagrams.FormDiagram.build_symmetry_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_symmetry_map</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.build_symmetry_map.html#compas_tno.diagrams.FormDiagram.build_symmetry_map" title="compas_tno.diagrams.FormDiagram.build_symmetry_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_symmetry_map</span></code></a></p></td>
 <td><p>Build the dictionary mapsym (i -&gt; j) that associate one edge j per group of symmetry i.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_arch.html#compas_tno.diagrams.FormDiagram.create_arch" title="compas_tno.diagrams.FormDiagram.create_arch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_arch</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_arch.html#compas_tno.diagrams.FormDiagram.create_arch" title="compas_tno.diagrams.FormDiagram.create_arch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_arch</span></code></a></p></td>
 <td><p>Construct a FormDiagram based on an arch linear discretisation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_circular_radial_form.html#compas_tno.diagrams.FormDiagram.create_circular_radial_form" title="compas_tno.diagrams.FormDiagram.create_circular_radial_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_radial_form</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_circular_radial_form.html#compas_tno.diagrams.FormDiagram.create_circular_radial_form" title="compas_tno.diagrams.FormDiagram.create_circular_radial_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_radial_form</span></code></a></p></td>
 <td><p>Construct a circular radial FormDiagram with hoops not equally spaced in plan.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_circular_radial_spaced_form.html#compas_tno.diagrams.FormDiagram.create_circular_radial_spaced_form" title="compas_tno.diagrams.FormDiagram.create_circular_radial_spaced_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_radial_spaced_form</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_circular_radial_spaced_form.html#compas_tno.diagrams.FormDiagram.create_circular_radial_spaced_form" title="compas_tno.diagrams.FormDiagram.create_circular_radial_spaced_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_radial_spaced_form</span></code></a></p></td>
 <td><p>Construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_circular_spiral_form.html#compas_tno.diagrams.FormDiagram.create_circular_spiral_form" title="compas_tno.diagrams.FormDiagram.create_circular_spiral_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_spiral_form</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_circular_spiral_form.html#compas_tno.diagrams.FormDiagram.create_circular_spiral_form" title="compas_tno.diagrams.FormDiagram.create_circular_spiral_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_circular_spiral_form</span></code></a></p></td>
 <td><p>Construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_cross_diagonal.html#compas_tno.diagrams.FormDiagram.create_cross_diagonal" title="compas_tno.diagrams.FormDiagram.create_cross_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_diagonal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_cross_diagonal.html#compas_tno.diagrams.FormDiagram.create_cross_diagonal" title="compas_tno.diagrams.FormDiagram.create_cross_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_diagonal</span></code></a></p></td>
 <td><p>Construct a FormDiagram based on a mixture of cross and fan discretiastion</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_cross_form.html#compas_tno.diagrams.FormDiagram.create_cross_form" title="compas_tno.diagrams.FormDiagram.create_cross_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_form</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_cross_form.html#compas_tno.diagrams.FormDiagram.create_cross_form" title="compas_tno.diagrams.FormDiagram.create_cross_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_form</span></code></a></p></td>
 <td><p>Construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_cross_with_diagonal.html#compas_tno.diagrams.FormDiagram.create_cross_with_diagonal" title="compas_tno.diagrams.FormDiagram.create_cross_with_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_with_diagonal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_cross_with_diagonal.html#compas_tno.diagrams.FormDiagram.create_cross_with_diagonal" title="compas_tno.diagrams.FormDiagram.create_cross_with_diagonal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_cross_with_diagonal</span></code></a></p></td>
 <td><p>Construct a FormDiagram based on cross discretiastion with diagonals.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_delta_form.html#compas_tno.diagrams.FormDiagram.create_delta_form" title="compas_tno.diagrams.FormDiagram.create_delta_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_delta_form</span></code></a></p></td>
+<td><p>Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_fan_form.html#compas_tno.diagrams.FormDiagram.create_fan_form" title="compas_tno.diagrams.FormDiagram.create_fan_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_fan_form</span></code></a></p></td>
 <td><p>Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.</p></td>
@@ -177,7 +187,7 @@ are listed below:</p>
 <td><p>Helper to construct a FormDiagram based on a simple orthogonal discretisation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_parametric_form.html#compas_tno.diagrams.FormDiagram.create_parametric_form" title="compas_tno.diagrams.FormDiagram.create_parametric_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_parametric_form</span></code></a></p></td>
-<td><p>Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.</p></td>
+<td><p>Helper to construct a FormDiagram envelop that includes fan and cross diagrams.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.delete_boundary_edges.html#compas_tno.diagrams.FormDiagram.delete_boundary_edges" title="compas_tno.diagrams.FormDiagram.delete_boundary_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_boundary_edges</span></code></a></p></td>
 <td><p>Delete boundary edges on a diagram.</p></td>
@@ -257,17 +267,23 @@ are listed below:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.set_boundary_supports.html#compas_tno.diagrams.FormDiagram.set_boundary_supports" title="compas_tno.diagrams.FormDiagram.set_boundary_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_boundary_supports</span></code></a></p></td>
 <td><p>Set all node on the boundary of a pattern as supports.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.thrust.html#compas_tno.diagrams.FormDiagram.thrust" title="compas_tno.diagrams.FormDiagram.thrust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thrust</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.store_indset.html#compas_tno.diagrams.FormDiagram.store_indset" title="compas_tno.diagrams.FormDiagram.store_indset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_indset</span></code></a></p></td>
+<td><p>Store the indset with the information about the independent edges (used within algorithms)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.thrust.html#compas_tno.diagrams.FormDiagram.thrust" title="compas_tno.diagrams.FormDiagram.thrust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thrust</span></code></a></p></td>
 <td><p>Computes the the (horizontal) thrust</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_dict.html#compas_tno.diagrams.FormDiagram.tributary_dict" title="compas_tno.diagrams.FormDiagram.tributary_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_dict</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_dict.html#compas_tno.diagrams.FormDiagram.tributary_dict" title="compas_tno.diagrams.FormDiagram.tributary_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_dict</span></code></a></p></td>
 <td><p>Make a tributary dictionary to help in the calculation of the tributary weights to the nodes afterwards.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_matrices.html#compas_tno.diagrams.FormDiagram.tributary_matrices" title="compas_tno.diagrams.FormDiagram.tributary_matrices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_matrices</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_matrices.html#compas_tno.diagrams.FormDiagram.tributary_matrices" title="compas_tno.diagrams.FormDiagram.tributary_matrices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_matrices</span></code></a></p></td>
 <td><p>Returns the Matrices used for computation of the tributary area.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_f.html#compas_tno.diagrams.FormDiagram.update_f" title="compas_tno.diagrams.FormDiagram.update_f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_f</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_f.html#compas_tno.diagrams.FormDiagram.update_f" title="compas_tno.diagrams.FormDiagram.update_f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_f</span></code></a></p></td>
 <td><p>Update attributes force <code class="docutils literal notranslate"><span class="pre">f</span></code> based on force densities <code class="docutils literal notranslate"><span class="pre">q``and</span> <span class="pre">lengths</span> <span class="pre">``l</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_indset.html#compas_tno.diagrams.FormDiagram.update_indset" title="compas_tno.diagrams.FormDiagram.update_indset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_indset</span></code></a></p></td>
+<td><p>Update the indset with the information about the independent edges (used within algorithms)</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_lumped_weights.html#compas_tno.diagrams.FormDiagram.update_lumped_weights" title="compas_tno.diagrams.FormDiagram.update_lumped_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_lumped_weights</span></code></a></p></td>
 <td><p>Update the lumped weights based on the curent geometry of the thrust network The loads are computed based on the tributary area times the thickness times the density.</p></td>
@@ -279,6 +295,10 @@ are listed below:</p>
 </table>
 <p class="rubric">Inherited Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.ToString.html#compas_tno.diagrams.FormDiagram.ToString" title="compas_tno.diagrams.FormDiagram.ToString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ToString</span></code></a></p></td>
 <td><p>Converts the instance to a string.</p></td>
@@ -935,6 +955,7 @@ are listed below:</p>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.plotters.html">compas_tno.plotters</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
 </ul>

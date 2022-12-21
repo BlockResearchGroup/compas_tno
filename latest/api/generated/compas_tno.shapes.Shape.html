@@ -100,13 +100,13 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.shapes.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/shapes/shape.py#L19"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Datastructure.html#compas.datastructures.Datastructure" title="(in COMPAS v1.16)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Datastructure</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Datastructure.html#compas.datastructures.Datastructure" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">compas.datastructures.datastructure.Datastructure</span></code></a></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Shape</span></code> class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.</p>
 <p>The class imports the attributes and set ups from <code class="docutils literal notranslate"><span class="pre">compas_tna.diagrams.FormDiagram</span></code> and include some
 functionalities useful for the assessment of masonry structures. Most relevant edge and vertex attributes
 are listed below:</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>intrados</strong> (<em>MeshDos</em>) – Mesh representing the intrados of the masonry</p></li>
 <li><p><strong>extrados</strong> (<em>MeshDos</em>) – Mesh representing thhe extrados of the masonry</p></li>
@@ -119,7 +119,7 @@ are listed below:</p>
 <li><p><strong>fill_ro</strong> (<em>float</em>) – The density of the masonry in the fill</p></li>
 </ul>
 </dd>
-<dt class="field-even">Attributes<span class="colon">:</span></dt>
+<dt class="field-even">Attributes</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>type</strong> (<em>str</em>) – The type of the masory. Types include:
 [‘crossvault’, ‘pavillionvault’, ‘dome’, ‘dome_polar’, ‘dome_spr’, ‘parabolic_shell’, ‘arch’, ‘pointed_arch’, ‘pointed_crossvault’]</p></li>
@@ -179,6 +179,10 @@ are listed below:</p>
 </ul>
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.add_fill_with_height.html#compas_tno.shapes.Shape.add_fill_with_height" title="compas_tno.shapes.Shape.add_fill_with_height"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_fill_with_height</span></code></a></p></td>
 <td><p>Compute the weight of the fill applied based on the height.</p></td>
@@ -198,58 +202,65 @@ are listed below:</p>
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_arch.html#compas_tno.shapes.Shape.create_arch" title="compas_tno.shapes.Shape.create_arch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_arch</span></code></a></p></td>
 <td><p>Create the shape representing a circular arch.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_crossvault.html#compas_tno.shapes.Shape.create_crossvault" title="compas_tno.shapes.Shape.create_crossvault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_crossvault</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_arch_polar.html#compas_tno.shapes.Shape.create_arch_polar" title="compas_tno.shapes.Shape.create_arch_polar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_arch_polar</span></code></a></p></td>
+<td><p>Create the shape representing a circular arch.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_crossvault.html#compas_tno.shapes.Shape.create_crossvault" title="compas_tno.shapes.Shape.create_crossvault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_crossvault</span></code></a></p></td>
 <td><p>Create the shape representing a Crossvault</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_dome.html#compas_tno.shapes.Shape.create_dome" title="compas_tno.shapes.Shape.create_dome"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dome</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_dome.html#compas_tno.shapes.Shape.create_dome" title="compas_tno.shapes.Shape.create_dome"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dome</span></code></a></p></td>
 <td><p>Create the shape representing a Hemispheric Dome</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_dome_polar.html#compas_tno.shapes.Shape.create_dome_polar" title="compas_tno.shapes.Shape.create_dome_polar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dome_polar</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_dome_polar.html#compas_tno.shapes.Shape.create_dome_polar" title="compas_tno.shapes.Shape.create_dome_polar"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dome_polar</span></code></a></p></td>
 <td><p>Create the shape representing a Hemispheric Dome</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_pavillionvault.html#compas_tno.shapes.Shape.create_pavillionvault" title="compas_tno.shapes.Shape.create_pavillionvault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_pavillionvault</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_pavillionvault.html#compas_tno.shapes.Shape.create_pavillionvault" title="compas_tno.shapes.Shape.create_pavillionvault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_pavillionvault</span></code></a></p></td>
 <td><p>Create the shape representing a Pavillion Vault</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_pointedcrossvault.html#compas_tno.shapes.Shape.create_pointedcrossvault" title="compas_tno.shapes.Shape.create_pointedcrossvault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_pointedcrossvault</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.create_pointedcrossvault.html#compas_tno.shapes.Shape.create_pointedcrossvault" title="compas_tno.shapes.Shape.create_pointedcrossvault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_pointedcrossvault</span></code></a></p></td>
 <td><p>Create the shape representing a Pointed Crossvault</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_assembly.html#compas_tno.shapes.Shape.from_assembly" title="compas_tno.shapes.Shape.from_assembly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_assembly</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_assembly.html#compas_tno.shapes.Shape.from_assembly" title="compas_tno.shapes.Shape.from_assembly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_assembly</span></code></a></p></td>
 <td><p>Create a TNO Shape from an assembly</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_formdiagram_and_attributes.html#compas_tno.shapes.Shape.from_formdiagram_and_attributes" title="compas_tno.shapes.Shape.from_formdiagram_and_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_formdiagram_and_attributes</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_formdiagram_and_attributes.html#compas_tno.shapes.Shape.from_formdiagram_and_attributes" title="compas_tno.shapes.Shape.from_formdiagram_and_attributes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_formdiagram_and_attributes</span></code></a></p></td>
 <td><p>Construct a Shape from the form diagram and its attributes 'ub' and 'lb'.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_library.html#compas_tno.shapes.Shape.from_library" title="compas_tno.shapes.Shape.from_library"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_library</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_library.html#compas_tno.shapes.Shape.from_library" title="compas_tno.shapes.Shape.from_library"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_library</span></code></a></p></td>
 <td><p>Construct a Shape from a library.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_library_proxy.html#compas_tno.shapes.Shape.from_library_proxy" title="compas_tno.shapes.Shape.from_library_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_library_proxy</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_library_proxy.html#compas_tno.shapes.Shape.from_library_proxy" title="compas_tno.shapes.Shape.from_library_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_library_proxy</span></code></a></p></td>
 <td><p>Construct a Shape from a library using a proxy implementation (compatible with Rhinoceros).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_meshes.html#compas_tno.shapes.Shape.from_meshes" title="compas_tno.shapes.Shape.from_meshes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_meshes</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_meshes.html#compas_tno.shapes.Shape.from_meshes" title="compas_tno.shapes.Shape.from_meshes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_meshes</span></code></a></p></td>
 <td><p>Construct a Shape from meshes for intrados, extrados, and middle.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_meshes_and_formdiagram.html#compas_tno.shapes.Shape.from_meshes_and_formdiagram" title="compas_tno.shapes.Shape.from_meshes_and_formdiagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_meshes_and_formdiagram</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_meshes_and_formdiagram.html#compas_tno.shapes.Shape.from_meshes_and_formdiagram" title="compas_tno.shapes.Shape.from_meshes_and_formdiagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_meshes_and_formdiagram</span></code></a></p></td>
 <td><p>Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_middle.html#compas_tno.shapes.Shape.from_middle" title="compas_tno.shapes.Shape.from_middle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_middle</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_middle.html#compas_tno.shapes.Shape.from_middle" title="compas_tno.shapes.Shape.from_middle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_middle</span></code></a></p></td>
 <td><p>Construct a Shape from a middle mesh and a thickness (offset happening to both sides).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud.html#compas_tno.shapes.Shape.from_pointcloud" title="compas_tno.shapes.Shape.from_pointcloud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud.html#compas_tno.shapes.Shape.from_pointcloud" title="compas_tno.shapes.Shape.from_pointcloud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud</span></code></a></p></td>
 <td><p>Construct a Shape from a pointcloud.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud_and_topology.html#compas_tno.shapes.Shape.from_pointcloud_and_topology" title="compas_tno.shapes.Shape.from_pointcloud_and_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud_and_topology</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud_and_topology.html#compas_tno.shapes.Shape.from_pointcloud_and_topology" title="compas_tno.shapes.Shape.from_pointcloud_and_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud_and_topology</span></code></a></p></td>
 <td><p>Construct a Shape from a pointcloud and a given topology.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb.html#compas_tno.shapes.Shape.interpolate_middle_from_ub_lb" title="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_middle_from_ub_lb</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb.html#compas_tno.shapes.Shape.interpolate_middle_from_ub_lb" title="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_middle_from_ub_lb</span></code></a></p></td>
 <td><p>Interpolate the middle surface based on intrados and extrados</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.store_normals.html#compas_tno.shapes.Shape.store_normals" title="compas_tno.shapes.Shape.store_normals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_normals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.store_normals.html#compas_tno.shapes.Shape.store_normals" title="compas_tno.shapes.Shape.store_normals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_normals</span></code></a></p></td>
 <td><p>Store the normals of the shape</p></td>
 </tr>
 </tbody>
 </table>
 <p class="rubric">Inherited Methods</p>
 <table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.ToString.html#compas_tno.shapes.Shape.ToString" title="compas_tno.shapes.Shape.ToString"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ToString</span></code></a></p></td>
 <td><p>Converts the instance to a string.</p></td>
@@ -339,6 +350,7 @@ are listed below:</p>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.plotters.html">compas_tno.plotters</a></li>
 <li class="toctree-l3 nav-item active"><a class="nav-link reference internal" href="../compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
 </ul>

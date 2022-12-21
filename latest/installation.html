@@ -96,7 +96,7 @@
 <p>The basic prerequisite to install <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> and the <a class="reference external" href="https://compas.dev">COMPAS</a> packages is <a class="reference external" href="https://www.anaconda.com/products/individual">Anaconda</a>. Install it on you machine and go to the next step.</p>
 <p>We highly recommend to install <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> and related packages in a separate conda environment.</p>
 <p>In this guide, we will create and use an environmenment based on Python 3.8 with the name <code class="docutils literal notranslate"><span class="pre">tno</span></code>.</p>
-<p>Open your terminal and type the following to create a new environmenment and install the dependencies <a class="reference external" href="https://compas.dev">COMPAS</a> and <a class="reference external" href="https://www.cs.cmu.edu/~quake/triangle.html">triangle</a>:</p>
+<p>Open your terminal and type the following to create a new environmenment and install the dependencies <a class="reference external" href="https://compas.dev">COMPAS</a>,  <a class="reference external" href="https://www.cs.cmu.edu/~quake/triangle.html">triangle</a> and the COMPAS Standalone <a class="reference external" href="https://github.com/compas-dev/compas_view2">Viewer</a>:</p>
 <div class="card">
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
@@ -109,11 +109,11 @@
         </ul>
     </div>
     <div class="card-body">
-        <div class="tab-content"><div class="tab-pane active" id="replace_python_windows"><div class="language-bash notranslate"><div class="highlight"><pre><button class="btn copy"><i class="far fa-copy"></i></button><code><span></span>conda create -n tno -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8 COMPAS triangle
+        <div class="tab-content"><div class="tab-pane active" id="replace_python_windows"><div class="language-bash notranslate"><div class="highlight"><pre><button class="btn copy"><i class="far fa-copy"></i></button><code><span></span>conda create -n tno -c conda-forge python COMPAS triangle compas_view2
 </code></pre></div>
 </div>
 </div>
-<div class="tab-pane" id="replace_python_osx"><div class="language-bash notranslate"><div class="highlight"><pre><button class="btn copy"><i class="far fa-copy"></i></button><code><span></span>conda create -n tno -c conda-forge <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8 python.app COMPAS triangle
+<div class="tab-pane" id="replace_python_osx"><div class="language-bash notranslate"><div class="highlight"><pre><button class="btn copy"><i class="far fa-copy"></i></button><code><span></span>conda create -n tno -c conda-forge python python.app COMPAS triangle compas_view2
 </code></pre></div>
 </div>
 </div>
@@ -194,6 +194,7 @@ pip install -e .
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="api/compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="api/compas_tno.plotters.html">compas_tno.plotters</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="api/compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="api/compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
 </ul>
