@@ -1,7 +1,6 @@
 from compas_tno.shapes import MeshDos
 from numpy import array
 from scipy import interpolate
-from triangle import triangulate
 import math
 
 
@@ -181,6 +180,7 @@ def delaunay_mesh_from_points(points):
 
     """
 
+    from triangle import triangulate  # check to do it with scipy
     data = {'vertices': [point[0:2] for point in points]}
     result = triangulate(data, opts='c')
     vertices = []

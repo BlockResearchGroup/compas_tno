@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from compas_tno.plotters import open_csv_row
+from compas_tno.utilities import open_csv_row
 # from compas_tno.plotters import diagram_of_thrust
 # from compas_tno.plotters import diagram_of_multiple_thrust
 from matplotlib.ticker import FormatStrFormatter
@@ -318,14 +318,14 @@ size_legend = 12
 # ## - Data of the anagni vault
 # ## -----------------------
 
-# thk = [0.25, 0.23, 0.21, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.07, 0.056]
-# min_thrust = [0.753, 0.77, 0.79, 0.81, 0.83, 0.86, 0.88, 0.91, 0.94, 0.98, 1.04]
-# max_thrust = [1.248, 1.22, 1.20, 1.18, 1.16, 1.14, 1.12, 1.10, 1.08, 1.06, 1.04]
+thk = [0.25, 0.23, 0.21, 0.19, 0.17, 0.15, 0.13, 0.11, 0.09, 0.07, 0.056]
+min_thrust = [0.753, 0.77, 0.79, 0.81, 0.83, 0.86, 0.88, 0.91, 0.94, 0.98, 1.04]
+max_thrust = [1.248, 1.22, 1.20, 1.18, 1.16, 1.14, 1.12, 1.10, 1.08, 1.06, 1.04]
 
-# xy_limits = [[0.25, 0.0], [130, 70]]
-# GSF_ticks = [2.0, 3.0, 4.0, 5.0]
+xy_limits = [[0.25, 0.0], [130, 70]]
+GSF_ticks = [2.0, 3.0, 4.0, 5.0]
 
-# diagram_of_thrust([thk, thk], [min_thrust, max_thrust], xy_limits=xy_limits, GSF_ticks=GSF_ticks).show()
+diagram_of_thrust([thk, thk], [min_thrust, max_thrust], xy_limits=xy_limits, GSF_ticks=GSF_ticks).show()
 
 
 # Data from the test on the vault under 1-corner displacement

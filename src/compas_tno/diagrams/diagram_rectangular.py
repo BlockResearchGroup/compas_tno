@@ -749,3 +749,36 @@ def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisati
         form = form.delete_boundary_edges()  # Check if this should be here, or explicit
 
     return form
+
+
+def create_delta_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, delta=0.5, fix='corners'):
+    """Create a parametric form diagram based on a sag to the interior of the pattern
+
+    Parameters
+    ----------
+    xy_span : [[float, float], [float, float]], optional
+        List with initial- and end-points of the vault, by default, by default [[0.0, 10.0], [0.0, 10.0]]
+    discretisation : int, optional
+        Set the density of the grid in x and y directions, by default 10
+    delta : float, optional
+        Sag applied to the boundary of the pattern, by default 0.5
+    fix : str, optional
+        Option to select the constrained nodes: 'corners', 'all' are accepted, by default 'corners'
+
+    Returns
+    -------
+    FormDiagram
+        The FormDiagram created.
+
+    Reference
+    ---------
+        Add Reference
+    """
+
+    form = create_cross_with_diagonal(cls, xy_span=xy_span, discretisation=discretisation, fix=fix)
+
+    from compas_tno.utilities.form import slide_pattern_inwards
+
+    slide_pattern_inwards(form, delta=delta)
+
+    return form

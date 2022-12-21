@@ -197,6 +197,7 @@ class Shape(Datastructure):
         from compas_tno.shapes import set_dome_with_spr
         from compas_tno.shapes import set_dome_polar_coord
         from compas_tno.shapes import arch_shape
+        from compas_tno.shapes import arch_shape_polar
         from compas_tno.shapes import pointed_arch_shape
         from compas_tno.shapes import pointed_vault_heightfields
         from compas_tno.shapes import domical_vault
@@ -239,6 +240,12 @@ class Shape(Datastructure):
             b = data['b']
             x0 = data['x0']
             intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
+        elif typevault == 'arch_polar':
+            H = data['H']
+            L = data['L']
+            b = data['b']
+            x0 = data['x0']
+            intrados, extrados, middle = arch_shape_polar(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b)
         elif typevault == 'pointed_arch':
             hc = data['hc']
             L = data['L']
@@ -413,6 +420,38 @@ class Shape(Datastructure):
         """
 
         data = {'type': 'arch', 'thk': thk, 'discretisation': discretisation, 'H': H, 'L': L, 'x0': x0, 'b': b, 't': t}
+
+        return cls().from_library(data)
+
+    @classmethod
+    def create_arch_polar(cls, H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, discretisation=100):
+        """Create the shape representing a circular arch.
+
+        Parameters
+        ----------
+        H : float, optional
+            Height of the arch, by default 1.00
+        L : float, optional
+            Span of the arch, by default 2.0
+        x0 : float, optional
+            Starting coordinate of the arch , by default 0.0
+        thk : float, optional
+            Thickness of the arch, by default 0.20
+        b : float, optional
+            Out-of-plane measure of the arch, by default 0.5
+        t : float, optional
+            Parameter for lower bound in nodes in the boundary, by default 0.0
+        discretisation : int, optional
+            Density of the shape, by default 100
+
+        Returns
+        -------
+        shape : Shape
+            The shape of the dome.
+
+        """
+
+        data = {'type': 'arch_polar', 'thk': thk, 'discretisation': discretisation, 'H': H, 'L': L, 'x0': x0, 'b': b, 't': t}
 
         return cls().from_library(data)
 

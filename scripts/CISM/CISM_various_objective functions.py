@@ -32,9 +32,9 @@ starting_point = 'loadpath'
 sag = False
 prob = None
 
-# form = FormDiagram.create_cross_form(discretisation=discr)
+form = FormDiagram.create_cross_form(discretisation=discr)
 # form = FormDiagram.create_cross_diagonal(discretisation=discr)
-form = FormDiagram.create_cross_with_diagonal(discretisation=discr)
+# form = FormDiagram.create_cross_with_diagonal(discretisation=discr)
 # form = FormDiagram.create_fan_form(discretisation=discr)
 
 
@@ -88,7 +88,7 @@ for thk in [0.50]:
     vault = Shape.create_crossvault(xy_span=[xspan_vault, yspan_vault], discretisation=discr_shape, thk=thk)
     # form = FormDiagram.create_fan_form()
 
-    objective = 'Ecomp-linear'  # try 'max' 'Ecomp-linear'
+    objective = 'max'  # try 'max' 'Ecomp-linear'
     solver = 'IPOPT'  # try SLSQP
     constraints = ['funicular', 'envelope']
     variables = ['q', 'zb']  # 'lambdv', 't'

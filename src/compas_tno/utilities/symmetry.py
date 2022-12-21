@@ -348,7 +348,7 @@ def build_symmetry_transformation(form, printout=False):
 
 
 def build_vertex_symmetry_transformation(form, printout=False):
-    """Build a symmetry matrix Evsym (n, k) such as z = Evsym * z_.
+    """Build a symmetry matrix Evsym (n, k) such as z = Evsym * zb.
 
     Parameters
     ----------

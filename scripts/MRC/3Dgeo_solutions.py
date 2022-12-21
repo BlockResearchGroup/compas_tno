@@ -129,59 +129,59 @@ for i in range(len(vectors_plot)):
     view.draw_vector(vector=vector, base=base)
 view.show()
 
-print(end)
+# print(end)
 
 # # ------------ DOME PLOT
 
-# thk = 0.50
-# form = FormDiagram.create_circular_radial_form()
+thk = 0.50
+form = FormDiagram.create_circular_radial_form()
 
-# vector_supports = []
-# vectors_plot = []
-# base_plot = []
+vector_supports = []
+vectors_plot = []
+base_plot = []
 
-# for key in form.vertices_where({'is_fixed': True}):
-#     x, y, z = form.vertex_coordinates(key)
-#     dXbi = [0, 0, 0]
-#     if x - xc > 0.1:
-#         dXbi = [1, 0, 0]
-#         vectors_plot.append(Vector(*dXbi))
-#         base_plot.append(Point(x, y, z))
-#     if x - xc < -0.1:
-#         dXbi = [-1, 0, 0]
-#         vectors_plot.append(Vector(*dXbi))
-#         base_plot.append(Point(x, y, z))
+for key in form.vertices_where({'is_fixed': True}):
+    x, y, z = form.vertex_coordinates(key)
+    dXbi = [0, 0, 0]
+    if x - xc > 0.1:
+        dXbi = [1, 0, 0]
+        vectors_plot.append(Vector(*dXbi))
+        base_plot.append(Point(x, y, z))
+    if x - xc < -0.1:
+        dXbi = [-1, 0, 0]
+        vectors_plot.append(Vector(*dXbi))
+        base_plot.append(Point(x, y, z))
 
-#     vector_supports.append(dXbi)
+    vector_supports.append(dXbi)
 
-# dome = Shape.create_dome_polar(discretisation=[50, 50])
+dome = Shape.create_dome_polar(discretisation=[50, 50])
 
-# path = '/Users/mricardo/compas_dev/me/compl_energy/dome/split/radial_fd/dome_radial_fd_discr_[16, 20]_Ecomp-linear_thk_50.0.json'
-# form = FormDiagram.from_json(path)
+path = '/Users/mricardo/compas_dev/me/compl_energy/dome/split/radial_fd/dome_radial_fd_discr_[16, 20]_Ecomp-linear_thk_50.0.json'
+form = FormDiagram.from_json(path)
 
-# plotter = TNOPlotter(form)
-# plotter.settings['color.edges.independent'] = Color.blue()
-# plotter.settings['color.vertex.supports']  = Color.red()
-# plotter.settings['size.vertex'] = 6.0
-# plotter.draw_form_independents()
-# plotter.draw_supports()
-# plotter.show()
+plotter = TNOPlotter(form)
+plotter.settings['color.edges.independent'] = Color.blue()
+plotter.settings['color.vertex.supports'] = Color.red()
+plotter.settings['size.vertex'] = 6.0
+plotter.draw_form_independents()
+plotter.draw_supports()
+plotter.show()
 
-# view = Viewer(form, shape=dome)
-# view.settings['camera.show.grid'] = False
-# view.settings['camera.distance'] = 35
-# view.settings['camera.target'] = [5, 5, 0]
-# view.settings['camera.rz'] = 45
-# view.settings['camera.rx'] = 60
+view = Viewer(form, shape=dome)
+view.settings['camera.show.grid'] = False
+view.settings['camera.distance'] = 35
+view.settings['camera.target'] = [5, 5, 0]
+view.settings['camera.rz'] = 45
+view.settings['camera.rx'] = 60
 # view.draw_form(cull_negative=True)
 # view.draw_cracks(cull_negative=True)
 # view.draw_reactions(extend_reactions=True)
-# view.draw_shape()
-# for i in range(len(vectors_plot)):
-#     vector = vectors_plot[i]
-#     base = base_plot[i]
-#     view.draw_vector(vector=vector, base=base)
-# view.show()
+view.draw_shape()
+for i in range(len(vectors_plot)):
+    vector = vectors_plot[i]
+    base = base_plot[i]
+    view.draw_vector(vector=vector, base=base)
+view.show()
 
 
 # ---------- CROSS

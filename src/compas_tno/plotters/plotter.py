@@ -305,6 +305,7 @@ class TNOPlotter(object):
             edgewidths = {edge: forces[i] / fmax * max_thick for i, edge in enumerate(self.form.edges())}
         else:
             edgewidths = base_thick
+            edgecolor = {(u, v): Color.black() for u, v in self.form.edges()}
 
         faces = []
 

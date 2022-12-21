@@ -1,4 +1,4 @@
-from arrow import Arrow
+import compas_tno
 from compas_tno.diagrams import FormDiagram
 from compas_tno.plotters import TNOPlotter
 from compas_tno.shapes import Shape
@@ -9,14 +9,16 @@ from compas_tno.problems import adapt_problem_to_fixed_diagram
 from compas_tno.utilities import apply_envelope_from_shape
 from compas.colors import Color
 
-# Figures of the initial solutions
-path = '/Users/mricardo/compas_dev/compas_tno/data/CISM/form-general1-Ecomp-linear-10-thk-0.5-corner-diagonal.json'
+folder = compas_tno.get()
+print(folder)
 
-# form = FormDiagram.from_json('//Users/mricardo/compas_dev/compas_tno/data/CISM/form-max-16.json')
-# form = FormDiagram.from_json('//Users/mricardo/compas_dev/compas_tno/data/CISM/form-min-16.json')
-# form = FormDiagram.from_json('//Users/mricardo/compas_dev/compas_tno/data/CISM/form-t-16.json')
-# form = FormDiagram.from_json('//Users/mricardo/compas_dev/compas_tno/data/CISM/form-direct_path-max_load-16-thk-0.5.json')
-# form = FormDiagram.from_json('/Users/mricardo/compas_dev/compas_tno/data/CISM/form-temp.json')
+# Figures of the initial solutions
+# path = folder + '/CISM/form-general1-Ecomp-linear-10-thk-0.5-corner-diagonal.json'
+path = folder + '/CISM/minmax/form-min-16.json'
+# path = folder + '/CISM/form-t-16.json'
+# path = folder + '/CISM/form-direct_path-max_load-16-thk-0.5.json'
+# path = folder + '/CISM/form-temp.json'
+
 form = FormDiagram.from_json(path)
 
 swt = form.lumped_swt()

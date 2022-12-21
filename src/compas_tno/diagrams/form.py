@@ -12,6 +12,7 @@ from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_f
 from compas_tno.diagrams.diagram_circular import create_circular_spiral_form
 from compas_tno.diagrams.diagram_rectangular import create_ortho_form
 from compas_tno.diagrams.diagram_rectangular import create_parametric_form
+from compas_tno.diagrams.diagram_rectangular import create_delta_form
 
 from compas_tna.diagrams import FormDiagram
 
@@ -140,32 +141,37 @@ class FormDiagram(FormDiagram):
         partial_bracing_modules = data.get('partial_bracing_modules')
         fix = data.get('fix', 'corners')
         lambd = data.get('lambd', 0.5)
+        delta = data.get('delta', 0.5)
 
         if form_type == 'arch':
             form = create_arch_form_diagram(cls(), H=H, L=L, x0=x0, discretisation=discretisation)
-        if form_type == 'linear_arch' or form_type == 'pointed_arch':
+        elif form_type == 'linear_arch' or form_type == 'pointed_arch':
             form = create_linear_form_diagram(cls(), L=L, x0=x0, discretisation=discretisation)
-        if form_type == 'cross_fd':
+        elif form_type == 'cross_fd':
             form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
-        if form_type == 'cross_diagonal':
+        elif form_type == 'cross_diagonal':
             form = create_cross_diagonal(cls(), xy_span=data['xy_span'], discretisation=discretisation,
                                          partial_bracing_modules=partial_bracing_modules, fix=fix)
-        if form_type == 'cross_with_diagonal':
+        elif form_type == 'cross_with_diagonal':
             form = create_cross_with_diagonal(cls(), xy_span=data['xy_span'], discretisation=discretisation, fix=fix)
-        if form_type == 'fan_fd':
+        elif form_type == 'fan_fd':
             form = create_fan_form(cls(), xy_span=data['xy_span'], discretisation=discretisation, fix=fix)
-        if form_type == 'ortho' or form_type == 'ortho_fd':
+        elif form_type == 'ortho' or form_type == 'ortho_fd':
             form = create_ortho_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
-        if form_type == 'radial_fd':
+        elif form_type == 'radial_fd':
             form = create_circular_radial_form(cls(), center=center, radius=radius, discretisation=discretisation,
                                                r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
-        if form_type == 'radial_spaced_fd':
+        elif form_type == 'radial_spaced_fd':
             form = create_circular_radial_spaced_form(cls(), center=center, radius=radius, discretisation=discretisation,
                                                       r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
-        if form_type == 'spiral_fd':
+        elif form_type == 'spiral_fd':
             form = create_circular_spiral_form(cls(), center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus)
-        if form_type == 'parametric_form':
+        elif form_type == 'parametric_form':
             form = create_parametric_form(cls(), xy_span=xy_span, discretisation=discretisation, lambd=lambd, fix=fix)
+        elif form_type == 'delta_form':
+            form = create_delta_form(cls(), xy_span=xy_span, discretisation=discretisation, delta=delta, fix=fix)
+        else:
+            raise NotImplementedError()
 
         form.parameters = data
 
@@ -316,7 +322,7 @@ class FormDiagram(FormDiagram):
 
     @classmethod
     def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, lambd=0.5, fix='corners'):
-        """ Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
+        """ Helper to construct a FormDiagram envelop that includes fan and cross diagrams. The diagram is modified by the parameter lambda.
 
         Parameters
         ----------
@@ -336,6 +342,31 @@ class FormDiagram(FormDiagram):
         """
 
         data = {'type': 'parametric_form', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix, 'lambd': lambd}
+
+        return cls().from_library(data)
+
+    @classmethod
+    def create_delta_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, delta=0.5, fix='corners'):
+        """ Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
+
+        Parameters
+        ----------
+        xy_span : [[float, float], [float, float]], optional
+            List with initial- and end-points of the vault, by default, by default [[0.0, 10.0], [0.0, 10.0]]
+        discretisation : int, optional
+            Set the density of the grid in x and y directions, by default 10
+        lambd : float, optional
+            Inclination of the arches in the diagram (0.0 will result in cross and 1.0 in fan diagrams), by default 0.5
+        fix : str, optional
+            Option to select the constrained nodes: 'corners', 'all' are accepted, by default 'corners'
+
+        Returns
+        -------
+        FormDiagram
+            The FormDiagram created.
+        """
+
+        data = {'type': 'delta_form', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix, 'delta': delta}
 
         return cls().from_library(data)
 

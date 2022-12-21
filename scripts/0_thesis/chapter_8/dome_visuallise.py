@@ -71,12 +71,12 @@ view.settings['camera.distance'] = 35
 view.settings['camera.target'] = [5, 5, 0]
 view.settings['camera.rz'] = 45
 view.settings['camera.rx'] = 45  # normally it's 60 deg
-view.settings['camera.rz'] = 0
-view.settings['camera.rx'] = 0
+# view.settings['camera.rz'] = 0
+# view.settings['camera.rx'] = 0
 view.draw_form(cull_negative=True)
 view.draw_cracks(cull_negative=True)
 view.draw_reactions(extend_reactions=True)
-# view.draw_shape()
+view.draw_shape()
 
 xp, yp = 7.5, 5.0
 for key in form.vertices():
@@ -95,8 +95,9 @@ view.app.add(arrow, color=(0, 0, 0))
 view.show()
 
 plt = TNOPlotter(form)
-# plt.draw_form(scale_width=True, absolute_scale=True, color=Color.black())
-plt.draw_form_independents()
+plt.draw_form(scale_width=True, absolute_scale=True, color=Color.black())
+plt.draw_force()
+# plt.draw_form_independents()
 plt.draw_supports(size=6.0, color=Color.red())
 plt.app.add(Point(x, y, z), facecolor=Color.grey(), size=6.0)
 plt.show()
