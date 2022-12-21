@@ -7,7 +7,6 @@ from numpy.linalg import matrix_rank
 from numpy.linalg import svd
 from numpy.random import rand
 from math import sqrt
-from copy import deepcopy
 
 
 def find_independents_forward(E, nind=None, tol=None):
@@ -95,7 +94,6 @@ def find_independents_backward(E, nind=None, tol=None):
 
     internal = list(set(range(m)) - set(ind))
     rank = matrix_rank(E, tol=tol)
-    print('Rank is {}'.format())
 
     for i in range(m):
         i_inv = m - i - 1
@@ -109,7 +107,6 @@ def find_independents_backward(E, nind=None, tol=None):
         if nind:
             if len(ind) == nind:
                 break
-
 
     return ind
 
@@ -263,7 +260,7 @@ def check_independents(M, tol=0.001):
 
     Parameters
     ----------
-    args_inds : list
+    M : :class:`~compas_tno.problems.Problem`
         Arguments from the optimisation.
     tol : float, optional
         Allowed error.

@@ -11,7 +11,7 @@ def limit_analysis_GSF(analysis, thk, thk_reduction, thk_refined=None, limit_equ
 
     Parameters
     ----------
-    analysis : Analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         The Analysis object
     thk : float
         The initial thickness of the structure
@@ -160,7 +160,7 @@ def thk_minmax_GSF(analysis, thk_max, thk_step=0.05, printout=True, save_forms=N
 
     Parameters
     ----------
-    analysis : Analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         The Analysis object
     thk_max : float
         Maximum thickness, in which the algorithm should stop
@@ -343,7 +343,7 @@ def max_n_minmax_GSF(analysis, n_step=0.01, printout=True, save_forms=False):
 
     Parameters
     ----------
-    analysis : Analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         The Analysis object
     n_step : float, optional
         The step to decrease the normal vector, by default 0.01

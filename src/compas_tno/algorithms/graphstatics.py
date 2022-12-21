@@ -8,8 +8,6 @@ from compas_tno.plotters import TNOPlotter
 from compas.numerical import connectivity_matrix
 from compas.numerical import spsolve_with_known
 
-from compas.geometry import distance_point_point_xy
-
 from numpy import array
 from numpy import float64
 
@@ -21,7 +19,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, printout=False,
 
     Parameters
     ----------
-    form : :class:`FormDiagram`
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to update.
     zmax : float, optional
         The maximum height of a node in the thrust network.
@@ -135,7 +133,7 @@ def reciprocal_from_form(form, plot=False, restore_form_topology=True):
 
     Parameters
     ----------
-    form : :class:`FormDiagram`
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to update.
     plot : bool, optional
         If plots with form and force should display on the screen.
@@ -211,9 +209,9 @@ def force_update_from_form(force, form):
 
     Parameters
     ----------
-    force : :class:`ForceDiagram`
+    force : :class:`~compas_tno.diagrams.ForceDiagram`
         The force diagram on which the update is based.
-    form : :class:`FormDiagram`
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to update.
 
     Reference

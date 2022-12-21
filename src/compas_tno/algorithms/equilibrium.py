@@ -27,12 +27,12 @@ def equilibrium_fdm(form):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram with attributes relevant to the analysis (force densities, loads, fixities, etc).
 
     Returns
     -------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The relaxed form diagram.
 
     """
@@ -66,7 +66,7 @@ def vertical_equilibrium_fdm(form, zmax=None):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram.
     zmax : float, optional
         The maximum height of the diagram.
@@ -74,7 +74,7 @@ def vertical_equilibrium_fdm(form, zmax=None):
 
     Returns
     -------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The scaled form diagram.
 
     """
@@ -136,7 +136,7 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
 
     Returns
     -------
-    q : array
+    q : array [mx1]
         Force densities on all edges.
 
     Notes
@@ -299,10 +299,10 @@ def compute_reactions(form, plot=False):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         FormDiagram to calculate the reactions.
-    plot : bool
-        True/False to plot the reactions.
+    plot : bool, optional
+        Either or not plot the reactions, the default is True.
 
 
     Returns
@@ -391,7 +391,7 @@ def equilibrium_residual(q, M):
     ----------
     q : array [m x 1]
         Force densities
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         Problem class with matrices
 
     Returns
@@ -417,7 +417,7 @@ def xyz_from_xopt(variables, M):
     ----------
     variables : array
         The ``n`` variables of the optimisation process
-    M : class
+    M : :class:`~compas_tno.problems.Problem`
         The relevant matrices to be stored
 
     Returns
@@ -433,7 +433,7 @@ def xyz_from_xopt(variables, M):
     k = M.k  # number of force variables
     n = M.n  # number of vertices
     nb = len(M.fixed)  # number of fixed vertices
-    t = M.shape.datashape['t']
+    # t = M.shape.datashape['t']
 
     qid = variables[:k]
     check = k
@@ -442,13 +442,13 @@ def xyz_from_xopt(variables, M):
         xyb = variables[check:check + 2*nb]
         check = check + 2*nb
         M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
-        nbxy = nb
+        # nbxy = nb
     if 'zb' in M.variables:
         zb = variables[check: check + nb]
         check = check + nb
         M.X[M.fixed, [2]] = zb.flatten()
     if 't' in M.variables or 'n' in M.variables:
-        thk = variables[check: check + 1]
+        # thk = variables[check: check + 1]
         check = check + 1
     if 'lambdh' in M.variables:
         lambdh = variables[check: check + 1]

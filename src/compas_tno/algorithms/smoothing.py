@@ -13,7 +13,7 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
 
     Parameters
     ----------
-    mesh : Mesh
+    mesh : :class:`~compas.datastructures.Mesh`
         A mesh to smooth.
     kmax : int
         Number of iterations for smoothing. Default value 100.
@@ -26,12 +26,13 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
 
     Return
     ----------
-    mesh: Mesh
+    mesh: :class:`~compas.datastructures.Mesh`
         The smoothed mesh.
+
 
     Reference
     ----------
-    This function was extracted from ``compas_singular`` developed by Robin Oval.
+    This function was extracted from `compas singular <https://blockresearchgroup.github.io/compas_singular/>`_ developed by Robin Oval.
 
     """
 
@@ -68,7 +69,7 @@ def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):  # probably mo
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The formdiagram to apply sag.
     boundary_force : float
         Force density in the edges on the boundary.
@@ -79,7 +80,7 @@ def apply_sag(form, boundary_force=10.0, signe_compression=-1.0):  # probably mo
 
     Return
     ----------
-    form: FormDiagram
+    form: :class:`~compas_tno.diagrams.FormDiagram`
         The relaxed form diagram.
 
     """

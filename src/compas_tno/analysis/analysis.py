@@ -31,45 +31,17 @@ from scipy import interpolate
 
 
 class Analysis(Data):
-    """The ``Analysis`` class unites the ``FormDiagram``, the ``Shape`` and the ``Optimiser`` to compute the optimisarion.
-
-    Its metohds include assignment of loads, partial supports, cracks, etc.
-
-    Parameters
-    ----------
-    name: str, optional
-        The name of the analysis.
-        Defaults to "Analysis".
-
-    Attributes
-    ----------
-    node : dict
-        The node dictionary. Each key in the node dictionary
-        represents a node of the network and maps to a dictionary of
-        node attributes.
-    edge : dict of dict
-        The edge dictionary. Each key in the edge dictionary
-        corresponds to a key in the node dictionary, and maps to a dictionary
-        with connected nodes. In the latter, the keys are again references
-        to items in the node dictionary, and the values are dictionaries
-        of edge attributes. For example, an edge between node 1 and node 2 is represented as follows
-        ``Graph.edge[1][2] -> {...}``
-    adjacency : dict of dict
-        The edges of the graph are directed.
-        The undirected connectivity information is represented in the adjacency dict.
-    attributes : dict
-        A dictionary of miscellaneous information about the graph.
-    default_node_attributes : dict
-        A dictionary mapping node attribute names to their default values.
-    default_edge_attributes : dict
-        A dictionary mapping edge attribute names to their default values.
-    data : dict
-        A dictionary representing the essential data of a graph that can be used in serialization
-        processes.
+    """The ``Analysis`` class unites the :class:`~compas_tno.diagrams.FormDiagram`, the :class:`~compas_tno.shapes.Shape`
+    and the :class:`~compas_tno.optimisers.Optimiser` to compute the optimisation.
 
     Examples
     --------
-    >>>
+    >>> from compas_tno.analysis import Analysis
+    >>> from compas_tno.shapes import Shape
+    >>> from compas_tno.diagrams import FormDiagram
+    >>> arch = Shape.create_arch()
+    >>> form = FormDiagram.create_arch()
+    >>> analysis = Analysis.create_minthrust_analysis(form, arch)
 
     """
 
@@ -121,11 +93,11 @@ class Analysis(Data):
 
         Parameters
         ----------
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The vaulted structure constraining the problem
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             The form diagram to analyse the structure
-        optimiser : Optimiser
+        optimiser : :class:`~compas_tno.optimisers.Optimiser`
             The optimiser with information about the problem
 
         Returns
@@ -170,9 +142,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The shape cconstraining the problem
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
@@ -214,9 +186,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The shape cconstraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
@@ -257,9 +229,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The shape cconstraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
@@ -280,10 +252,10 @@ class Analysis(Data):
         analysis = cls().from_form_and_shape(form, shape)
 
         optimiser = Optimiser.create_maxhrust_optimiser(printout=printout,
-                                                         plot=plot,
-                                                         max_iter=max_iter,
-                                                         starting_point=starting_point,
-                                                         solver=solver)
+                                                        plot=plot,
+                                                        max_iter=max_iter,
+                                                        starting_point=starting_point,
+                                                        solver=solver)
 
         if printout:
             print('-'*20)
@@ -301,9 +273,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The shape cconstraining the problem
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
@@ -366,9 +338,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The shape cconstraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
@@ -412,9 +384,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape
+        shape : :class:`~compas_tno.shapes.Shape`
             The shape cconstraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
@@ -457,9 +429,9 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : FormDiagram
+        form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
-        shape : Shape, optional
+        shape : :class:`~compas_tno.shapes.Shape`, optional
             The shape cconstraining the problem, by default None
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
