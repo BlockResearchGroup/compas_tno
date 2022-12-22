@@ -115,7 +115,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -195,7 +195,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -218,7 +218,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        form : FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             FormDiagram generated according to the parameters.
         """
 
@@ -241,7 +241,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -266,7 +266,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -289,7 +289,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -312,7 +312,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -337,7 +337,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -362,7 +362,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -385,7 +385,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -414,7 +414,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -444,7 +444,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -493,7 +493,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -521,7 +521,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -543,7 +543,7 @@ class FormDiagram(FormDiagram):
 
         Returns
         -------
-        FormDiagram
+        :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
         """
 
@@ -667,7 +667,7 @@ class FormDiagram(FormDiagram):
             u, v = edge
             try:
                 self.edge_attribute((u, v), 'is_ind', True)
-            except:
+            except BaseException:
                 self.edge_attribute((v, u), 'is_ind', True)
             i += 1
 

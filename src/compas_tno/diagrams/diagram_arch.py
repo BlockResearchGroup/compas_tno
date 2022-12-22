@@ -20,7 +20,7 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, discretisation=100):
 
     Returns
     -------
-    FormDiagram
+    :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
     """
 
@@ -71,7 +71,7 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
 
     Returns
     -------
-    form : FormDiagram
+    :class:`~compas_tno.diagrams.FormDiagram`
         FormDiagram generated according to the parameters.
 
     """

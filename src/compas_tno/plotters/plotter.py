@@ -252,7 +252,7 @@ class TNOPlotter(object):
 
         # self.zoom_extents()
 
-        self.app.viewbox = ([10, 30],[-1, 10])
+        self.app.viewbox = ([10, 30], [-1, 10])
         self.app.axes.set_xlim([10, 30])
         self.app.axes.set_ylim([-1, 10])
         self.app.axes.autoscale_view()
@@ -276,7 +276,7 @@ class TNOPlotter(object):
 
         return self.app.add(item, **kwargs)
 
-    def draw_form(self, scale_width=True, absolute_scale=False, edges=None, color=None, **kwargs):
+    def draw_form(self, scale_width=True, edges=None, color=None, **kwargs):
         """Draw the Form Diagram with or without thicknesses of edges scaled as forces in the edges.
 
         Parameters
@@ -285,6 +285,8 @@ class TNOPlotter(object):
             If the lines of the form diagram should be scaled with regards to the force carried, by default True
         color : Color, optional
             Color of the edges of the form diagram, this will overwrite the setting 'color.edges.form', by default None
+        edges : [tuple], optional
+            Edges to consider in the plot, by default None, in which all edges are plotted
 
         Returns
         -------
@@ -341,6 +343,11 @@ class TNOPlotter(object):
 
     def draw_cracks(self, points=None, **kwargs):
         """Adds to the basic plot, the cracks which are the points of the mesh that touch intrados or extrados.
+
+        Points
+        ------
+        points : list, optional
+            The list with the cracks to consider
 
         Returns
         -------
@@ -456,6 +463,11 @@ class TNOPlotter(object):
     def draw_reactions(self, scale_width=True):
         """Add to the plots the vector of the reaction forces.
 
+        Parameters
+        ----------
+        scale_width : bool, optional
+            If edges should be scaled with the force, by default True
+
         Returns
         -------
         None
@@ -570,7 +582,14 @@ class TNOPlotter(object):
                      )
 
     def draw_form_xz(self, scale_width=True, edges=None, **kwargs):
-        """Plot the form diagram rotated 90 degrees.
+        """Plot the form diagram rotated 90 degrees
+
+        Parameters
+        ----------
+        scale_width : bool, optional
+            If edges should be scaled with the force, by default True
+        edges : [tuple], optional
+            Edges to consider in the plot, by default None, in which all edges are plotted
 
         Returns
         -------
@@ -666,6 +685,11 @@ class TNOPlotter(object):
 
     def draw_base_form(self, form_base=None):
         """Adds to the plot the base mesh which is the mesh before the nodes moved horizontally.
+
+        Parameters
+        ----------
+        form_base : :class:`~compas_tno.diagrams.FormDiagram`, optional
+            The base to plot, by default None.
 
         Returns
         -------
@@ -945,6 +969,8 @@ class TNOPlotter(object):
         ----------
         text : dict, optional
             The dictionary to print, if None, the keys are displayed, by default None
+        fontsize : int, optional
+            Font size, by default 12
         """
 
         if not self.formartist:

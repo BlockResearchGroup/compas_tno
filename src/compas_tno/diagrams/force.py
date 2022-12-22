@@ -36,12 +36,12 @@ class ForceDiagram(ForceDiagram):
 
         Parameters
         ----------
-        formdiagram : :class:`compas_tna.diagrams.FormDiagram`
+        formdiagram : :class:`~compas_tno.diagrams.ForceDiagram`
             The form diagram.
 
         Returns
         -------
-        :class:`compas_ags.diagrams.ForceDiagram`
+        :class:`~compas_tno.diagrams.ForceDiagram`
         """
         forcediagram = mesh_dual(formdiagram, cls)
         forcediagram.dual = formdiagram

@@ -17,7 +17,7 @@ class Optimiser(Datastructure):
         The value of the objective function at the end of the optimisation process.
     message : str
         The message provided by the solver.
-    M : problem
+    M : :class:`~compas_tno.problems.Problem`
         The problem with the relevat matrices.
     time : float
         The time consumption for solving.
@@ -122,11 +122,13 @@ class Optimiser(Datastructure):
             Maximum number of itetations, by default 500
         starting_point : str, optional
             Which starting point use, by default 'loadpath'
+        derivatives : bool, optional
+            Whether or not derivatives are computed by hand, by default True
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -162,8 +164,8 @@ class Optimiser(Datastructure):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -199,8 +201,8 @@ class Optimiser(Datastructure):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -230,11 +232,17 @@ class Optimiser(Datastructure):
             Maximum number of itetations, by default 500
         starting_point : str, optional
             Which starting point use, by default 'loadpath'
+        max_lambd : float, optional
+            Maximum load multiplier, by default 1.0
+        load_direction : array [2n x 1], optional
+            Direction of the horizontal load, by default None
+        derivatives : bool, optional
+            Whether or not derivatives are computed by hand, by default True
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -269,11 +277,17 @@ class Optimiser(Datastructure):
             Maximum number of itetations, by default 500
         starting_point : str, optional
             Which starting point use, by default 'loadpath'
+        max_lambd : float, optional
+            Maximum load multiplier, by default 1.0
+        load_direction : array [n x 1], optional
+            Direction of the vertical external load, by default None
+        derivatives : bool, optional
+            Whether or not derivatives are computed by hand, by default True
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -307,13 +321,11 @@ class Optimiser(Datastructure):
             Whether or not plots showing intermediate states appear, by default False
         max_iter : int, optional
             Maximum number of itetations, by default 500
-        starting_point : str, optional
-            Which starting point use, by default 'loadpath'
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -333,7 +345,8 @@ class Optimiser(Datastructure):
         return optimiser
 
     @classmethod
-    def create_compl_energy_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
+    def create_compl_energy_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath',
+                                      support_displacement=None, Emethod='simplified'):
         """Create a linear complementary energy optimiser to be sent with instructions to the Analysis.
 
         Parameters
@@ -348,11 +361,15 @@ class Optimiser(Datastructure):
             Maximum number of itetations, by default 500
         starting_point : str, optional
             Which starting point use, by default 'loadpath'
+        support_displacement : array [nb x 3], optional
+            Vector with the displacement applied to the supports, by default None
+        Emethod : str, optional
+            Whether or not internal deformations should be considered, by default 'simplified' which considers the material rigid
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 
@@ -371,7 +388,8 @@ class Optimiser(Datastructure):
         return optimiser
 
     @classmethod
-    def create_quad_compl_energy_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath', support_displacement=None, Emethod='simplified'):
+    def create_quad_compl_energy_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False,
+                                           starting_point='loadpath', support_displacement=None, Emethod='simplified'):
         """Create a quadratic complementary energy optimiser to be sent with instructions to the Analysis.
 
         Parameters
@@ -386,11 +404,15 @@ class Optimiser(Datastructure):
             Maximum number of itetations, by default 500
         starting_point : str, optional
             Which starting point use, by default 'loadpath'
+        support_displacement : array [nb x 3], optional
+            Vector with the displacement applied to the supports, by default None
+        Emethod : str, optional
+            Whether or not internal deformations should be considered, by default 'simplified' which considers the material rigid
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
 
         """
 

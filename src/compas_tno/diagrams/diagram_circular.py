@@ -2,7 +2,6 @@
 import math
 from compas.datastructures import Mesh
 from compas.geometry import intersection_line_line_xy
-from compas.geometry import Point
 
 
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
@@ -25,7 +24,7 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
 
     Returns
     -------
-    FormDiagram
+    :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
     """
 
@@ -37,7 +36,7 @@ def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
     r_div = (radius - r_oculus)/n_radial
     lines = []
 
-    indset = []  # TODO: Automate indset selection...
+    # indset = []  # TODO: Automate indset selection...
 
     for nr in range(n_radial+1):
         for nc in range(n_spikes):
@@ -138,7 +137,7 @@ def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discr
 
     Returns
     -------
-    FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
     """
 
@@ -242,7 +241,7 @@ def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisati
 
     Returns
     -------
-    FormDiagram
+    :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
     """
 
