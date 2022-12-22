@@ -13,7 +13,6 @@ from scipy.sparse import vstack as svstack
 
 from compas.numerical import connectivity_matrix
 
-from compas.utilities import geometric_key
 from compas.utilities import reverse_geometric_key
 
 from compas.geometry import Point
@@ -21,14 +20,13 @@ from compas.geometry import distance_point_point_xy
 
 from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import check_horizontal_loads
-from compas_tno.algorithms import find_independents_backward
+# from compas_tno.algorithms import find_independents_backward
 from compas_tno.algorithms import find_independents_forward
 
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
 from compas_tno.utilities import find_sym_axis_in_rect_patterns
 from compas_tno.utilities import build_symmetry_transformation
-from compas_tno.utilities import store_inds
 
 import time
 
@@ -198,7 +196,7 @@ def initialise_form(form, find_inds=True, printout=False, tol=None):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram
     find_inds : bool, optional
         Whether or not independents should be found (fixed diagram), by default True
@@ -209,7 +207,7 @@ def initialise_form(form, find_inds=True, printout=False, tol=None):
 
     Returns
     -------
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The object with all the matrices essential to the analysis.
 
     Note
@@ -231,7 +229,7 @@ def initialise_problem_general(form):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram.
 
     Returns
@@ -402,9 +400,9 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
 
     Parameters
     ----------
-    problem : Problem
+    problem : :class:`~compas_tno.problems.Problem`
         Matrices of the problem
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to be analysed
     printout : bool, optional
         If prints should show in the screen, by default False
@@ -500,9 +498,9 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
 
     Parameters
     ----------
-    problem : Problem
+    problem : :class:`~compas_tno.problems.Problem`
         The problem with matrices for calculation
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to analyse
     list_axis_symmetry : [list], optional
         List of the axis of symmetry to consider, by default None
@@ -550,9 +548,9 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=Non
 
     Parameters
     ----------
-    problem : Problem
+    problem : :class:`~compas_tno.problems.Problem`
         The problem with matrices for calculation
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to analyse
     list_axis_symmetry : [list], optional
         List of the axis of symmetry to consider, by default None
@@ -625,9 +623,9 @@ def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=
 
     Parameters
     ----------
-    problem : Problem
+    problem : :class:`~compas_tno.problems.Problem`
         The problem with matrices for calculation
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to analyse
     list_axis_symmetry : [list], optional
         List of the axis of symmetry to consider, by default None
@@ -699,7 +697,7 @@ def plot_svds(M, tol=None):
 
     Parameters
     ----------
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The problem with matrices for calculation
     tol : float (optional)
         The tolerance to find the independents
@@ -710,7 +708,7 @@ def plot_svds(M, tol=None):
 
     k = len(M.ind)
     n, m = M.E.shape
-    mn_min = min(n, m)
+    # mn_min = min(n, m)
 
     _, s, _ = svd(asarray(M.E))
     # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')

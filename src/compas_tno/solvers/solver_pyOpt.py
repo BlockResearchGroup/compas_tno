@@ -1,5 +1,8 @@
 
 from .post_process import post_process_general
+from compas_tno.algorithms import xyz_from_q
+from compas_tno.algorithms import q_from_qid
+from numpy.linalg import hstack
 
 
 __all__ = [
@@ -12,7 +15,7 @@ def run_optimisation_pyOpt(analysis):
 
     Parameters
     ----------
-    analysis : Analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         The Analysis object to pass.
 
     Returns
@@ -115,7 +118,11 @@ def run_optimisation_pyOpt(analysis):
             q[ind] = xopt[:k].reshape(-1, 1)
 
     args = (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, i_uv, k_i)
-    z, _, q, q_ = zlq_from_qid(q[ind], args)
+    q = q_from_qid(q, ind, Edinv, Ei, p)
+    Pi = hstack([px, py, pz])
+    Xb = hstack([x[fixed], y[fixed], z[fixed]])
+    X = xyz_from_q(q, Pi, Xb, Ci, Cit)
+    z = X[:, [2]]
 
     optimiser.niter = niter
     optimiser.exitflag = exitflag

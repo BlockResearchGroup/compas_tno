@@ -1,5 +1,3 @@
-from compas.utilities import geometric_key
-
 from compas.geometry import distance_point_point_xy
 from compas.geometry import distance_point_line_xy
 from compas.geometry import closest_point_on_line_xy
@@ -25,8 +23,8 @@ def apply_radial_symmetry(form, center=[5.0, 5.0, 0.0], correct_loads=True):
 
     Parameters
     ----------
-    form : FormDiagram
-        [description]
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     center : [float, float, float], optional
         The coordinates of the center of the pattern, by default [5.0, 5.0, 0.0]
     correct_loads : bool, optional
@@ -101,8 +99,8 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True, to
 
     Parameters
     ----------
-    form : FormDiagram
-        The FormDiagram.
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     list_axis_symmetry : list, optional
         The list of the axis of symmetry, by default []
     correct_loads : bool, optional
@@ -129,7 +127,7 @@ def apply_symmetry_from_axis(form, list_axis_symmetry=[], correct_loads=True, to
         dist_dict = {}
         for u, v in form.edges_where({'_is_edge': True}):
             midpoint = form.edge_midpoint(u, v)
-            dist_line = round(distance_point_line_xy(midpoint, axis_symmetry), 10)  # change this logic to something that takes into account ``tol`` and not based on the round() method
+            dist_line = round(distance_point_line_xy(midpoint, axis_symmetry), 10)  # change this logic to something that takes into account tol
             closest_pt = closest_point_on_line_xy(midpoint, axis_symmetry)  # geometric_key(..) used before
             # dist = [closest_pt, dist_line]
             dist = [dist_line, closest_pt]
@@ -272,8 +270,8 @@ def build_symmetry_matrix(form, printout=False):
 
     Parameters
     ----------
-    form : FormDiagram
-        The FormDiagram.
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     printout : bool, optional
         Whether or not display messages are printed, by default True
 
@@ -314,8 +312,8 @@ def build_symmetry_transformation(form, printout=False):
 
     Parameters
     ----------
-    form : FormDiagram
-        The FormDiagram.
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     printout : bool, optional
         Whether or not display messages are printed, by default True
 
@@ -352,8 +350,8 @@ def build_vertex_symmetry_transformation(form, printout=False):
 
     Parameters
     ----------
-    form : FormDiagram
-        The FormDiagram.
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     printout : bool, optional
         Whether or not display messages are printed, by default True
 
@@ -389,8 +387,8 @@ def build_symmetry_matrix_supports(form, printout=False):
 
     Parameters
     ----------
-    form : FormDiagram
-        The FormDiagram.
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     printout : bool, optional
         Whether or not display messages are printed, by default True
 

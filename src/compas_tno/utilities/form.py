@@ -80,7 +80,7 @@ def form_add_lines_support(form, loaded_node, supports):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram to modify
     loaded_node : int
         Key of the node which will be the starting point for the additional lines
@@ -89,12 +89,14 @@ def form_add_lines_support(form, loaded_node, supports):
 
     Returns
     -------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram with the modifications
 
     new_loaded_node : int
         Key for the loaded node at the same position
     """
+
+    from compas_tno.diagrams import FormDiagram
 
     text = {}
     new_lines = []
@@ -160,7 +162,7 @@ def store_inds(form, ind_edges=[]):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to store
     ind_edges : list, optional
         List with the independent edges, by default [] in which edges
@@ -189,7 +191,7 @@ def retrieve_inds(form, indset=[]):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to store
     indset : list
         List with the independent edges
@@ -200,20 +202,25 @@ def retrieve_inds(form, indset=[]):
         Attribute included to the form diagram
     """
 
-    # WIP
-    indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes['indset']]
-    for pt in indset:
-        points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
-        for u, v in form.edges_where({'_is_edge': True}):
-            index = problem.uv_i[(u, v)]
-            edgemid = Point(*(form.edge_midpoint(u, v)[:2] + [0]))
-            for pt in indset:
-                if distance_point_point_xy(edgemid, pt) < tol_old_ind:
-                    ind.append(index)
-                    break
-            if index in ind:
-                indset.remove(pt)
-    form.attributes['indset'] = points
+    print('WIP')
+
+    # from compas.utilities import reverse_geometric_key
+
+    # points = []
+
+    # indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes['indset']]
+    # for pt in indset:
+    #     points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
+    #     for u, v in form.edges_where({'_is_edge': True}):
+    #         index = problem.uv_i[(u, v)]
+    #         edgemid = Point(*(form.edge_midpoint(u, v)[:2] + [0]))
+    #         for pt in indset:
+    #             if distance_point_point_xy(edgemid, pt) < tol_old_ind:
+    #                 ind.append(index)
+    #                 break
+    #         if index in ind:
+    #             indset.remove(pt)
+    # form.attributes['indset'] = points
 
     return
 
@@ -224,7 +231,7 @@ def retrieve_form_polylines(form, singularities=[]):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to store
     singularities : list
         List with index of singularities
@@ -235,7 +242,6 @@ def retrieve_form_polylines(form, singularities=[]):
         List with the edges forming polylines
     """
 
-    polylines = []
     edges_visited = []
     edges = list(form.edges_where({'_is_edge': True}))
 
@@ -252,7 +258,7 @@ def mesh_remove_two_valent_nodes(mesh, cls=Mesh, delete_boundary_face=True):
 
     Parameters
     ----------
-    mesh : Mesh
+    mesh : :class:`~compas.datastructures.Mesh`
         Mesh to perform operations
     cls : class, optional
         Class to return the mesh, by default Mesh
@@ -296,7 +302,7 @@ def form_parabolic_slide(form, delta, y0=0.0, y1=10.0):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The Form Diagram
     delta : float
         Maximum distance applied to the nodes
@@ -328,7 +334,7 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
 
     Parameters
     ----------
-    mesh : Mesh
+    mesh : :class:`~compas.datastructures.Mesh`
         The form diagram adopted
     corners : [pts]
         A list with four points for the corner
@@ -384,8 +390,8 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
 
     Parameters
     ----------
-    form : The form diagram of the problem
-        _description_
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     delta : float, optional
         Delta distance to apply to the nodes, by default 0.5
     y0 : float, optional
@@ -416,11 +422,11 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the shape
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the shape
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the shape
 
     Notes
@@ -459,10 +465,10 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
         # factor = ((xc - dx)/xc)
         dy = min(y - y0, y1 - y)/yc  # 1 in center and 0 in corners (linear) - x
         dx = min(x - x0, x1 - x)/xc  # 1 in center and 0 in corners (linear) - y
-        x0_par = y0_par = x0 + (1 - dy/yc)
-        x1_par = y1_par = x1 - (1 - dy/yc)
-        dy_par = dy * (1 + (dx)/xc)
-        dx_par = dx * (1 + (dy)/yc)
+        # x0_par = y0_par = x0 + (1 - dy/yc)
+        # x1_par = y1_par = x1 - (1 - dy/yc)
+        # dy_par = dy * (1 + (dx)/xc)
+        # dx_par = dx * (1 + (dy)/yc)
         if quad in ['Q3', 'Q4']:
             dxa = (dx - dy) * 1/(1 - dy)
             mag_y = delta * (1 - ((1) - dxa)**2) * (1 - dy)
@@ -496,8 +502,8 @@ def displacement_map_parabola(form, y0=0.0, y1=10.0):
 
     Parameters
     ----------
-    form : The form diagram of the problem
-        _description_
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     delta : float, optional
         Delta distance to apply to the nodes, by default 0.5
     y0 : float, optional
@@ -531,8 +537,8 @@ def displacement_map_4parabolas(form, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.1)
 
     Parameters
     ----------
-    form : The form diagram of the problem
-        _description_
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     delta : float, optional
         Delta distance to apply to the nodes, by default 0.5
     y0 : float, optional
@@ -579,8 +585,8 @@ def displacement_map_paraboloid(form, xc=5.0, yc=5.0, radius=5.0):
 
     Parameters
     ----------
-    form : The form diagram of the problem
-        _description_
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
     delta : float, optional
         Delta distance to apply to the nodes, by default 0.5
     y0 : float, optional
@@ -602,8 +608,8 @@ def displacement_map_paraboloid(form, xc=5.0, yc=5.0, radius=5.0):
         if form.vertex_attribute(vertex, 'is_fixed'):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
-        dxi = k * (x - xc) ** 2 * 2 * (xc - x)/ radius
-        dyi = k * (y - yc) ** 2 * 2 * (yc - y)/ radius
+        dxi = k * (x - xc) ** 2 * 2 * (xc - x) / radius
+        dyi = k * (y - yc) ** 2 * 2 * (yc - y) / radius
 
         dX[i] = [dxi, dyi]
 

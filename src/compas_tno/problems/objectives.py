@@ -24,6 +24,7 @@ from compas_tno.problems import gradient_tight_crosssection
 
 def objective_selector(objective):
     """Select objective callable and gradient vector based on the desired objective function.
+    For the complete list of objectives that can be selected see [link].
 
     Parameters
     ----------
@@ -92,7 +93,7 @@ def f_min_thrust(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -155,7 +156,7 @@ def f_max_thrust(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -174,7 +175,7 @@ def f_bestfit(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -213,7 +214,7 @@ def f_horprojection(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -252,7 +253,7 @@ def f_loadpath_general(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -295,7 +296,7 @@ def f_complementary_energy(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -336,7 +337,7 @@ def f_complementary_energy_nonlinear(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -367,7 +368,7 @@ def f_max_section(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -422,7 +423,7 @@ def f_constant(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -443,7 +444,7 @@ def f_reduce_thk(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -466,7 +467,7 @@ def f_tight_crosssection(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns

@@ -47,9 +47,9 @@ def save_geometry_at_iterations(form, optimiser, force=False):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The Form Diagram of the problem
-    optimiser : Optimiser
+    optimiser : :class:`~compas_tno.optimisers.Optimiser`
         The Optimiser with the numerical information about the problem
     force : bool, optional
         Whether or not the force diagram coordinates should also be saved, by default False

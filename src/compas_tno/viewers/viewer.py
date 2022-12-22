@@ -54,7 +54,7 @@ class Viewer(object):
             'show.vertex.outside': True,
 
             'camera.target': [5, 5, 0],
-            'camera.distance': 20,  #35,
+            'camera.distance': 20,  # 35,
             'camera.rx': 45,
             'camera.ry': 0,
             'camera.rz': 45,
@@ -108,8 +108,8 @@ class Viewer(object):
         # self.app.view.camera.rx = radians(self.settings['camera.rx'])
         # self.app.view.camera.rz = radians(self.settings['camera.rz'])
         self.app.view.camera.rotation = [radians(self.settings['camera.rx']),
-                                       radians(self.settings['camera.ry']),
-                                       radians(self.settings['camera.rz'])]
+                                         radians(self.settings['camera.ry']),
+                                         radians(self.settings['camera.rz'])]
         self.app.view.camera.fov = self.settings['camera.fov']
 
     def show_solution(self, **kwargs):
@@ -302,7 +302,7 @@ class Viewer(object):
             ub = self.thrust.vertex_attribute(key, 'ub')
             x, y, z = self.thrust.vertex_coordinates(key)
             if cull_negative:
-                if z <  0.0:
+                if z < 0.0:
                     continue
             if self.settings['show.cracks']:
                 if abs(ub - z) < self.settings['tol.cracks']:
@@ -333,7 +333,8 @@ class Viewer(object):
                                              pointcolor=self.settings['color.vertex.extrados'], pointsize=self.settings['size.vertex'])
                                 extrad += 1
                             else:
-                                self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, pointcolor=self.settings['color.vertex.outside'], pointsize=self.settings['size.vertex'])
+                                self.app.add(Point(x, y, z), name="Outside - Intra (%s)" % out, pointcolor=self.settings['color.vertex.outside'],
+                                             pointsize=self.settings['size.vertex'])
                                 out += 1
 
             if self.settings['show.vertex.outside']:
@@ -712,4 +713,3 @@ class Viewer(object):
 
         with open(file, "w") as outfile:
             json.dump(data, outfile)
-

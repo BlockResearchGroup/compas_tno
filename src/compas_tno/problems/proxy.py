@@ -8,7 +8,7 @@ def initialize_loadpath_proxy(formdata, problem=None):
     ----------
     formdata : dict
         Data of the form diagram
-    problem : Problem, optional
+    problem : :class:`~compas_tno.problems.Problem`, optional
         Class with matrices of the problem, by default None
 
     Returns

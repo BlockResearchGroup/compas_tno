@@ -50,7 +50,7 @@ def sensitivities_wrapper(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -204,7 +204,7 @@ def sensitivities_wrapper(variables, M):
 
         dslope_dind = zeros((2 * nb, len(M.ind)))
         dslope_dzb = zeros((2 * nb, nb))
-        dslope_dlambd = zeros((2 * nb, 1))
+        # dslope_dlambd = zeros((2 * nb, 1))
 
         for i in range(len(M.fixed)):
             i_ = nb + i

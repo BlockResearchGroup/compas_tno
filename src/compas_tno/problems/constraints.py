@@ -17,14 +17,14 @@ def constr_wrapper(variables, M):
 
     Parameters
     ----------
-    variables : array (k x 1)
+    variables : array [(]k x 1]
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
     -------
-    constraints: array (m x 1)
+    constraints: array [m x 1]
         Vector with the value of the m constraints in the point.
     """
 

@@ -14,8 +14,6 @@ from compas.geometry import scale_vector
 from compas.geometry import length_vector
 from compas.geometry import norm_vector
 
-from compas.colors import Color
-
 from compas.utilities import is_color_rgb
 
 colordict = partial(color_to_colordict, colorformat='rgb', normalize=False)
@@ -348,7 +346,6 @@ class FormArtist(DiagramArtist):
         vertices, faces = self.diagram.to_vertices_and_faces()
         return compas_rhino.draw_mesh(vertices, faces, name="Thrust", color=self.color_mesh_thrust, disjoint=True, layer="Thrust-Mesh")
 
-
     def draw_thrust(self, scale_width=None, layer="FormDiagram::Thrust", tol=1e-2):
         """Draw the thrust network as a set of lines with width proportional to the square of the carried force.
 
@@ -576,8 +573,7 @@ class FormArtist(DiagramArtist):
             lines.append({'start': a,
                           'end': b,
                           'color': color,
-                        #   'arrow': "end"
-                          'arrow': "start"
+                          'arrow': "start"  # 'arrow': "end"
                           }
                          )
             if draw_as_pipes:
@@ -626,7 +622,7 @@ class FormArtist(DiagramArtist):
                 continue
             radius = sqrt(abs(force)/pi)
             if compression_negative:
-               pipe_color = color_compression if force < 0 else color_tension
+                pipe_color = color_compression if force < 0 else color_tension
             else:
                 pipe_color = color_tension if force < 0 else color_compression
             cylinders.append({

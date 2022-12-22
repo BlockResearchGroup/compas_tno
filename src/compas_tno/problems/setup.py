@@ -1,5 +1,3 @@
-from multiprocessing.sharedctypes import Value
-from compas_tno.algorithms.independents import check_independents
 from compas_tno.problems import initialise_problem_general
 
 from compas_tno.problems import adapt_problem_to_fixed_diagram
@@ -28,7 +26,7 @@ from compas_tno.plotters import TNOPlotter
 from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
-from compas_tno.utilities import compute_average_edge_stiffness
+# from compas_tno.utilities import compute_average_edge_stiffness
 from compas_tno.utilities import set_b_constraint
 
 from compas_tno.viewers import Viewer
@@ -47,12 +45,12 @@ def set_up_general_optimisation(analysis):
 
     Parameters
     ----------
-    obj : analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         Analysis object with information about optimiser, form and shape.
 
     Returns
     -------
-    obj : analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         Analysis object set up for optimise.
 
     """
@@ -186,11 +184,12 @@ def set_up_general_optimisation(analysis):
                 stiff[index] = 1 / 2 * 1 / k[index] * lengths[index] ** 2
             M.stiff = stiff
         elif Ecomp_method == 'complete':
-            #form. add here a control over the stiffness
-            k = compute_average_edge_stiffness(form, E=E, Ah=Ah)
-            k = 100
-            print('Average Stiffness (1/k) applied to sections:', 1/k)
-            M.stiff = 1/2 * 1/k
+            raise NotImplementedError()
+            # # form. add here a control over the stiffness
+            # k = compute_average_edge_stiffness(form, E=E, Ah=Ah)
+            # k = 100
+            # print('Average Stiffness (1/k) applied to sections:', 1/k)
+            # M.stiff = 1/2 * 1/k
 
     # Set specific constraints
 
@@ -210,11 +209,12 @@ def set_up_general_optimisation(analysis):
     # Alternative for autodiff
 
     if autodiff:
-        from compas_tno.autodiff.jax_objectives import objective_selector_jax
-        from compas_tno.autodiff.jax_constraints import f_jacobian_jax
+        raise NotImplementedError('Autodifferentiation is currently not available')
+        # from compas_tno.autodiff.jax_objectives import objective_selector_jax
+        # from compas_tno.autodiff.jax_constraints import f_jacobian_jax
 
-        fobj, fgrad = objective_selector_jax(objective)
-        fconstr, fjac = f_jacobian_jax()
+        # fobj, fgrad = objective_selector_jax(objective)
+        # fconstr, fjac = f_jacobian_jax()
 
     # Select starting point (x0) and max/min for variables
 
@@ -419,12 +419,12 @@ def set_up_convex_optimisation(analysis):
 
     Parameters
     ----------
-    obj : analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         Analysis object with information about optimiser, form and shape.
 
     Returns
     -------
-    obj : analysis
+    analysis : :class:`~compas_tno.analysis.Analysis`
         Analysis object set up for optimise.
 
     """

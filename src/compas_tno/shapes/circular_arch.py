@@ -28,11 +28,11 @@ def arch_shape(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, total_nodes=100):
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the pattern
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the pattern
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the pattern
 
     """
@@ -115,11 +115,11 @@ def arch_shape_polar(H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, total_nodes=100):
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the pattern
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the pattern
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the pattern
 
     """

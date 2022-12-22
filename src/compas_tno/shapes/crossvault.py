@@ -57,11 +57,11 @@ def cross_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, tol=10e
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the shape
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the shape
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the shape
 
     Notes

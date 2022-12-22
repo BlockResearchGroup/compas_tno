@@ -59,7 +59,6 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
             out = compas_tno.get('out.gif')
         print('Save gif at:', out)
 
-
     @viewer.app.on(interval=interval, frames=iterations, record=record, record_path=out)
     def update(f):
 

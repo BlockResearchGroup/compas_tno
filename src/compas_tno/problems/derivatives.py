@@ -62,16 +62,16 @@ def compute_dQ(q, ind, dep, Edinv, Ei):
         Indices of the independent edges
     dep : list
         Indices of the dependent edges
-    Edinv : array-2d
+    Edinv : array
         Equilibrium matrix of the dependents inverted
-    Ei : array-2d
+    Ei : array
         Equilibrum matrix of the independents
 
     Returns
     -------
-    dQ : array-2d
+    dQ : array
         Sensitivities of all q's with respect to the independents
-    dQdep : array-2d
+    dQdep : array
         Sensitivities of dependent q's with respect to the independents
     """
 
@@ -157,7 +157,7 @@ def gradient_feasibility(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -175,7 +175,7 @@ def gradient_reduce_thk(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -195,7 +195,7 @@ def gradient_tight_crosssection(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -215,7 +215,7 @@ def gradient_fmin(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -328,7 +328,7 @@ def gradient_fmax(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -347,7 +347,7 @@ def gradient_bestfit(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -411,7 +411,7 @@ def gradient_horprojection(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -484,7 +484,7 @@ def gradient_complementary_energy(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -577,7 +577,7 @@ def gradient_complementary_energy_nonlinear(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -617,7 +617,7 @@ def gradient_loadpath(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
@@ -714,7 +714,7 @@ def gradient_max_section(variables, M):
     ----------
     variables : array (k x 1)
         Variables to pass to the function.
-    M : Problem
+    M : :class:`~compas_tno.problems.Problem`
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns

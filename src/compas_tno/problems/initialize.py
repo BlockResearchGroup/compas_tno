@@ -14,9 +14,9 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVXP
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to compute the loadpath
-    problem : Problem, optional
+    problem : :class:`~compas_tno.problems.Problem`, optional
         The problem classs with the matrices relevant of the problem, by default None
     find_inds : bool, optional
         If independents need to be found before the loadpath computation, by default False
@@ -50,7 +50,7 @@ def initialize_tna(form, plot=False):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram. Loads and support must already have been assigned
     plot : bool, optional
         Plots of the intermediare and final force diagrams to follow the process, by default False
@@ -66,7 +66,7 @@ def initialize_fdm(form):
 
     Parameters
     ----------
-    form : FormDiagram
+    form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram. Loads, supports and force densities must already have been assigned
     """
 

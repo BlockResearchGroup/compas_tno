@@ -2,7 +2,7 @@ from compas_tno.algorithms import xyz_from_q
 
 try:
     import matlab.engine
-except:
+except BaseException:
     print('matlab not available in the system')
 import time
 
@@ -19,7 +19,7 @@ def run_optimisation_MATLAB(analysis):
 
     Parameters
     ----------
-    obj : analysis
+    obj : :class:`~compas_tno.analysis.Analysis`
         Analysis object with information about optimiser, form and shape.
 
     Returns

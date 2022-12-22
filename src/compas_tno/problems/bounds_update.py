@@ -64,7 +64,7 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
 
     Returns
     -------
-    ub, lb
+    ub, lb: array
         New position of the bounds in the point analysed
     """
 
@@ -184,7 +184,7 @@ def b_update(x, y, thk, fixed, shape, b, variables):
 
     Returns
     -------
-    b
+    b : list
         New ``b`` limits
     """
 

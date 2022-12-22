@@ -14,7 +14,7 @@ def general_ub_lb_update_with_t_middle_constant(thk, s, middle, t):
         Thickness of the structure
     s : float
         Middle surface heights
-    middle : MeshDos
+    middle : :class:`~compas_tno.shapes.MeshDos`
         Middle surface mesh
     t : float
         Value to assumed to vertices without intrados projection
@@ -88,7 +88,7 @@ def general_ub_lb_update_with_t_middle_variable(thk_alfa, s, middle, t):
         Thickness of the structure as a percentage of nub, nlb
     s : float
         Middle surface heights
-    middle : MeshDos
+    middle : :class:`~compas_tno.shapes.MeshDos`
         Middle surface mesh
     t : float
         Value to assumed to vertices without intrados projection
@@ -130,7 +130,7 @@ def general_db_with_t_middle_variable(s, middle):
     ----------
     s : float
         Middle surface heights
-    middle : MeshDos
+    middle : :class:`~compas_tno.shapes.MeshDos`
         Middle surface mesh
 
     Returns
@@ -170,7 +170,7 @@ def general_ub_lb_update_with_t_intrados(thk, lb, intrados, t):
         Thickness of the structure as a percentage of nub, nlb
     s : float
         Middle surface heights
-    middle : MeshDos
+    middle : :class:`~compas_tno.shapes.MeshDos`
         Middle surface mesh
     t : float
         Value to assumed to vertices without intrados projection
@@ -203,7 +203,7 @@ def general_db_with_t_intrados(lb, intrados):
     ----------
     s : float
         Middle surface heights
-    middle : MeshDos
+    middle : :class:`~compas_tno.shapes.MeshDos`
         Middle surface mesh
 
     Returns
@@ -213,7 +213,6 @@ def general_db_with_t_intrados(lb, intrados):
     dlb : array
         Sensitivities of the lower bound
     """
-
 
     dub = zeros((len(lb), 1))
     dlb = zeros((len(lb), 1))
@@ -346,9 +345,9 @@ def general_dub_dlb_with_n(ub, lb, n, intrados, extrados, t):
         Current bound limits
     n : float
         Magnitude of the offset from the original bounds
-    intrados : MeshDos
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         Intrados surface mesh
-    extrados : MeshDos
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         Extrados surface mesh
     t : float
         Value to assumed to vertices without intrados projection

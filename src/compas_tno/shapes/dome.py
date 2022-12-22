@@ -56,11 +56,11 @@ def set_dome_heighfield(center=[5.0, 5.0], radius=5.0, thk=0.30, t=0.0, discreti
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the shape
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the shape
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the shape
     """
 
@@ -220,11 +220,11 @@ def set_dome_with_spr(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math.pi
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the shape
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the shape
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the shape
     """
 
@@ -324,11 +324,11 @@ def set_dome_polar_coord(center=[5.0, 5.0], radius=5.0, thk=0.30, theta=[0, math
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the shape
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the shape
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the shape
     """
 

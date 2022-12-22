@@ -31,11 +31,11 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
 
     Returns
     -------
-    intrados
+    intrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the intrados of the shape
-    extrados
+    extrados : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the extrados of the shape
-    middle
+    middle : :class:`~compas_tno.shapes.MeshDos`
         A MeshDos for the middle of the shape
     """
 

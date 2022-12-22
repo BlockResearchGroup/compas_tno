@@ -57,7 +57,7 @@ class MeshDos(Mesh):
 
         Parameters
         ----------
-        formdiagram : FormDiagram
+        formdiagram : :class:`~compas_tno.diagrams.FormDiagram`
             The form diagram to copy
         attribute : str, optional
             The attribute to carry to the ``z``, by default 'lb'
@@ -193,8 +193,8 @@ class MeshDos(Mesh):
 
         Returns
         -------
-        obj
-            MeshDos.
+        None
+            Identification made in the shape
         """
 
         self.vertices_attribute('is_crease', False)
@@ -326,8 +326,8 @@ class MeshDos(Mesh):
 
         Returns
         -------
-        obj
-            MeshDos.
+        normals : list
+            List with normals
         """
 
         face_coords = [self.face_coordinates(fkey) for fkey in self.faces()]
