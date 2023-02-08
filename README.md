@@ -10,7 +10,7 @@ It has been developed by [Ricardo Maia Avelino](https://ricardoavelino.github.io
 
 It enables finding multi-objective particular internal stress solutions in masonry vaults, as the ones presented below.
 
-![COMPAS TNO Objectives](./docs/_images/objectives.jpg)
+![COMPAS TNO Objectives](./docs/main/_images/objectives.jpg)
 
 ## Installation
 
