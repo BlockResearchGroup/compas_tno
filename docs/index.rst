@@ -28,16 +28,6 @@ TNO has been developed during `Ricardo Maia Avelino <https://ricardoavelino.gith
 
 If you use COMPAS TNO to your research, please refer to our :ref:`publications <publications>`.
 
-References
------------------
-
-[1] R. Maia Avelino, “Thrust Network Optimisation for the Assessment of Vaulted Masonry Structures”, ETH Zurich, 2023. (to appear)
-
-[2] P. Block, “Thrust Network Analysis: Exploring Three-dimensional Equilibrium”, Massachusetts Institute of Technology, 2009.
-
-[3] J. Heyman, “The stone skeleton”, International Journal of Solids and Structures, vol. 2, no. 2, pp. 249--279, Apr. 1966.
-
-
 Table of Contents
 -----------------
 

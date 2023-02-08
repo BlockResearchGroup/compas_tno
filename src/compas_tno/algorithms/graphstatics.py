@@ -43,9 +43,9 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, printout=False,
         and the coordinates of the force diagram as input parameters.
         Default is ``None``.
 
-    Reference
+    Nores
     ---------
-    See ``compas_tna`` package.
+    See `compas tna <https://blockresearchgroup.github.io/compas_tna/>`_  package.
 
     Returns
     -------
@@ -142,9 +142,9 @@ def reciprocal_from_form(form, plot=False, restore_form_topology=True):
         If form topology should be restored.
         The default value is ``True``.
 
-    Reference
+    Notes
     ---------
-    See ``compas_ags`` package.
+    See `compas ags <https://blockresearchgroup.github.io/compas_ags/>`_  package.
 
     Returns
     -------
@@ -214,10 +214,9 @@ def force_update_from_form(force, form):
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to update.
 
-    Reference
+    Notes
     ---------
-
-    See ``compas_tna`` package.
+    See `compas tna <https://blockresearchgroup.github.io/compas_tna/>`_ package.
 
     Returns
     -------

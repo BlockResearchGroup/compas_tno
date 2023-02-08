@@ -29,8 +29,7 @@ def constrained_smoothing(mesh, kmax=100, damping=0.5,  constraints={}, algorith
     mesh: :class:`~compas.datastructures.Mesh`
         The smoothed mesh.
 
-
-    Reference
+    Notes
     ----------
     This function was extracted from `compas singular <https://blockresearchgroup.github.io/compas_singular/>`_ developed by Robin Oval.
 

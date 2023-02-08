@@ -142,7 +142,7 @@ def q_from_qid(q, ind, Edinv, Ei, ph):
     Notes
     -------
     Solver of the following equation:
-    $\mathbf{q}_\mathrm{id} = - mathbf{Ed}_\mathrm{id}$(\mathbf{E}_\mathrm{i} * \mathbf{q}_\mathrm{i} - \mathbf{p}_\mathrm{h})
+    \mathbf{q}_\mathrm{id} = - mathbf{Ed}_\mathrm{id}(\mathbf{E}_\mathrm{i} * \mathbf{q}_\mathrm{i} - \mathbf{p}_\mathrm{h})
 
     """
 
@@ -170,9 +170,9 @@ def q_from_variables(qid, B, d):
     q : array [m x 1]
         Force densities on all edges.
 
-    Reference
+    Notes
     ---------
-    Block and Lachauer, 2014...
+    Check `Block and Lachauer, 2014 <http://dx.doi.org/10.1016/j.mechrescom.2013.11.010>`_ for more details
 
     """
 

@@ -80,6 +80,6 @@ For 3D visualisation, the :mod:`Viewer <compas_tno.viewers.TNOViewer>` can be us
     vault = Shape.create_crossvault(xy_span=[[0.0, 10.0], [0.0, 10.0]],
                                     thk=0.5,
                                     spr_angle=30.0)
-    view = View(shape=vault)
+    view = Viewer(shape=vault)
     view.draw_shape()
     view.show()

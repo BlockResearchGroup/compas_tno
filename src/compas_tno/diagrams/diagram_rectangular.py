@@ -623,9 +623,9 @@ def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisati
     :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
 
-    Reference
+    Notes
     ---------
-        Diagram implemented after (`N. A. Nodargi et al., 2022 <https://doi.org/10.1016/j.engstruct.2022.114878>`_).
+        Diagram implemented after `N. A. Nodargi et al., 2022 <https://doi.org/10.1016/j.engstruct.2022.114878>`_.
     """
 
     from compas_tno.utilities import split_intersection_lines
@@ -769,9 +769,6 @@ def create_delta_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10
     :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
 
-    Reference
-    ---------
-        Add Reference
     """
 
     form = create_cross_with_diagonal(cls, xy_span=xy_span, discretisation=discretisation, fix=fix)

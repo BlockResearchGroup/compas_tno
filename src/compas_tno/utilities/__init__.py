@@ -112,6 +112,10 @@ Form Modifications
     move_pattern_to_origin
     slide_diagram
     mesh_remove_two_valent_nodes
+    slide_pattern_inwards
+    displacement_map_paraboloid
+    displacement_map_4parabolas
+    displacement_map_parabola
 
 Data Analysis
 ====================
@@ -217,7 +221,11 @@ from .form import (
     move_pattern_to_origin,
     slide_diagram,
     mesh_remove_two_valent_nodes,
-    store_inds
+    store_inds,
+    slide_pattern_inwards,
+    displacement_map_paraboloid,
+    displacement_map_4parabolas,
+    displacement_map_parabola
 )
 
 from .data_analysis import (
@@ -301,6 +309,10 @@ __all__ = [
     'slide_diagram',
     'mesh_remove_two_valent_nodes',
     'store_inds',
+    'slide_pattern_inwards',
+    'displacement_map_paraboloid',
+    'displacement_map_4parabolas',
+    'displacement_map_parabola',
 
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',

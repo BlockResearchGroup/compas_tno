@@ -59,7 +59,7 @@ def mma_numpy(f_g_eval, f_df_g_dg_eval, x0, bounds, args=(), kkttol=1e-6, maxout
     -----
     For more info, see [1]. This is the python version of the code written by Arjen Deetman [2].
 
-    References
+    Notes
     ----------
     .. [1] Svanberg, K., *The method of moving asymptotes–a new method for structural optimization*,
            International Journal for Numerical Methods in Engineering, 24, 359-373, 1987.
