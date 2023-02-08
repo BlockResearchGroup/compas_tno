@@ -3,7 +3,8 @@ from compas_tno.algorithms import xyz_from_q
 try:
     import matlab.engine
 except BaseException:
-    print('matlab not available in the system')
+    pass
+    # print('matlab not available in the system')
 import time
 
 from numpy import array
@@ -59,6 +60,11 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     obj : dict
         Dictionary with the returned values from the convex optimisation.
     """
+
+    # try:
+    #     import matlab.engine
+    # except BaseException:
+    #     print('Warning: Matlab not available in the system')
 
     future = matlab.engine.connect_matlab(background=True)
     # future = matlab.engine.start_matlab(background=True)

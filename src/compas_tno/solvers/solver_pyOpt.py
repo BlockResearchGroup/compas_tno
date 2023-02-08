@@ -2,7 +2,7 @@
 from .post_process import post_process_general
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.algorithms import q_from_qid
-from numpy.linalg import hstack
+from numpy import hstack
 
 
 __all__ = [

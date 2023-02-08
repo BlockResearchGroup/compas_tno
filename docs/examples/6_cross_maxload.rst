@@ -1,12 +1,11 @@
-************************
-Parametric Form Diagrams
-************************
+*************************
+Cross vault collapse load
+*************************
 
 The current example creates one sample for each parametric Form Diagram implemented. (Note: succesive plots should appear  in the screen)
 
-.. figure:: ../_images/formdiagrams.png
+.. figure:: ../_images/cross-maxload.png
     :figclass: figure
     :class: figure-img img-fluid
 
-..
-    literalinclude:: ../../examples/Example_FormDiagram.py
+.. literalinclude:: ../../examples/_tutorial/6_crossvault_maxload.py

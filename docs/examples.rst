@@ -4,7 +4,7 @@
 Examples
 ********************************************************************************
 
-**In construction** - only old version available.
+The following examples are provided to start usinf TNO for simple problems.
 
 .. toctree::
    :maxdepth: 1

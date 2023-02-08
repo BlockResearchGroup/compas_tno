@@ -213,8 +213,8 @@ def call_cvxpy(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = Problem(objective, constraints)
-    prob.solve(verbose=printout)
-    # prob.solve(verbose=True)
+    prob.solve(solver='MOSEK', verbose=printout)
+    # prob.solve(solver='MOSEK', verbose=True)
 
     # save output
     fopt = prob.value
@@ -289,7 +289,7 @@ def call_cvxpy_ind(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = Problem(objective, constraints)
-    prob.solve(verbose=printout)
+    prob.solve(solver='MOSEK', verbose=printout)
 
     # save output
     fopt = prob.value

@@ -71,7 +71,7 @@ def pavillion_vault_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=None, tol
         A MeshDos for the middle of the shape
     """
 
-    # Update this function to work on rectangular Pavillion-Vaults
+    # TODO: Update this function to work on rectangular Pavillion-Vaults
 
     if isinstance(discretisation, int):
         discretisation = [discretisation, discretisation]

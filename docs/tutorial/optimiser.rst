@@ -10,7 +10,13 @@ Optimiser
 
 This tutorial provides a quick tour of the generation of the ``Optimiser`` object in :mod:`compas_tno.optimisers`.
 
-The ``Optimiser`` object stores in the settings the main information about the optimisation, the main elements and its options are listed below:
+The ``Optimiser`` object stores in the settings the main information about the optimisation. The chart below illustrate the information that can be passed to the Optimiser.
+
+.. figure:: ../_images/optimiser.png
+    :figclass: figure
+    :class: figure-img img-fluid
+
+The different categories of data passed to the optimiser are presented below.
 
 Variables
 =========

@@ -311,6 +311,7 @@ def run_optimisation_ipopt(analysis):
     optimiser.xopt = xopt
     optimiser.niter = None  # Did not find a way to display number of iterations
     optimiser.message = info['status_msg']
+    optimiser.nlp = nlp
 
     post_process_general(analysis)
 

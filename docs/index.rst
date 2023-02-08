@@ -1,23 +1,45 @@
 Introduction
 =============
 
-.. figure:: /_images/flow.png
+.. figure:: /_images/objectives.png
     :figclass: figure
     :class: figure-img img-fluid
 
-``compas_tno`` is a Python package used for assessing masonry structures according to the Safe Theorem of Limit Analysis. It works by finding admissible stress states, which are defined as a path of compressive and equilibrated forces contained within the structural geometry. Therefore, from the Safe theorem, if one admissible stress state is found, the structure is safe under the applied loads. This set of compressive, internal forces corresponds to a lower-bound equilibrium solution (:ref:`Heyman, 1966 <References>`).
+.. rst-class:: lead
 
-Block (:ref:`2009 <References>`) introduced Thrust Network Analysis (TNA) which describes the structure as a network with internal axial forces in the edges and external loads applied to its vertices. Using the principles of graphic statics (:ref:`Wolfe, 1921 <References>`), this network is defined by its vertical projection in the plan (the *form diagram*) and the horizontal equilibrium is visualised by a reciprocal graph (the *force diagram*). TNA has been used as an interactive design tool and is implemented in the open-source Python package :mod:`compas_tna`.
+COMPAS TNO is a Python package to find admissible thrust networks in masonry vaulted structures.
 
-This package provides the necessary infrastructure to frame TNA as an assessment problem (:ref:`Maia Avelino et al., 2021 <References>`). It sets up and runs optimisation problems to find specific networks contained within the bounds of a given masonry structure. With these specific networks, one can assess the level of stability of the structure, which goes beyond merely proving that the structure is safe. Additional information about the package content can be found under :ref:`Publications <publications>`.
+The package implements *Thrust Network Optimisation*, or TNO, within the `COMPAS <https://compas.dev/>`_ framework. TNO is a modular multi-objective optimisation framework to find admissible thrust networks in vaulted masonry structures. Thrust Networks represent the internal forces in masonry structures as a connected force network contained within the structural geometry. Based on the safe theorem of limit analysis, a structure is safe if at least one thrust network is found within its envelope. This set of compressive, internal forces corresponds to a lower-bound equilibrium solution.
 
-This package is in development by the Block Research Group in a project funded by the Swiss National Science Foundation SNSF (project grant n. 178953). Thus, it has not yet been released to the public. If you wish to download or contribute please an email to (maia@arch.ethz.ch).
+With TNO, multiple particular equilibrium states can be obtained, including the structure's minimum and maximum horizontal thrusts, its minimum thickness, its vertical and horizontal collapse loads, and the internal stress following support movements. Beyond providing the internal force distribution for these limit states, an indication of the crack patterns is obtained by looking at the points where the network touches intrados and extrados of the vaults.
 
-Check the installation guide on the :ref:`Installation <installation>` and :ref:`Getting Started <gettingstarted>` pages. Then head to the :ref:`Tutorial <tutorial>` for start using ``compas_tno``.
+Exploring network contained within the structural evelope corresponds to solving a constrained nolinear optimisation problem. TNO sets up, run and output the solution networks to these problems.
+
+To use TNO, check the installation guide on the :ref:`Installation <installation>` and :ref:`Getting Started <gettingstarted>` pages to prepare your machine to run TNO.
+
+A tutorial about the package's elements is provided in :ref:`Tutorial <tutorial>`
+
+A series of simple examples are provided in the :ref:`Examples <examples>` section to start using TNO.
+
+Acknowlegments
+--------------
+
+TNO has been developed during `Ricardo Maia Avelino <https://ricardoavelino.github.io>`_'s doctoral research at the `Block Research Group <https://block.arch.ethz.ch>`_, ETH Zurich funded by the Swiss National Science Foundation SNSF (project grant n. 178953).
+
+If you use COMPAS TNO to your research, please refer to our :ref:`publications <publications>`.
+
+References
+-----------------
+
+[1] R. Maia Avelino, “Thrust Network Optimisation for the Assessment of Vaulted Masonry Structures”, ETH Zurich, 2023. (to appear)
+
+[2] P. Block, “Thrust Network Analysis: Exploring Three-dimensional Equilibrium”, Massachusetts Institute of Technology, 2009.
+
+[3] J. Heyman, “The stone skeleton”, International Journal of Solids and Structures, vol. 2, no. 2, pp. 249--279, Apr. 1966.
 
 
 Table of Contents
-=================
+-----------------
 
 .. toctree::
    :maxdepth: 3
@@ -35,13 +57,3 @@ Table of Contents
 
 .. _References:
 
-References
-===========
-
-[1] P. Block, “Thrust Network Analysis,” Massachusetts Institute of Technology, 2009.
-
-[2] J. Heyman, “The stone skeleton,” Int. J. Solids Struct., vol. 2, no. 2, pp. 249–279, Apr. 1966.
-
-[3] W.S. Wolfe, Graphical analysis: a handbook on graphic statics. New Cork:McGraw-Hill, 1921.
-
-[4] Maia Avelino et al., “Assessing the safety of vaulted masonry structures using Thrust Network Analysis,” Comp. Struct., vol. 257, pp. 106647, 2021.

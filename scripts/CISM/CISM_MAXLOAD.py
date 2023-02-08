@@ -83,7 +83,7 @@ def find_loaded_node(form, load_ycoord):
 
     for key in form.vertices():
         pt = form.vertex_coordinates(key)
-        if distance_point_point_xy(pt, [xc, load_ycoord, 0.0]) <1e-3:
+        if distance_point_point_xy(pt, [xc, load_ycoord, 0.0]) < 1e-3:
             loaded_node = key
             break
 

@@ -10,7 +10,7 @@ FormDiagram
 
 .. highlight:: python
 
-This tutorial provides a quick tour of the generation of ``FormDiagram`` in :mod:`compas_tno.diagrams`.
+This tutorial provides a quick tour of the generation of :mod:`FormDiagram <compas_tno.diagrams.FormDiagram>`.
 
 The diagram can be created in a general way using the methods ``from_lines`` or ``from_meshes`` see :mod:`FormDiagram <compas_tno.diagrams.FormDiagram>` documentation.
 TNO offers a library of diagrams based on commom layouts which will be described herein.

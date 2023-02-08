@@ -151,7 +151,7 @@ def form_add_lines_support(form, loaded_node, supports):
             if dist < 1e-3:
                 form.vertex_attribute(vertex, 'is_fixed', True)
 
-    form.parameterss = parameters
+    form.parameters = parameters
 
     return form, new_loaded_node
 

@@ -12,6 +12,7 @@ from compas_tno.shapes import MeshDos
 
 from compas.datastructures import Datastructure
 
+import math
 
 __all__ = ['Shape']
 
@@ -57,9 +58,6 @@ class Shape(Datastructure):
         The limits of the xy box (for rectangular form diagram)
     t : float
         The parameter assumed when no intrados projection is found
-
-    gone 21-29
-    go @20 @29
 
     Examples
     --------
@@ -350,7 +348,7 @@ class Shape(Datastructure):
         discretisation : [float, float], optional
             Discretisation of the parallel and meridians, by default [16, 40]
         t : float, optional
-            Negative thickness to consider if the intrados can not be interpolated in the point, by default 0.0
+            Negative thickness to consider if the intrados can not be interpolated in the point, by default 0.5
 
         Returns
         -------
@@ -392,7 +390,7 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
-    def create_arch(cls, H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.0, discretisation=100):
+    def create_arch(cls, H=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=0.5, discretisation=100):
         """Create the shape representing a circular arch.
 
         Parameters
@@ -456,7 +454,7 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
-    def create_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, discretisation=[100, 100]):
+    def create_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, spr_angle=30.0, discretisation=[100, 100]):
         """Create the shape representing a Crossvault
 
         Parameters
@@ -467,6 +465,8 @@ class Shape(Datastructure):
             The thickness of the vault, by default 0.5
         t : float, optional
             Parameter for lower bound in nodes in the boundary, by default 0.0
+        spr_angle : float, optional
+            Springing angle, by default 0.0
         discretisation : list|int, optional
             Level of discretisation of the shape, by default [100, 100]
 
@@ -476,6 +476,13 @@ class Shape(Datastructure):
             The shape of the dome.
 
         """
+
+        if spr_angle:  # amplify the bounds if springing angle is present
+            x0, xf = xy_span[0]
+            alpha = 1/math.cos(math.radians(spr_angle))
+            Ldiff = (xf - x0) * (alpha - 1)
+            xyspan_shape = [[x0 - Ldiff/2, xf + Ldiff/2], [x0 - Ldiff/2, xf + Ldiff/2]]
+            xy_span = xyspan_shape
 
         data = {'type': 'crossvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t}
 

@@ -1,6 +1,6 @@
-*****************
-Cross Vault (fan)
-*****************
+***********************
+Cross vault new diagram
+***********************
 
 The current example finds minimum thrust for a cross vailt arch based a fan Form Diagram.
 
@@ -8,5 +8,4 @@ The current example finds minimum thrust for a cross vailt arch based a fan Form
     :figclass: figure
     :class: figure-img img-fluid
 
-..
-    literalinclude:: ../../examples/Example_crossvault_minthrust_fan_fd.py
+.. literalinclude:: ../../examples/_tutorial/3_crossvault_fan.py
