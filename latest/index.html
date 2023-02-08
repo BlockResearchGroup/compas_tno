@@ -104,12 +104,6 @@
 <p>TNO has been developed during <a class="reference external" href="https://ricardoavelino.github.io">Ricardo Maia Avelino</a>’s doctoral research at the <a class="reference external" href="https://block.arch.ethz.ch">Block Research Group</a>, ETH Zurich funded by the Swiss National Science Foundation SNSF (project grant n. 178953).</p>
 <p>If you use COMPAS TNO to your research, please refer to our <a class="reference internal" href="publications.html#publications"><span class="std std-ref">publications</span></a>.</p>
 </section>
-<section id="references">
-<h2>References</h2>
-<p>[1] R. Maia Avelino, “Thrust Network Optimisation for the Assessment of Vaulted Masonry Structures”, ETH Zurich, 2023. (to appear)</p>
-<p>[2] P. Block, “Thrust Network Analysis: Exploring Three-dimensional Equilibrium”, Massachusetts Institute of Technology, 2009.</p>
-<p>[3] J. Heyman, “The stone skeleton”, International Journal of Solids and Structures, vol. 2, no. 2, pp. 249–279, Apr. 1966.</p>
-</section>
 <section id="table-of-contents">
 <h2>Table of Contents</h2>
 <div class="toctree-wrapper compound">
@@ -122,11 +116,11 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/workflow.html">Workflow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/form.html">FormDiagram</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/shape.html">Shape</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/optimiser.html">Optimiser</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial/analysis.html">Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/0_workflow.html">Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/1_form.html">FormDiagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/2_shape.html">Shape</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/3_optimiser.html">Optimiser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/4_analysis.html">Analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
@@ -136,7 +130,6 @@
 <li class="toctree-l2"><a class="reference internal" href="examples/4_dome_minthk.html">Dome minimum thickness</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/6_cross_maxload.html">Cross vault collapse load</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/shapes.html">Parametric Shapes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api.html">API Reference</a><ul>
@@ -155,7 +148,7 @@
 <li class="toctree-l1"><a class="reference internal" href="publications.html">Publications</a></li>
 </ul>
 </div>
-<span class="target" id="id1"></span></section>
+<span class="target" id="references"></span></section>
 </section>
 
         
@@ -183,11 +176,11 @@
 </ul>
 </li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="tutorial.html">Tutorial</a><ul class="nav flex-column collapse">
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/workflow.html">Workflow</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/form.html">FormDiagram</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/shape.html">Shape</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/optimiser.html">Optimiser</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/analysis.html">Analysis</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/0_workflow.html">Workflow</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/1_form.html">FormDiagram</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/2_shape.html">Shape</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/3_optimiser.html">Optimiser</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="tutorial/4_analysis.html">Analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="examples.html">Examples</a><ul class="nav flex-column collapse">
@@ -197,7 +190,6 @@
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/4_dome_minthk.html">Dome minimum thickness</a></li>
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/6_cross_maxload.html">Cross vault collapse load</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/shapes.html">Parametric Shapes</a></li>
 </ul>
 </li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="api.html">API Reference</a><ul class="nav flex-column collapse">
@@ -226,7 +218,6 @@
         <ul class="nav flex-column" id="compas-toc">
 <li class="nav-item"><a class="nav-link reference internal" href="#">Introduction</a><ul class="nav flex-column">
 <li class="nav-item"><a class="nav-link reference internal" href="#acknowlegments">Acknowlegments</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#references">References</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#table-of-contents">Table of Contents</a></li>
 </ul>
 </li>

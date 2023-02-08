@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  
+  <title>compas_tno - Optimiser</title>
+  
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+  <meta name="author" content="Ricardo Maia Avelino" />
+  <meta name="description" content="" />
+
+  <link rel="shortcut icon" href="../_static/images/compas.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/styles/mono-blue.min.css">
+  <link rel="stylesheet" type="text/css" href="../_static/css/compas.css" />
+  <link rel="stylesheet" type="text/css" href="../_static/css/compas-reference.css" />
+
+  
+  <link rel="next" title="Analysis" href="4_analysis.html" />
+  
+
+  
+  <link rel="prev" title="Shape" href="2_shape.html" />
+  
+
+  <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</head>
+
+<body data-spy="scroll" data-target="#compas-toc">
+  <!-- header -->
+  <header id="header" class="compas-header d-flex align-items-center">
+    <nav class="navbar navbar-expand navbar-dark col flex-column flex-md-row text-center">
+      <!-- brand -->
+      <a class="navbar-brand" href="https://BlockResearchGroup.github.io/compas_tno/">
+        <img src="../_static/images/compas_icon_white.png" alt="compas_tno" width="48px" height="48px" />
+      </a>
+      <!-- brand -->
+      <!-- primary -->
+      <ul class="navbar-nav">
+        <li class="nav-item active"><a class="nav-link" href="https://BlockResearchGroup.github.io/compas_tno/">compas_tno</a></li>
+      </ul>
+      <!-- primary -->
+      <ul class="navbar-nav d-none d-md-flex ml-md-auto">
+        <!-- version -->
+        
+        <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
+        <li class="nav-item nav-versions dropdown">
+          <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            0.1.0
+          </a>
+          <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
+        </li>
+        
+        <!-- version -->
+        <!-- social -->
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/BlockResearchGroup/compas_tno" target="_blank">
+            <span class="fab fa-github fa-1x"></span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="http://forum.compas-framework.org" target="_blank">
+            <span class="fab fa-discourse fa-1x"></span>
+          </a>
+        </li>
+        <!-- social -->
+      </ul>
+    </nav>
+  </header>
+  <!-- header -->
+  <!-- main -->
+  <div class="container-fluid">
+    <div class="row">
+      <!-- main -->
+      <main class="col-12 col-md-9 col-xl-7 px-4 px-md-5 pt-2 pb-5 compas-content" role="main">
+        
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb mb-3 bg-white px-0">
+            <li class="breadcrumb-item"><a href="../index.html">compas_tno</a></li>
+            
+            <li class="breadcrumb-item"><a href="../tutorial.html">Tutorial</a></li>
+            
+            <!-- <li class="breadcrumb-item active" aria-current="page">Optimiser</li> -->
+          </ol>
+        </nav>
+        
+
+        
+        
+        <section id="optimiser">
+<span id="id1"></span><h1>Optimiser</h1>
+<p>This tutorial provides a quick tour of the generation of <a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.html#compas_tno.optimisers.Optimiser" title="compas_tno.optimisers.Optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Optimiser</span></code></a>.</p>
+<p>The <a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.html#compas_tno.optimisers.Optimiser" title="compas_tno.optimisers.Optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Optimiser</span></code></a> object stores in the <code class="docutils literal notranslate"><span class="pre">Optimiser.settings</span></code> dictionary, the main information about the optimisation. The chart below illustrate the information that can be passed to the Optimiser.</p>
+<figure class="figure align-default">
+<img alt="../_images/optimiser.png" class="figure-img img-fluid" src="../_images/optimiser.png" />
+</figure>
+<p>The different categories of data passed to the optimiser are presented below.</p>
+<section id="variables">
+<h2>Variables</h2>
+<p>The sets of variables available are described in the table below. They are should be passed to <code class="docutils literal notranslate"><span class="pre">optimiser.settings['variables']</span></code> as a list of stings.</p>
+<table class="colwidths-auto table table-bordered docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Variable</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">q</span></code></p></td>
+<td><p>Force Densities</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">zb</span></code></p></td>
+<td><p>Height of supports</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">xyb</span></code></p></td>
+<td><p>Horizontal position of supports</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">t</span></code></p></td>
+<td><p>Thickness (see min_thk optimisation)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lambd</span></code></p></td>
+<td><p>Horizontal Muliplier</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tub</span></code></p></td>
+<td><p>Additional thickness upper-bound</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tlb</span></code></p></td>
+<td><p>Additional thickness lower-bound</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="objectives">
+<h2>Objectives</h2>
+<p>The objeective functions available are described in the table below. They are should be passed to <code class="docutils literal notranslate"><span class="pre">optimiser.settings['objective']</span></code> as a string.</p>
+<table class="colwidths-auto table table-bordered docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Objective</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">min_thrust</span></code></p></td>
+<td><p>Minimise Horizontal Thrust</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_thrust</span></code></p></td>
+<td><p>Maximise Horizontal Thrust</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">min_thk</span></code></p></td>
+<td><p>Minimise structural Thickness</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loadpath</span></code></p></td>
+<td><p>Minimise Loadpath</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">target</span></code></p></td>
+<td><p>Minimise vertical distance to target (bestfit)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">feasibility</span></code></p></td>
+<td><p>Constant objective function to test feasibility</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lambd</span></code></p></td>
+<td><p>Maximise Horizontal Multiplier</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">n</span></code></p></td>
+<td><p>Maximise offset from intra/extrados (equivalent to min_thk)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Ecomp-linear</span></code></p></td>
+<td><p>Minimise complementary energy (linear)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Ecomp-nonlinear</span></code></p></td>
+<td><p>Minimise complementary energy (quadratic)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_section</span></code></p></td>
+<td><p>Minimise the increase in the structural section</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="constraints">
+<h2>Constraints</h2>
+<p>The constraints available are described in the table below. They are should be passed to <code class="docutils literal notranslate"><span class="pre">optimiser.settings['constraints']</span></code> as a list of stings.</p>
+<table class="colwidths-auto table table-bordered docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Constraint</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">funicular</span></code></p></td>
+<td><p>All members subjected to compressive forces</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">envelope</span></code></p></td>
+<td><p>Height of the vertices within vertical envelope</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">envelopexy</span></code></p></td>
+<td><p>Horizontal movement of vertices within horizontal bounds (non-fixed diagram)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reac_bounds</span></code></p></td>
+<td><p>Bounds on the direction and magnitude of the reaction forces (see dome example)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="features">
+<h2>Features</h2>
+<p>The features available are described in the table below. They are should be passed to <code class="docutils literal notranslate"><span class="pre">optimiser.settings['features']</span></code> as a list of stings.</p>
+<table class="colwidths-auto table table-bordered docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Feature</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fixed</span></code></p></td>
+<td><p>Fix diagram in plan (limit ‘q’ variables to the independent edges)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sym</span></code></p></td>
+<td><p>Activate symmetry in the diagram (‘axis_sym’ can be passed)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">adapted-envelope</span></code></p></td>
+<td><p>Deals with the update on the vertical envelope as nodes move horizontally</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="solver-selection">
+<h2>Solver Selection</h2>
+<p>The solver name and library should be passed as <code class="docutils literal notranslate"><span class="pre">optimiser.settings['solver']</span></code>.</p>
+<table class="colwidths-auto table table-bordered docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Solvers</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">SLSQP</span></code></p></td>
+<td><p>Nonlinear solver SLSQP from library SciPy is used</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">IPOPT</span></code></p></td>
+<td><p>Nonlinear solver IPOPT is used</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PyOpt-multiple</span></code></p></td>
+<td><p>One of multiple nonlinear solvers available in PyOpt is used, (e.g., SLSQP, Diff. Evolutional, etc)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">MMA</span></code></p></td>
+<td><p>Method of moving assymptotes (MMA) is used</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="starting-point">
+<h2>Starting Point</h2>
+<p>The starting point should be passed as <code class="docutils literal notranslate"><span class="pre">optimiser.settings['starting_point']</span></code> and will execute a preconditioning optimisation before the NLOpt.</p>
+<table class="colwidths-auto table table-bordered docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Starting Point</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loadpath</span></code></p></td>
+<td><p>Use the loadpath (for fixed diagram) as starting point (default)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">relax</span></code></p></td>
+<td><p>Relax the diagram using the current force densities (FDM)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sag</span></code></p></td>
+<td><p>Relax the diagram increasing the force densities in the boundary members (FDM)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">tna</span></code></p></td>
+<td><p>Compute the horizontal graphical equilibrium and returns the thrust network</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">current</span></code></p></td>
+<td><p>Use the current state (force densities and geometry) to initiate the optimisation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="automated-optimisers">
+<h2>Automated Optimisers</h2>
+<p>Beyond defining each element separately, a series of functions has been implemented to create the optimiser for a specific problem. Nevertheless, when these are created, the user should check if the <cite>Optimiser.settings</cite> dictionaty contains the right information for the analysis.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.create_lp_optimiser.html#compas_tno.optimisers.Optimiser.create_lp_optimiser" title="compas_tno.optimisers.Optimiser.create_lp_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_lp_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.create_max_horload_optimiser.html#compas_tno.optimisers.Optimiser.create_max_horload_optimiser" title="compas_tno.optimisers.Optimiser.create_max_horload_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_max_horload_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.create_max_vertload_optimiser.html#compas_tno.optimisers.Optimiser.create_max_vertload_optimiser" title="compas_tno.optimisers.Optimiser.create_max_vertload_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_max_vertload_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.create_maxhrust_optimiser.html#compas_tno.optimisers.Optimiser.create_maxhrust_optimiser" title="compas_tno.optimisers.Optimiser.create_maxhrust_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_maxhrust_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.create_minthrust_optimiser.html#compas_tno.optimisers.Optimiser.create_minthrust_optimiser" title="compas_tno.optimisers.Optimiser.create_minthrust_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_minthrust_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.optimisers.Optimiser.create_minthk_optimiser.html#compas_tno.optimisers.Optimiser.create_minthk_optimiser" title="compas_tno.optimisers.Optimiser.create_minthk_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_minthk_optimiser</span></code></a></p></li>
+</ul>
+</section>
+</section>
+
+        
+      </main>
+      <!-- content -->
+      <!-- sidebar -->
+      <div class="col-12 col-md-3 compas-sidebar" role="navigation">
+        <form id="search" class="d-flex align-items-center compas-searchbox" action="../search.html" method="get">
+          <input class="form-control" type="text" name="q" placeholder="Search docs" />
+          <input type="hidden" name="check_keywords" value="yes" />
+          <input type="hidden" name="area" value="default" />
+          <button class="navbar-toggler d-md-none" type="button" data-toggle="collapse" data-target="#compas-navigation" aria-controls="compas-navigation" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </form>
+        
+        
+        <div id="compas-navigation" class="collapse compas-navigation">
+          <ul class="nav flex-column collapse show active">
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../gettingstarted.html">Getting Started</a><ul class="nav flex-column collapse">
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../gettingstarted/solvers.html">Solvers</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../gettingstarted/rhino.html">Rhinoceros</a></li>
+</ul>
+</li>
+<li class="toctree-l1 nav-item active"><a class="nav-link reference internal" href="../tutorial.html">Tutorial</a><ul class="nav flex-column collapse show active">
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="0_workflow.html">Workflow</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="1_form.html">FormDiagram</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="2_shape.html">Shape</a></li>
+<li class="toctree-l2 nav-item active"><a class="nav-link active reference internal" href="#">Optimiser</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="4_analysis.html">Analysis</a></li>
+</ul>
+</li>
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../examples.html">Examples</a><ul class="nav flex-column collapse">
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/1_circulararch.html">The masonry arch</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/2_crossvault_minmax.html">Cross vault min/max thrust</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/3_crossvault_fan.html">Cross vault new diagram</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/4_dome_minthk.html">Dome minimum thickness</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/6_cross_maxload.html">Cross vault collapse load</a></li>
+</ul>
+</li>
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../api.html">API Reference</a><ul class="nav flex-column collapse">
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.html">compas_tno</a><ul class="nav flex-column collapse">
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.diagrams.html">compas_tno.diagrams</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.optimisers.html">compas_tno.optimisers</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.plotters.html">compas_tno.plotters</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.utilities.html">compas_tno.utilities</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../publications.html">Publications</a></li>
+</ul>
+
+        </div>
+        
+      </div>
+      <!-- sidebar -->
+      <!-- toc -->
+      <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
+        
+        <ul class="nav flex-column" id="compas-toc">
+<li class="nav-item"><a class="nav-link reference internal" href="#">Optimiser</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#variables">Variables</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#objectives">Objectives</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#constraints">Constraints</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#features">Features</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#solver-selection">Solver Selection</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#starting-point">Starting Point</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#automated-optimisers">Automated Optimisers</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+      <!-- toc -->
+    </div>
+  </div>
+  <!-- main -->
+  <!-- footer -->
+  <footer class="compas-footer">
+    <nav class="nav p-2">
+      
+      <a href="2_shape.html" title="Shape" class="nav-link footer-link float-start text-left d-flex w-50" rel="prev">
+        <div class="nav-button p-2 m-2"><i class="fas fa-arrow-left"></i></div>
+        <div class="nav-title flex-grow-1 align-self-center">
+          <div class="nav-direction small font-weight-light">Previous</div>
+          Shape
+        </div>
+      </a>
+      
+
+      
+      <a href="4_analysis.html" title="Analysis" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
+        <div class="nav-title footer-link flex-grow-1 align-self-center">
+          <div class="nav-direction small font-weight-light">Next</div>
+          Analysis
+        </div>
+        <div class="nav-button p-2 m-2"><i class="fas fa-arrow-right"></i></div>
+      </a>
+      
+    </nav>
+  </footer>
+  <!-- footer -->
+  <!-- below -->
+  <div class="below py-5" style="background-color: #222;">
+    <div class="container">
+      <div class="row flex-column">
+        <div class="col-12 col-md-6 mx-md-auto text-center">
+          <h4 class="pb-3 below-text">COMPAS</h4>
+          <p class="below-text">
+            A computational framework for collaboration and research
+            in Architecture, Engineering, Fabrication, and Construction.
+          </p>
+          <nav class="nav justify-content-center pb-3">
+            <a class="nav-link mx-2 px-0 below-link" href="http://github.com/compas-dev" target="_blank">
+              <span class="fab fa-github fa-1x"></span>
+            </a>
+            <a class="nav-link mx-2 px-0 below-link" href="http://forum.compas-framework.org" target="_blank">
+              <span class="fab fa-discourse fa-1x"></span>
+            </a>
+            <a class="nav-link mx-2 px-0 below-link" href="https://pypi.org/project/COMPAS/" target="_blank">
+              <span class="fab fa-python fa-1x"></span>
+            </a>
+          </nav>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col text-center">
+          <p class="p-0 m-0 below-text">Copyright &copy; 2017-2021 compas-dev</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- below -->
+  <!-- scripts -->
+  <script id="documentation_options" data-url_root="" src="../_static/documentation_options.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.4.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/anchor-js/4.0.0/anchor.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.8/clipboard.min.js"></script>
+
+  <script src="../_static/underscore.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/searchtools.js"></script>
+  <script src="../_static/language_data.js"></script>
+
+  <script>
+    $(document).ready(function () {
+      $(".language-default code").addClass("python");
+      $(".language-python code").addClass("python");
+      $(".language-bash code").addClass("bash");
+      $(".language-cpp code").addClass("cpp");
+      $(".language-json code").addClass("json");
+      $(".language-none code").addClass("plaintext");
+
+      hljs.initHighlighting();
+      anchors.add();
+
+      new ClipboardJS(".btn.copy", {
+        target: function(trigger) {
+          return trigger.nextElementSibling;
+        }
+      });
+
+      $("#compas-navigation li.active > ul").each(function() {
+        var ul = $(this);
+        if (! ul.hasClass("show")) {
+          ul.addClass("show");
+        }
+      });
+
+      $("#compas-navigation li.toctree-l1").has("ul").each(function() {
+        var li = $(this);
+        li.addClass("has-children");
+        if (li.hasClass("active")) {
+          li.prepend('<span class="menu-toggle"><i class="fas fa-chevron-up"></i></span>');
+        }
+        else {
+          li.prepend('<span class="menu-toggle"><i class="fas fa-chevron-down"></i></span>');
+        }
+      });
+
+      $(".menu-toggle").click(function() {
+        var toggle = $(this);
+        toggle.siblings("ul").toggleClass("show");
+      });
+
+    });
+
+
+    var url = $("#doc_versions").data("url");
+    var docs_site = $("#doc_versions").data("docs");
+
+    if (url) {
+      $.get(url, res => {
+        var lines = res.match(/[^\r\n]+/g);
+        lines.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+        lines.reverse();
+        lines.forEach(version => {
+          $("#doc_version_list").append("<a class=\"dropdown-item\" href=\"" + docs_site + version + "\">" + version + "</a>");
+        });
+
+        var selected_version = $('.nav-versions .dropdown-item').filter(function (i, ver) {
+          return window.location.href.startsWith(ver.href);
+        });
+        selected_version.addClass('active');
+        $("#bd-versions").text(selected_version.text());
+
+      })
+    }
+  </script>
+  <!-- scripts -->
+  
+  
+</body>
+
+</html>
