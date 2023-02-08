@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
+    "sphinx.ext.imgmath",
     "sphinx.ext.napoleon",
     "sphinx.ext.githubpages",
     "matplotlib.sphinxext.plot_directive",

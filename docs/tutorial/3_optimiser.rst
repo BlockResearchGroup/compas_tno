@@ -8,9 +8,9 @@ Optimiser
 
 .. highlight:: python
 
-This tutorial provides a quick tour of the generation of the ``Optimiser`` object in :mod:`compas_tno.optimisers`.
+This tutorial provides a quick tour of the generation of :mod:`Optimiser <compas_tno.optimisers.Optimiser>`.
 
-The ``Optimiser`` object stores in the settings the main information about the optimisation. The chart below illustrate the information that can be passed to the Optimiser.
+The :mod:`Optimiser <compas_tno.optimisers.Optimiser>` object stores in the ``Optimiser.settings`` dictionary, the main information about the optimisation. The chart below illustrate the information that can be passed to the Optimiser.
 
 .. figure:: ../_images/optimiser.png
     :figclass: figure
@@ -169,3 +169,15 @@ The starting point should be passed as ``optimiser.settings['starting_point']`` 
       - Compute the horizontal graphical equilibrium and returns the thrust network
     * - ``current``
       - Use the current state (force densities and geometry) to initiate the optimisation
+
+Automated Optimisers
+====================
+
+Beyond defining each element separately, a series of functions has been implemented to create the optimiser for a specific problem. Nevertheless, when these are created, the user should check if the `Optimiser.settings` dictionaty contains the right information for the analysis.
+
+* :mod:`create_lp_optimiser <compas_tno.optimisers.Optimiser.create_lp_optimiser>`
+* :mod:`create_max_horload_optimiser <compas_tno.optimisers.Optimiser.create_max_horload_optimiser>`
+* :mod:`create_max_vertload_optimiser <compas_tno.optimisers.Optimiser.create_max_vertload_optimiser>`
+* :mod:`create_maxhrust_optimiser <compas_tno.optimisers.Optimiser.create_maxhrust_optimiser>`
+* :mod:`create_minthrust_optimiser <compas_tno.optimisers.Optimiser.create_minthrust_optimiser>`
+* :mod:`create_minthk_optimiser <compas_tno.optimisers.Optimiser.create_minthk_optimiser>`

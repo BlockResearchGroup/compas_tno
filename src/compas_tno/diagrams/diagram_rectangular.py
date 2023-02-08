@@ -625,7 +625,7 @@ def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisati
 
     Reference
     ---------
-        Add Reference
+        Diagram implemented after (`N. A. Nodargi et al., 2022 <https://doi.org/10.1016/j.engstruct.2022.114878>`_).
     """
 
     from compas_tno.utilities import split_intersection_lines

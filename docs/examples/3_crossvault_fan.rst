@@ -2,6 +2,8 @@
 Cross vault new diagram
 ***********************
 
+.. _example-cross-2:
+
 The current example finds minimum thrust for a cross vailt arch based a fan Form Diagram.
 
 .. figure:: ../_images/cross-fan.png

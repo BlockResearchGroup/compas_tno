@@ -12,7 +12,7 @@ Datastructure
     :class: figure-img img-fluid
 
 
-The datastructure of the package interprets the assessment problem with four distinct elements.
+The Datastructure of the package interprets the assessment problem with four distinct objects.
 
 The :ref:`FormDiagram <form>` element deals with the topology and geometry of the connected graph representing the projection of the path of the forces within the structure.
 
@@ -31,8 +31,8 @@ Steps of the tutorial
     :maxdepth: 1
     :glob:
 
-    tutorial/workflow
-    tutorial/form
-    tutorial/shape
-    tutorial/optimiser
-    tutorial/analysis
+    tutorial/0_workflow
+    tutorial/1_form
+    tutorial/2_shape
+    tutorial/3_optimiser
+    tutorial/4_analysis
