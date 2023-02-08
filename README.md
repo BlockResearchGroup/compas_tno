@@ -31,6 +31,10 @@ A walkthrough the package is available in the documentation:
 
 If you find a bug, please help us solve it by [filing a report](https://github.com/BlockResearchGroup/compas_tno/issues).
 
+## Citing
+
+If you use **COMPAS TNO** for your research, cite one of our [papers](https://blockresearchgroup.github.io/compas_tno/latest/publications.html).
+
 ## License
 
 **COMPAS TNO** is [released under the MIT license](https://github.com/BlockResearchGroup/compas_tno/latest/license.html).
