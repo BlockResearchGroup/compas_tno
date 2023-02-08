@@ -99,7 +99,7 @@
 <h1>Shape</h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.shapes.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/shapes/shape.py#L19"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.shapes.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/shapes/shape.py#L20"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Datastructure.html#compas.datastructures.Datastructure" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">compas.datastructures.datastructure.Datastructure</span></code></a></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Shape</span></code> class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.</p>
 <p>The class imports the attributes and set ups from <code class="docutils literal notranslate"><span class="pre">compas_tna.diagrams.FormDiagram</span></code> and include some
@@ -127,8 +127,6 @@ are listed below:</p>
 <li><p><strong>discretisation</strong> (<em>int</em>) – The discretisation level</p></li>
 <li><p><strong>xy_span</strong> (<em>list</em>) – The limits of the xy box (for rectangular form diagram)</p></li>
 <li><p><strong>t</strong> (<em>float</em>) – The parameter assumed when no intrados projection is found</p></li>
-<li><p><strong>gone 21-29</strong></p></li>
-<li><p><strong>go &#64;20 &#64;29</strong></p></li>
 </ul>
 </dd>
 </dl>
@@ -334,12 +332,12 @@ are listed below:</p>
 </ul>
 </li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../../examples.html">Examples</a><ul class="nav flex-column collapse">
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/circulararch.html">Circular Arch</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/crossvault%28cross%29.html">Cross Vault (cross)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/crossvault%28fan%29.html">Cross Vault (fan)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/dome%28radial%29.html">Dome (radial)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/dome%28spiral%29.html">Dome (spiral)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/formdiagrams.html">Parametric Form Diagrams</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/1_circulararch.html">The masonry arch</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/2_crossvault_minmax.html">Cross vault min/max thrust</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/3_crossvault_fan.html">Cross vault new diagram</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/4_dome_minthk.html">Dome minimum thickness</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/6_cross_maxload.html">Cross vault collapse load</a></li>
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/shapes.html">Parametric Shapes</a></li>
 </ul>
 </li>

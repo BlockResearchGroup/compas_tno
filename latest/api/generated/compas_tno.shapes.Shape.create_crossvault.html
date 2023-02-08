@@ -101,7 +101,7 @@
 <h1>Shape.create_crossvault</h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape.create_crossvault">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">create_crossvault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy_span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0.0,</span> <span class="pre">10.0],</span> <span class="pre">[0.0,</span> <span class="pre">10.0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discretisation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[100,</span> <span class="pre">100]</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">create_crossvault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xy_span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[[0.0,</span> <span class="pre">10.0],</span> <span class="pre">[0.0,</span> <span class="pre">10.0]]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spr_angle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discretisation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[100,</span> <span class="pre">100]</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Create the shape representing a Crossvault</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -109,6 +109,7 @@
 <li><p><strong>xy_span</strong> (<em>[list[float], list[float]], optional</em>) – xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]</p></li>
 <li><p><strong>thk</strong> (<em>float, optional</em>) – The thickness of the vault, by default 0.5</p></li>
 <li><p><strong>t</strong> (<em>float, optional</em>) – Parameter for lower bound in nodes in the boundary, by default 0.0</p></li>
+<li><p><strong>spr_angle</strong> (<em>float, optional</em>) – Springing angle, by default 0.0</p></li>
 <li><p><strong>discretisation</strong> (<em>list|int, optional</em>) – Level of discretisation of the shape, by default [100, 100]</p></li>
 </ul>
 </dd>
@@ -153,12 +154,12 @@
 </ul>
 </li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../../examples.html">Examples</a><ul class="nav flex-column collapse">
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/circulararch.html">Circular Arch</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/crossvault%28cross%29.html">Cross Vault (cross)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/crossvault%28fan%29.html">Cross Vault (fan)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/dome%28radial%29.html">Dome (radial)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/dome%28spiral%29.html">Dome (spiral)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/formdiagrams.html">Parametric Form Diagrams</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/1_circulararch.html">The masonry arch</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/2_crossvault_minmax.html">Cross vault min/max thrust</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/3_crossvault_fan.html">Cross vault new diagram</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/4_dome_minthk.html">Dome minimum thickness</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/6_cross_maxload.html">Cross vault collapse load</a></li>
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../../examples/shapes.html">Parametric Shapes</a></li>
 </ul>
 </li>

@@ -90,16 +90,28 @@
         <section id="introduction">
 <h1>Introduction</h1>
 <figure class="figure align-default">
-<img alt="_images/flow.png" class="figure-img img-fluid" src="_images/flow.png" />
+<img alt="_images/objectives.png" class="figure-img img-fluid" src="_images/objectives.png" />
 </figure>
-<p><code class="docutils literal notranslate"><span class="pre">compas_tno</span></code> is a Python package used for assessing masonry structures according to the Safe Theorem of Limit Analysis. It works by finding admissible stress states, which are defined as a path of compressive and equilibrated forces contained within the structural geometry. Therefore, from the Safe theorem, if one admissible stress state is found, the structure is safe under the applied loads. This set of compressive, internal forces corresponds to a lower-bound equilibrium solution (<a class="reference internal" href="#references"><span class="std std-ref">Heyman, 1966</span></a>).</p>
-<p>Block (<a class="reference internal" href="#references"><span class="std std-ref">2009</span></a>) introduced Thrust Network Analysis (TNA) which describes the structure as a network with internal axial forces in the edges and external loads applied to its vertices. Using the principles of graphic statics (<a class="reference internal" href="#references"><span class="std std-ref">Wolfe, 1921</span></a>), this network is defined by its vertical projection in the plan (the <em>form diagram</em>) and the horizontal equilibrium is visualised by a reciprocal graph (the <em>force diagram</em>). TNA has been used as an interactive design tool and is implemented in the open-source Python package <code class="xref py py-mod docutils literal notranslate"><span class="pre">compas_tna</span></code>.</p>
-<p>This package provides the necessary infrastructure to frame TNA as an assessment problem (<a class="reference internal" href="#references"><span class="std std-ref">Maia Avelino et al., 2021</span></a>). It sets up and runs optimisation problems to find specific networks contained within the bounds of a given masonry structure. With these specific networks, one can assess the level of stability of the structure, which goes beyond merely proving that the structure is safe. Additional information about the package content can be found under <a class="reference internal" href="publications.html#publications"><span class="std std-ref">Publications</span></a>.</p>
-<p>This package is in development by the Block Research Group in a project funded by the Swiss National Science Foundation SNSF (project grant n. 178953). Thus, it has not yet been released to the public. If you wish to download or contribute please an email to (<a class="reference external" href="mailto:maia&#37;&#52;&#48;arch&#46;ethz&#46;ch">maia<span>&#64;</span>arch<span>&#46;</span>ethz<span>&#46;</span>ch</a>).</p>
-<p>Check the installation guide on the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> and <a class="reference internal" href="gettingstarted.html#gettingstarted"><span class="std std-ref">Getting Started</span></a> pages. Then head to the <a class="reference internal" href="tutorial.html#tutorial"><span class="std std-ref">Tutorial</span></a> for start using <code class="docutils literal notranslate"><span class="pre">compas_tno</span></code>.</p>
+<p class="lead">COMPAS TNO is a Python package to find admissible thrust networks in masonry vaulted structures.</p>
+<p>The package implements <em>Thrust Network Optimisation</em>, or TNO, within the <a class="reference external" href="https://compas.dev/">COMPAS</a> framework. TNO is a modular multi-objective optimisation framework to find admissible thrust networks in vaulted masonry structures. Thrust Networks represent the internal forces in masonry structures as a connected force network contained within the structural geometry. Based on the safe theorem of limit analysis, a structure is safe if at least one thrust network is found within its envelope. This set of compressive, internal forces corresponds to a lower-bound equilibrium solution.</p>
+<p>With TNO, multiple particular equilibrium states can be obtained, including the structure’s minimum and maximum horizontal thrusts, its minimum thickness, its vertical and horizontal collapse loads, and the internal stress following support movements. Beyond providing the internal force distribution for these limit states, an indication of the crack patterns is obtained by looking at the points where the network touches intrados and extrados of the vaults.</p>
+<p>Exploring network contained within the structural evelope corresponds to solving a constrained nolinear optimisation problem. TNO sets up, run and output the solution networks to these problems.</p>
+<p>To use TNO, check the installation guide on the <a class="reference internal" href="installation.html#installation"><span class="std std-ref">Installation</span></a> and <a class="reference internal" href="gettingstarted.html#gettingstarted"><span class="std std-ref">Getting Started</span></a> pages to prepare your machine to run TNO.</p>
+<p>A tutorial about the package’s elements is provided in <a class="reference internal" href="tutorial.html#tutorial"><span class="std std-ref">Tutorial</span></a></p>
+<p>A series of simple examples are provided in the <a class="reference internal" href="examples.html#examples"><span class="std std-ref">Examples</span></a> section to start using TNO.</p>
+<section id="acknowlegments">
+<h2>Acknowlegments</h2>
+<p>TNO has been developed during <a class="reference external" href="https://ricardoavelino.github.io">Ricardo Maia Avelino</a>’s doctoral research at the <a class="reference external" href="https://block.arch.ethz.ch">Block Research Group</a>, ETH Zurich funded by the Swiss National Science Foundation SNSF (project grant n. 178953).</p>
+<p>If you use COMPAS TNO to your research, please refer to our <a class="reference internal" href="publications.html#publications"><span class="std std-ref">publications</span></a>.</p>
+</section>
+<section id="references">
+<h2>References</h2>
+<p>[1] R. Maia Avelino, “Thrust Network Optimisation for the Assessment of Vaulted Masonry Structures”, ETH Zurich, 2023. (to appear)</p>
+<p>[2] P. Block, “Thrust Network Analysis: Exploring Three-dimensional Equilibrium”, Massachusetts Institute of Technology, 2009.</p>
+<p>[3] J. Heyman, “The stone skeleton”, International Journal of Solids and Structures, vol. 2, no. 2, pp. 249–279, Apr. 1966.</p>
 </section>
 <section id="table-of-contents">
-<h1>Table of Contents</h1>
+<h2>Table of Contents</h2>
 <div class="toctree-wrapper compound">
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a></li>
@@ -118,12 +130,12 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="examples/circulararch.html">Circular Arch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/crossvault%28cross%29.html">Cross Vault (cross)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/crossvault%28fan%29.html">Cross Vault (fan)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/dome%28radial%29.html">Dome (radial)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/dome%28spiral%29.html">Dome (spiral)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="examples/formdiagrams.html">Parametric Form Diagrams</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/1_circulararch.html">The masonry arch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/2_crossvault_minmax.html">Cross vault min/max thrust</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/3_crossvault_fan.html">Cross vault new diagram</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/4_dome_minthk.html">Dome minimum thickness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/6_cross_maxload.html">Cross vault collapse load</a></li>
 <li class="toctree-l2"><a class="reference internal" href="examples/shapes.html">Parametric Shapes</a></li>
 </ul>
 </li>
@@ -143,13 +155,7 @@
 <li class="toctree-l1"><a class="reference internal" href="publications.html">Publications</a></li>
 </ul>
 </div>
-</section>
-<section id="references">
-<span id="id1"></span><h1>References</h1>
-<p>[1] P. Block, “Thrust Network Analysis,” Massachusetts Institute of Technology, 2009.</p>
-<p>[2] J. Heyman, “The stone skeleton,” Int. J. Solids Struct., vol. 2, no. 2, pp. 249–279, Apr. 1966.</p>
-<p>[3] W.S. Wolfe, Graphical analysis: a handbook on graphic statics. New Cork:McGraw-Hill, 1921.</p>
-<p>[4] Maia Avelino et al., “Assessing the safety of vaulted masonry structures using Thrust Network Analysis,” Comp. Struct., vol. 257, pp. 106647, 2021.</p>
+<span class="target" id="id1"></span></section>
 </section>
 
         
@@ -185,12 +191,12 @@
 </ul>
 </li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="examples.html">Examples</a><ul class="nav flex-column collapse">
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/circulararch.html">Circular Arch</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/crossvault%28cross%29.html">Cross Vault (cross)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/crossvault%28fan%29.html">Cross Vault (fan)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/dome%28radial%29.html">Dome (radial)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/dome%28spiral%29.html">Dome (spiral)</a></li>
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/formdiagrams.html">Parametric Form Diagrams</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/1_circulararch.html">The masonry arch</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/2_crossvault_minmax.html">Cross vault min/max thrust</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/3_crossvault_fan.html">Cross vault new diagram</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/4_dome_minthk.html">Dome minimum thickness</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/5_dome_settlement.html">Dome subjected to settlement</a></li>
+<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/6_cross_maxload.html">Cross vault collapse load</a></li>
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="examples/shapes.html">Parametric Shapes</a></li>
 </ul>
 </li>
@@ -218,9 +224,12 @@
       <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
         
         <ul class="nav flex-column" id="compas-toc">
-<li class="nav-item"><a class="nav-link reference internal" href="#">Introduction</a></li>
-<li class="nav-item"><a class="nav-link reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#">Introduction</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#acknowlegments">Acknowlegments</a></li>
 <li class="nav-item"><a class="nav-link reference internal" href="#references">References</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#table-of-contents">Table of Contents</a></li>
+</ul>
+</li>
 </ul>
 
       </div>
