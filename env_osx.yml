@@ -1,0 +1,14 @@
+name: tnox
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9
+  - pip>=19.0
+  - compas
+  - compas_view2
+  - triangle
+  - cyipopt
+  - cvxpy
+  - pip:
+    - mosek
+    - -r requirements-dev.txt

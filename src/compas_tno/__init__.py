@@ -85,7 +85,7 @@ def get(filename=''):
 
 
 def wakeup_matlab():
-    """ Method to wake up matlab in the background. Initialize MATLAB
+    """ Method to wake up matlab in the background. Initialize MATLAB. start_matlab
 
     Note: This function has to be called directly from the terminal.
     """

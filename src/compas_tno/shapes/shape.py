@@ -454,7 +454,7 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
-    def create_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, spr_angle=30.0, discretisation=[100, 100]):
+    def create_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, t=0.0, spr_angle=None, discretisation=[100, 100]):
         """Create the shape representing a Crossvault
 
         Parameters
@@ -466,7 +466,7 @@ class Shape(Datastructure):
         t : float, optional
             Parameter for lower bound in nodes in the boundary, by default 0.0
         spr_angle : float, optional
-            Springing angle, by default 0.0
+            Springing angle, by default None
         discretisation : list|int, optional
             Level of discretisation of the shape, by default [100, 100]
 
