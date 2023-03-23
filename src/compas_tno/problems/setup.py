@@ -29,8 +29,6 @@ from compas_tno.utilities import compute_edge_stiffness
 # from compas_tno.utilities import compute_average_edge_stiffness
 from compas_tno.utilities import set_b_constraint
 
-from compas_tno.viewers import Viewer
-
 from numpy import append
 from numpy import array
 from numpy import zeros
@@ -361,6 +359,7 @@ def set_up_general_optimisation(analysis):
         form.vertex_attribute(key, 'z', M.X[i, 2])
 
     if plot:
+        from compas_tno.viewers import Viewer
         view = Viewer(form)
         view.draw_thrust()
         # if show_force_diagram:

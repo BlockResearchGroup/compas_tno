@@ -71,7 +71,7 @@ To further explore the library of parametric shapes, check the :mod:`Shapes <com
 TNO Viewer
 -------------
 
-For 3D visualisation, the :mod:`Viewer <compas_tno.viewers.TNOViewer>` can be used. This `COMPAS View2 <https://compas.dev/compas_view2/latest/>`_ based visualisation enable to add multiple 3D objects in the scene, such as the shape, the thrust network, cracks, reaction forces, loads, etc. The viewer is used in the :ref:`examples <examples>` of this tutorial. The code to visualise the shape of a crossvault is:
+For 3D visualisation, the :mod:`Viewer <compas_tno.viewers.Viewer>` can be used. This `COMPAS View2 <https://compas.dev/compas_view2/latest/>`_ based visualisation enable to add multiple 3D objects in the scene, such as the shape, the thrust network, cracks, reaction forces, loads, etc. The viewer is used in the :ref:`examples <examples>` of this tutorial. The code to visualise the shape of a crossvault is:
 
 .. code-block:: Python
 
