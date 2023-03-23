@@ -19,3 +19,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           use_conda: true
           use_virtual_display: true
+          use_latex: true
