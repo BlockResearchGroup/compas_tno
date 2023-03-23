@@ -3,7 +3,7 @@
 
 <head>
   
-  <title>compas_tno - &lt;no title&gt;</title>
+  <title>compas_tno - compas_tno.solvers</title>
   
 
   <meta charset="utf-8" />
@@ -20,7 +20,7 @@
   <link rel="stylesheet" type="text/css" href="../_static/css/compas-reference.css" />
 
   
-  <link rel="next" title="compas_tno.utilities" href="compas_tno.utilities.html" />
+  <link rel="next" title="run_optimisation_scipy" href="generated/compas_tno.solvers.run_optimisation_scipy.html" />
   
 
   
@@ -86,14 +86,136 @@
             
             <li class="breadcrumb-item"><a href="compas_tno.html">compas_tno</a></li>
             
-            <!-- <li class="breadcrumb-item active" aria-current="page">&lt;no title&gt;</li> -->
+            <!-- <li class="breadcrumb-item active" aria-current="page">compas_tno.solvers</li> -->
           </ol>
         </nav>
         
 
         
         
-        
+        <span class="target" id="module-compas_tno.solvers"></span><section id="compas-tno-solvers">
+<h1>compas_tno.solvers</h1>
+<section id="scipy">
+<h2>Scipy</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_optimisation_scipy.html#compas_tno.solvers.run_optimisation_scipy" title="compas_tno.solvers.run_optimisation_scipy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimisation_scipy</span></code></a>(analysis)</p></td>
+<td><p>Run nonlinear optimisation problem with SciPy.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="ipopt">
+<h2>IPOPT</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_optimisation_ipopt.html#compas_tno.solvers.run_optimisation_ipopt" title="compas_tno.solvers.run_optimisation_ipopt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimisation_ipopt</span></code></a>(analysis)</p></td>
+<td><p>Run nonlinear optimisation problem with IPOPT</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.solvers.Wrapper_ipopt.html#compas_tno.solvers.Wrapper_ipopt" title="compas_tno.solvers.Wrapper_ipopt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Wrapper_ipopt</span></code></a>()</p></td>
+<td><p>Wrapper to send to IPOPT using analytical derivatives</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.Wrapper_ipopt_autodiff.html#compas_tno.solvers.Wrapper_ipopt_autodiff" title="compas_tno.solvers.Wrapper_ipopt_autodiff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Wrapper_ipopt_autodiff</span></code></a>()</p></td>
+<td><p>Wrapper to send to IPOPT using autodifferentiation</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="matlab">
+<h2>MATLAB</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_optimisation_MATLAB.html#compas_tno.solvers.run_optimisation_MATLAB" title="compas_tno.solvers.run_optimisation_MATLAB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimisation_MATLAB</span></code></a>(analysis)</p></td>
+<td><p>Run convex optimisation problem with MATLAB after going through the optimisation set up.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_loadpath_from_form_MATLAB.html#compas_tno.solvers.run_loadpath_from_form_MATLAB" title="compas_tno.solvers.run_loadpath_from_form_MATLAB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_loadpath_from_form_MATLAB</span></code></a>(form[, ...])</p></td>
+<td><p>Run convex optimisation problem with MATLAB directly from the Form Diagram</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.call_and_output_CVX_MATLAB.html#compas_tno.solvers.call_and_output_CVX_MATLAB" title="compas_tno.solvers.call_and_output_CVX_MATLAB"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call_and_output_CVX_MATLAB</span></code></a>(form, problem, eng)</p></td>
+<td><p>Call and output the loadpath optimisation with CVX from MATLAB</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cvxpy">
+<h2>CVXPY</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_optimisation_CVXPY.html#compas_tno.solvers.run_optimisation_CVXPY" title="compas_tno.solvers.run_optimisation_CVXPY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimisation_CVXPY</span></code></a>(analysis)</p></td>
+<td><p>Run convex optimisation problem with CVXPY after going through the optimisation set up.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_loadpath_from_form_CVXPY.html#compas_tno.solvers.run_loadpath_from_form_CVXPY" title="compas_tno.solvers.run_loadpath_from_form_CVXPY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_loadpath_from_form_CVXPY</span></code></a>(form[, ...])</p></td>
+<td><p>Run convex optimisation problem with CVXPY directly from the Form Diagram OBS: Requires installation of CVXPY and MOSEK</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.call_and_output_CVXPY.html#compas_tno.solvers.call_and_output_CVXPY" title="compas_tno.solvers.call_and_output_CVXPY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">call_and_output_CVXPY</span></code></a>(form, problem[, printout])</p></td>
+<td><p>Call and output the loadpath optimisation with CVXPY</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="pyopt">
+<h2>PyOpt</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_optimisation_pyOpt.html#compas_tno.solvers.run_optimisation_pyOpt" title="compas_tno.solvers.run_optimisation_pyOpt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimisation_pyOpt</span></code></a>(analysis)</p></td>
+<td><p>Run Optimisation using PyOpt (requires installation).</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="mma">
+<h2>MMA</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.run_optimisation_MMA.html#compas_tno.solvers.run_optimisation_MMA" title="compas_tno.solvers.run_optimisation_MMA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run_optimisation_MMA</span></code></a>(analysis)</p></td>
+<td><p>Run convex optimisation problem with MMA.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.solvers.mma_numpy.html#compas_tno.solvers.mma_numpy" title="compas_tno.solvers.mma_numpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mma_numpy</span></code></a>(f_g_eval, f_df_g_dg_eval, x0, bounds)</p></td>
+<td><p>Method of Moving Asymptotes (MMA) implementation from K.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="post-processing">
+<h2>Post Processing</h2>
+<table class="autosummary longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.solvers.post_process_general.html#compas_tno.solvers.post_process_general" title="compas_tno.solvers.post_process_general"><code class="xref py py-obj docutils literal notranslate"><span class="pre">post_process_general</span></code></a>(analysis)</p></td>
+<td><p>Post processing of the optimisation.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
         
       </main>
       <!-- content -->
@@ -110,7 +232,7 @@
         
         
         <div id="compas-navigation" class="collapse compas-navigation">
-          <ul class="nav flex-column collapse">
+          <ul class="nav flex-column collapse show active">
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../index.html">Introduction</a></li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../gettingstarted.html">Getting Started</a><ul class="nav flex-column collapse">
@@ -135,13 +257,16 @@
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../examples/6_cross_maxload.html">Cross vault collapse load</a></li>
 </ul>
 </li>
-<li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../api.html">API Reference</a><ul class="nav flex-column collapse">
-<li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="compas_tno.html">compas_tno</a><ul class="nav flex-column collapse">
+<li class="toctree-l1 nav-item active"><a class="nav-link reference internal" href="../api.html">API Reference</a><ul class="nav flex-column collapse show active">
+<li class="toctree-l2 nav-item active"><a class="nav-link reference internal" href="compas_tno.html">compas_tno</a><ul class="nav flex-column collapse show active">
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.analysis.html">compas_tno.analysis</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.diagrams.html">compas_tno.diagrams</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.plotters.html">compas_tno.plotters</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.problems.html">compas_tno.problems</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item active"><a class="nav-link active reference internal" href="#">compas_tno.solvers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
@@ -158,7 +283,17 @@
       <!-- toc -->
       <div class="d-none d-xl-block col-xl-2 compas-toc" role="toc">
         
-        <ul class="simple">
+        <ul class="nav flex-column" id="compas-toc">
+<li class="nav-item"><a class="nav-link reference internal" href="#">compas_tno.solvers</a><ul class="nav flex-column">
+<li class="nav-item"><a class="nav-link reference internal" href="#scipy">Scipy</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#ipopt">IPOPT</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#matlab">MATLAB</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#cvxpy">CVXPY</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#pyopt">PyOpt</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#mma">MMA</a></li>
+<li class="nav-item"><a class="nav-link reference internal" href="#post-processing">Post Processing</a></li>
+</ul>
+</li>
 </ul>
 
       </div>
@@ -180,10 +315,10 @@
       
 
       
-      <a href="compas_tno.utilities.html" title="compas_tno.utilities" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
+      <a href="generated/compas_tno.solvers.run_optimisation_scipy.html" title="run_optimisation_scipy" class="nav-link footer-link float-end text-right d-flex w-50" rel="next">
         <div class="nav-title footer-link flex-grow-1 align-self-center">
           <div class="nav-direction small font-weight-light">Next</div>
-          compas_tno.utilities
+          run_optimisation_scipy
         </div>
         <div class="nav-button p-2 m-2"><i class="fas fa-arrow-right"></i></div>
       </a>

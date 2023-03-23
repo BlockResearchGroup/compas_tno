@@ -93,8 +93,8 @@
         
         <section id="analysis">
 <span id="id1"></span><h1>Analysis</h1>
-<p>This tutorial provides a quick tour of the generation of <code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code>.</p>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code> object stores the main objects of the analysis which are:</p>
+<p>This tutorial provides a quick tour of the generation of <a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.html#compas_tno.analysis.Analysis" title="compas_tno.analysis.Analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code></a>.</p>
+<p>The <a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.html#compas_tno.analysis.Analysis" title="compas_tno.analysis.Analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code></a> object stores the main objects of the analysis which are:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Analysis.form</span></code>: the <a class="reference internal" href="../api/generated/compas_tno.diagrams.FormDiagram.html#compas_tno.diagrams.FormDiagram" title="compas_tno.diagrams.FormDiagram"><code class="xref py py-mod docutils literal notranslate"><span class="pre">FormDiagram</span></code></a> of the analysis,</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Analysis.shape</span></code>: the <a class="reference internal" href="../api/generated/compas_tno.shapes.Shape.html#compas_tno.shapes.Shape" title="compas_tno.shapes.Shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Shape</span></code></a> of the analysis,</p></li>
@@ -102,37 +102,37 @@
 </ul>
 <section id="creating-an-analysis-object">
 <h2>Creating an Analysis object</h2>
-<p>The <code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code> object can be created based on one or all of the three elements that it composes.</p>
+<p>The <a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.html#compas_tno.analysis.Analysis" title="compas_tno.analysis.Analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code></a> object can be created based on one or all of the three elements that it composes.</p>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">from_elements</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">from_form_and_optimiser</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">from_form_and_shape</span></code></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.from_elements.html#compas_tno.analysis.Analysis.from_elements" title="compas_tno.analysis.Analysis.from_elements"><code class="xref py py-mod docutils literal notranslate"><span class="pre">from_elements</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.from_form_and_optimiser.html#compas_tno.analysis.Analysis.from_form_and_optimiser" title="compas_tno.analysis.Analysis.from_form_and_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">from_form_and_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.from_form_and_shape.html#compas_tno.analysis.Analysis.from_form_and_shape" title="compas_tno.analysis.Analysis.from_form_and_shape"><code class="xref py py-mod docutils literal notranslate"><span class="pre">from_form_and_shape</span></code></a></p></li>
 </ul>
 <p>Beyond defining each element separately, a series of functions has been implemented to create the optimiser for a specific problem. Nevertheless, when these are created, the user should check if the <cite>Analysis.optimiser.settings</cite> dictionaty contains the right information for the analysis.</p>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_lp_analysis</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_max_load_analysis</span></code></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.create_lp_analysis.html#compas_tno.analysis.Analysis.create_lp_analysis" title="compas_tno.analysis.Analysis.create_lp_analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_lp_analysis</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.create_max_load_analysis.html#compas_tno.analysis.Analysis.create_max_load_analysis" title="compas_tno.analysis.Analysis.create_max_load_analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_max_load_analysis</span></code></a></p></li>
 <li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_maxhrust_analysis</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_minthrust_analysis</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_minthk_analysis</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_compl_energy_analysis</span></code></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.create_minthrust_analysis.html#compas_tno.analysis.Analysis.create_minthrust_analysis" title="compas_tno.analysis.Analysis.create_minthrust_analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_minthrust_analysis</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.create_minthk_analysis.html#compas_tno.analysis.Analysis.create_minthk_analysis" title="compas_tno.analysis.Analysis.create_minthk_analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_minthk_analysis</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.create_compl_energy_analysis.html#compas_tno.analysis.Analysis.create_compl_energy_analysis" title="compas_tno.analysis.Analysis.create_compl_energy_analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">create_compl_energy_analysis</span></code></a></p></li>
 </ul>
 </section>
 <section id="main-analysis-methods">
 <h2>Main Analysis Methods</h2>
 <p>When the elements are added to the Analysis object, the following methods are useful to assign specific constraints on the problem</p>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_selfweight</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_envelope</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_reaction_bounds</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_hor_multiplier</span></code></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.apply_selfweight.html#compas_tno.analysis.Analysis.apply_selfweight" title="compas_tno.analysis.Analysis.apply_selfweight"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_selfweight</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.apply_envelope.html#compas_tno.analysis.Analysis.apply_envelope" title="compas_tno.analysis.Analysis.apply_envelope"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_envelope</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.apply_reaction_bounds.html#compas_tno.analysis.Analysis.apply_reaction_bounds" title="compas_tno.analysis.Analysis.apply_reaction_bounds"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_reaction_bounds</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.apply_hor_multiplier.html#compas_tno.analysis.Analysis.apply_hor_multiplier" title="compas_tno.analysis.Analysis.apply_hor_multiplier"><code class="xref py py-mod docutils literal notranslate"><span class="pre">apply_hor_multiplier</span></code></a></p></li>
 </ul>
 <p>After assigning all modifications necessary, the problem needs to be set up and run with the following commands</p>
 <ul class="simple">
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">set_up_optimiser</span></code></p></li>
-<li><p><code class="xref py py-mod docutils literal notranslate"><span class="pre">run</span></code></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.set_up_optimiser.html#compas_tno.analysis.Analysis.set_up_optimiser" title="compas_tno.analysis.Analysis.set_up_optimiser"><code class="xref py py-mod docutils literal notranslate"><span class="pre">set_up_optimiser</span></code></a></p></li>
+<li><p><a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.run.html#compas_tno.analysis.Analysis.run" title="compas_tno.analysis.Analysis.run"><code class="xref py py-mod docutils literal notranslate"><span class="pre">run</span></code></a></p></li>
 </ul>
-<p>A full list of relevant methods should be checked at the <code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code> documentation.</p>
+<p>A full list of relevant methods should be checked at the <a class="reference internal" href="../api/generated/compas_tno.analysis.Analysis.html#compas_tno.analysis.Analysis" title="compas_tno.analysis.Analysis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Analysis</span></code></a> documentation.</p>
 </section>
 <section id="create-a-minimum-thrust-analysis">
 <h2>Create a minimum thrust analysis</h2>
@@ -206,10 +206,13 @@
 <li class="toctree-l1 nav-item"><a class="nav-link reference internal" href="../api.html">API Reference</a><ul class="nav flex-column collapse">
 <li class="toctree-l2 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.html">compas_tno</a><ul class="nav flex-column collapse">
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.algorithms.html">compas_tno.algorithms</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.analysis.html">compas_tno.analysis</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.diagrams.html">compas_tno.diagrams</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.optimisers.html">compas_tno.optimisers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.plotters.html">compas_tno.plotters</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.problems.html">compas_tno.problems</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.shapes.html">compas_tno.shapes</a></li>
+<li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.solvers.html">compas_tno.solvers</a></li>
 <li class="toctree-l3 nav-item"><a class="nav-link reference internal" href="../api/compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
 </li>
