@@ -11,4 +11,5 @@ dependencies:
   - cvxpy
   - pip:
     - mosek
+    - matlabengine
     - -r requirements-dev.txt

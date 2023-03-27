@@ -387,8 +387,8 @@ def set_up_general_optimisation(analysis):
         print('Init. Objective Value: {0}'.format(f0))
         # if objective == 'Ecomp-nonlinear':
         #     print('Init. Linear Obj Func: {0}'.format(f_complementary_energy(x0, M)))
-        print(g0.shape)
-        print(max(g0), min(g0))
+        # print(g0.shape)
+        # print(max(g0), min(g0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         violated = []
         for i in range(len(g0)):
@@ -445,12 +445,12 @@ def set_up_convex_optimisation(analysis):
     if variables == ['q']:
         pass
     else:
-        print('Warning:  Non-convex problem for the variables: ', variables, '. Considering only \'q\' instead and assuming coplanar supports (zb=0).')
+        print('Warning: Non-convex problem for the variables: ', variables, '. Considering only \'q\' instead and assuming coplanar supports (zb=0).')
 
     if constraints == ['funicular']:
         pass
     else:
-        print('Warning:  Non-convex problem for the constraints: ', constraints, '. Considering only \'funicular\' instead.')
+        print('Warning: Non-convex problem for the constraints: ', constraints, '. Considering only \'funicular\' instead.')
 
     apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
 

@@ -157,8 +157,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -201,8 +201,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -244,8 +244,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -290,8 +290,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -353,8 +353,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -399,8 +399,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -444,8 +444,8 @@ class Analysis(Data):
 
         Returns
         -------
-        analysis: Analysiss
-            The Anallysis object
+        analysis: Analysis
+            The Analysis object
 
         """
 
@@ -461,7 +461,7 @@ class Analysis(Data):
 
         if printout:
             print('-'*20)
-            print('Load path analysiss created')
+            print('Load path Analysis created')
             print(optimiser)
 
         analysis.optimiser = optimiser
