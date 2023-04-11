@@ -790,6 +790,51 @@ class TNOPlotter(object):
         )
         self.formartist = artist
 
+    def draw_vertexlabels(self, label=None, fontsize=12, **kwargs):
+        """Draw a specific label in the vertices
+
+        Parameters
+        ----------
+        label : str, optional
+            The vertex label to be shown, by default None, in which case the keys are displayed.
+        fontsize : int, optional
+            Font size, by default 12
+
+        """
+
+        if not self.formartist:
+            return
+
+        text = {}
+
+        if not label:
+            for key in self.form.vertices():
+                text[key] = key
+        elif isinstance(label, str):
+            for key in self.form.vertices():
+                text[key] = self.form.vertex_attribute(key, label)
+        else:
+            return
+
+        self.formartist.draw_vertexlabels(text=text)
+
+    # def draw_vertexlabels(self, text=None, fontsize=12):
+    #     """Draw Labels to the vertices
+
+    #     Parameters
+    #     ----------
+    #     text : dict, optional
+    #         The dictionary to print, if None, the keys are displayed, by default None
+    #     fontsize : int, optional
+    #         Font size, by default 12
+    #     """
+
+    #     if not self.formartist:
+    #         return
+
+    #     self.formartist.plotter.fontsize = fontsize
+    #     self.formartist.draw_vertexlabels(text=text)
+
     def highlight_vertices(self, vertices, show_forcepolygon=False):
         """Highlight a vertex in the form diagram and in the force diagram (if they have been previously added to the plotter)
 
@@ -961,23 +1006,6 @@ class TNOPlotter(object):
                      edgecolor=edgecolor,
                      edgewidth=width,
                      )
-
-    def draw_vertexlabels(self, text=None, fontsize=12):
-        """Draw Labels to the vertices
-
-        Parameters
-        ----------
-        text : dict, optional
-            The dictionary to print, if None, the keys are displayed, by default None
-        fontsize : int, optional
-            Font size, by default 12
-        """
-
-        if not self.formartist:
-            return
-
-        self.formartist.plotter.fontsize = fontsize
-        self.formartist.draw_vertexlabels(text=text)
 
     def draw_edgelabels(self, text=None):
         """Draw Labels to the vertices

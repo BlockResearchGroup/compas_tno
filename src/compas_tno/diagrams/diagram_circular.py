@@ -5,7 +5,7 @@ from compas.geometry import intersection_line_line_xy
 
 
 def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
-    """Construct a circular radial FormDiagram with hoops not equally spaced in plan.
+    """Construct a circular radial FormDiagram with hoops equally spaced in plan.
 
     Parameters
     ----------

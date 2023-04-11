@@ -8,7 +8,7 @@ from compas.geometry import subtract_vectors
 from compas_tno.plotters import TNOPlotter
 
 
-def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, shape=None, settings=None, record=False, interval=100, jump_each=1):
+def animation_from_optimisation(analysis, show_force=False, settings=None, record=False, interval=100, jump_each=1):
     """Make a 3D animated plot with the optimisation steps.
 
     Parameters
@@ -33,7 +33,19 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
         Interval tot jump among iteration frames, by default 1, in which all frames are shown
     """
 
+    from compas_tno.algorithms import reciprocal_from_form
     from compas_tno.viewers import Viewer
+    import compas_tno
+
+    form = analysis.form
+    # optimiser = analysis.optimiser
+    shape = analysis.shape
+    force = None
+    if show_force:
+        force = reciprocal_from_form(form)
+    file_Xform = compas_tno.get('Xform.json')  # analysis.optimiser.Xform
+    file_Xforce = compas_tno.get('Xforce.json')  # analysis.optimiser.Xforce
+
     viewer = Viewer(form, shape=shape)
     if settings:
         viewer.settings = settings
@@ -78,13 +90,14 @@ def animation_from_optimisation(form, file_Xform, force=None, file_Xforce=None, 
             index += 1
 
         viewer.draw_thrust()
+        # viewer.draw_mesh(viewer.thrust)
         # viewer.draw_cracks()
         # viewer.draw_reactions()
-        viewer.draw_loads()
-        viewer.draw_shape()
-        viewer.draw_reactions()
+        # viewer.draw_loads()
+        # viewer.draw_shape()
+        # viewer.draw_reactions()
 
-        if force:
+        if show_force:
             _Xf = Xforce[str(f * jump_each)]
             index = 0
             for vertex in force.vertices():

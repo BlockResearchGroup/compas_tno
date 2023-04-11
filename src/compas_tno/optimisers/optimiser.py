@@ -261,6 +261,43 @@ class Optimiser(Datastructure):
         return optimiser
 
     @classmethod
+    def create_bestfit_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath', derivatives=True):
+        """Create a bestfit optimiser to be sent with instructions to the Analysis.
+
+        Parameters
+        ----------
+        solver : str, optional
+            Which solver to use, by default 'SLSQP'. See Solvers page for more information.
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        :class:`~compas_tno.optimisers.Optimiser`
+            The Optimiser object
+
+        """
+
+        optimiser = cls()
+        optimiser.set_solver(solver)
+        optimiser.set_constraints(['funicular', 'envelope'])
+        optimiser.set_variables(['q', 'zb'])
+        optimiser.set_features(['fixed'])
+        optimiser.set_objective('bestfit')
+        optimiser.set_display_options(plot=plot, printout=printout)
+        optimiser.set_max_iterations(max_iter=max_iter)
+        optimiser.set_gradient_options(gradient=derivatives, jacobian=derivatives)
+        optimiser.set_starting_point(starting_point=starting_point)
+
+        return optimiser
+
+    @classmethod
     def create_max_vertload_optimiser(cls, solver='IPOPT', max_iter=500, printout=False, plot=False, starting_point='loadpath', max_lambd=1.0,
                                       load_direction=None, derivatives=True):
         """Create a minimum thickness optimiser to be sent with instructions to the Analysis.

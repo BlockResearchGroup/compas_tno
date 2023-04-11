@@ -87,8 +87,8 @@ def post_process_general(analysis):
     g_final = fconstr(xopt, M)
     M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
 
-    if printout:
-        print('post-processing min, max z:', min(M.X[:, 2].flatten()), max(M.X[:, 2].flatten()))
+    # if printout:
+    #     print('post-processing min, max z:', min(M.X[:, 2].flatten()), max(M.X[:, 2].flatten()))
 
     i = 0
     for key in form.vertices():
@@ -196,7 +196,9 @@ def post_process_general(analysis):
     analysis.shape = shape
 
     if save_iterations:
-        save_geometry_at_iterations(form, optimiser, force=show_force_diagram)
+        file_Xform, file_Xforce = save_geometry_at_iterations(form, optimiser, force=show_force_diagram)
+        analysis.optimiser.Xform = file_Xform
+        analysis.optimiser.Xforce = file_Xforce
 
     if printout or summary:
         print('\n' + '-' * 50)

@@ -138,7 +138,7 @@ class Analysis(Data):
 
     @classmethod
     def create_minthk_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP', derivatives=True):
-        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+        """Create a minimum thickness analysis from the elements of the problem (form and shape)
 
         Parameters
         ----------
@@ -170,6 +170,52 @@ class Analysis(Data):
                                                       starting_point=starting_point,
                                                       solver=solver,
                                                       derivatives=derivatives)
+
+        if printout:
+            print('-'*20)
+            print('Minimum thickness analysis created')
+            print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+    @classmethod
+    def create_bestfit_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP', derivatives=True):
+        """Create a bestfit analysis from the elements of the problem (form and shape)
+
+        Parameters
+        ----------
+        form : :class:`~compas_tno.diagrams.FormDiagram`
+            _description_
+        shape : :class:`~compas_tno.shapes.Shape`
+            The shape cconstraining the problem
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+        derivatives : bool, optional
+            Whether or not derivatives should be considered, by default False
+
+        Returns
+        -------
+        analysis: Analysis
+            The Analysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        optimiser = Optimiser.create_bestfit_optimiser(printout=printout,
+                                                       plot=plot,
+                                                       max_iter=max_iter,
+                                                       starting_point=starting_point,
+                                                       solver=solver,
+                                                       derivatives=derivatives)
 
         if printout:
             print('-'*20)
@@ -269,7 +315,7 @@ class Analysis(Data):
     @classmethod
     def create_max_load_analysis(cls, form, shape, printout=False, plot=False, horizontal=False, max_iter=500, starting_point='loadpath',
                                  solver='IPOPT', derivatives=True, load_direction=None, max_lambd=1.0):
-        """Create a minimum thickness analysus from the elements of the problem (form and shape)
+        """Create a minimum thickness analysis from the elements of the problem (form and shape)
 
         Parameters
         ----------
@@ -499,8 +545,7 @@ class Analysis(Data):
 
     def apply_selfweight(self, normalize_loads=True):
         """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
-        norm = self.optimiser.settings.get('normalize_loads', True)
-        apply_selfweight_from_shape(self.form, self.shape, normalize=norm)
+        apply_selfweight_from_shape(self.form, self.shape, normalize=normalize_loads)
 
         return
 

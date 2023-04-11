@@ -56,7 +56,10 @@ def save_geometry_at_iterations(form, optimiser, force=False):
 
     Notes
     -----
-        The geometry of the structure at each step is saved in the ``Xform.json`` and ``Xforce.json`` files in ``/data/``.
+        Xforce
+            Address where the geometry of the structure at each step is saved ``Xform.json``
+        Xforce
+            Address where the geometry of the force diagram at each step is saves ``Xforce.json``.
 
     """
 
@@ -64,6 +67,7 @@ def save_geometry_at_iterations(form, optimiser, force=False):
 
     file_qs = compas_tno.get('output.json')
     file_Xform = compas_tno.get('Xform.json')
+    file_Xforce = None
 
     if force:
         file_Xforce = compas_tno.get('Xforce.json')
@@ -107,4 +111,4 @@ def save_geometry_at_iterations(form, optimiser, force=False):
 
         print('Force Geometry saved @:', file_Xforce)
 
-    return
+    return file_Xform, file_Xforce
