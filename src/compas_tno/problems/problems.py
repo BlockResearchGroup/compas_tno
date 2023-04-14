@@ -21,7 +21,9 @@ from compas.geometry import distance_point_point_xy
 from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import check_horizontal_loads
 # from compas_tno.algorithms import find_independents_backward
-from compas_tno.algorithms import find_independents_forward
+# from compas_tno.algorithms import find_independents_forward
+from compas_tno.algorithms import find_independents
+# from compas_tno.algorithms.independents import find_independents_QR
 
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
@@ -191,7 +193,7 @@ class Problem():
         return problem
 
 
-def initialise_form(form, find_inds=True, printout=False, tol=None):
+def initialise_form(form, find_inds=True, method='SVD', printout=False, tol=None):
     """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
@@ -200,6 +202,8 @@ def initialise_form(form, find_inds=True, printout=False, tol=None):
         The FormDiagram
     find_inds : bool, optional
         Whether or not independents should be found (fixed diagram), by default True
+    method : str, optional
+        Method to find independent edges, the default is 'SVD'. Options include 'QR' and 'RREF'.
     printout : bool, optional
         Whether or not prints should appear on the screen, by default False
     tool : float, optional
@@ -219,7 +223,7 @@ def initialise_form(form, find_inds=True, printout=False, tol=None):
     M = initialise_problem_general(form)
 
     if find_inds:
-        adapt_problem_to_fixed_diagram(M, form, printout=printout, tol=tol)
+        adapt_problem_to_fixed_diagram(M, form, method=method, printout=printout, tol=tol)
 
     return M
 
@@ -395,7 +399,7 @@ def initialise_problem_general(form):
     return problem
 
 
-def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
+def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, tol=None):
     """Adapt the problem assuming that the form diagram is fixed in plan.
 
     Parameters
@@ -404,6 +408,8 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
         Matrices of the problem
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to be analysed
+    method : str, optional
+        Method to find independent edges, the default is 'SVD'. Options include 'QR' and 'RREF'
     printout : bool, optional
         If prints should show in the screen, by default False
     tol : float, optional
@@ -438,9 +444,13 @@ def adapt_problem_to_fixed_diagram(problem, form, printout=False, tol=None):
             print('Found {} independents in the new pattern'.format(len(ind)))
         if len(form.attributes['indset']) != len(ind):
             print('Did not match problem inds')
-            ind = find_independents_forward(problem.E, tol=tol)
+            # ind = find_independents_forward(problem.E, tol=tol)
+            # ind = find_independents_QR(problem.E, tol=tol)
+            ind = find_independents(problem.E, method=method, tol=tol)
     else:
-        ind = find_independents_forward(problem.E, tol=tol)
+        # ind = find_independents_forward(problem.E, tol=tol)
+        # ind = find_independents_QR(problem.E, tol=tol)
+            ind = find_independents(problem.E, method=method, tol=tol)
 
     k = len(ind)
     dep = list(set(range(problem.m)) - set(ind))
@@ -543,7 +553,7 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
     return
 
 
-def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False, tol=None):
+def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axis_symmetry=None, center=None, correct_loads=True, printout=False, tol=None):
     """ Adapt the problem assuming that the form diagram is symmetric and fixed in plane.
 
     Parameters
@@ -552,6 +562,8 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=Non
         The problem with matrices for calculation
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to analyse
+    method : str, optional
+        Method to find independent edges, the default is 'SVD'. Options include 'QR' and 'RREF'
     list_axis_symmetry : [list], optional
         List of the axis of symmetry to consider, by default None
     center : [list], optional
@@ -565,7 +577,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, list_axis_symmetry=Non
 
     start_time = time.time()
 
-    adapt_problem_to_fixed_diagram(problem, form, printout, tol=tol)
+    adapt_problem_to_fixed_diagram(problem, form, method=method, printout=printout, tol=tol)
 
     apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
 

@@ -6,6 +6,8 @@ from numpy import any
 from numpy.linalg import matrix_rank
 from numpy.linalg import svd
 from numpy.random import rand
+from numpy import diag
+from scipy.linalg import qr
 from math import sqrt
 
 
@@ -107,6 +109,65 @@ def find_independents_backward(E, nind=None, tol=None):
         if nind:
             if len(ind) == nind:
                 break
+
+    return ind
+
+
+def find_independents_QR(E, tol=None):
+    """ Find independent edges of the matrix E based on a permuted QR factorization.
+    The matrix E [m x n] (n > m) is factored in Q, R, P matrices, where Q [m x m] is a square matrix, R [m x n] an upper triangular
+    matrix and P is the column permutation applied.
+    This method is faster, but it does not preserve the numbering structure of the form diagram.
+
+    Parameters
+    ----------
+    E : array
+        Equilibrium matrix.
+    tol : float
+        Tolerance for small singular values. Default is None.
+
+    Returns
+    -------
+    ind : list
+        Independent columns.
+
+    """
+
+    if not tol:
+        tol = 1e-12
+
+    _, R, P = qr(E, pivoting=True)
+
+    dr = abs(diag(R))
+    rank_ = sum(dr > tol*dr[0])
+    ind = sorted(list(P[rank_:]))
+
+    return ind
+
+
+def find_independents(E, method='SVD', tol=None):
+    """ Overall method to find independent edges dependent on method
+
+    Parameters
+    ----------
+    E : array
+        Equilibrium matrix.
+    tol : float
+        Tolerance for small singular values. Default is None.
+
+    Returns
+    -------
+    ind : list
+        Independent columns.
+
+    """
+
+    if method == 'SVD':
+        ind = find_independents_forward(E, tol)
+    elif method == 'QR':
+        ind = find_independents_QR(E, tol)
+    else:
+        raise ValueError('Plese select a valid method to find the independent edges')
 
     return ind
 

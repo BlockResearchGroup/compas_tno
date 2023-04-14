@@ -66,8 +66,8 @@ def run_loadpath_from_form_MATLAB(form, problem=None, find_inds=False, printout=
     # except BaseException:
     #     print('Warning: Matlab not available in the system')
 
-    future = matlab.engine.connect_matlab(background=True)
-    # future = matlab.engine.start_matlab(background=True)
+    # future = matlab.engine.connect_matlab(background=True)
+    future = matlab.engine.start_matlab(background=True)
 
     eng = future.result()
 
@@ -190,20 +190,28 @@ def call_cvx(problem, eng, printout=False):
 
     eng.workspace['m'] = problem.m
 
-    eng.workspace['C'] = matlab.double(problem.C.toarray().tolist())
-    eng.workspace['Ci'] = matlab.double(problem.Ci.toarray().tolist())
-    eng.workspace['Cb'] = matlab.double(problem.Cb.toarray().tolist())
-    eng.workspace['E'] = matlab.double(problem.E.tolist())
+    # eng.workspace['C'] = matlab.double(problem.C.toarray().tolist())
+    # eng.workspace['Ci'] = matlab.double(problem.Ci.toarray().tolist())
+    # eng.workspace['Cb'] = matlab.double(problem.Cb.toarray().tolist())
+    # eng.workspace['E'] = matlab.double(problem.E.tolist())
 
-    eng.workspace['xt'] = matlab.double(problem.X[:, 0].reshape(-1, 1).transpose().tolist())
-    eng.workspace['yt'] = matlab.double(problem.X[:, 1].reshape(-1, 1).transpose().tolist())
-    eng.workspace['xb'] = matlab.double(problem.X[:, 0][problem.fixed].reshape(-1, 1).tolist())
-    eng.workspace['yb'] = matlab.double(problem.X[:, 1][problem.fixed].reshape(-1, 1).tolist())
-    eng.workspace['pz'] = matlab.double(problem.P[:, 2][problem.free].reshape(-1, 1).tolist())
-    eng.workspace['p'] = matlab.double(problem.ph.reshape(-1, 1).tolist())
+    # Passing as native arrays
+    eng.workspace['C'] = problem.C.toarray()
+    eng.workspace['Ci'] = problem.Ci.toarray()
+    eng.workspace['Cb'] = problem.Cb.toarray()
+    eng.workspace['E'] = problem.E
 
-    eng.workspace['qmax'] = matlab.double(problem.qmax.reshape(-1, 1).tolist())
-    eng.workspace['qmin'] = matlab.double(problem.qmin.reshape(-1, 1).tolist())
+    eng.workspace['x'] = array(problem.X[:, 0].reshape(-1, 1))
+    eng.workspace['y'] = array(problem.X[:, 1].reshape(-1, 1))
+
+    eng.workspace['xb'] = problem.X[:, 0][problem.fixed].reshape(-1, 1)
+    eng.workspace['yb'] = problem.X[:, 1][problem.fixed].reshape(-1, 1)
+
+    eng.workspace['pz'] = problem.P[:, 2][problem.free].reshape(-1, 1)
+    eng.workspace['p'] = problem.ph.reshape(-1, 1)
+
+    eng.workspace['qmax'] = problem.qmax.reshape(-1, 1)
+    eng.workspace['qmin'] = problem.qmin.reshape(-1, 1)
 
     # If intended to save the MATLAB engine
     # eng.save('/Users/mricardo/Documents/MATLAB/data.mat', nargout=0)
@@ -225,7 +233,7 @@ def call_cvx(problem, eng, printout=False):
 
     eng.variable('q(double(m))', nargout=0)
     # if objective == 'loadpath':
-    eng.minimize('matrix_frac(pz, -(transpose(Ci)*diag(q)*Ci)) - xt*transpose(C)*diag(q)*Cb*xb - yt*transpose(C)*diag(q)*Cb*yb', nargout=0)
+    eng.minimize('matrix_frac(pz, -(transpose(Ci)*diag(q)*Ci)) - transpose(x)*transpose(C)*diag(q)*Cb*xb - transpose(y)*transpose(C)*diag(q)*Cb*yb', nargout=0)
     # if objective == 'feasibility':
     # eng.minimize('1', nargout=0)
     eng.eval('q >= qmin', nargout=0)

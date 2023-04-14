@@ -34,6 +34,8 @@ Independents
 
     find_independents_backward
     find_independents_forward
+    find_independents_QR
+    find_independents
     independents_exclude
     independents_include
     inds_incl_excl
@@ -85,6 +87,8 @@ if not compas.IPY:
     from .independents import (
         find_independents_forward,
         find_independents_backward,
+        find_independents_QR,
+        find_independents,
         independents_exclude,
         independents_include,
         inds_incl_excl,
@@ -117,6 +121,8 @@ __all__ = [
 
     'find_independents_forward',
     'find_independents_backward',
+    'find_independents_QR',
+    'find_independents',
     'independents_exclude',
     'independents_include',
     'inds_incl_excl',

@@ -425,7 +425,7 @@ class Viewer(object):
                 line = Line(pt0, pt1)
                 self.app.add(line, name='normal-{}'.format(key))
 
-    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5, color=(125, 125, 125), **kwargs):
+    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5, color=Color.grey(), **kwargs):
         """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
 
         Parameters

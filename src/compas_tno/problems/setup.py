@@ -65,6 +65,7 @@ def set_up_general_optimisation(analysis):
     starting_point = optimiser.settings.get('starting_point', 'current')
     find_inds = optimiser.settings.get('find_inds', False)
     tol_inds = optimiser.settings.get('tol_inds', None)
+    method_ind = optimiser.settings.get('method_ind', 'SVD')
     qmin = optimiser.settings.get('qmin', -1e+4)
     qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])
@@ -136,13 +137,14 @@ def set_up_general_optimisation(analysis):
 
     if 'fixed' in features and 'sym' in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
-        adapt_problem_to_sym_and_fixed_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout, tol=tol_inds)
+        adapt_problem_to_sym_and_fixed_diagram(M, form, method=method_ind, list_axis_symmetry=axis_symmetry,
+                                               center=pattern_center, correct_loads=sym_loads, printout=printout, tol=tol_inds)
     elif 'sym' in features:
         # print('\n-------- Initialisation with sym form --------')
         adapt_problem_to_sym_diagram(M, form, list_axis_symmetry=axis_symmetry, center=pattern_center, correct_loads=sym_loads, printout=printout)
     elif 'fixed' in features:
         # print('\n-------- Initialisation with fixed form --------')
-        adapt_problem_to_fixed_diagram(M, form, printout=printout, tol=tol_inds)
+        adapt_problem_to_fixed_diagram(M, form, method=method_ind, printout=printout, tol=tol_inds)
     else:
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
@@ -338,7 +340,7 @@ def set_up_general_optimisation(analysis):
         plotter.show()
         if 'sym' in features:
             plotter = TNOPlotter(form)
-            plotter.draw_form_sym()
+            plotter.draw_form_sym(print_sym=True)
             plotter.show()
 
     if any([isnan(M.ub[i]) for i in range(len(M.ub))]) or any([isnan(M.lb[i]) for i in range(len(M.lb))]):

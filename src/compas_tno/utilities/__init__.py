@@ -116,6 +116,7 @@ Form Modifications
     displacement_map_paraboloid
     displacement_map_4parabolas
     displacement_map_parabola
+    shuffle_diagram
 
 Data Analysis
 ====================
@@ -225,7 +226,8 @@ from .form import (
     slide_pattern_inwards,
     displacement_map_paraboloid,
     displacement_map_4parabolas,
-    displacement_map_parabola
+    displacement_map_parabola,
+    shuffle_diagram
 )
 
 from .data_analysis import (
@@ -313,6 +315,7 @@ __all__ = [
     'displacement_map_paraboloid',
     'displacement_map_4parabolas',
     'displacement_map_parabola',
+    'shuffle_diagram',
 
     'diagram_of_thrust',
     'diagram_of_multiple_thrust',

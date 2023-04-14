@@ -10,6 +10,7 @@ from compas.geometry import Frame
 
 from compas.datastructures import Mesh
 from numpy import zeros
+from random import shuffle
 
 
 def is_point_in_cloud(point, cloud, tol=1e-6):
@@ -614,3 +615,46 @@ def displacement_map_paraboloid(form, xc=5.0, yc=5.0, radius=5.0):
         dX[i] = [dxi, dyi]
 
     return dX
+
+
+def shuffle_diagram(form):
+    """Shuffle the form diagram reordering the edges. It keeps the support points and '_is_edge' attributes.
+
+    Parameters
+    ----------
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram of the problem
+
+    Returns
+    -------
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The shuffled diagram
+    """
+
+    from compas_tno.diagrams import FormDiagram
+    tol = 1e-6
+
+    lines = form.to_lines()
+    supports = [form.vertex_coordinates(key) for key in form.vertices_where({'is_fixed': True})]
+    no_edges = [form.edge_midpoint(*edge) for edge in form.edges_where({'_is_edge': False})]
+
+    shuffle(lines)
+    form = FormDiagram.from_lines(lines)
+
+    for key in form.vertices():
+        pt = form.vertex_coordinates(key)
+        for support in supports:
+            dist = distance_point_point_xy(pt, support)
+            if dist < tol:
+                form.vertex_attribute(key, 'is_fixed', True)
+                break
+
+    for edge in form.edges():
+        pt = form.edge_midpoint(*edge)
+        for midpoint in no_edges:
+            dist = distance_point_point_xy(pt, midpoint)
+            if dist < tol:
+                form.edge_attribute(edge, '_is_edge', False)
+                break
+
+    return form

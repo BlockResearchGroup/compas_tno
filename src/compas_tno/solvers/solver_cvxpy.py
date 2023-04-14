@@ -112,7 +112,7 @@ def call_and_output_CVXPY(form, problem, printout=False):
     form.attributes['loadpath'] = form.loadpath()
     compute_reactions(form)
 
-    summary = False
+    summary = True
 
     # Output dictionary
 
