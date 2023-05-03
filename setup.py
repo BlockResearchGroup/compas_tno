@@ -28,7 +28,7 @@ optional_requirements = {}
 
 setup(
     name="compas_tno",
-    version="0.1.0",
+    version="0.2.0",
     description="This package performs masonry assessment by menans of NLP with Funicular Thrust Networks.",
     long_description=long_description,
     long_description_content_type="text/markdown",
