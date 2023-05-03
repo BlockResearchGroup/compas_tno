@@ -959,7 +959,8 @@ class FormDiagram(FormDiagram):
         """
 
         for u, v in self.edges_on_boundary():
-            self.edge_attribute((u, v), '_is_edge', False)
+            if self.vertex_attribute(u, 'is_fixed') and self.vertex_attribute(v, 'is_fixed'):
+                self.edge_attribute((u, v), '_is_edge', False)
 
         if delete_corner_vertex:
             corners = [key for key in self.corners()]

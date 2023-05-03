@@ -20,10 +20,7 @@ from compas.geometry import distance_point_point_xy
 
 from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import check_horizontal_loads
-# from compas_tno.algorithms import find_independents_backward
-# from compas_tno.algorithms import find_independents_forward
 from compas_tno.algorithms import find_independents
-# from compas_tno.algorithms.independents import find_independents_QR
 
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
@@ -203,7 +200,7 @@ def initialise_form(form, find_inds=True, method='SVD', printout=False, tol=None
     find_inds : bool, optional
         Whether or not independents should be found (fixed diagram), by default True
     method : str, optional
-        Method to find independent edges, the default is 'SVD'. Options include 'QR' and 'RREF'.
+        Method to find independent edges, the default is 'SVD'. More options to come.
     printout : bool, optional
         Whether or not prints should appear on the screen, by default False
     tool : float, optional
@@ -334,7 +331,7 @@ def initialise_problem_general(form):
     B = identity(m)
     d = zeros((m, 1))
 
-    # Permutation matrix to fixed and free keys  (Useful?)
+    # Permutation matrix to fixed and free keys
     # with this matrix z = [Pmatrix]z will have the first ni nodes as free
     # and the last nb nodes as fixed
 
@@ -409,7 +406,7 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to be analysed
     method : str, optional
-        Method to find independent edges, the default is 'SVD'. Options include 'QR' and 'RREF'
+        Method to find independent edges, the default is 'SVD'. More options to come.
     printout : bool, optional
         If prints should show in the screen, by default False
     tol : float, optional
@@ -444,13 +441,9 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
             print('Found {} independents in the new pattern'.format(len(ind)))
         if len(form.attributes['indset']) != len(ind):
             print('Did not match problem inds')
-            # ind = find_independents_forward(problem.E, tol=tol)
-            # ind = find_independents_QR(problem.E, tol=tol)
             ind = find_independents(problem.E, method=method, tol=tol)
     else:
-        # ind = find_independents_forward(problem.E, tol=tol)
-        # ind = find_independents_QR(problem.E, tol=tol)
-            ind = find_independents(problem.E, method=method, tol=tol)
+        ind = find_independents(problem.E, method=method, tol=tol)
 
     k = len(ind)
     dep = list(set(range(problem.m)) - set(ind))
@@ -499,6 +492,7 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
     problem.Ei = Ei
     problem.d = d
     problem.d0 = d
+    problem.time_inds = elapsed_time
 
     return
 
@@ -563,7 +557,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axi
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to analyse
     method : str, optional
-        Method to find independent edges, the default is 'SVD'. Options include 'QR' and 'RREF'
+        Method to find independent edges, the default is 'SVD'. More options to come.
     list_axis_symmetry : [list], optional
         List of the axis of symmetry to consider, by default None
     center : [list], optional

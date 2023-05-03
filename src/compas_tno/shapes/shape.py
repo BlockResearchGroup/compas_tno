@@ -556,9 +556,9 @@ class Shape(Datastructure):
 
         Parameters
         ----------
-        intrados : mesh
+        intrados : :class:`~compas.datastructures.Mesh`
             Mesh for intrados.
-        extrados : mesh
+        extrados : :class:`~compas.datastructures.Mesh`
             Mesh for extrados.
         middle : mesh, optional
             Mesh for middle.
@@ -628,11 +628,11 @@ class Shape(Datastructure):
 
     @classmethod
     def from_middle(cls, middle, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
-        """Construct a Shape from a middle mesh and a thickness (offset happening to both sides).
+        """Construct a Shape from a middle mesh and a thickness (offset happening to compute new extrados).
 
         Parameters
         ----------
-        middle : Mesh
+        middle : :class:`~compas.datastructures.Mesh`
             Mesh with middle. Topology will be considered.
         data : dict (None)
             Dictionary with the data in required.
@@ -653,6 +653,39 @@ class Shape(Datastructure):
         intrados_mesh = middle.offset_mesh(thk/2, direction='down')
         data['thk'] = thk
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+    @classmethod
+    def from_intrados(cls, intrados, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
+        """Construct a Shape from an intrados mesh and a thickness (offset happening to both sides).
+
+        Parameters
+        ----------
+        intrados : :class:`~compas.datastructures.Mesh`
+            Mesh with middle. Topology will be considered.
+        data : dict (None)
+            Dictionary with the data in required.
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+        intrados = MeshDos.from_mesh(intrados)
+        if treat_creases:
+            intrados.identify_creases_at_diagonals(xy_span=data['xy_span'])
+            intrados.store_normals(correct_creases=True)
+        else:
+            intrados.store_normals()
+        extrados = intrados.offset_mesh(thk, direction='up')
+
+        data['thk'] = thk
+        # bbox = intrados.bounding_box_xy()
+        # data['xy_span'] = TAKE THIS FROM BBOX
+
+        shape = cls().from_meshes(intrados, extrados, data=data)
 
         return shape
 

@@ -26,7 +26,6 @@ from compas_tno.plotters import TNOPlotter
 from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import compute_edge_stiffness
-# from compas_tno.utilities import compute_average_edge_stiffness
 from compas_tno.utilities import set_b_constraint
 
 from numpy import append
@@ -70,16 +69,14 @@ def set_up_general_optimisation(analysis):
     qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])
     save_iterations = optimiser.settings.get('save_iterations', False)
-    # show_force_diagram = optimiser.settings.get('save_force_diagram', True)
     solver_convex = optimiser.settings.get('solver_convex', 'MATLAB')
-    # thickness_type = optimiser.settings.get('thickness_type', 'constant')
     autodiff = optimiser.settings.get('autodiff', False)
 
     pattern_center = form.parameters.get('center', None)
 
     if shape:
         thk = shape.datashape.get('thk', None)
-        form.attributes['thk'] = thk  # for ssafety storing the thk. If optimisation is minthk, this will be overwritten
+        form.attributes['thk'] = thk  # for safety storing the thk. If optimisation is minthk, this will be overwritten
     else:
         thk = 0.50
 
@@ -149,24 +146,6 @@ def set_up_general_optimisation(analysis):
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
 
-    # if 'fixed' in features:
-    #     if not check_independents(M):
-    #         raise ValueError('Check the independent edges')
-
-    # from scipy.sparse.linalg import svds
-
-    # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
-    # disc = len(M.ind) - (M.E.shape[1] - M.E.shape[1])
-    # disc_val = s[:disc]
-    # print('Eshape', M.E.shape)
-    # # print('E sing. values:', s)
-    # print('max/min singular vectors E', max(s), min(s), len(s))
-    # print('Discated singular vectors E', disc, disc_val)
-    # print('Maximum Discated Singular Value:', max(disc_val), '< 1e-4?')
-    # print('First considered Singular Value:', s[disc], 'much bigger?')
-
-    # Specific parameters that depend on the objectives
-
     # If objective is the complementary energy
 
     if 'Ecomp' in objective.split('-'):
@@ -185,11 +164,6 @@ def set_up_general_optimisation(analysis):
             M.stiff = stiff
         elif Ecomp_method == 'complete':
             raise NotImplementedError()
-            # # form. add here a control over the stiffness
-            # k = compute_average_edge_stiffness(form, E=E, Ah=Ah)
-            # k = 100
-            # print('Average Stiffness (1/k) applied to sections:', 1/k)
-            # M.stiff = 1/2 * 1/k
 
     # Set specific constraints
 
@@ -210,11 +184,6 @@ def set_up_general_optimisation(analysis):
 
     if autodiff:
         raise NotImplementedError('Autodifferentiation is currently not available')
-        # from compas_tno.autodiff.jax_objectives import objective_selector_jax
-        # from compas_tno.autodiff.jax_constraints import f_jacobian_jax
-
-        # fobj, fgrad = objective_selector_jax(objective)
-        # fconstr, fjac = f_jacobian_jax()
 
     # Select starting point (x0) and max/min for variables
 
@@ -254,10 +223,6 @@ def set_up_general_optimisation(analysis):
         max_thk = optimiser.settings.get('max_thk', thk)
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, max_thk]]
-
-    # if 's' in variables:
-    #     x0 = append(x0, 0.0).reshape(-1, 1)
-    #     bounds = bounds + [[-1.0, 0.5]]
 
     if 'n' in variables:
         thk0_approx = thk  # shape.datashape['thk']
@@ -364,8 +329,6 @@ def set_up_general_optimisation(analysis):
         from compas_tno.viewers import Viewer
         view = Viewer(form)
         view.draw_thrust()
-        # if show_force_diagram:
-        #     view.draw_force()
         view.show()
 
     if printout:
@@ -387,10 +350,6 @@ def set_up_general_optimisation(analysis):
         if fjac:
             print('Shape of jacobian:', jac.shape)
         print('Init. Objective Value: {0}'.format(f0))
-        # if objective == 'Ecomp-nonlinear':
-        #     print('Init. Linear Obj Func: {0}'.format(f_complementary_energy(x0, M)))
-        # print(g0.shape)
-        # print(max(g0), min(g0))
         print('Init. Constraints Extremes: {0:.3f} to {1:.3f}'.format(max(g0), min(g0)))
         violated = []
         for i in range(len(g0)):

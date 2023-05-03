@@ -1,6 +1,5 @@
 import time
 import json
-import compas_tno
 
 from compas.geometry import centroid_points
 from compas.geometry import subtract_vectors

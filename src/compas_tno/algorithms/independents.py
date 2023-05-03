@@ -152,6 +152,8 @@ def find_independents(E, method='SVD', tol=None):
     ----------
     E : array
         Equilibrium matrix.
+    method : str
+        Method to find independents. Default is 'SVD'. More to come.
     tol : float
         Tolerance for small singular values. Default is None.
 
@@ -164,8 +166,6 @@ def find_independents(E, method='SVD', tol=None):
 
     if method == 'SVD':
         ind = find_independents_forward(E, tol)
-    elif method == 'QR':
-        ind = find_independents_QR(E, tol)
     else:
         raise ValueError('Plese select a valid method to find the independent edges')
 
