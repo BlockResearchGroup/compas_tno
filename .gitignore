@@ -22,7 +22,7 @@ sdist/
 var/
 wheels/
 examples/_xxx
-scripts/_xxx
+scripts/
 data/_xxx
 *.egg-info/
 .installed.cfg

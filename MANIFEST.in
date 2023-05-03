@@ -12,7 +12,6 @@ include README.md
 include AUTHORS.md
 include CHANGELOG.md
 include requirements.txt
-include *.json
 include *.yml
 recursive-include examples *.py
 
@@ -20,5 +19,6 @@ exclude requirements-dev.txt
 exclude pytest.ini .bumpversion.cfg .editorconfig
 exclude tasks.py
 exclude CONTRIBUTING.md
+exclude examples/PLACEHOLDER
 
 global-exclude *.py[cod] __pycache__ *.dylib *.nb[ic] .DS_Store
