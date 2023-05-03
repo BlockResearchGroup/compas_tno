@@ -102,11 +102,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape.from_middle">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">from_middle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">middle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treat_creases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'t':</span> <span class="pre">0.0,</span> <span class="pre">'type':</span> <span class="pre">'general',</span> <span class="pre">'xy_span':</span> <span class="pre">[[0.0,</span> <span class="pre">10.0],</span> <span class="pre">[0.0,</span> <span class="pre">10.0]]}</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Construct a Shape from a middle mesh and a thickness (offset happening to both sides).</p>
+<dd><p>Construct a Shape from a middle mesh and a thickness (offset happening to compute new extrados).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>middle</strong> (<em>Mesh</em>) – Mesh with middle. Topology will be considered.</p></li>
+<li><p><strong>middle</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – Mesh with middle. Topology will be considered.</p></li>
 <li><p><strong>data</strong> (<em>dict (None)</em>) – Dictionary with the data in required.</p></li>
 </ul>
 </dd>
