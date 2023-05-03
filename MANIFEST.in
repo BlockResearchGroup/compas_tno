@@ -12,6 +12,9 @@ include README.md
 include AUTHORS.md
 include CHANGELOG.md
 include requirements.txt
+include *.json
+include *.yml
+recursive-include examples *.py
 
 exclude requirements-dev.txt
 exclude pytest.ini .bumpversion.cfg .editorconfig
