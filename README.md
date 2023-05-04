@@ -3,6 +3,7 @@
 ![build](https://github.com/BlockResearchGroup/compas_tno/workflows/build/badge.svg)
 [![GitHub - License](https://img.shields.io/github/license/compas-dev/compas.svg)](https://github.com/BlockResearchGroup/compas_tno/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/COMPAS.svg)](https://pypi.python.org/project/COMPAS)
+[![DOI](https://zenodo.org/badge/197799108.svg)](https://zenodo.org/badge/latestdoi/197799108)
 
 **COMPAS TNO** is a Python package to find admissible thrust networks in masonry vaulted structures built in the [COMPAS](https://compas.dev/) framework.
 
