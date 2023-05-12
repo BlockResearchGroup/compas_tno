@@ -816,6 +816,7 @@ class TNOPlotter(object):
         else:
             return
 
+        self.app.fontsize = fontsize
         self.formartist.draw_vertexlabels(text=text)
 
     # def draw_vertexlabels(self, text=None, fontsize=12):
