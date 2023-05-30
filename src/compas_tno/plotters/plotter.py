@@ -14,7 +14,6 @@ from compas.colors import Color
 from compas.utilities import rgb_to_hex
 import matplotlib.pyplot as plt
 import math
-from PIL import Image
 
 
 class TNOPlotter(object):
@@ -1126,6 +1125,8 @@ class TNOPlotter(object):
         None
             GIF is saved in the address provided
         """
+
+        from PIL import Image
 
         images = []
         for path in images_file:
