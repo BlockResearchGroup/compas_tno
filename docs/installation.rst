@@ -37,7 +37,7 @@ Open your terminal and type the following to create a new environmenment and ins
 
 .. code-block:: bash
 
-    conda create -n tno -c conda-forge python COMPAS triangle compas_view2
+    conda create -n tno -c conda-forge python=3.10 COMPAS compas_view2
 
 .. raw:: html
 
@@ -46,7 +46,7 @@ Open your terminal and type the following to create a new environmenment and ins
 
 .. code-block:: bash
 
-    conda create -n tno -c conda-forge python python.app COMPAS triangle compas_view2
+    conda create -n tno -c conda-forge python=3.10 python.app COMPAS compas_view2
 
 .. raw:: html
 
