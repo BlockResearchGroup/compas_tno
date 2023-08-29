@@ -375,15 +375,58 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
         mesh.transform(scale)
 
     if fix_corners:
-        for key in mesh.vertices():
-            pt = mesh.vertex_coordinates(key)
-            for corner in corners:
-                dist = distance_point_point_xy(pt, corner)
-                if dist < 1e-3:
-                    mesh.vertex_attribute(key, 'is_fixed', True)
-                    break
+        fix_mesh_corners(mesh, corners)
 
     return
+
+
+def fix_mesh_corners(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0]]):
+    """Fix the corners of a mesh (FormDiagram)
+
+    Parameters
+    ----------
+    mesh : Mesh
+        The mesh or form diagram
+    corners : list, optional
+        The corners of the mesh, by default [[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0]]
+
+    Returns
+    -------
+    None
+        Mesh is updated in place
+    """
+
+    corners_pt = []
+    for key in mesh.vertices():
+        pt = mesh.vertex_coordinates(key)
+        for corner in corners:
+            dist = distance_point_point_xy(pt, corner)
+            if dist < 1e-3:
+                corners_pt.append(key)
+                mesh.vertex_attribute(key, 'is_fixed', True)
+                break
+
+    return corners_pt
+
+def fix_mesh_boundary(mesh):
+    """Fix the boudnaries along a mesh (FormDiagram)
+
+    Parameters
+    ----------
+    mesh : Mesh
+        The mesh or form diagram
+
+    Returns
+    -------
+    None
+        Mesh is updated in place
+    """
+
+    for key in mesh.vertices_on_boundary():
+        mesh.vertex_attribute(key, 'is_fixed', True)
+
+    for u, v in mesh.edges_on_boundary():
+        mesh.edge_attribute((u, v), '_is_edge', False)
 
 
 def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
@@ -615,6 +658,74 @@ def displacement_map_paraboloid(form, xc=5.0, yc=5.0, radius=5.0):
         dX[i] = [dxi, dyi]
 
     return dX
+
+
+def move_pattern_inwards(form, tol=1e-3):
+    """Move nodes at the boundary slightly inwards or outwards
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram to be moved
+    tol : float, optional
+        distance to move, by default 1e-3
+
+    Returns
+    -------
+    None
+        Pattern modified in place
+    """
+
+    bbox = form.bounding_box_xy()
+    xmin, xmax = min([a[0] for a in bbox]), max([a[0] for a in bbox])
+    ymin, ymax = min([a[1] for a in bbox]), max([a[1] for a in bbox])
+
+    for vertex in form.vertices():
+        x, y, z = form.vertex_coordinates(vertex)
+        if abs(x - xmin) < tol:
+            x += tol
+        if abs(x - xmax) < tol:
+            x -= tol
+        if abs(y - ymin) < tol:
+            y += tol
+        if abs(y - ymax) < tol:
+            y -= tol
+        form.vertex_attribute(vertex, 'x', x)
+        form.vertex_attribute(vertex, 'y', y)
+
+
+def move_pattern_outwards(form, tol=1e-3):
+    """Move nodes at the boundary slightly inwards or outwards
+
+    Parameters
+    ----------
+    form : FormDiagram
+        The form diagram to be moved
+    tol : float, optional
+        distance to move, by default 1e-3
+
+    Returns
+    -------
+    None
+        Pattern modified in place
+    """
+
+    bbox = form.bounding_box_xy()
+    xmin, xmax = min([a[0] for a in bbox]), max([a[0] for a in bbox])
+    ymin, ymax = min([a[1] for a in bbox]), max([a[1] for a in bbox])
+
+    for vertex in form.vertices():
+        x, y, z = form.vertex_coordinates(vertex)
+        if abs(x - xmin) < tol:
+            x -= tol
+        if abs(x - xmax) < tol:
+            x += tol
+        if abs(y - ymin) < tol:
+            y -= tol
+        if abs(y - ymax) < tol:
+            y += tol
+        form.vertex_attribute(vertex, 'x', x)
+        form.vertex_attribute(vertex, 'y', y)
 
 
 def shuffle_diagram(form):

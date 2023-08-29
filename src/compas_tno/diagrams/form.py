@@ -3,6 +3,7 @@ from compas.datastructures import mesh_bounding_box_xy
 
 from compas_tno.diagrams.diagram_arch import create_arch_form_diagram
 from compas_tno.diagrams.diagram_arch import create_linear_form_diagram
+from compas_tno.diagrams.diagram_arch import create_linear_form_diagram_sp_ep
 from compas_tno.diagrams.diagram_rectangular import create_cross_form
 from compas_tno.diagrams.diagram_rectangular import create_cross_diagonal
 from compas_tno.diagrams.diagram_rectangular import create_cross_with_diagonal
@@ -127,6 +128,8 @@ class FormDiagram(FormDiagram):
         H = data.get('H', 1.0)
         L = data.get('L', 2.0)
         x0 = data.get('x0', 0.0)
+        sp = data.get('sp', [0.0, 0.0, 0.0])
+        ep = data.get('ep', [2.0, 0.0, 0.0])
 
         # Rectangular vault parameters
         xy_span = data.get('xy_span', [[0.0, 10.0], [0.0, 10.0]])
@@ -147,6 +150,8 @@ class FormDiagram(FormDiagram):
             form = create_arch_form_diagram(cls(), H=H, L=L, x0=x0, discretisation=discretisation)
         elif form_type == 'linear_arch' or form_type == 'pointed_arch':
             form = create_linear_form_diagram(cls(), L=L, x0=x0, discretisation=discretisation)
+        elif form_type == 'linear_arch_sp_ep' or form_type == 'pointed_arch':
+            form = create_linear_form_diagram_sp_ep(cls(), sp=sp, ep=ep, discretisation=discretisation)
         elif form_type == 'cross_fd':
             form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
         elif form_type == 'cross_diagonal':
@@ -223,6 +228,29 @@ class FormDiagram(FormDiagram):
         """
 
         data = {'type': 'linear_arch', 'L': L, 'x0': x0, 'discretisation': discretisation}
+
+        return cls().from_library(data)
+
+    @classmethod
+    def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisation=100):
+        """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
+
+        Parameters
+        ----------
+        sp : list, optional
+            Starting point coordinates, by default [0, 0, 0]
+        sp : list, optional
+            End point coordinates, by default [2, 0, 0]
+        discretisation : int, optional
+            Numbers of nodes to be considered in the form diagram, by default 100
+
+        Returns
+        -------
+        :class:`~compas_tno.diagrams.FormDiagram`
+            FormDiagram generated according to the parameters.
+        """
+
+        data = {'type': 'linear_arch_sp_ep', 'ep': ep, 'sp': sp, 'discretisation': discretisation}
 
         return cls().from_library(data)
 

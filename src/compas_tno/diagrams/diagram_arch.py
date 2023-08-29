@@ -98,3 +98,54 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
     form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
 
     return form
+
+
+def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisation=100):
+    """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes based on starting and ending points
+
+    Parameters
+    ----------
+    L : float, optional
+        Span of the arch, by default 2.00
+    x0 : float, optional
+        Initial coordiante of the arch, by default 0.0
+    discretisation : int, optional
+        Numbers of nodes to be considered in the form diagram, by default 100
+
+    Returns
+    -------
+    :class:`~compas_tno.diagrams.FormDiagram`
+        FormDiagram generated according to the parameters.
+
+    """
+
+    x0, y0 = sp[:2]
+    xf, yf = ep[:2]
+
+    dx = (xf - x0)/discretisation
+    dy = (yf - y0)/discretisation
+
+    lines = []
+    gkey_fix = []
+
+    for i in range(discretisation):
+        xi = x0 + i * dx
+        xf = x0 + (i + 1) * dx
+        yi = y0 + i * dy
+        yf = y0 + (i + 1) * dy
+
+        lines.append([[xi, yi, 0.0], [xf, yf, 0.0]])
+
+        if i == 0:
+            gkey_fix.append(geometric_key([xi, yi, 0.0], precision=6))
+        elif i == discretisation - 1:
+            gkey_fix.append(geometric_key([xf, yf, 0.0], precision=6))
+
+    mesh = Mesh.from_lines(lines)
+    form = cls.from_mesh(mesh)
+    gkey_key = form.gkey_key(precision=6)
+
+    form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+
+    return form

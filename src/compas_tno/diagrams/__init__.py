@@ -50,6 +50,7 @@ Linear diagrams
 
     create_arch_form_diagram
     create_linear_form_diagram
+    create_linear_form_diagram_sp_ep
 
 """
 from __future__ import absolute_import
@@ -60,7 +61,8 @@ from .graph import FormGraph
 
 from .diagram_arch import (
     create_arch_form_diagram,
-    create_linear_form_diagram
+    create_linear_form_diagram,
+    create_linear_form_diagram_sp_ep
 )
 from .diagram_circular import (
     create_circular_radial_form,
@@ -83,6 +85,7 @@ __all__ = [
 
     'create_arch_form_diagram',
     'create_linear_form_diagram',
+    'create_linear_form_diagram_sp_ep',
 
     'create_circular_radial_form',
     'create_circular_radial_spaced_form',

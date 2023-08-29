@@ -110,12 +110,16 @@ Form Modifications
     form_add_lines_support
     form_parabolic_slide
     move_pattern_to_origin
+    fix_mesh_corners
+    fix_mesh_boundary
     slide_diagram
     mesh_remove_two_valent_nodes
     slide_pattern_inwards
     displacement_map_paraboloid
     displacement_map_4parabolas
     displacement_map_parabola
+    move_pattern_inwards
+    move_pattern_outwards
     shuffle_diagram
 
 Data Analysis
@@ -220,6 +224,8 @@ from .form import (
     form_add_lines_support,
     form_parabolic_slide,
     move_pattern_to_origin,
+    fix_mesh_corners,
+    fix_mesh_boundary,
     slide_diagram,
     mesh_remove_two_valent_nodes,
     store_inds,
@@ -227,6 +233,8 @@ from .form import (
     displacement_map_paraboloid,
     displacement_map_4parabolas,
     displacement_map_parabola,
+    move_pattern_inwards,
+    move_pattern_outwards,
     shuffle_diagram
 )
 
@@ -308,6 +316,8 @@ __all__ = [
     'form_add_lines_support',
     'form_parabolic_slide',
     'move_pattern_to_origin',
+    'fix_mesh_corners',
+    'fix_mesh_boundary',
     'slide_diagram',
     'mesh_remove_two_valent_nodes',
     'store_inds',
@@ -315,6 +325,8 @@ __all__ = [
     'displacement_map_paraboloid',
     'displacement_map_4parabolas',
     'displacement_map_parabola',
+    'move_pattern_inwards',
+    'move_pattern_outwards',
     'shuffle_diagram',
 
     'diagram_of_thrust',

@@ -551,7 +551,7 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
-    def from_meshes(cls, intrados, extrados, middle=None, treat_creases=False, data={'type': 'general', 'thk': 0.50, 't': 0.0}):
+    def from_meshes(cls, intrados, extrados, middle=None, fill=None, data={'type': 'general', 'thk': 0.50, 't': 0.0}):
         """Construct a Shape from meshes for intrados, extrados, and middle.
 
         Parameters
@@ -563,6 +563,9 @@ class Shape(Datastructure):
         middle : mesh, optional
             Mesh for middle.
             The default value is ``None``, in a case in which no middle surface is assigned
+        fill : mesh, optional
+            Mesh for fill.
+            The default value is ``None``, in a case in which no fill surface is assigned
         data : dict, optional
             Dictionary with the data about the structure.
             The default value is a typical general dictionary.
@@ -586,6 +589,11 @@ class Shape(Datastructure):
                 ub = shape.extrados.vertex_attribute(key, 'z')
                 lb = shape.intrados.vertex_attribute(key, 'z')
                 shape.middle.vertex_attribute(key, 'z', (ub + lb)/2)
+
+        if fill:
+            shape.fill = fill
+        else:
+            pass
 
         if data:
             shape.datashape = data

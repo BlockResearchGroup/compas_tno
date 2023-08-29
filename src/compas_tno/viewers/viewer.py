@@ -112,6 +112,24 @@ class Viewer(object):
                                          radians(self.settings['camera.rz'])]
         self.app.view.camera.fov = self.settings['camera.fov']
 
+    def set_camera(self, target=[5, 5, 0], distance=30, rotation=[45, 0, 45], fov=40, **kwargs):
+        """ Set the camera options (can also be set directly modifying the settings dictionary)
+
+        Returns
+        -------
+        None
+            The objects are updated in place
+        """
+
+        self.settings['camera.target'] = target
+        self.settings['camera.distance'] = distance
+        self.settings['camera.rx'] = rotation[0]
+        self.settings['camera.ry'] = rotation[1]
+        self.settings['camera.rz'] = rotation[2]
+        self.settings['camera.fov'] = fov
+
+        self.initiate_app()
+
     def show_solution(self, **kwargs):
         """ Show the thrust network, with the shape according to the settings
 
@@ -200,7 +218,7 @@ class Viewer(object):
 
         self.settings['scale.edge.thk_absolute'] = self.settings['scale.edge.thk_absolute'] * factor
 
-    def draw_form(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, **kwargs):
+    def draw_form(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, line_color=None, **kwargs):
         """Alias to draw thrust network according to the settings
 
         Parameters
@@ -216,9 +234,9 @@ class Viewer(object):
             The viewer is updated in place
         """
 
-        self.draw_thrust(scale_width=scale_width, absolute_scale=absolute_scale, cull_negative=cull_negative, edges=edges, **kwargs)
+        self.draw_thrust(scale_width=scale_width, absolute_scale=absolute_scale, cull_negative=cull_negative, edges=edges, line_color=line_color, **kwargs)
 
-    def draw_thrust(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, **kwargs):
+    def draw_thrust(self, scale_width=True, absolute_scale=True, cull_negative=False, edges=None, line_color=None, **kwargs):
         """Draw thrust network according to the settings
 
         Parameters
@@ -246,6 +264,9 @@ class Viewer(object):
             forces = [self.thrust.edge_attribute((u, v), 'q') * self.thrust.edge_length(u, v) for u, v in self.thrust.edges_where({'_is_edge': True})]
             fmax = sqrt(max(abs(max(forces)), abs(min(forces))))  # trying sqrt
 
+        if not line_color:
+            line_color = {(u, v): self.settings['color.edges.thrust'] for u, v in self.thrust.edges()}
+
         thks = []
         forces = []
 
@@ -263,7 +284,7 @@ class Viewer(object):
                     Xi = [Xb[0] + (Xa[0] - Xb[0]) * coef, Xb[1] + (Xa[1] - Xb[1]) * coef, 0.0]
                     line = Line(Xa, Xi)
             if not scale_width:
-                self.app.add(line, name=str((u, v)), linewidth=base_thick, linecolor=self.settings['color.edges.thrust'])
+                self.app.add(line, name=str((u, v)), linewidth=base_thick, linecolor=line_color[(u, v)])
                 continue
             q = self.thrust.edge_attribute((u, v), 'q')
             length = self.thrust.edge_length(u, v)
@@ -275,7 +296,7 @@ class Viewer(object):
             thks.append(thk)
             if force > self.settings['tol.forces'] * 2:
                 # print('thk:', thk)
-                self.app.add(line, name=str((u, v)), linewidth=thk, linecolor=self.settings['color.edges.thrust'])
+                self.app.add(line, name=str((u, v)), linewidth=thk, linecolor=line_color[(u, v)])
 
         # print('Min / Max thks:', min(thks), max(thks))
         # print('Min / Max forces:', min(forces), max(forces))
@@ -345,7 +366,7 @@ class Viewer(object):
                     self.app.add(Point(x, y, z), name="Outside - Extra (%s)" % out, pointcolor=self.settings['color.vertex.outside'], pointsize=self.settings['size.vertex'])
                     out += 1
 
-    def draw_shape(self, **kwargs):
+    def draw_shape(self, show_lines=False, **kwargs):
         """Draw the shape (intrados + extrados) according to the settings
 
         Returns
@@ -374,8 +395,8 @@ class Viewer(object):
         else:
             shape = Shape.from_formdiagram_and_attributes(self.thrust)
 
-        self.app.add(shape.intrados, name="Intrados", show_lines=False, opacity=self.settings['opacity.shapes'], facecolor=self.settings['color.mesh.intrados'])
-        self.app.add(shape.extrados, name="Extrados", show_lines=False, opacity=self.settings['opacity.shapes'], facecolor=self.settings['color.mesh.extrados'])
+        self.app.add(shape.intrados, name="Intrados", show_lines=show_lines, opacity=self.settings['opacity.shapes'], facecolor=self.settings['color.mesh.intrados'])
+        self.app.add(shape.extrados, name="Extrados", show_lines=show_lines, opacity=self.settings['opacity.shapes'], facecolor=self.settings['color.mesh.extrados'])
 
     def draw_middle_shape(self, **kwargs):
         """ Draw the middle of the shape according to the settings
@@ -425,14 +446,14 @@ class Viewer(object):
                 line = Line(pt0, pt1)
                 self.app.add(line, name='normal-{}'.format(key))
 
-    def draw_mesh(self, mesh=None, show_edges=True, opacity=0.5, color=Color.grey(), **kwargs):
+    def draw_mesh(self, mesh=None, show_lines=True, opacity=0.5, color=Color.grey(), **kwargs):
         """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
 
         Parameters
         ----------
         mesh : Mesh, optional
             Mesh to plot, by default None
-        show_edges : bool, optional
+        show_lines : bool, optional
             Whether or not edges are shown, by default True
         opacity : float, optional
             The opacity of the mesh, by default 0.5
@@ -452,7 +473,7 @@ class Viewer(object):
         vertices_mesh, faces_mesh = mesh.to_vertices_and_faces()
         mesh = Mesh.from_vertices_and_faces(vertices_mesh, faces_mesh)
 
-        self.app.add(mesh, show_lines=show_edges, opacity=opacity, facecolor=color)
+        self.app.add(mesh, show_lines=show_lines, opacity=opacity, facecolor=color)
 
     def draw_thrustsurface(self, show_edges=False, show_faces=True, opacity=0.2, color=Color.from_rgb255(125, 125, 125), **kwargs):
         """Draw a mesh to the viewer, if no mesh is given the ``self.thrust`` is taken
@@ -657,6 +678,23 @@ class Viewer(object):
 
         for block in assembly.blocks():
             self.add(block, **kwargs)
+
+    def draw_points(self, points=[], **kwargs):
+        """Draw points in space
+
+        Returns
+        -------
+        None
+            The viewer is updated in place.
+        """
+
+        if not self.app:
+            self.initiate_app()
+
+        for point in points:
+            self.add(Point(*point), **kwargs)
+
+
 
     def draw_b_constraint(self):
 

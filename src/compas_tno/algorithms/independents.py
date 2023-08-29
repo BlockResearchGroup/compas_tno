@@ -166,6 +166,8 @@ def find_independents(E, method='SVD', tol=None):
 
     if method == 'SVD':
         ind = find_independents_forward(E, tol)
+    elif method == 'QR':
+        ind = find_independents_QR(E, tol)
     else:
         raise ValueError('Plese select a valid method to find the independent edges')
 

@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--remove_plugins', action='store_true', help="remove all existing plugins")
     parser.add_argument('--remove_packages', action='store_true', help="remove all existing compas packages")
-    parser.add_argument('--rhino_version', default='7.0', choices=['6.0', '7.0'], help="remove all existing compas packages")
+    parser.add_argument('--rhino_version', default='7.0', choices=['6.0', '7.0', '8.0'], help="remove all existing compas packages")
     args = parser.parse_args()
 
     print("\n", "-"*10, "Checking packages", "-"*10)

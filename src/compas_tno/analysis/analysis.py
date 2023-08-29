@@ -145,7 +145,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problem
+            The shape constraining the problem
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -189,7 +189,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problem
+            The shape constraining the problem
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -235,7 +235,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problemf
+            The shape constraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -278,7 +278,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problemf
+            The shape constraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -322,7 +322,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problem
+            The shape constraining the problem
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -387,7 +387,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problemf
+            The shape constraining the problem
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -396,6 +396,10 @@ class Analysis(Data):
             Maximum number of itetations, by default 500
         starting_point : str, optional
             Which starting point use, by default 'loadpath'
+        support_displacement : array [nb x 3], optional
+            Vector with the displacement applied to the supports, by default None
+        Emethod : str, optional
+            Whether or not internal deformations should be considered, by default 'simplified' which considers the material rigid
 
         Returns
         -------
@@ -433,7 +437,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`
-            The shape cconstraining the problemf
+            The shape constraining the problemf
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -478,7 +482,7 @@ class Analysis(Data):
         form : :class:`~compas_tno.diagrams.FormDiagram`
             _description_
         shape : :class:`~compas_tno.shapes.Shape`, optional
-            The shape cconstraining the problem, by default None
+            The shape constraining the problem, by default None
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional

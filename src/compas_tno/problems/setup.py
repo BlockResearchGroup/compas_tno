@@ -64,7 +64,7 @@ def set_up_general_optimisation(analysis):
     starting_point = optimiser.settings.get('starting_point', 'current')
     find_inds = optimiser.settings.get('find_inds', False)
     tol_inds = optimiser.settings.get('tol_inds', None)
-    method_ind = optimiser.settings.get('method_ind', 'SVD')
+    method_ind = optimiser.settings.get('method_ind', 'QR')
     qmin = optimiser.settings.get('qmin', -1e+4)
     qmax = optimiser.settings.get('qmax', +1e-8)
     features = optimiser.settings.get('features', [])

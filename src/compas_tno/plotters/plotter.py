@@ -789,7 +789,7 @@ class TNOPlotter(object):
         )
         self.formartist = artist
 
-    def draw_vertexlabels(self, label=None, fontsize=12, **kwargs):
+    def draw_vertexlabels(self, text=None, label=None, fontsize=12, **kwargs):
         """Draw a specific label in the vertices
 
         Parameters
@@ -804,16 +804,17 @@ class TNOPlotter(object):
         if not self.formartist:
             return
 
-        text = {}
-
-        if not label:
+        print(text)
+        if not text:
+            text = {}
             for key in self.form.vertices():
                 text[key] = key
-        elif isinstance(label, str):
-            for key in self.form.vertices():
-                text[key] = self.form.vertex_attribute(key, label)
+            if isinstance(label, str):
+                text = {}
+                for key in self.form.vertices():
+                    text[key] = '{:.3}'.format(float(self.form.vertex_attribute(key, label)))
         else:
-            return
+            pass
 
         self.app.fontsize = fontsize
         self.formartist.draw_vertexlabels(text=text)
