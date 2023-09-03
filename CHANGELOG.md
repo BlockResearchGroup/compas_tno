@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added new functions in FormArtists
+- Corrected typo in function names
+- Improved sync with Proxy
+- Added QR decomposition in solvers
+
 ### Changed
 
 ### Removed
