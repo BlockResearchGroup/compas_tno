@@ -848,9 +848,6 @@ class Shape(Datastructure):
 
         return shape
 
-
-
-
     @classmethod
     def from_formdiagram_and_attributes(cls, form, data={'type': 'general', 't': 0.0}):
         """Construct a Shape from the form diagram and its attributes 'ub' and 'lb'.

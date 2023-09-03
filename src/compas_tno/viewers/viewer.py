@@ -694,8 +694,6 @@ class Viewer(object):
         for point in points:
             self.add(Point(*point), **kwargs)
 
-
-
     def draw_b_constraint(self):
 
         base_thick = self.settings['size.edge.base_thickness']

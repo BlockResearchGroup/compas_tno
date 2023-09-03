@@ -408,6 +408,7 @@ def fix_mesh_corners(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0,
 
     return corners_pt
 
+
 def fix_mesh_boundary(mesh):
     """Fix the boudnaries along a mesh (FormDiagram)
 
