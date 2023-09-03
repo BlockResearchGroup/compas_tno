@@ -297,7 +297,7 @@ class Analysis(Data):
 
         analysis = cls().from_form_and_shape(form, shape)
 
-        optimiser = Optimiser.create_maxhrust_optimiser(printout=printout,
+        optimiser = Optimiser.create_maxthrust_optimiser(printout=printout,
                                                         plot=plot,
                                                         max_iter=max_iter,
                                                         starting_point=starting_point,

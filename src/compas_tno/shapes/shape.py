@@ -302,20 +302,20 @@ class Shape(Datastructure):
 
         if typevault == 'crossvault':
             xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.cross_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t)
+            intra_data, extra_data, middle_data = proxy.cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
         elif typevault == 'pavillionvault':
             xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.pavillion_vault_highfields_proxy(xy_span, thk=thk, discretisation=discretisation, t=t)
+            intra_data, extra_data, middle_data = proxy.pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
         elif typevault == 'pointed_crossvault':
             xy_span = data['xy_span']
             hc = data['hc']
             hm = data.get('hm', None)
             he = data.get('he', None)
-            intra_data, extra_data, middle_data = proxy.pointed_vault_heightfields_proxy(xy_span=xy_span, thk=thk, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm)
+            intra_data, extra_data, middle_data = proxy.pointed_vault_heightfields(xy_span=xy_span, thk=thk, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm)
         elif typevault == 'dome':
             center = data['center']
             radius = data['radius']
-            intra_data, extra_data, middle_data = proxy.dome_heightfields_proxy(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
+            intra_data, extra_data, middle_data = proxy.dome_heightfields(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
 
         intrados = MeshDos.from_data(intra_data)
         extrados = MeshDos.from_data(extra_data)
@@ -800,11 +800,56 @@ class Shape(Datastructure):
 
         """
 
-        intrados_mesh = MeshDos.from_topology_and_mesh(form, intrados, keep_normals=True)
-        extrados_mesh = MeshDos.from_topology_and_mesh(form, extrados, keep_normals=True)
+        from compas_tno.utilities import create_mesh_from_topology_and_basemesh
+
+        # intrados_mesh = MeshDos.from_topology_and_mesh(form, intrados, keep_normals=True)
+        intrados_mesh = create_mesh_from_topology_and_basemesh(form, intrados)
+        extrados_mesh = create_mesh_from_topology_and_basemesh(form, extrados)
+        # extrados_mesh = MeshDos.from_topology_and_mesh(form, extrados, keep_normals=True)
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
         return shape
+
+    @classmethod
+    def from_meshes_and_formdiagram_proxy(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
+        """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.
+
+        Parameters
+        ----------
+        form: FormDiagram
+            Form Diagram with the topology to be used
+        intrados : mesh
+            Mesh for intrados
+        extrados : mesh
+            Mesh for extrados
+        middle : mesh, optional
+            Mesh for middle, the default is None
+        data : dict,  optional
+            Dictionary with the data in required, the default is None
+
+        Returns
+        -------
+        Shape
+            A Shape object.
+
+        """
+
+        from compas.rpc import Proxy
+
+        proxy = Proxy()
+        proxy.package = 'compas_tno.utilities'
+
+        # from compas_tno.utilities import create_mesh_from_topology_and_basemesh
+
+        intrados_mesh = proxy.create_mesh_from_topology_and_basemesh(form, intrados)
+        extrados_mesh = proxy.create_mesh_from_topology_and_basemesh(form, extrados)
+
+        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
+
+        return shape
+
+
+
 
     @classmethod
     def from_formdiagram_and_attributes(cls, form, data={'type': 'general', 't': 0.0}):

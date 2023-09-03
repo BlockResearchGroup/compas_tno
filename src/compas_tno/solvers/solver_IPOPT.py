@@ -296,10 +296,12 @@ def run_optimisation_ipopt(analysis):
     exitflag = info['status']
     if exitflag == 1 or exitflag == 0:  # IPOPT consider solved = 1. Solved in tolerances 0 -> TNO solved = 0
         exitflag = 0
+        msg = 'Solved successfully with IPOPT'
     else:
         exitflag = 1
+        msg = 'Error: Did not find convergence (IPOPT)'
     if printout:
-        print(info['status_msg'])
+        print(str(info['status_msg']))
 
     elapsed_time = time.time() - start_time
     if printout:
@@ -310,7 +312,8 @@ def run_optimisation_ipopt(analysis):
     optimiser.fopt = fopt
     optimiser.xopt = xopt
     optimiser.niter = None  # Did not find a way to display number of iterations
-    optimiser.message = info['status_msg']
+    # optimiser.message = str(info['status_msg'])
+    optimiser.message = msg  # temporary, should be equal to the line above
     optimiser.nlp = nlp
 
     post_process_general(analysis)

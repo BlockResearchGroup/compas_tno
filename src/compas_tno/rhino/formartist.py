@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import division
 
 import compas_rhino
-
+import math
 from functools import partial
 from math import sqrt
 from math import pi
@@ -13,6 +13,7 @@ from compas.geometry import add_vectors
 from compas.geometry import scale_vector
 from compas.geometry import length_vector
 from compas.geometry import norm_vector
+# from compas.colors import Color  # Future
 
 from compas.utilities import is_color_rgb
 
@@ -76,6 +77,7 @@ class FormArtist(DiagramArtist):
         self.color_compression = (255, 0, 0)
         self.color_tension = (0, 255, 0)
         self.color_reaction = (125, 125, 125)
+        self.default_color = (0, 0, 0)
         self.color_mesh_thrust = (0, 0, 0)
         self.color_mesh_intrados = (125, 125, 125)
         self.color_mesh_extrados = (125, 125, 125)
@@ -84,7 +86,7 @@ class FormArtist(DiagramArtist):
         self.color_vertex_intrados = (0, 0, 255)
         self.color_faces = (0, 0, 0)
         self.scale_forces = 0.001
-        self.pipes_scale = 0.01
+        self.pipes_scale = 0.025
         self.scale_line = 0.1
         self.tol_forces = 0.001
         self.radius_sphere = 0.15
@@ -531,7 +533,7 @@ class FormArtist(DiagramArtist):
 
         return compas_rhino.draw_lines(lines, layer=layer, clear=False, redraw=False)
 
-    def draw_reactions(self, color=None, scale=0.01, draw_as_pipes=False, layer="FormDiagram::Reactions", tol=1e-3):
+    def draw_reactions(self, color=None, scale=0.03, draw_as_pipes=False, layer="FormDiagram::Reactions", tol=1e-3):
         """Draw the reaction forces.
 
         Parameters
@@ -560,9 +562,14 @@ class FormArtist(DiagramArtist):
         vertex_xyz = self.vertex_xyz
         lines = []
         cylinders = []
+        labels = []
         for key in self.diagram.vertices_where({'is_fixed': True}):
             a = vertex_xyz[key]
             r = self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz'])
+            res2 = r[0]**2 + r[1]**2 + r[2]**2
+            res = 0
+            if res2 > 0:
+                res = round(math.sqrt(res2), 1)
             if not any(r):  # If receives null vector or None
                 continue
             r = scale_vector(r, -scale)
@@ -576,22 +583,26 @@ class FormArtist(DiagramArtist):
                           'arrow': "start"  # 'arrow': "end"
                           }
                          )
+            labels.append({'pos': [(a[0] + b[0])/2, (a[1] + b[1])/2, (a[2] + b[2])/2], 'text': str(res), 'color': (255, 0, 0)})
             if draw_as_pipes:
-                force = self.pipes_scale * norm_vector(self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz']))
+                force = norm_vector(self.diagram.vertex_attributes(key, ['_rx', '_ry', '_rz']))
                 print(force)
                 cylinders.append({
                     'start': a,
                     'end': b,
-                    'radius': sqrt(abs(force)/pi),
+                    'radius': self.pipes_scale * sqrt(abs(force)/pi),
                     'color': color
                 })
+
+        compas_rhino.draw_labels(labels, layer="FormDiagram::ForceLabels")
 
         if draw_as_pipes:
             return compas_rhino.draw_cylinders(cylinders, layer=layer, clear=False, redraw=False)
         else:
             return compas_rhino.draw_lines(lines, layer=layer, clear=False, redraw=False)
 
-    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255), compression_negative=True, tol=1e-3, layer=None):
+    def draw_forcepipes(self, color_compression=(255, 0, 0), color_tension=(0, 0, 255),
+                        compression_negative=True, pipes_scale=None, tol=1e-3, layer="FormDiagram::ForcePipes"):
         """Draw the forces in the internal edges as pipes with color and thickness matching the force value.
 
         Parameters
@@ -608,7 +619,8 @@ class FormArtist(DiagramArtist):
         """
         layer = layer or self.layer
         vertex_xyz = self.vertex_xyz
-        scale = self.pipes_scale
+        if not pipes_scale:
+            pipes_scale = self.pipes_scale
         cylinders = []
         for edge in self.diagram.edges_where({'_is_edge': True}):
             u, v = edge
@@ -617,10 +629,9 @@ class FormArtist(DiagramArtist):
             length = self.diagram.edge_length(*edge)
             q = self.diagram.edge_attribute(edge, 'q')
             force = q * length
-            force = scale * force
             if abs(force) < tol:
                 continue
-            radius = sqrt(abs(force)/pi)
+            radius = pipes_scale * sqrt(abs(force)/pi)
             if compression_negative:
                 pipe_color = color_compression if force < 0 else color_tension
             else:
@@ -632,3 +643,17 @@ class FormArtist(DiagramArtist):
                 'color': pipe_color
             })
         return compas_rhino.draw_cylinders(cylinders, layer=layer, clear=False, redraw=False)
+
+    def draw_forcelabels(self, layer="FormDiagram::ForceLabels"):
+        """Draw the magnitue of the forces in the diagram.
+
+        """
+        forces = []
+        for edge in self.diagram.edges_where({'_is_edge': True}):
+            u, v = edge
+            pt = self.diagram.edge_midpoint(u, v)
+            f = self.diagram.edge_attribute((u, v), 'f')
+            if abs(f) > 1e-4:
+                forces.append({'text': str(round(f, 1)), 'pos': pt})
+
+        return compas_rhino.draw_labels(forces, layer=layer)

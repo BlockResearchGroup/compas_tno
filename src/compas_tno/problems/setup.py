@@ -149,7 +149,8 @@ def set_up_general_optimisation(analysis):
     # If objective is the complementary energy
 
     if 'Ecomp' in objective.split('-'):
-        M.dXb = optimiser.settings['support_displacement']
+        dXb = array(optimiser.settings['support_displacement'])
+        M.dXb = dXb
 
     if objective == 'Ecomp-nonlinear':
         Ecomp_method = optimiser.settings.get('Ecomp_method', 'simplified')

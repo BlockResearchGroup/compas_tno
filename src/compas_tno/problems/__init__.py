@@ -111,6 +111,7 @@ Proxy
 
     initialize_loadpath_proxy
     run_NLP_proxy
+    run_NLP_proxy2
 
 Callbacks
 =========
@@ -200,7 +201,8 @@ from .setup import (
 
 from .proxy import (
     initialize_loadpath_proxy,
-    run_NLP_proxy
+    run_NLP_proxy,
+    run_NLP_proxy2
 )
 
 
@@ -263,6 +265,7 @@ __all__ = [
     'set_up_convex_optimisation',
 
     'initialize_loadpath_proxy',
-    'run_NLP_proxy'
+    'run_NLP_proxy',
+    'run_NLP_proxy2'
 
 ]

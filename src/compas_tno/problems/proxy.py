@@ -65,3 +65,43 @@ def run_NLP_proxy(shapedata, formdata, optimiserdata):
     analysis.run()
 
     return shape.to_data(), form.to_data(), optimiser.to_data()
+
+
+def run_NLP_proxy2(formdata, shapedata, optimiserdata):
+    """Run nonlinear multiobjective optimisations using the proxy
+
+    Parameters
+    ----------
+    shapedata : dict
+        Data of the Shape object
+    formdata : dict
+        Data of the Form object
+    optimiserdata : dict
+        Data of the Optimiser object
+
+    Returns
+    -------
+    shapedata : dict
+        Data of the Shape object
+    formdata : dict
+        Data of the optimised form diagram.
+    optimiserdata : dict
+        Data of the Optimiser object.
+    """
+
+    from compas_tno.diagrams import FormDiagram
+    from compas_tno.analysis import Analysis
+    from compas_tno.optimisers import Optimiser
+    from compas_tno.shapes import Shape
+
+    shape = Shape.from_data(shapedata)
+    form = FormDiagram.from_data(formdata)
+    optimiser = Optimiser.from_data(optimiserdata)
+
+    analysis = Analysis.from_elements(shape, form, optimiser)
+    analysis.apply_selfweight()
+    analysis.apply_envelope()
+    analysis.set_up_optimiser()
+    analysis.run()
+
+    return form.to_data(), shape.to_data(), optimiser.to_data()

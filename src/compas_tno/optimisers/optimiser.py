@@ -183,7 +183,7 @@ class Optimiser(Datastructure):
         return optimiser
 
     @classmethod
-    def create_maxhrust_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath'):
+    def create_maxthrust_optimiser(cls, solver='SLSQP', max_iter=500, printout=False, plot=False, starting_point='loadpath'):
         """Create a maximum thickness optimiser to be sent with instructions to the Analysis.
 
         Parameters

@@ -69,6 +69,7 @@ class FormObject(DiagramObject):
         self._guid_cracks = {}
         self._guid_vectors = {}
         self._guid_reactions = {}
+        self._guids = {}
 
     @property
     def guids(self):
@@ -78,6 +79,10 @@ class FormObject(DiagramObject):
         guids += list(self.guid_vectors.keys())
         guids += list(self.guid_reactions.keys())
         return guids
+
+    @guids.setter
+    def guids(self, values):
+        self._guids = dict(values)
 
     @property
     def guid_pipes(self):
@@ -122,6 +127,7 @@ class FormObject(DiagramObject):
         self._guid_cracks = {}
         self._guid_vectors = {}
         self._guid_reactions = {}
+        self._guids = {}
 
     def draw(self):
         """Draw the form diagram.
@@ -238,6 +244,7 @@ class FormObject(DiagramObject):
                     elif self.diagram.edge_attribute(edge, 'f') < - tol:
                         color[edge] = self.settings['color.compression']
 
+            print('draw_edges run')
             guids = self.artist.draw_edges(edges=edges, color=color)
             self.guid_edge = zip(guids, edges)
 
@@ -342,5 +349,7 @@ class FormObject(DiagramObject):
             )
 
             self.guid_reactions = zip(guids, edges)
+
+        self.guid = self.guid_edge
 
         self.redraw()

@@ -178,6 +178,6 @@ Beyond defining each element separately, a series of functions has been implemen
 * :mod:`create_lp_optimiser <compas_tno.optimisers.Optimiser.create_lp_optimiser>`
 * :mod:`create_max_horload_optimiser <compas_tno.optimisers.Optimiser.create_max_horload_optimiser>`
 * :mod:`create_max_vertload_optimiser <compas_tno.optimisers.Optimiser.create_max_vertload_optimiser>`
-* :mod:`create_maxhrust_optimiser <compas_tno.optimisers.Optimiser.create_maxhrust_optimiser>`
+* :mod:`create_maxthrust_optimiser <compas_tno.optimisers.Optimiser.create_maxthrust_optimiser>`
 * :mod:`create_minthrust_optimiser <compas_tno.optimisers.Optimiser.create_minthrust_optimiser>`
 * :mod:`create_minthk_optimiser <compas_tno.optimisers.Optimiser.create_minthk_optimiser>`

@@ -35,14 +35,12 @@ def post_process_general(analysis):
     show_force_diagram = optimiser.settings.get('save_force_diagram', True)
 
     fconstr = optimiser.fconstr
-    # args = optimiser.args
     xopt = optimiser.xopt
     fopt = optimiser.fopt
     message = optimiser.message
     thk = M.thk
 
     i_uv = form.index_uv()
-    # i_k = form.index_key()
 
     check = M.k
     qid = xopt[:M.k].reshape(-1, 1)
@@ -186,7 +184,7 @@ def post_process_general(analysis):
         added_load = lambdv * M.pzv
         for i, key in enumerate(form.vertices()):
             p_added = added_load[i]
-            form.vertex_attribute(key, 'pzext', p_added)
+            form.vertex_attribute(key, 'pzext', float(p_added))
 
     if 'lambdh' in M.variables:
         form.attributes['lambdh'] = lambdh  # can be improved. It currently takes fopt, but if loads at start are 0.1*SWT, the obj is lambd/0.1
