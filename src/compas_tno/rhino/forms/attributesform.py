@@ -94,7 +94,7 @@ class Tree_Table(forms.TreeGridView):
         attributes = filter(lambda attr: attr in Allowed, attributes)
 
         for attr in attributes:
-            checkbox = type(datastructure.default_edge_attributes[attr]) == bool
+            checkbox = isinstance(datastructure.default_edge_attributes[attr], bool)
             attr = attr.replace("_", "-")
             table.add_column(attr, Editable=False, checkbox=checkbox)
 
@@ -129,7 +129,7 @@ class Tree_Table(forms.TreeGridView):
         attributes = table.sort_attributes(attributes)
         for attr in attributes:
             editable = attr[0] != '_'
-            checkbox = type(datastructure.default_vertex_attributes[attr]) == bool
+            checkbox = isinstance(datastructure.default_vertex_attributes[attr], bool)
             if not editable:
                 attr = attr[1:]
             table.add_column(attr, Editable=editable, checkbox=checkbox)
@@ -155,7 +155,7 @@ class Tree_Table(forms.TreeGridView):
 
         for attr in attributes:
             editable = attr[0] != '_'
-            checkbox = type(datastructure.default_edge_attributes[attr]) == bool
+            checkbox = isinstance(datastructure.default_edge_attributes[attr], bool)
             if not editable:
                 attr = attr[1:]
             table.add_column(attr, Editable=editable, checkbox=checkbox)
@@ -252,10 +252,10 @@ class Tree_Table(forms.TreeGridView):
 
                 original_value = get_set_attributes(key, attr)
 
-                if type(original_value) == float and type(new_value) == int:
+                if isinstance(original_value, float) and isinstance(new_value, int):
                     new_value = float(new_value)
                 if new_value != original_value:
-                    if type(new_value) == type(original_value):
+                    if type(new_value) is type(original_value):
                         print('will update key: %s, attr: %s, value: %s' % (key, attr, new_value))
                         self.to_update[(key, attr)] = (get_set_attributes, new_value)
                     else:

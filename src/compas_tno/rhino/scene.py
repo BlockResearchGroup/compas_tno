@@ -166,7 +166,7 @@ class Scene(object):
         state = []
         for guid, obj in self.objects.items():
             print(type(obj))
-            if type(obj) == DiagramObject:
+            if isinstance(obj, DiagramObject):
                 state.append({
                     'object': {
                         'name': obj.name,
@@ -182,7 +182,7 @@ class Scene(object):
                         'data': obj.diagram.to_data(),
                     },
                 })
-            elif type(obj) == Object:
+            elif isinstance(obj, Object):
                 state.append({
                     'object': {
                         'name': obj.name,
