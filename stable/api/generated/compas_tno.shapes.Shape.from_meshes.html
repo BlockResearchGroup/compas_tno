@@ -50,7 +50,7 @@
         <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
         <li class="nav-item nav-versions dropdown">
           <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            0.2.1
+            0.2.2
           </a>
           <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
         </li>
@@ -101,15 +101,17 @@
 <h1>Shape.from_meshes</h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape.from_meshes">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">from_meshes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intrados</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrados</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">middle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">treat_creases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'t':</span> <span class="pre">0.0,</span> <span class="pre">'thk':</span> <span class="pre">0.5,</span> <span class="pre">'type':</span> <span class="pre">'general'}</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Shape.</span></span><span class="sig-name descname"><span class="pre">from_meshes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intrados</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrados</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">middle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'t':</span> <span class="pre">0.0,</span> <span class="pre">'thk':</span> <span class="pre">0.5,</span> <span class="pre">'type':</span> <span class="pre">'general'}</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Construct a Shape from meshes for intrados, extrados, and middle.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>intrados</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – Mesh for intrados.</p></li>
-<li><p><strong>extrados</strong> (<a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – Mesh for extrados.</p></li>
+<li><p><strong>intrados</strong> (<a class="reference external" href="https://compas.dev/compas/latest/reference/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS vlatest)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – Mesh for intrados.</p></li>
+<li><p><strong>extrados</strong> (<a class="reference external" href="https://compas.dev/compas/latest/reference/generated/compas.datastructures.Mesh.html#compas.datastructures.Mesh" title="(in COMPAS vlatest)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mesh</span></code></a>) – Mesh for extrados.</p></li>
 <li><p><strong>middle</strong> (<em>mesh, optional</em>) – Mesh for middle.
 The default value is <code class="docutils literal notranslate"><span class="pre">None</span></code>, in a case in which no middle surface is assigned</p></li>
+<li><p><strong>fill</strong> (<em>mesh, optional</em>) – Mesh for fill.
+The default value is <code class="docutils literal notranslate"><span class="pre">None</span></code>, in a case in which no fill surface is assigned</p></li>
 <li><p><strong>data</strong> (<em>dict, optional</em>) – Dictionary with the data about the structure.
 The default value is a typical general dictionary.</p></li>
 </ul>

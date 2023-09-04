@@ -50,7 +50,7 @@
         <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
         <li class="nav-item nav-versions dropdown">
           <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            0.2.1
+            0.2.2
           </a>
           <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
         </li>
@@ -327,6 +327,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.utilities.move_pattern_to_origin.html#compas_tno.utilities.move_pattern_to_origin" title="compas_tno.utilities.move_pattern_to_origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_pattern_to_origin</span></code></a>(mesh[, corners, ...])</p></td>
 <td><p>Modify the form diagram to coincide the lower corner of its bounding box with the corners provided.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.utilities.fix_mesh_corners.html#compas_tno.utilities.fix_mesh_corners" title="compas_tno.utilities.fix_mesh_corners"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fix_mesh_corners</span></code></a>(mesh[, corners])</p></td>
+<td><p>Fix the corners of a mesh (FormDiagram)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.utilities.fix_mesh_boundary.html#compas_tno.utilities.fix_mesh_boundary" title="compas_tno.utilities.fix_mesh_boundary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fix_mesh_boundary</span></code></a>(mesh)</p></td>
+<td><p>Fix the boudnaries along a mesh (FormDiagram)</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.utilities.slide_diagram.html#compas_tno.utilities.slide_diagram" title="compas_tno.utilities.slide_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">slide_diagram</span></code></a>(form[, delta, y0, y1, tappered])</p></td>
 <td><p>Apply a parabolic sliding to the nodes towards +x direction.</p></td>
 </tr>
@@ -344,6 +350,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.utilities.displacement_map_parabola.html#compas_tno.utilities.displacement_map_parabola" title="compas_tno.utilities.displacement_map_parabola"><code class="xref py py-obj docutils literal notranslate"><span class="pre">displacement_map_parabola</span></code></a>(form[, y0, y1])</p></td>
 <td><p>Create the displacement map for a 1D parabola sliding of the structural pattern.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.utilities.move_pattern_inwards.html#compas_tno.utilities.move_pattern_inwards" title="compas_tno.utilities.move_pattern_inwards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_pattern_inwards</span></code></a>(form[, tol])</p></td>
+<td><p>Move nodes at the boundary slightly inwards or outwards</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.utilities.move_pattern_outwards.html#compas_tno.utilities.move_pattern_outwards" title="compas_tno.utilities.move_pattern_outwards"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_pattern_outwards</span></code></a>(form[, tol])</p></td>
+<td><p>Move nodes at the boundary slightly inwards or outwards</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.utilities.shuffle_diagram.html#compas_tno.utilities.shuffle_diagram" title="compas_tno.utilities.shuffle_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shuffle_diagram</span></code></a>(form)</p></td>
 <td><p>Shuffle the form diagram reordering the edges.</p></td>
