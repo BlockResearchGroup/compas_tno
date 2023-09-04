@@ -50,7 +50,7 @@
         <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
         <li class="nav-item nav-versions dropdown">
           <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            0.2.1
+            0.2.2
           </a>
           <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
         </li>
@@ -110,7 +110,7 @@
 <h2>Loadpath solvers</h2>
 <section id="mosek">
 <h3>MOSEK</h3>
-<p>MOSEK is a software package to perform convex optimisation. It is accessed through TNO via CVXPY. To use MOSEK you need to get yourself a license which can be purchased ot obtained for free for scholars. See their website for more information on how to obtain such license and on their installation process see:</p>
+<p>MOSEK is a software package to perform convex optimisation. It is accessed through TNO via CVXPY. To use MOSEK you need to get yourself a license which can be purchased or obtained for free for scholars. See their website for more information on how to obtain such license and on their installation process see:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.mosek.com/products/academic-licenses/">https://www.mosek.com/products/academic-licenses/</a></p></li>
 </ul>
@@ -119,8 +119,8 @@
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.cvxpy.org/">https://www.cvxpy.org/</a></p></li>
 </ul>
-<p>We can install both CVXPY and MOSEK together running:</p>
-<div class="language-bash notranslate"><div class="highlight"><pre><button class="btn copy"><i class="far fa-copy"></i></button><code><span></span>conda<span class="w"> </span>install<span class="w"> </span>cvxpy<span class="w"> </span>mosek
+<p>We can install both CVXPY and MOSEK together with pip:</p>
+<div class="language-bash notranslate"><div class="highlight"><pre><button class="btn copy"><i class="far fa-copy"></i></button><code><span></span>pip<span class="w"> </span>install<span class="w"> </span>cvxpy<span class="w"> </span>mosek
 </code></pre></div>
 </div>
 </section>
@@ -128,7 +128,7 @@
 <h3>SDPT3</h3>
 <p>SDPT3 is a solver to perform conical convex optimisation. It is necessary to perform load-path optimisations. This solver is distributed on the MATLAB’s package CVX. Both need to be installed: MATLAB and CVX. The installation is broken in three steps:</p>
 <ol class="arabic simple">
-<li><p>Download and install MATLAB. Version R2020b is recommended.</p></li>
+<li><p>Download and install MATLAB. Versions newer than R2022b are recommended.</p></li>
 </ol>
 <ul class="simple">
 <li><p><a class="reference external" href="https://www.mathworks.com/products/matlab.html">https://www.mathworks.com/products/matlab.html</a></p></li>

@@ -50,7 +50,7 @@
         <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
         <li class="nav-item nav-versions dropdown">
           <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            0.2.1
+            0.2.2
           </a>
           <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
         </li>
@@ -124,6 +124,7 @@
 <span class="c1"># ----------------------------------------</span>
 <span class="n">analysis</span> <span class="o">=</span> <span class="n">Analysis</span><span class="o">.</span><span class="n">create_minthrust_analysis</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">arch</span><span class="p">)</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">optimiser</span><span class="o">.</span><span class="n">set_constraints</span><span class="p">([</span><span class="s1">&#39;funicular&#39;</span><span class="p">,</span> <span class="s1">&#39;envelope&#39;</span><span class="p">,</span> <span class="s1">&#39;reac_bounds&#39;</span><span class="p">])</span>
+<span class="n">analysis</span><span class="o">.</span><span class="n">optimiser</span><span class="o">.</span><span class="n">set_starting_point</span><span class="p">(</span><span class="s1">&#39;current&#39;</span><span class="p">)</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_selfweight</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_envelope</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_reaction_bounds</span><span class="p">()</span>
@@ -149,6 +150,7 @@
 
 <span class="n">analysis</span> <span class="o">=</span> <span class="n">Analysis</span><span class="o">.</span><span class="n">create_maxthrust_analysis</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">arch</span><span class="p">)</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">optimiser</span><span class="o">.</span><span class="n">set_constraints</span><span class="p">([</span><span class="s1">&#39;funicular&#39;</span><span class="p">,</span> <span class="s1">&#39;envelope&#39;</span><span class="p">,</span> <span class="s1">&#39;reac_bounds&#39;</span><span class="p">])</span>
+<span class="n">analysis</span><span class="o">.</span><span class="n">optimiser</span><span class="o">.</span><span class="n">set_starting_point</span><span class="p">(</span><span class="s1">&#39;current&#39;</span><span class="p">)</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_selfweight</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_envelope</span><span class="p">()</span>
 <span class="n">analysis</span><span class="o">.</span><span class="n">apply_reaction_bounds</span><span class="p">()</span>

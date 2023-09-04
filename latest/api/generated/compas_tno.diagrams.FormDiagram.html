@@ -50,7 +50,7 @@
         <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
         <li class="nav-item nav-versions dropdown">
           <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            0.2.1
+            0.2.2
           </a>
           <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
         </li>
@@ -99,7 +99,7 @@
 <h1>FormDiagram</h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="compas_tno.diagrams.FormDiagram">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.diagrams.</span></span><span class="sig-name descname"><span class="pre">FormDiagram</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/form.py#L24"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.diagrams.</span></span><span class="sig-name descname"><span class="pre">FormDiagram</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/diagrams/form.py#L25"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">compas_tna.diagrams.formdiagram.FormDiagram</span></code></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code> represents the projection of the internal force network within the structure.</p>
 <p>The class imports the attributes and set ups from <code class="docutils literal notranslate"><span class="pre">compas_tna.diagrams.FormDiagram</span></code> and include some
@@ -183,112 +183,115 @@ are listed below:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_linear_form_diagram.html#compas_tno.diagrams.FormDiagram.create_linear_form_diagram" title="compas_tno.diagrams.FormDiagram.create_linear_form_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_linear_form_diagram</span></code></a></p></td>
 <td><p>Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_ortho_form.html#compas_tno.diagrams.FormDiagram.create_ortho_form" title="compas_tno.diagrams.FormDiagram.create_ortho_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ortho_form</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_linear_form_diagram_sp_ep.html#compas_tno.diagrams.FormDiagram.create_linear_form_diagram_sp_ep" title="compas_tno.diagrams.FormDiagram.create_linear_form_diagram_sp_ep"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_linear_form_diagram_sp_ep</span></code></a></p></td>
+<td><p>Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_ortho_form.html#compas_tno.diagrams.FormDiagram.create_ortho_form" title="compas_tno.diagrams.FormDiagram.create_ortho_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_ortho_form</span></code></a></p></td>
 <td><p>Helper to construct a FormDiagram based on a simple orthogonal discretisation.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_parametric_form.html#compas_tno.diagrams.FormDiagram.create_parametric_form" title="compas_tno.diagrams.FormDiagram.create_parametric_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_parametric_form</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.create_parametric_form.html#compas_tno.diagrams.FormDiagram.create_parametric_form" title="compas_tno.diagrams.FormDiagram.create_parametric_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_parametric_form</span></code></a></p></td>
 <td><p>Helper to construct a FormDiagram envelop that includes fan and cross diagrams.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.delete_boundary_edges.html#compas_tno.diagrams.FormDiagram.delete_boundary_edges" title="compas_tno.diagrams.FormDiagram.delete_boundary_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_boundary_edges</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.delete_boundary_edges.html#compas_tno.diagrams.FormDiagram.delete_boundary_edges" title="compas_tno.diagrams.FormDiagram.delete_boundary_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_boundary_edges</span></code></a></p></td>
 <td><p>Delete boundary edges on a diagram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.distance_target.html#compas_tno.diagrams.FormDiagram.distance_target" title="compas_tno.diagrams.FormDiagram.distance_target"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distance_target</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.distance_target.html#compas_tno.diagrams.FormDiagram.distance_target" title="compas_tno.diagrams.FormDiagram.distance_target"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distance_target</span></code></a></p></td>
 <td><p>Compute the squared vertical distance from a target.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.fixed.html#compas_tno.diagrams.FormDiagram.fixed" title="compas_tno.diagrams.FormDiagram.fixed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fixed</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.fixed.html#compas_tno.diagrams.FormDiagram.fixed" title="compas_tno.diagrams.FormDiagram.fixed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fixed</span></code></a></p></td>
 <td><p>Return the keys of the fixed vertices of the diagram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.fixed_x.html#compas_tno.diagrams.FormDiagram.fixed_x" title="compas_tno.diagrams.FormDiagram.fixed_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fixed_x</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.fixed_x.html#compas_tno.diagrams.FormDiagram.fixed_x" title="compas_tno.diagrams.FormDiagram.fixed_x"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fixed_x</span></code></a></p></td>
 <td><p>Return the keys of the fixed-in-x vertices of the diagram.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.fixed_y.html#compas_tno.diagrams.FormDiagram.fixed_y" title="compas_tno.diagrams.FormDiagram.fixed_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fixed_y</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.fixed_y.html#compas_tno.diagrams.FormDiagram.fixed_y" title="compas_tno.diagrams.FormDiagram.fixed_y"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fixed_y</span></code></a></p></td>
 <td><p>Return the keys of the fixed-in-y vertices of the diagram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_assembly.html#compas_tno.diagrams.FormDiagram.from_assembly" title="compas_tno.diagrams.FormDiagram.from_assembly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_assembly</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_assembly.html#compas_tno.diagrams.FormDiagram.from_assembly" title="compas_tno.diagrams.FormDiagram.from_assembly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_assembly</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_library.html#compas_tno.diagrams.FormDiagram.from_library" title="compas_tno.diagrams.FormDiagram.from_library"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_library</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_library.html#compas_tno.diagrams.FormDiagram.from_library" title="compas_tno.diagrams.FormDiagram.from_library"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_library</span></code></a></p></td>
 <td><p>Construct a FormDiagram the library of FormDiagrams available.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_singular.html#compas_tno.diagrams.FormDiagram.from_singular" title="compas_tno.diagrams.FormDiagram.from_singular"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_singular</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_singular.html#compas_tno.diagrams.FormDiagram.from_singular" title="compas_tno.diagrams.FormDiagram.from_singular"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_singular</span></code></a></p></td>
 <td><p>Create form diagram from singular dense mesh.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_skeleton.html#compas_tno.diagrams.FormDiagram.from_skeleton" title="compas_tno.diagrams.FormDiagram.from_skeleton"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_skeleton</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_skeleton.html#compas_tno.diagrams.FormDiagram.from_skeleton" title="compas_tno.diagrams.FormDiagram.from_skeleton"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_skeleton</span></code></a></p></td>
 <td><p>Create form diagram from compas_skeleton</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_triangle.html#compas_tno.diagrams.FormDiagram.from_triangle" title="compas_tno.diagrams.FormDiagram.from_triangle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_triangle</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.from_triangle.html#compas_tno.diagrams.FormDiagram.from_triangle" title="compas_tno.diagrams.FormDiagram.from_triangle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_triangle</span></code></a></p></td>
 <td><p>Generates a Form Diagram from triangle</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.ind.html#compas_tno.diagrams.FormDiagram.ind" title="compas_tno.diagrams.FormDiagram.ind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ind</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.ind.html#compas_tno.diagrams.FormDiagram.ind" title="compas_tno.diagrams.FormDiagram.ind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ind</span></code></a></p></td>
 <td><p>Return the identifiers for the edges selected as independents on the diagram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.loadpath.html#compas_tno.diagrams.FormDiagram.loadpath" title="compas_tno.diagrams.FormDiagram.loadpath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loadpath</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.loadpath.html#compas_tno.diagrams.FormDiagram.loadpath" title="compas_tno.diagrams.FormDiagram.loadpath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">loadpath</span></code></a></p></td>
 <td><p>Compute loadpath in the current configuration based on the force attributes stored in the <code class="docutils literal notranslate"><span class="pre">FormDiagram</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.lumped_swt.html#compas_tno.diagrams.FormDiagram.lumped_swt" title="compas_tno.diagrams.FormDiagram.lumped_swt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lumped_swt</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.lumped_swt.html#compas_tno.diagrams.FormDiagram.lumped_swt" title="compas_tno.diagrams.FormDiagram.lumped_swt"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lumped_swt</span></code></a></p></td>
 <td><p>Returns the lumped selfweight on the nodes.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.modify_diagram_boundary.html#compas_tno.diagrams.FormDiagram.modify_diagram_boundary" title="compas_tno.diagrams.FormDiagram.modify_diagram_boundary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modify_diagram_boundary</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.modify_diagram_boundary.html#compas_tno.diagrams.FormDiagram.modify_diagram_boundary" title="compas_tno.diagrams.FormDiagram.modify_diagram_boundary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">modify_diagram_boundary</span></code></a></p></td>
 <td><p>Modify the diagram boundary adding the outer perimeter around the fixed vertices with edges having <code class="docutils literal notranslate"><span class="pre">_is_edge</span></code> False.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_independents.html#compas_tno.diagrams.FormDiagram.number_of_independents" title="compas_tno.diagrams.FormDiagram.number_of_independents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_independents</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_independents.html#compas_tno.diagrams.FormDiagram.number_of_independents" title="compas_tno.diagrams.FormDiagram.number_of_independents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_independents</span></code></a></p></td>
 <td><p>Compute the number of independent edges.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_real_edges.html#compas_tno.diagrams.FormDiagram.number_of_real_edges" title="compas_tno.diagrams.FormDiagram.number_of_real_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_real_edges</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_real_edges.html#compas_tno.diagrams.FormDiagram.number_of_real_edges" title="compas_tno.diagrams.FormDiagram.number_of_real_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_real_edges</span></code></a></p></td>
 <td><p>Return the identifiers for the edges selected as independents on the diagram.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_supports.html#compas_tno.diagrams.FormDiagram.number_of_supports" title="compas_tno.diagrams.FormDiagram.number_of_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_supports</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_supports.html#compas_tno.diagrams.FormDiagram.number_of_supports" title="compas_tno.diagrams.FormDiagram.number_of_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_supports</span></code></a></p></td>
 <td><p>Compute the number of supports.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_sym_edges.html#compas_tno.diagrams.FormDiagram.number_of_sym_edges" title="compas_tno.diagrams.FormDiagram.number_of_sym_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_sym_edges</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_sym_edges.html#compas_tno.diagrams.FormDiagram.number_of_sym_edges" title="compas_tno.diagrams.FormDiagram.number_of_sym_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_sym_edges</span></code></a></p></td>
 <td><p>Compute the symmetric edges.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_sym_supports.html#compas_tno.diagrams.FormDiagram.number_of_sym_supports" title="compas_tno.diagrams.FormDiagram.number_of_sym_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_sym_supports</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_sym_supports.html#compas_tno.diagrams.FormDiagram.number_of_sym_supports" title="compas_tno.diagrams.FormDiagram.number_of_sym_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_sym_supports</span></code></a></p></td>
 <td><p>Compute the symmetric supports.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_sym_vertices.html#compas_tno.diagrams.FormDiagram.number_of_sym_vertices" title="compas_tno.diagrams.FormDiagram.number_of_sym_vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_sym_vertices</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.number_of_sym_vertices.html#compas_tno.diagrams.FormDiagram.number_of_sym_vertices" title="compas_tno.diagrams.FormDiagram.number_of_sym_vertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">number_of_sym_vertices</span></code></a></p></td>
 <td><p>Compute the symmetric vertices.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.overview_forces.html#compas_tno.diagrams.FormDiagram.overview_forces" title="compas_tno.diagrams.FormDiagram.overview_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overview_forces</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.overview_forces.html#compas_tno.diagrams.FormDiagram.overview_forces" title="compas_tno.diagrams.FormDiagram.overview_forces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">overview_forces</span></code></a></p></td>
 <td><p>Print an overview of the forces in the <code class="docutils literal notranslate"><span class="pre">Form</span> <span class="pre">Diagram</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.plot.html#compas_tno.diagrams.FormDiagram.plot" title="compas_tno.diagrams.FormDiagram.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.plot.html#compas_tno.diagrams.FormDiagram.plot" title="compas_tno.diagrams.FormDiagram.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a></p></td>
 <td><p>Plot a form diagram with a plotter with all the default settings.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.q.html#compas_tno.diagrams.FormDiagram.q" title="compas_tno.diagrams.FormDiagram.q"><code class="xref py py-obj docutils literal notranslate"><span class="pre">q</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.q.html#compas_tno.diagrams.FormDiagram.q" title="compas_tno.diagrams.FormDiagram.q"><code class="xref py py-obj docutils literal notranslate"><span class="pre">q</span></code></a></p></td>
 <td><p>Return the force densities <code class="docutils literal notranslate"><span class="pre">q</span></code> of the diagram.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.restore_diagram_boundary.html#compas_tno.diagrams.FormDiagram.restore_diagram_boundary" title="compas_tno.diagrams.FormDiagram.restore_diagram_boundary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">restore_diagram_boundary</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.restore_diagram_boundary.html#compas_tno.diagrams.FormDiagram.restore_diagram_boundary" title="compas_tno.diagrams.FormDiagram.restore_diagram_boundary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">restore_diagram_boundary</span></code></a></p></td>
 <td><p>Remove faces of the diagram with area zero.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.set_boundary_rollers.html#compas_tno.diagrams.FormDiagram.set_boundary_rollers" title="compas_tno.diagrams.FormDiagram.set_boundary_rollers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_boundary_rollers</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.set_boundary_rollers.html#compas_tno.diagrams.FormDiagram.set_boundary_rollers" title="compas_tno.diagrams.FormDiagram.set_boundary_rollers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_boundary_rollers</span></code></a></p></td>
 <td><p>Set boundary vertices as rollers.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.set_boundary_supports.html#compas_tno.diagrams.FormDiagram.set_boundary_supports" title="compas_tno.diagrams.FormDiagram.set_boundary_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_boundary_supports</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.set_boundary_supports.html#compas_tno.diagrams.FormDiagram.set_boundary_supports" title="compas_tno.diagrams.FormDiagram.set_boundary_supports"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_boundary_supports</span></code></a></p></td>
 <td><p>Set all node on the boundary of a pattern as supports.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.store_indset.html#compas_tno.diagrams.FormDiagram.store_indset" title="compas_tno.diagrams.FormDiagram.store_indset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_indset</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.store_indset.html#compas_tno.diagrams.FormDiagram.store_indset" title="compas_tno.diagrams.FormDiagram.store_indset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_indset</span></code></a></p></td>
 <td><p>Store the indset with the information about the independent edges (used within algorithms)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.thrust.html#compas_tno.diagrams.FormDiagram.thrust" title="compas_tno.diagrams.FormDiagram.thrust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thrust</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.thrust.html#compas_tno.diagrams.FormDiagram.thrust" title="compas_tno.diagrams.FormDiagram.thrust"><code class="xref py py-obj docutils literal notranslate"><span class="pre">thrust</span></code></a></p></td>
 <td><p>Computes the the (horizontal) thrust</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_dict.html#compas_tno.diagrams.FormDiagram.tributary_dict" title="compas_tno.diagrams.FormDiagram.tributary_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_dict</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_dict.html#compas_tno.diagrams.FormDiagram.tributary_dict" title="compas_tno.diagrams.FormDiagram.tributary_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_dict</span></code></a></p></td>
 <td><p>Make a tributary dictionary to help in the calculation of the tributary weights to the nodes afterwards.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_matrices.html#compas_tno.diagrams.FormDiagram.tributary_matrices" title="compas_tno.diagrams.FormDiagram.tributary_matrices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_matrices</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.tributary_matrices.html#compas_tno.diagrams.FormDiagram.tributary_matrices" title="compas_tno.diagrams.FormDiagram.tributary_matrices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tributary_matrices</span></code></a></p></td>
 <td><p>Returns the Matrices used for computation of the tributary area.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_f.html#compas_tno.diagrams.FormDiagram.update_f" title="compas_tno.diagrams.FormDiagram.update_f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_f</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_f.html#compas_tno.diagrams.FormDiagram.update_f" title="compas_tno.diagrams.FormDiagram.update_f"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_f</span></code></a></p></td>
 <td><p>Update attributes force <code class="docutils literal notranslate"><span class="pre">f</span></code> based on force densities <code class="docutils literal notranslate"><span class="pre">q``and</span> <span class="pre">lengths</span> <span class="pre">``l</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_indset.html#compas_tno.diagrams.FormDiagram.update_indset" title="compas_tno.diagrams.FormDiagram.update_indset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_indset</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_indset.html#compas_tno.diagrams.FormDiagram.update_indset" title="compas_tno.diagrams.FormDiagram.update_indset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_indset</span></code></a></p></td>
 <td><p>Update the indset with the information about the independent edges (used within algorithms)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_lumped_weights.html#compas_tno.diagrams.FormDiagram.update_lumped_weights" title="compas_tno.diagrams.FormDiagram.update_lumped_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_lumped_weights</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.update_lumped_weights.html#compas_tno.diagrams.FormDiagram.update_lumped_weights" title="compas_tno.diagrams.FormDiagram.update_lumped_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_lumped_weights</span></code></a></p></td>
 <td><p>Update the lumped weights based on the curent geometry of the thrust network The loads are computed based on the tributary area times the thickness times the density.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.xy.html#compas_tno.diagrams.FormDiagram.xy" title="compas_tno.diagrams.FormDiagram.xy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.diagrams.FormDiagram.xy.html#compas_tno.diagrams.FormDiagram.xy" title="compas_tno.diagrams.FormDiagram.xy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xy</span></code></a></p></td>
 <td><p>Return the <code class="docutils literal notranslate"><span class="pre">xy</span></code> coordinates of the diagram.</p></td>
 </tr>
 </tbody>

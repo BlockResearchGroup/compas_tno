@@ -50,7 +50,7 @@
         <meta id="doc_versions" data-url="https://BlockResearchGroup.github.io/compas_tno/doc_versions.txt" data-docs="https://BlockResearchGroup.github.io/compas_tno/">
         <li class="nav-item nav-versions dropdown">
           <a class="nav-item nav-link dropdown-toggle mr-md-2" href="#" id="bd-versions" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            0.2.1
+            0.2.2
           </a>
           <div id="doc_version_list" class="dropdown-menu dropdown-menu-md-right" aria-labelledby="bd-versions"></div>
         </li>
@@ -100,7 +100,7 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="compas_tno.shapes.Shape">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.shapes.</span></span><span class="sig-name descname"><span class="pre">Shape</span></span><a class="reference external" href="https://github.com/BlockResearchGroup/compas_tno/blob/master/src/compas_tno/shapes/shape.py#L20"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Bases: <a class="reference external" href="https://compas.dev/compas/latest/api/generated/compas.datastructures.Datastructure.html#compas.datastructures.Datastructure" title="(in COMPAS v1.17)"><code class="xref py py-class docutils literal notranslate"><span class="pre">compas.datastructures.datastructure.Datastructure</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://compas.dev/compas/latest/reference/generated/compas.datastructures.Datastructure.html#compas.datastructures.Datastructure" title="(in COMPAS vlatest)"><code class="xref py py-class docutils literal notranslate"><span class="pre">compas.datastructures.datastructure.Datastructure</span></code></a></p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Shape</span></code> class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.</p>
 <p>The class imports the attributes and set ups from <code class="docutils literal notranslate"><span class="pre">compas_tna.diagrams.FormDiagram</span></code> and include some
 functionalities useful for the assessment of masonry structures. Most relevant edge and vertex attributes
@@ -239,19 +239,22 @@ are listed below:</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_meshes_and_formdiagram.html#compas_tno.shapes.Shape.from_meshes_and_formdiagram" title="compas_tno.shapes.Shape.from_meshes_and_formdiagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_meshes_and_formdiagram</span></code></a></p></td>
 <td><p>Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_middle.html#compas_tno.shapes.Shape.from_middle" title="compas_tno.shapes.Shape.from_middle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_middle</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_meshes_and_formdiagram_proxy.html#compas_tno.shapes.Shape.from_meshes_and_formdiagram_proxy" title="compas_tno.shapes.Shape.from_meshes_and_formdiagram_proxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_meshes_and_formdiagram_proxy</span></code></a></p></td>
+<td><p>Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_middle.html#compas_tno.shapes.Shape.from_middle" title="compas_tno.shapes.Shape.from_middle"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_middle</span></code></a></p></td>
 <td><p>Construct a Shape from a middle mesh and a thickness (offset happening to compute new extrados).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud.html#compas_tno.shapes.Shape.from_pointcloud" title="compas_tno.shapes.Shape.from_pointcloud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud.html#compas_tno.shapes.Shape.from_pointcloud" title="compas_tno.shapes.Shape.from_pointcloud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud</span></code></a></p></td>
 <td><p>Construct a Shape from a pointcloud.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud_and_topology.html#compas_tno.shapes.Shape.from_pointcloud_and_topology" title="compas_tno.shapes.Shape.from_pointcloud_and_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud_and_topology</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.from_pointcloud_and_topology.html#compas_tno.shapes.Shape.from_pointcloud_and_topology" title="compas_tno.shapes.Shape.from_pointcloud_and_topology"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pointcloud_and_topology</span></code></a></p></td>
 <td><p>Construct a Shape from a pointcloud and a given topology.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb.html#compas_tno.shapes.Shape.interpolate_middle_from_ub_lb" title="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_middle_from_ub_lb</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb.html#compas_tno.shapes.Shape.interpolate_middle_from_ub_lb" title="compas_tno.shapes.Shape.interpolate_middle_from_ub_lb"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate_middle_from_ub_lb</span></code></a></p></td>
 <td><p>Interpolate the middle surface based on intrados and extrados</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.store_normals.html#compas_tno.shapes.Shape.store_normals" title="compas_tno.shapes.Shape.store_normals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_normals</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.shapes.Shape.store_normals.html#compas_tno.shapes.Shape.store_normals" title="compas_tno.shapes.Shape.store_normals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_normals</span></code></a></p></td>
 <td><p>Store the normals of the shape</p></td>
 </tr>
 </tbody>
