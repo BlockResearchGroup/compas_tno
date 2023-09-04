@@ -473,7 +473,7 @@ class FormArtist(DiagramArtist):
         vertex_xyz = self.vertex_xyz
         for key in vertex_xyz:
             z = self.diagram.vertex_attribute(key, attribute)  # Check my forms and remove this
-            if type(z) == list:
+            if isinstance(z, list):
                 z = z[0]
             vertex_xyz[key][2] = z
             if displacement:

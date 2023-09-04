@@ -58,17 +58,17 @@ class Settings_Tab(forms.TabPage):
             for postfix in postfixies:
                 key, value = sections[prefix][postfix]
 
-                if type(value) == bool:
+                if isinstance(value, bool):
                     control = forms.CheckBox()
                     control.Checked = value
                     control.CheckedChanged += tab.EditEvent(key)
-                elif (type(value) == list or type(value) == tuple) and len(value) == 3:
+                elif (isinstance(value, list) or isinstance(value, tuple)) and len(value) == 3:
                     control = forms.ColorPicker()
                     control.Value = drawing.Color.FromArgb(*value)
                     control.ValueChanged += tab.EditEvent(key)
-                elif type(value) == float or type(value) == int:
+                elif isinstance(value, float) or isinstance(value, int):
                     control = forms.NumericUpDown()
-                    if type(value) == float:
+                    if isinstance(value, float):
                         digits = len(str(value).split('.')[-1])
                         control.DecimalPlaces = digits
                         control.Increment = 0.1 ** digits
