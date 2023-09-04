@@ -6,7 +6,6 @@ dependencies:
   - pip>=19.0
   - compas
   - compas_view2
-  - triangle
   - cyipopt
   - cvxpy
   - pip:

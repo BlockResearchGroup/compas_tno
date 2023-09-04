@@ -180,30 +180,32 @@ def delaunay_mesh_from_points(points):
 
     """
 
-    from triangle import triangulate  # check to do it with scipy
-    data = {'vertices': [point[0:2] for point in points]}
-    result = triangulate(data, opts='c')
-    vertices = []
-    vertices_flat = []
-    i = 0
-    for x, y in result['vertices']:
-        vertices.append([x, y, points[i][2]])
-        vertices_flat.append([x, y, 0.0])
-        i += 1
-    faces = result['triangles']
-    faces_meaningful = []
+    raise NotImplementedError()
 
-    mesh_flat = MeshDos.from_vertices_and_faces(vertices_flat, faces)
+    # from triangle import triangulate  # check to do it with scipy
+    # data = {'vertices': [point[0:2] for point in points]}
+    # result = triangulate(data, opts='c')
+    # vertices = []
+    # vertices_flat = []
+    # i = 0
+    # for x, y in result['vertices']:
+    #     vertices.append([x, y, points[i][2]])
+    #     vertices_flat.append([x, y, 0.0])
+    #     i += 1
+    # faces = result['triangles']
+    # faces_meaningful = []
 
-    i = 0
-    for fkey in mesh_flat.faces():  # Did this to avoid faces with area = 0, see if it is necessary
-        if mesh_flat.face_area(fkey) > 0.001:
-            faces_meaningful.append(faces[i])
-        i = i+1
+    # mesh_flat = MeshDos.from_vertices_and_faces(vertices_flat, faces)
 
-    mesh = MeshDos.from_vertices_and_faces(vertices, faces_meaningful)
+    # i = 0
+    # for fkey in mesh_flat.faces():  # Did this to avoid faces with area = 0, see if it is necessary
+    #     if mesh_flat.face_area(fkey) > 0.001:
+    #         faces_meaningful.append(faces[i])
+    #     i = i+1
 
-    return mesh
+    # mesh = MeshDos.from_vertices_and_faces(vertices, faces_meaningful)
+
+    # return mesh
 
 
 def mesh_from_pointcloud(points):
