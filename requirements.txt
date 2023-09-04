@@ -2,5 +2,4 @@ compas>=1.17
 compas_cloud
 compas_tna
 compas_ags
-compas_triangle
 compas_skeleton
