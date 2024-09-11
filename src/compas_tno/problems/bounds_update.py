@@ -82,7 +82,7 @@ def ub_lb_update(x, y, thk, t, shape, ub, lb, s, variables):
         return pointed_vault_ub_lb_update(x, y, thk, t, xy_span=shape.datashape['xy_span'], hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
     elif shape.datashape['type'] == 'general':
         if 't' in variables:
-            thickness_type = shape.datashape['thickness_type']
+            thickness_type = shape.datashape.get('thickness_type', 'constant')
             if thickness_type == 'constant':
                 return general_ub_lb_update_with_t_middle_constant(thk, s, shape.middle, t)  # here open up something
             elif thickness_type == 'variable':
@@ -145,7 +145,7 @@ def dub_dlb_update(x, y, thk, t, shape, ub, lb, s, variables):
         return pointed_vault_dub_dlb(x, y, thk, t, xy_span=shape.datashape['xy_span'], hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
     elif shape.datashape['type'] == 'general':
         if 't' in variables:
-            thickness_type = shape.datashape['thickness_type']
+            thickness_type = shape.datashape.get('thickness_type', 'variable')  # shape.datashape['thickness_type']
             if thickness_type == 'constant':
                 return general_db_with_t_middle_constant(s, shape.middle)  # here open up something
             elif thickness_type == 'variable':

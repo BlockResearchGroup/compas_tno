@@ -929,13 +929,13 @@ class Shape(Datastructure):
 
         return
 
-    def store_normals(self, mark_fixed_LB=True, plot=False):
+    def store_normals(self, mark_fixed_LB=False, plot=False):
         """Store the normals of the shape
 
         Parameters
         ----------
         mark_fixed_LB : bool, optional
-            If vertices in the boundary are taken specially, by default True
+            If vertices in the boundary are taken specially, by default False
         plot : bool, optional
             If plots should appear, by default False
 
@@ -947,9 +947,11 @@ class Shape(Datastructure):
 
         intrados = self.intrados
         extrados = self.extrados
+        middle = self.middle
 
         intrados.store_normals()
         extrados.store_normals()
+        middle.store_normals()
 
         intrados.vertices_attribute('is_outside', False)
         extrados.vertices_attribute('is_outside', False)
@@ -966,11 +968,6 @@ class Shape(Datastructure):
                         intrados.vertex_attribute(key, 'is_outside', True)
                     if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
                         extrados.vertex_attribute(key, 'is_outside', True)
-
-        if plot:
-            intrados.plot_normals()
-            extrados.plot_normals()
-
         return
 
     def analytical_normals(self, assume_shape=None, mark_fixed_LB=True):

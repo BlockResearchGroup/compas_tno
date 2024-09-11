@@ -77,8 +77,10 @@ def set_up_general_optimisation(analysis):
     if shape:
         thk = shape.datashape.get('thk', None)
         form.attributes['thk'] = thk  # for safety storing the thk. If optimisation is minthk, this will be overwritten
+        ro = shape.ro
     else:
         thk = 0.50
+        ro = 1.0
 
     objective = optimiser.settings['objective']
     variables = optimiser.settings['variables']
@@ -112,7 +114,7 @@ def set_up_general_optimisation(analysis):
     M.V0 = V0
     M.V1 = V1
     M.V2 = V2
-    M.ro = shape.ro
+    M.ro = ro
 
     if starting_point == 'current':
         pass

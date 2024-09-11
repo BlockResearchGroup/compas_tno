@@ -181,6 +181,50 @@ class Analysis(Data):
         return analysis
 
     @classmethod
+    def create_general_minthk_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP', derivatives=True):
+        """Create a minimum thickness analysis for a general shape. The minimization of the thickness is based on the normals in intra/extrados.
+
+        Parameters
+        ----------
+        form : :class:`~compas_tno.diagrams.FormDiagram`
+            _description_
+        shape : :class:`~compas_tno.shapes.Shape`
+            The shape constraining the problem
+        printout : bool, optional
+            Whether or not prints appear in the creen, by default False
+        plot : bool, optional
+            Whether or not plots showing intermediate states appear, by default False
+        max_iter : int, optional
+            Maximum number of itetations, by default 500
+        starting_point : str, optional
+            Which starting point use, by default 'loadpath'
+
+        Returns
+        -------
+        analysis: Analysis
+            The Analysis object
+
+        """
+
+        analysis = cls().from_form_and_shape(form, shape)
+
+        optimiser = Optimiser.create_general_minthk_optimiser(printout=printout,
+                                                      plot=plot,
+                                                      max_iter=max_iter,
+                                                      starting_point=starting_point,
+                                                      solver=solver,
+                                                      derivatives=derivatives)
+
+        if printout:
+            print('-'*20)
+            print('Minimum thickness analysis created')
+            print(optimiser)
+
+        analysis.optimiser = optimiser
+
+        return analysis
+
+    @classmethod
     def create_bestfit_analysis(cls, form, shape, printout=False, plot=False, max_iter=500, starting_point='loadpath', solver='SLSQP', derivatives=True):
         """Create a bestfit analysis from the elements of the problem (form and shape)
 
@@ -474,8 +518,8 @@ class Analysis(Data):
         return analysis
 
     @classmethod
-    def create_lp_analysis(cls, form, shape=None, solver='CVXPY', printout=False, plot=False, max_iter=500):
-        """Create a minimum thickness analysis from the elements of the problem (form and shape)
+    def create_lp_analysis(cls, form, shape=None, solver='CVXPY', printout=False, plot=False, max_iter=500, starting_point='current'):
+        """Create a minimum loadpath analysis from the elements of the problem (form and shape)
 
         Parameters
         ----------
@@ -502,7 +546,8 @@ class Analysis(Data):
         optimiser = Optimiser.create_lp_optimiser(solver=solver,
                                                   printout=printout,
                                                   plot=plot,
-                                                  max_iter=max_iter)
+                                                  max_iter=max_iter,
+                                                  starting_point=starting_point)
 
         if shape:
             analysis = cls().from_elements(shape, form, optimiser)
@@ -531,6 +576,8 @@ class Analysis(Data):
             return True
         else:
             return False
+
+        # return False
 
     def set_optimiser_options(self, **kwargs):
         """Set the additional options of the optimisation.
@@ -662,7 +709,7 @@ class Analysis(Data):
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
 
-        if self.is_convex():
+        if self.is_convex() and self.optimiser.settings['solver'] in ['CVXPY', 'MATLAB']:
             set_up_convex_optimisation(self)
         else:
             self = set_up_general_optimisation(self)
@@ -677,13 +724,11 @@ class Analysis(Data):
         if not isinstance(solver, str):
             raise ValueError('Please provide the name of the solver')
 
-        if self.is_convex():
+        if self.is_convex() and solver in ['CVXPY', 'MATLAB']:
             if solver == 'MATLAB':
                 run_optimisation_MATLAB(self)
             elif solver == 'CVXPY':
                 run_optimisation_CVXPY(self)
-            else:
-                raise NotImplementedError('Only <CVXPY> and <MATLAB> are suitable for this optimisation')
         else:
             if solver.split('-') == 'pyOpt':
                 self = run_optimisation_MMA(self)  # change to PyOpt
@@ -693,6 +738,9 @@ class Analysis(Data):
                 self = run_optimisation_ipopt(self)
             else:
                 self = run_optimisation_scipy(self)
+            # else:
+            #     raise NotImplementedError('Only <CVXPY> and <MATLAB> are suitable for this optimisation')
+
 
         return
 
