@@ -1,13 +1,11 @@
-name: tnox
+name: tno-dev
 channels:
   - conda-forge
 dependencies:
   - python>=3.9
   - pip>=19.0
   - compas
-  - compas_view2
-  - cyipopt
+  - compas_viewer
   - cvxpy
   - pip:
-    - mosek
-    - -r requirements-dev.txt
+      - -e .[dev]
