@@ -1,11 +1,11 @@
+import math
+
 from numpy import arange
 from numpy import array
 from numpy import linspace
 
 from compas_tno.shapes import MeshDos
 from compas_tno.shapes import rectangular_topology
-
-import math
 
 
 def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, center=None, tol=10e-6, t=0.0, discretisation=[100, 100]):
@@ -49,29 +49,29 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
     dx = x1 - x0
     dy = y1 - y0
     d = math.sqrt(dx**2 + dy**2)
-    r_diagonal = d/2
+    r_diagonal = d / 2
 
     if radius is None:
         radius = r_diagonal
     elif radius < r_diagonal:
-        print('Check your radius!')
+        print("Check your radius!")
         raise Exception
 
-    re = radius + thk/2
-    ri = radius - thk/2
+    re = radius + thk / 2
+    ri = radius - thk / 2
 
     if center is None:
-        xc = (x1 + x0)/2
-        yc = (y1 + y0)/2
+        xc = (x1 + x0) / 2
+        yc = (y1 + y0) / 2
     else:
         xc = center[0]
         yc = center[1]
-        print('Center provided by the user:', center)
+        print("Center provided by the user:", center)
 
     density_x = discretisation[0]
     density_y = discretisation[1]
-    x = arange(x0, x1 + dx/density_x, dx/density_x)
-    y = arange(y0, y1 + dy/density_y, dy/density_y)
+    x = arange(x0, x1 + dx / density_x, dx / density_x)
+    y = arange(y0, y1 + dy / density_y, dy / density_y)
 
     index = 0
     uv_i = {}
@@ -87,9 +87,9 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
         for j in range(len(y)):
             uv_i[(i, j)] = index
             xi, yi = x[i], y[j]
-            z2 = radius**2 - (xi - xc)**2 - (yi - yc)**2
-            zi2 = ri**2 - (xi - xc)**2 - (yi - yc)**2
-            ze2 = re**2 - (xi - xc)**2 - (yi - yc)**2
+            z2 = radius**2 - (xi - xc) ** 2 - (yi - yc) ** 2
+            zi2 = ri**2 - (xi - xc) ** 2 - (yi - yc) ** 2
+            ze2 = re**2 - (xi - xc) ** 2 - (yi - yc) ** 2
             z = math.sqrt(z2)
             ze = math.sqrt(ze2)
             if zi2 < 0:
@@ -105,9 +105,9 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
 
             if i < len(x) - 1 and j < len(y) - 1:
                 p1 = (i, j)
-                p2 = (i, j+1)
-                p3 = (i+1, j)
-                p4 = (i+1, j+1)
+                p2 = (i, j + 1)
+                p3 = (i + 1, j)
+                p4 = (i + 1, j + 1)
                 face = [p1, p2, p4, p3]
                 faces.append(face)
             index = index + 1
@@ -133,7 +133,7 @@ def domical_vault(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, radius=None, cent
 
 
 def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5.0, tol=10e-6, t=0.0, discretisation=[100, 100]):
-    """ Set parabolic vault heights.
+    """Set parabolic vault heights.
 
     Parameters
     ----------
@@ -181,8 +181,8 @@ def parabolic_shell_highfields(xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, hc=5
 
     density_x = discretisation[0]
     density_y = discretisation[1]
-    x = linspace(x0, x1, num=density_x+1, endpoint=True)  # arange(x0, x1 + dx/density_x, dx/density_x)
-    y = linspace(y0, y1, num=density_y+1, endpoint=True)  # arange(y0, y1 + dy/density_y, dy/density_y)
+    x = linspace(x0, x1, num=density_x + 1, endpoint=True)  # arange(x0, x1 + dx/density_x, dx/density_x)
+    y = linspace(y0, y1, num=density_y + 1, endpoint=True)  # arange(y0, y1 + dy/density_y, dy/density_y)
 
     xi, yi, faces_i = rectangular_topology(x, y)
 
@@ -222,7 +222,7 @@ def parabolic_shell_middle_update(x, y, thk, xy_span=[[0.0, 10.0], [0.0, 10.0]],
     zt : array
         Values of the middle surface in the points
     """
-    print('WIP')
+    print("WIP")
     zt = 0
     return zt
 
@@ -254,7 +254,7 @@ def parabolic_shell_ub_lb_update(x, y, thk, t, xy_span=[[0.0, 10.0], [0.0, 10.0]
     lb : array
         Values of the lower bound in the points
     """
-    print('WIP')
+    print("WIP")
     ub = 0
     lb = 0
     return ub, lb

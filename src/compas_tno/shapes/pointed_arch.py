@@ -1,12 +1,12 @@
-from numpy import ones
-from numpy import zeros
+import math
+
 from numpy import array
 from numpy import linspace
+from numpy import ones
+from numpy import zeros
 
-from compas_tno.shapes import rectangular_topology
 from compas_tno.shapes import MeshDos
-
-import math
+from compas_tno.shapes import rectangular_topology
 
 
 def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nodes=100):
@@ -39,9 +39,9 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
         A MeshDos for the middle of the shape
     """
 
-    radius = 1/L * (hc**2 + L**2/4)
-    ri = radius - thk/2
-    re = radius + thk/2
+    radius = 1 / L * (hc**2 + L**2 / 4)
+    ri = radius - thk / 2
+    re = radius + thk / 2
     # print('radius/ ri / re =', radius, ri, re)
     zc = 0.0
     xc1 = x0 + radius
@@ -49,7 +49,7 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
     # print('Centers x =', xc1, xc2)
 
     x = linspace(x0, x0 + L, num=total_nodes, endpoint=True)
-    xs, ys, faces_i = rectangular_topology(x, [-b/2, 0, b/2])
+    xs, ys, faces_i = rectangular_topology(x, [-b / 2, 0, b / 2])
 
     i = 0
 
@@ -58,7 +58,7 @@ def pointed_arch_shape(hc=1.00, L=2.0, x0=0.0, thk=0.20, b=0.5, t=5.0, total_nod
     zes = []
 
     for xi in x:
-        if xi <= x0 + L/2:
+        if xi <= x0 + L / 2:
             dx = xi - xc1
         else:
             dx = xc2 - xi
@@ -120,18 +120,18 @@ def pointed_arch_ub_lb_update(x, y, thk, t, hc, L, x0):
         Values of the lower bound in the points
     """
 
-    radius = 1/L * (hc**2 + L**2/4)
-    ri = radius - thk/2
-    re = radius + thk/2
+    radius = 1 / L * (hc**2 + L**2 / 4)
+    ri = radius - thk / 2
+    re = radius + thk / 2
     zc = 0.0
     xc1 = x0 + radius
     xc2 = x0 + L - radius
 
     ub = ones((len(x), 1))
-    lb = ones((len(x), 1)) * - t
+    lb = ones((len(x), 1)) * -t
 
     for i in range(len(x)):
-        if x[i] <= x0 + L/2:
+        if x[i] <= x0 + L / 2:
             dx = x[i] - xc1
         else:
             dx = xc2 - x[i]
@@ -171,9 +171,9 @@ def pointed_arch_dub_dlb(x, y, thk, t, hc, L, x0):
         Values of the sensitivities for the lower bound in the points
     """
 
-    radius = 1/L * (hc**2 + L**2/4)
-    ri = radius - thk/2
-    re = radius + thk/2
+    radius = 1 / L * (hc**2 + L**2 / 4)
+    ri = radius - thk / 2
+    re = radius + thk / 2
     xc1 = x0 + radius
     xc2 = x0 + L - radius
     zc = 0.0
@@ -182,16 +182,16 @@ def pointed_arch_dub_dlb(x, y, thk, t, hc, L, x0):
     dlb = zeros((len(x), 1))
 
     for i in range(len(x)):
-        if x[i] <= x0 + L/2:
+        if x[i] <= x0 + L / 2:
             dx = x[i] - xc1
         else:
             dx = xc2 - x[i]
         ze = math.sqrt(re**2 - dx**2) - zc
-        dub[i] = re/(2*ze)
+        dub[i] = re / (2 * ze)
         zi2 = ri**2 - dx**2
         if zi2 > 0:
             zi = math.sqrt(zi2) - zc
-            dlb[i] = - ri/(2*zi)
+            dlb[i] = -ri / (2 * zi)
 
     return dub, dlb  # ub, lb
 

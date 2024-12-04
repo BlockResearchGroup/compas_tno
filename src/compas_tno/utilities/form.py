@@ -1,16 +1,16 @@
-# from compas_tno.diagrams import FormDiagram
-from compas.geometry import intersection_segment_segment_xy
-from compas.geometry import distance_point_point_xy
-from compas.geometry import Translation
-from compas.geometry import Scale
-from compas.geometry._core.distance import sort_points_xy
-from compas.geometry._core.distance import closest_point_in_cloud
-from compas.geometry import Point
-from compas.geometry import Frame
+from random import shuffle
+
+from numpy import zeros
 
 from compas.datastructures import Mesh
-from numpy import zeros
-from random import shuffle
+from compas.geometry import Frame
+from compas.geometry import Point
+from compas.geometry import Scale
+from compas.geometry import Translation
+from compas.geometry import closest_point_in_cloud
+from compas.geometry import distance_point_point_xy
+from compas.geometry import intersection_segment_segment_xy
+from compas.geometry import sort_points_xy
 
 
 def is_point_in_cloud(point, cloud, tol=1e-6):
@@ -104,7 +104,7 @@ def form_add_lines_support(form, loaded_node, supports):
     text[loaded_node] = loaded_node
 
     xp, yp, _ = form.vertex_coordinates(loaded_node)
-    fixed_coords = [form.vertex_coordinates(vertex) for vertex in form.vertices_where({'is_fixed': True})]
+    fixed_coords = [form.vertex_coordinates(vertex) for vertex in form.vertices_where({"is_fixed": True})]
     parameters = form.parameters
 
     lines = form.to_lines()
@@ -150,7 +150,7 @@ def form_add_lines_support(form, loaded_node, supports):
         for coord_fix in fixed_coords:
             dist = distance_point_point_xy(coord, coord_fix)
             if dist < 1e-3:
-                form.vertex_attribute(vertex, 'is_fixed', True)
+                form.vertex_attribute(vertex, "is_fixed", True)
 
     form.parameters = parameters
 
@@ -176,12 +176,12 @@ def store_inds(form, ind_edges=[]):
 
     points = []
     if len(ind_edges) == 0:
-        for u, v in form.edges_where({'is_ind': True}):
+        for u, v in form.edges_where({"is_ind": True}):
             points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
     else:
         for u, v in ind_edges:
             points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
-    form.attributes['indset'] = points
+    form.attributes["indset"] = points
 
     return
 
@@ -203,7 +203,7 @@ def retrieve_inds(form, indset=[]):
         Attribute included to the form diagram
     """
 
-    print('WIP')
+    print("WIP")
 
     # from compas.utilities import reverse_geometric_key
 
@@ -244,7 +244,7 @@ def retrieve_form_polylines(form, singularities=[]):
     """
 
     edges_visited = []
-    edges = list(form.edges_where({'_is_edge': True}))
+    edges = list(form.edges_where({"_is_edge": True}))
 
     for edge in edges:
         if edge in edges_visited:
@@ -319,13 +319,13 @@ def form_parabolic_slide(form, delta, y0=0.0, y1=10.0):
 
     """
 
-    yc = ((y1 - y0)/2)
+    yc = (y1 - y0) / 2
     for vertex in form.vertices():
         x, y, _ = form.vertex_coordinates(vertex)
         dy = min(y - y0, y1 - y)
         if abs(dy) > 1e-3:
-            dx = delta * (1 - ((dy - yc)/yc)**2)
-            form.vertex_attribute(vertex, 'x', x + dx)
+            dx = delta * (1 - ((dy - yc) / yc) ** 2)
+            form.vertex_attribute(vertex, "x", x + dx)
 
     return form
 
@@ -370,7 +370,7 @@ def move_pattern_to_origin(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0],
     # print(xmax, ymax)
 
     if abs(ymax_ - ymax) > 0.0 or abs(xmax_ - xmax) > 0.0:
-        factors = [xmax_/xmax, ymax_/ymax, 0.0]
+        factors = [xmax_ / xmax, ymax_ / ymax, 0.0]
         scale = Scale.from_factors(factors, frame=Frame(Point(xmin_, ymin_, 0.0), (1, 0, 0), (0, 1, 0)))
         mesh.transform(scale)
 
@@ -403,7 +403,7 @@ def fix_mesh_corners(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0,
             dist = distance_point_point_xy(pt, corner)
             if dist < 1e-3:
                 corners_pt.append(key)
-                mesh.vertex_attribute(key, 'is_fixed', True)
+                mesh.vertex_attribute(key, "is_fixed", True)
                 break
 
     return corners_pt
@@ -424,10 +424,10 @@ def fix_mesh_boundary(mesh):
     """
 
     for key in mesh.vertices_on_boundary():
-        mesh.vertex_attribute(key, 'is_fixed', True)
+        mesh.vertex_attribute(key, "is_fixed", True)
 
     for u, v in mesh.edges_on_boundary():
-        mesh.edge_attribute((u, v), '_is_edge', False)
+        mesh.edge_attribute((u, v), "_is_edge", False)
 
 
 def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
@@ -445,22 +445,22 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
         End of parabolic profile, by default 10.0
     """
 
-    yc = ((y1 - y0)/2)
-    for vertex in form.vertices_where({'is_fixed': False}):
+    yc = (y1 - y0) / 2
+    for vertex in form.vertices_where({"is_fixed": False}):
         x, y, _ = form.vertex_coordinates(vertex)
         dy = min(y - y0, y1 - y)
         if tappered:
-            delta_i = delta * (x - y0)/(y1 - y0)
+            delta_i = delta * (x - y0) / (y1 - y0)
         else:
             delta_i = delta
         if abs(dy) > 1e-3:
             # dx = delta * (1 - ((dy - yc)/yc)**2)
-            dx = delta_i * (1 - ((dy - yc)/yc)**2)
-            form.vertex_attribute(vertex, 'x', x + dx)
+            dx = delta_i * (1 - ((dy - yc) / yc) ** 2)
+            form.vertex_attribute(vertex, "x", x + dx)
 
 
 def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.01):
-    """ Set parabolic vault heights.
+    """Set parabolic vault heights.
 
     Parameters
     ----------
@@ -484,11 +484,11 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
 
     """
 
-    xc = (x0 + x1)/2
-    yc = (y0 + y1)/2
+    xc = (x0 + x1) / 2
+    yc = (y0 + y1) / 2
 
     for vertex in form.vertices():
-        if form.vertex_attribute(vertex, 'is_fixed'):
+        if form.vertex_attribute(vertex, "is_fixed"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
 
@@ -496,50 +496,50 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
         dxi = 0.0
         dyi = 0.0
 
-        if y <= y0 + (y1 - y0)/(x1 - x0) * (x - x0) - tol and y >= y1 - (y1 - y0)/(x1 - x0) * (x - x0) + tol:  # Q1
-            quad = 'Q1'
-        elif y >= y0 + (y1 - y0)/(x1 - x0) * (x - x0) + tol and y >= y1 - (y1 - y0)/(x1 - x0) * (x - x0) + tol:  # Q3
-            quad = 'Q3'
-        elif y >= y0 + (y1 - y0)/(x1 - x0) * (x - x0) + tol and y <= y1 - (y1 - y0)/(x1 - x0) * (x - x0) - tol:  # Q2
-            quad = 'Q2'
-        elif y <= y0 + (y1 - y0)/(x1 - x0) * (x - x0) - tol and y <= y1 - (y1 - y0)/(x1 - x0) * (x - x0) - tol:  # Q4
-            quad = 'Q4'
+        if y <= y0 + (y1 - y0) / (x1 - x0) * (x - x0) - tol and y >= y1 - (y1 - y0) / (x1 - x0) * (x - x0) + tol:  # Q1
+            quad = "Q1"
+        elif y >= y0 + (y1 - y0) / (x1 - x0) * (x - x0) + tol and y >= y1 - (y1 - y0) / (x1 - x0) * (x - x0) + tol:  # Q3
+            quad = "Q3"
+        elif y >= y0 + (y1 - y0) / (x1 - x0) * (x - x0) + tol and y <= y1 - (y1 - y0) / (x1 - x0) * (x - x0) - tol:  # Q2
+            quad = "Q2"
+        elif y <= y0 + (y1 - y0) / (x1 - x0) * (x - x0) - tol and y <= y1 - (y1 - y0) / (x1 - x0) * (x - x0) - tol:  # Q4
+            quad = "Q4"
         else:  # diagonals
             continue
 
         # factor = ((xc - dx)/xc)
-        dy = min(y - y0, y1 - y)/yc  # 1 in center and 0 in corners (linear) - x
-        dx = min(x - x0, x1 - x)/xc  # 1 in center and 0 in corners (linear) - y
+        dy = min(y - y0, y1 - y) / yc  # 1 in center and 0 in corners (linear) - x
+        dx = min(x - x0, x1 - x) / xc  # 1 in center and 0 in corners (linear) - y
         # x0_par = y0_par = x0 + (1 - dy/yc)
         # x1_par = y1_par = x1 - (1 - dy/yc)
         # dy_par = dy * (1 + (dx)/xc)
         # dx_par = dx * (1 + (dy)/yc)
-        if quad in ['Q3', 'Q4']:
-            dxa = (dx - dy) * 1/(1 - dy)
-            mag_y = delta * (1 - ((1) - dxa)**2) * (1 - dy)
-        if quad in ['Q1', 'Q2']:
-            dya = (dy - dx) * 1/(1 - dx)
-            mag_x = delta * (1 - ((1) - dya)**2) * (1 - dx)
+        if quad in ["Q3", "Q4"]:
+            dxa = (dx - dy) * 1 / (1 - dy)
+            mag_y = delta * (1 - ((1) - dxa) ** 2) * (1 - dy)
+        if quad in ["Q1", "Q2"]:
+            dya = (dy - dx) * 1 / (1 - dx)
+            mag_x = delta * (1 - ((1) - dya) ** 2) * (1 - dx)
         # mag_x = delta * (1 - ((dy - yc)/yc)**2) * ((xc - dx)/xc)
         # mag_y = delta * (1 - ((dx - xc)/xc)**2) * ((yc - dy)/yc)
         # mag_x = delta * (1 - ((1) - dya)**2) #* (1 - dx)
         # mag_y = delta * (1 - ((1) - dxa)**2) #* (1 - dy)
 
-        if quad == 'Q1':
-            dxi = - mag_x
-        elif quad == 'Q3':
-            dyi = - mag_y
-        elif quad == 'Q2':  # Q2
-            dxi = + mag_x
-        elif quad == 'Q4':  # Q4
+        if quad == "Q1":
+            dxi = -mag_x
+        elif quad == "Q3":
+            dyi = -mag_y
+        elif quad == "Q2":  # Q2
+            dxi = +mag_x
+        elif quad == "Q4":  # Q4
             dyi = mag_y
         else:  # diagonals
             continue
 
         # print(vertex, 'x, y;', x, y, 'mag xy:', mag_x, mag_y)
 
-        form.vertex_attribute(vertex, 'x', x + dxi)
-        form.vertex_attribute(vertex, 'y', y + dyi)
+        form.vertex_attribute(vertex, "x", x + dxi)
+        form.vertex_attribute(vertex, "y", y + dyi)
 
 
 def displacement_map_parabola(form, y0=0.0, y1=10.0):
@@ -563,11 +563,11 @@ def displacement_map_parabola(form, y0=0.0, y1=10.0):
     """
 
     n = form.number_of_vertices()
-    k = - 4/(y1 - y0)**2
+    k = -4 / (y1 - y0) ** 2
     dX = zeros((n, 2))
 
     for i, vertex in enumerate(form.vertices()):
-        if form.vertex_attribute(vertex, 'is_fixed'):
+        if form.vertex_attribute(vertex, "is_fixed"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
         dyi = 0.0
@@ -598,24 +598,24 @@ def displacement_map_4parabolas(form, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.1)
     """
 
     n = form.number_of_vertices()
-    kx = - 4/(y1 - y0) ** 2
-    ky = - 4/(x1 - x0) ** 2
+    kx = -4 / (y1 - y0) ** 2
+    ky = -4 / (x1 - x0) ** 2
     dX = zeros((n, 2))
 
     for i, vertex in enumerate(form.vertices()):
-        if form.vertex_attribute(vertex, 'is_fixed'):
+        if form.vertex_attribute(vertex, "is_fixed"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
         dxi = 0.0
         dyi = 0.0
 
-        if y <= y0 + (y1 - y0)/(x1 - x0) * (x - x0) - tol and y >= y1 - (y1 - y0)/(x1 - x0) * (x - x0) + tol:  # Q1
-            dxi = - kx * (y - y0) * (y - y1)
-        elif y >= y0 + (y1 - y0)/(x1 - x0) * (x - x0) + tol and y >= y1 - (y1 - y0)/(x1 - x0) * (x - x0) + tol:  # Q3
-            dyi = - ky * (x - x0) * (x - x1)
-        elif y >= y0 + (y1 - y0)/(x1 - x0) * (x - x0) + tol and y <= y1 - (y1 - y0)/(x1 - x0) * (x - x0) - tol:  # Q2
-            dxi = + kx * (y - y0) * (y - y1)
-        elif y <= y0 + (y1 - y0)/(x1 - x0) * (x - x0) - tol and y <= y1 - (y1 - y0)/(x1 - x0) * (x - x0) - tol:  # Q4
+        if y <= y0 + (y1 - y0) / (x1 - x0) * (x - x0) - tol and y >= y1 - (y1 - y0) / (x1 - x0) * (x - x0) + tol:  # Q1
+            dxi = -kx * (y - y0) * (y - y1)
+        elif y >= y0 + (y1 - y0) / (x1 - x0) * (x - x0) + tol and y >= y1 - (y1 - y0) / (x1 - x0) * (x - x0) + tol:  # Q3
+            dyi = -ky * (x - x0) * (x - x1)
+        elif y >= y0 + (y1 - y0) / (x1 - x0) * (x - x0) + tol and y <= y1 - (y1 - y0) / (x1 - x0) * (x - x0) - tol:  # Q2
+            dxi = +kx * (y - y0) * (y - y1)
+        elif y <= y0 + (y1 - y0) / (x1 - x0) * (x - x0) - tol and y <= y1 - (y1 - y0) / (x1 - x0) * (x - x0) - tol:  # Q4
             dyi = ky * (x - x0) * (x - x1)
         else:  # diagonals
             pass
@@ -646,11 +646,11 @@ def displacement_map_paraboloid(form, xc=5.0, yc=5.0, radius=5.0):
     """
 
     n = form.number_of_vertices()
-    k = 1/radius**2
+    k = 1 / radius**2
     dX = zeros((n, 2))
 
     for i, vertex in enumerate(form.vertices()):
-        if form.vertex_attribute(vertex, 'is_fixed'):
+        if form.vertex_attribute(vertex, "is_fixed"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
         dxi = k * (x - xc) ** 2 * 2 * (xc - x) / radius
@@ -691,8 +691,8 @@ def move_pattern_inwards(form, tol=1e-3):
             y += tol
         if abs(y - ymax) < tol:
             y -= tol
-        form.vertex_attribute(vertex, 'x', x)
-        form.vertex_attribute(vertex, 'y', y)
+        form.vertex_attribute(vertex, "x", x)
+        form.vertex_attribute(vertex, "y", y)
 
 
 def move_pattern_outwards(form, tol=1e-3):
@@ -725,8 +725,8 @@ def move_pattern_outwards(form, tol=1e-3):
             y -= tol
         if abs(y - ymax) < tol:
             y += tol
-        form.vertex_attribute(vertex, 'x', x)
-        form.vertex_attribute(vertex, 'y', y)
+        form.vertex_attribute(vertex, "x", x)
+        form.vertex_attribute(vertex, "y", y)
 
 
 def shuffle_diagram(form):
@@ -744,11 +744,12 @@ def shuffle_diagram(form):
     """
 
     from compas_tno.diagrams import FormDiagram
+
     tol = 1e-6
 
     lines = form.to_lines()
-    supports = [form.vertex_coordinates(key) for key in form.vertices_where({'is_fixed': True})]
-    no_edges = [form.edge_midpoint(*edge) for edge in form.edges_where({'_is_edge': False})]
+    supports = [form.vertex_coordinates(key) for key in form.vertices_where({"is_fixed": True})]
+    no_edges = [form.edge_midpoint(*edge) for edge in form.edges_where({"_is_edge": False})]
 
     shuffle(lines)
     form = FormDiagram.from_lines(lines)
@@ -758,7 +759,7 @@ def shuffle_diagram(form):
         for support in supports:
             dist = distance_point_point_xy(pt, support)
             if dist < tol:
-                form.vertex_attribute(key, 'is_fixed', True)
+                form.vertex_attribute(key, "is_fixed", True)
                 break
 
     for edge in form.edges():
@@ -766,7 +767,7 @@ def shuffle_diagram(form):
         for midpoint in no_edges:
             dist = distance_point_point_xy(pt, midpoint)
             if dist < tol:
-                form.edge_attribute(edge, '_is_edge', False)
+                form.edge_attribute(edge, "_is_edge", False)
                 break
 
     return form

@@ -1,18 +1,23 @@
-from compas_tno.algorithms import xyz_from_q
-from compas_tno.algorithms import compute_reactions
-
-from compas_tno.problems import initialise_problem_general
-from compas_tno.problems import adapt_problem_to_fixed_diagram
+from typing import TYPE_CHECKING
 
 import cvxpy as cp
+from cvxpy import Minimize
+from cvxpy import Problem as CVXProblem
 from cvxpy import diag
 from cvxpy import matrix_frac
-from cvxpy import Minimize
-from cvxpy import Problem
+
+from compas_tno.algorithms import compute_reactions
+from compas_tno.algorithms import xyz_from_q
+from compas_tno.problems import adapt_problem_to_fixed_diagram
+from compas_tno.problems import initialise_problem_general
+
+if TYPE_CHECKING:
+    from compas_tno.analysis import Analysis
+    from compas_tno.problems import Problem as TNOProblem
 
 
-def run_optimisation_CVXPY(analysis):
-    """ Run convex optimisation problem with CVXPY after going through the optimisation set up.
+def run_optimisation_CVXPY(analysis: "Analysis") -> "TNOProblem":
+    """Run convex optimisation problem with CVXPY after going through the optimisation set up.
 
     Parameters
     ----------
@@ -22,9 +27,9 @@ def run_optimisation_CVXPY(analysis):
     """
 
     form = analysis.form
-    problem = analysis.optimiser.M
-    find_inds = analysis.optimiser.settings.get('find_inds', False)
-    printout = analysis.optimiser.settings.get('printout', False)
+    problem = analysis.optimiser.problem
+    find_inds = analysis.optimiser.settings.get("find_inds", False)
+    printout = analysis.optimiser.settings.get("printout", False)
 
     problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
 
@@ -32,7 +37,7 @@ def run_optimisation_CVXPY(analysis):
 
 
 def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=False):
-    """ Run convex optimisation problem with CVXPY directly from the Form Diagram
+    """Run convex optimisation problem with CVXPY directly from the Form Diagram
     OBS: Requires installation of CVXPY and MOSEK
 
     Parameters
@@ -82,10 +87,10 @@ def call_and_output_CVXPY(form, problem, printout=False):
     """
 
     if len(problem.ind) < problem.m:
-        print('Calling LP-Optimisation via CVXPY with independents')
+        print("Calling LP-Optimisation via CVXPY with independents")
         fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy_ind(problem, printout=printout)
     else:
-        print('Calling LP-Optimisation via CVXPY with NO independents')
+        print("Calling LP-Optimisation via CVXPY with NO independents")
         fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy(problem, printout=printout)
 
     problem.q = qopt
@@ -100,16 +105,16 @@ def call_and_output_CVXPY(form, problem, printout=False):
     for key in form.vertices():
         # form.vertex_attribute(key, 'x', problem.X[i, 0])
         # form.vertex_attribute(key, 'y', problem.X[i, 1])
-        form.vertex_attribute(key, 'z', problem.X[i, 2])
+        form.vertex_attribute(key, "z", problem.X[i, 2])
         i = i + 1
 
     for c, qi in enumerate(list(problem.q.ravel())):
-        u, v = i_uv[c]
-        li = form.edge_length(u, v)
-        form.edge_attribute((u, v), 'q', float(qi))
-        form.edge_attribute((u, v), 'f', float(qi*li))
+        edge = i_uv[c]
+        li = form.edge_length(edge)
+        form.edge_attribute(edge, "q", float(qi))
+        form.edge_attribute(edge, "f", float(qi * li))
 
-    form.attributes['loadpath'] = form.loadpath()
+    form.attributes["loadpath"] = form.loadpath()
     compute_reactions(form)
 
     summary = True
@@ -117,21 +122,21 @@ def call_and_output_CVXPY(form, problem, printout=False):
     # Output dictionary
 
     output = {}
-    output['fopt'] = fopt
-    output['exitflag'] = exitflag
-    output['status'] = status
-    output['niter'] = niter
-    output['sol_time'] = sol_time
+    output["fopt"] = fopt
+    output["exitflag"] = exitflag
+    output["status"] = status
+    output["niter"] = niter
+    output["sol_time"] = sol_time
 
     if printout or summary:
-        print('\n' + '-' * 50)
-        print('LOADPATH OPTIMISATION WITH CVXPY')
-        print('status    :', status)
-        print('fopt (lp) : {0:.3f}'.format(fopt))
-        print('n-iter    : {0}'.format(niter))
-        print('q range   : {0:.3f} : {1:.3f}'.format(min(qopt), max(qopt)))
-        print('sol. time : {0:.3f} sec'.format(sol_time))
-        print('-' * 50 + '\n')
+        print("\n" + "-" * 50)
+        print("LOADPATH OPTIMISATION WITH CVXPY")
+        print("status    :", status)
+        print("fopt (lp) : {0:.3f}".format(fopt))
+        print("n-iter    : {0}".format(niter))
+        print("q range   : {0:.3f} : {1:.3f}".format(min(qopt), max(qopt)))
+        print("sol. time : {0:.3f} sec".format(sol_time))
+        print("-" * 50 + "\n")
 
     return problem
 
@@ -203,17 +208,17 @@ def call_cvxpy(problem, printout=False):
 
     q = cp.Variable(m)
     # fobj = matrix_frac(pz[free], Cit@cp.diag(q)@Ci) + x.T@C.T@diag(q)@Cb@x[fixed] + y.T@C.T@diag(q)@Cb@y[fixed]  # for q positive
-    fobj = matrix_frac(pz[free], - Cit@cp.diag(q)@Ci) - x.T@C.T@diag(q)@Cb@x[fixed] - y.T@C.T@diag(q)@Cb@y[fixed]  # for q negative
+    fobj = matrix_frac(pz[free], -Cit @ cp.diag(q) @ Ci) - x.T @ C.T @ diag(q) @ Cb @ x[fixed] - y.T @ C.T @ diag(q) @ Cb @ y[fixed]  # for q negative
     objective = Minimize(fobj)
 
-    horz = E@q == ph.flatten()
+    horz = E @ q == ph.flatten()
     pos = q >= qmin.flatten()
     maxq = q <= qmax.flatten()
 
     constraints = [horz, pos, maxq]
 
-    prob = Problem(objective, constraints)
-    prob.solve(solver='MOSEK', verbose=printout)
+    prob = CVXProblem(objective, constraints)
+    prob.solve(solver="MOSEK", verbose=printout)
     # prob.solve(solver='MOSEK', verbose=True)
 
     # save output
@@ -279,17 +284,17 @@ def call_cvxpy_ind(problem, printout=False):
 
     q = cp.Variable(m)
 
-    fobj = matrix_frac(pz[free], -Cit@cp.diag(q)@Ci) - x.T@C.T@diag(q)@Cb@x[fixed] - y.T@C.T@diag(q)@Cb@y[fixed]
+    fobj = matrix_frac(pz[free], -Cit @ cp.diag(q) @ Ci) - x.T @ C.T @ diag(q) @ Cb @ x[fixed] - y.T @ C.T @ diag(q) @ Cb @ y[fixed]
     objective = Minimize(fobj)
 
-    horz = q[dep] == Edinv@(Ei@q[ind] - ph.flatten())
+    horz = q[dep] == Edinv @ (Ei @ q[ind] - ph.flatten())
     pos = q >= qmin.flatten()
     maxq = q <= qmax.flatten()
 
     constraints = [horz, pos, maxq]
 
-    prob = Problem(objective, constraints)
-    prob.solve(solver='MOSEK', verbose=printout)
+    prob = CVXProblem(objective, constraints)
+    prob.solve(solver="MOSEK", verbose=printout)
 
     # save output
     fopt = prob.value

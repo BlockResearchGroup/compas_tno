@@ -1,35 +1,7 @@
-
-from compas_tno.shapes.dome import dome_zt_update
 from compas_tno.shapes.crossvault import crossvault_middle_update
+from compas_tno.shapes.dome import dome_zt_update
 from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
 from compas_tno.utilities.interpolation import get_shape_middle_pattern
-
-
-def apply_selfweight_from_shape_proxy(formdata, shapedata):
-    """Apply selfweight to the nodes of the form diagram based on the shape from proxy
-
-    Parameters
-    ----------
-    formdata : dict
-        Data of the form diagram to apply the selfweight.
-    shapedata : Shape
-        Data of the shape of the masonry.
-
-    Returns
-    -------
-    formdata
-        Data of the form diagram with loads applied
-    """
-
-    from compas_tno.diagrams import FormDiagram
-    from compas_tno.shapes import Shape
-
-    form = FormDiagram.from_data(formdata)
-    shape = Shape.from_data(shapedata)
-
-    apply_selfweight_from_shape(form, shape)
-
-    return form.to_data()
 
 
 def apply_selfweight_from_shape(form, shape, pz_negative=True, normalize=True):
@@ -55,52 +27,53 @@ def apply_selfweight_from_shape(form, shape, pz_negative=True, normalize=True):
     form_ = form.copy()
     total_selfweight = shape.compute_selfweight()
     ro = shape.ro
-    thk = shape.datashape['thk']
+    thk = shape.datashape["thk"]
 
-    x = form.vertices_attribute('x')
-    y = form.vertices_attribute('y')
+    x = form.vertices_attribute("x")
+    y = form.vertices_attribute("y")
 
-    if shape.datashape['type'] == 'dome':
-        zt = dome_zt_update(x, y, shape.datashape['radius'], shape.datashape['t'], shape.datashape['center'])
-    elif shape.datashape['type'] == 'crossvault':
-        zt = crossvault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'])
-    elif shape.datashape['type'] == 'pointed_crossvault':
-        zt = pointed_vault_middle_update(x, y,  shape.datashape['t'],  xy_span=shape.datashape['xy_span'],
-                                         hc=shape.datashape['hc'], he=shape.datashape['he'], hm=shape.datashape['hm'])
+    if shape.datashape["type"] == "dome":
+        zt = dome_zt_update(x, y, shape.datashape["radius"], shape.datashape["t"], shape.datashape["center"])
+    elif shape.datashape["type"] == "crossvault":
+        zt = crossvault_middle_update(x, y, shape.datashape["t"], xy_span=shape.datashape["xy_span"])
+    elif shape.datashape["type"] == "pointed_crossvault":
+        zt = pointed_vault_middle_update(
+            x, y, shape.datashape["t"], xy_span=shape.datashape["xy_span"], hc=shape.datashape["hc"], he=shape.datashape["he"], hm=shape.datashape["hm"]
+        )
     else:
-        XY = form.vertices_attributes('xy')
+        XY = form.vertices_attributes("xy")
         zt = get_shape_middle_pattern(shape, XY)
 
     i = 0
     for key in form_.vertices():
         z = float(zt[i])
-        form_.vertex_attribute(key, 'z', value=z)
-        form.vertex_attribute(key, 'target', value=z)
+        form_.vertex_attribute(key, "z", value=z)
+        form.vertex_attribute(key, "target", value=z)
         i += 1
 
     pzt = 0
     for key in form.vertices():
         pz = form_.vertex_area(key)
-        form.vertex_attribute(key, 'pz', value=pz)
+        form.vertex_attribute(key, "pz", value=pz)
         pzt += pz
 
-    if shape.datashape['type'] == 'arch' or shape.datashape['type'] == 'pointed_arch':
+    if shape.datashape["type"] == "arch" or shape.datashape["type"] == "pointed_arch":
         pzt = 0
         for key in form.vertices():
-            form.vertex_attribute(key, 'pz', value=1.0)
-            if form.vertex_attribute(key, 'is_fixed') is True:
-                form.vertex_attribute(key, 'pz', value=0.5)
-            pzt += form.vertex_attribute(key, 'pz')
+            form.vertex_attribute(key, "pz", value=1.0)
+            if form.vertex_attribute(key, "is_fixed") is True:
+                form.vertex_attribute(key, "pz", value=0.5)
+            pzt += form.vertex_attribute(key, "pz")
 
     factor = 1.0 * ro * thk  # Transform tributary area in tributary load
     if normalize:
-        factor = total_selfweight/pzt
+        factor = total_selfweight / pzt
     if pz_negative:
         factor *= -1  # make loads negative
 
     for key in form.vertices():
-        pzi = factor * form.vertex_attribute(key, 'pz')
-        form.vertex_attribute(key, 'pz', value=pzi)
+        pzi = factor * form.vertex_attribute(key, "pz")
+        form.vertex_attribute(key, "pz", value=pzi)
 
 
 def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, tol=10e-4):
@@ -128,7 +101,7 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
 
     form_ = pattern
 
-    form.vertices_attribute('pz', 0.0)
+    form.vertices_attribute("pz", 0.0)
     key_real_to_key = {}
 
     for key in form_.vertices():
@@ -141,14 +114,14 @@ def apply_selfweight_from_pattern(form, pattern, plot=False, pz_negative=True, t
 
     pzt = 0
     for key in key_real_to_key:
-        pz = form_.vertex_attribute(key_real_to_key[key], 'pz')
+        pz = form_.vertex_attribute(key_real_to_key[key], "pz")
         # if pz_negative:
         #     pz *= -1  # make loads negative
-        form.vertex_attribute(key, 'pz', value=pz)
+        form.vertex_attribute(key, "pz", value=pz)
         pzt += pz
 
     if plot:
-        print('total load applied:', pzt)
+        print("total load applied:", pzt)
 
 
 def apply_selfweight_from_thrust(form, thickness=0.5, density=20.0):
@@ -177,12 +150,12 @@ def apply_selfweight_from_thrust(form, thickness=0.5, density=20.0):
         if thickness:
             load = -1 * ai * thickness * density
         else:
-            thk = form.vertex_attribute(key, 'thk')
+            thk = form.vertex_attribute(key, "thk")
             load = -1 * ai * thk * density
-        form.vertex_attribute(key, 'pz', load)
+        form.vertex_attribute(key, "pz", load)
 
 
-def apply_horizontal_multiplier(form, lambd=1.0, direction='x'):
+def apply_horizontal_multiplier(form, lambd=1.0, direction="x"):
     """Modify the applied loads considering a load multiplier.
 
     Parameters
@@ -200,10 +173,10 @@ def apply_horizontal_multiplier(form, lambd=1.0, direction='x'):
         The FormDiagram is modified in place.
     """
 
-    arg = 'p' + direction
+    arg = "p" + direction
 
     for key in form.vertices():
-        pz = form.vertex_attribute(key, 'pz')
+        pz = form.vertex_attribute(key, "pz")
         form.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
 
 
@@ -220,4 +193,4 @@ def apply_fill_load(form):
         In development.
     """
 
-    raise NotImplementedError('Not implemented')
+    raise NotImplementedError("Not implemented")

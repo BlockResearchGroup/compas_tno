@@ -1,98 +1,96 @@
-from compas.datastructures import Mesh
-from compas.datastructures import mesh_bounding_box_xy
-
-from compas_tno.diagrams.diagram_arch import create_arch_form_diagram
-from compas_tno.diagrams.diagram_arch import create_linear_form_diagram
-from compas_tno.diagrams.diagram_arch import create_linear_form_diagram_sp_ep
-from compas_tno.diagrams.diagram_rectangular import create_cross_form
-from compas_tno.diagrams.diagram_rectangular import create_cross_diagonal
-from compas_tno.diagrams.diagram_rectangular import create_cross_with_diagonal
-from compas_tno.diagrams.diagram_rectangular import create_fan_form
-from compas_tno.diagrams.diagram_circular import create_circular_radial_form
-from compas_tno.diagrams.diagram_circular import create_circular_radial_spaced_form
-from compas_tno.diagrams.diagram_circular import create_circular_spiral_form
-from compas_tno.diagrams.diagram_rectangular import create_ortho_form
-from compas_tno.diagrams.diagram_rectangular import create_parametric_form
-from compas_tno.diagrams.diagram_rectangular import create_delta_form
-
-from compas_tna.diagrams import FormDiagram
-
-from compas.geometry import Point
-
 import math
+from typing import Annotated
+from typing import Optional
+
+import numpy.typing as npt
+from numpy import vstack
+from numpy import zeros
+
+from compas.datastructures import Mesh
+from compas.geometry import bounding_box_xy
+from compas_tna.diagrams import FormDiagram as TNAFormDiagram
+from compas_tno.utilities import apply_selfweight_from_thrust
+
+from .diagram_arch import create_arch_form_diagram
+from .diagram_arch import create_linear_form_diagram
+from .diagram_arch import create_linear_form_diagram_sp_ep
+from .diagram_circular import create_circular_radial_form
+from .diagram_circular import create_circular_radial_spaced_form
+from .diagram_circular import create_circular_spiral_form
+from .diagram_rectangular import create_cross_diagonal
+from .diagram_rectangular import create_cross_form
+from .diagram_rectangular import create_cross_with_diagonal
+from .diagram_rectangular import create_delta_form
+from .diagram_rectangular import create_fan_form
+from .diagram_rectangular import create_ortho_form
+from .diagram_rectangular import create_parametric_form
 
 
-class FormDiagram(FormDiagram):
-    """The ``FormDiagram`` represents the projection of the internal force network within the structure.
-
-    The class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some
-    functionalities useful for the assessment of masonry structures. Most relevant edge and vertex attributes
-    are listed below:
+class FormDiagram(TNAFormDiagram):
+    """The FormDiagram represents the projection of the internal force network within the structure.
 
     Attributes
     ----------
-    *   Vertex attributes
+    args : list
+    parameters : dict
 
-    x : float
-        x-coordinate of the vertex.
-    y : float
-        y-coordinate of the vertex.
-    z : float
-        z-coordinate of the vertex.
-    is_roller : bool
-        Whether or not the attibute is set to be a roller. Takes only horizontal reaction.
-    tubmax : float
-        Maximum allowable increase in the extrados
-    tlbmax : float
-        Maximum allowable increase in the intradoss
-    tub_reac : float
-        Maximum allowable increase in the horizontal projection of the reaction.
+    Notes
+    -----
+    Vertices have the following default attributes.
 
-    *   Edge attributes
+    * "x" (float): x-coordinate of the vertex.
+    * "y" (float): y-coordinate of the vertex.
+    * "z" (float): z-coordinate of the vertex.
+    * "is_roller" (bool): Whether or not the attibute is set to be a roller. Takes only horizontal reaction.
+    * "tubmax" (float): Maximum allowable increase in the extrados
+    * "tlbmax" (float): Maximum allowable increase in the intradoss
+    * "tub_reac" (float): Maximum allowable increase in the horizontal projection of the reaction.
 
-    q : float
-        Force density of an edge.
-    f : float
-        Force magnitude of an edge.
-    is_ind : bool
-        Whether or not the edge is an independent edge.
-    qmin : float
-        The minimum force density magnitude.
-    qmax : float
-        The maximum force density magnitude.
+    Edges have the following default attributes.
+
+    * q (float): Force density of an edge.
+    * f (float): Force magnitude of an edge.
+    * is_ind (bool): Whether or not the edge is an independent edge.
+    * qmin (float): The minimum force density magnitude.
+    * qmax (float): The maximum force density magnitude.
 
     Examples
     --------
     >>> from compas_tno.diagrams import FormDiagram
-    >>> data = {'type': 'fan_fd', 'xy_span': [[0, 10], [0, 10]], 'discretisation': [10, 10], 'fix': 'corners'}
+    >>> data = {"type": "fan_fd", "xy_span": [[0, 10], [0, 10]], "discretisation": [10, 10], "fix": "corners"}
     >>> form = FormDiagram.from_library(data)
 
     """
 
-    def __init__(self):
-        super(FormDiagram, self).__init__()
-        self.update_default_vertex_attributes({
-            'is_roller': False,
-            'tubmax': None,
-            'tlbmax': None,
-            'tub_reac': None,
-        })
-        self.update_default_edge_attributes({
-            'q': -1.0,
-            'f': -1.0,
-            'is_symmetry': False,
-            'is_ind': False,
-            'qmin': -1e+4,
-            'qmax': 1e-8
-        })
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.update_default_vertex_attributes(
+            {
+                "is_roller": False,
+                "tubmax": None,
+                "tlbmax": None,
+                "tub_reac": None,
+            }
+        )
+        self.update_default_edge_attributes(
+            {
+                "q": -1.0,
+                "f": -1.0,
+                "is_symmetry": False,
+                "is_ind": False,
+                "qmin": -1e4,
+                "qmax": 1e-8,
+            }
+        )
         self.args = None
-        self.attributes['loadpath'] = 0.0
-        self.attributes['indset'] = None
+        self.attributes["loadpath"] = 0.0
+        self.attributes["indset"] = None
         self.parameters = {
-            'type': None,
-            'discretisation': None,
-            'E': None,
-            'Ah': None,
+            "type": None,
+            "discretisation": None,
+            "E": None,
+            "Ah": None,
             # 'x0': None,
             # 'discretisation': 20,
             # 'xy_span': [[0,10],[0,10]],
@@ -106,8 +104,8 @@ class FormDiagram(FormDiagram):
     # --------------------------------------------------------------- #
 
     @classmethod
-    def from_library(cls, data):
-        """ Construct a FormDiagram the library of FormDiagrams available.
+    def from_library(cls, data: dict) -> "FormDiagram":
+        """Construct a FormDiagram the library of FormDiagrams available.
 
         Parameters
         ----------
@@ -118,72 +116,43 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
+        form_type = data.pop("type")
 
-        # General parameters
-        form_type = data['type']
-        discretisation = data.get('discretisation', 10)
-
-        # Arch parameters
-        H = data.get('H', 1.0)
-        L = data.get('L', 2.0)
-        x0 = data.get('x0', 0.0)
-        sp = data.get('sp', [0.0, 0.0, 0.0])
-        ep = data.get('ep', [2.0, 0.0, 0.0])
-
-        # Rectangular vault parameters
-        xy_span = data.get('xy_span', [[0.0, 10.0], [0.0, 10.0]])
-        fix = data.get('fix', 'corners')
-
-        # Circular parameters
-        center = data.get('center', [5.0, 5.0])
-        radius = data.get('radius', 5.0)
-        r_oculus = data.get('r_oculus', 0.0)
-        diagonal = data.get('diagonal')
-        partial_diagonal = data.get('partial_diagonal')
-        partial_bracing_modules = data.get('partial_bracing_modules')
-        fix = data.get('fix', 'corners')
-        lambd = data.get('lambd', 0.5)
-        delta = data.get('delta', 0.5)
-
-        if form_type == 'arch':
-            form = create_arch_form_diagram(cls(), H=H, L=L, x0=x0, discretisation=discretisation)
-        elif form_type == 'linear_arch' or form_type == 'pointed_arch':
-            form = create_linear_form_diagram(cls(), L=L, x0=x0, discretisation=discretisation)
-        elif form_type == 'linear_arch_sp_ep' or form_type == 'pointed_arch':
-            form = create_linear_form_diagram_sp_ep(cls(), sp=sp, ep=ep, discretisation=discretisation)
-        elif form_type == 'cross_fd':
-            form = create_cross_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
-        elif form_type == 'cross_diagonal':
-            form = create_cross_diagonal(cls(), xy_span=data['xy_span'], discretisation=discretisation,
-                                         partial_bracing_modules=partial_bracing_modules, fix=fix)
-        elif form_type == 'cross_with_diagonal':
-            form = create_cross_with_diagonal(cls(), xy_span=data['xy_span'], discretisation=discretisation, fix=fix)
-        elif form_type == 'fan_fd':
-            form = create_fan_form(cls(), xy_span=data['xy_span'], discretisation=discretisation, fix=fix)
-        elif form_type == 'ortho' or form_type == 'ortho_fd':
-            form = create_ortho_form(cls(), xy_span=xy_span, discretisation=discretisation, fix=fix)
-        elif form_type == 'radial_fd':
-            form = create_circular_radial_form(cls(), center=center, radius=radius, discretisation=discretisation,
-                                               r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
-        elif form_type == 'radial_spaced_fd':
-            form = create_circular_radial_spaced_form(cls(), center=center, radius=radius, discretisation=discretisation,
-                                                      r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal)
-        elif form_type == 'spiral_fd':
-            form = create_circular_spiral_form(cls(), center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus)
-        elif form_type == 'parametric_form':
-            form = create_parametric_form(cls(), xy_span=xy_span, discretisation=discretisation, lambd=lambd, fix=fix)
-        elif form_type == 'delta_form':
-            form = create_delta_form(cls(), xy_span=xy_span, discretisation=discretisation, delta=delta, fix=fix)
+        if form_type == "arch":
+            form = cls.create_arch(**data)
+        elif form_type == "linear_arch" or form_type == "pointed_arch":
+            form = cls.create_linear_form_diagram(**data)
+        elif form_type == "linear_arch_sp_ep" or form_type == "pointed_arch":
+            form = cls.create_linear_form_diagram_sp_ep(**data)
+        elif form_type == "cross_fd":
+            form = cls.create_cross_form(**data)
+        elif form_type == "cross_diagonal":
+            form = cls.create_cross_diagonal(**data)
+        elif form_type == "cross_with_diagonal":
+            form = cls.create_cross_with_diagonal(**data)
+        elif form_type == "fan_fd":
+            form = cls.create_fan_form(**data)
+        elif form_type == "ortho" or form_type == "ortho_fd":
+            form = cls.create_ortho_form(**data)
+        elif form_type == "radial_fd":
+            form = cls.create_circular_radial_form(**data)
+        elif form_type == "radial_spaced_fd":
+            form = cls.create_circular_radial_spaced_form(**data)
+        elif form_type == "spiral_fd":
+            form = cls.create_circular_spiral_form(**data)
+        elif form_type == "parametric_form":
+            form = cls.create_parametric_form(**data)
+        elif form_type == "delta_form":
+            form = cls.create_delta_form(**data)
         else:
             raise NotImplementedError()
-
-        form.parameters = data
 
         return form
 
     @classmethod
-    def create_arch(cls, H=1.00, L=2.00, x0=0.0, discretisation=100):
+    def create_arch(cls, H: float = 1.00, L: float = 2.00, x0: float = 0.0, discretisation: int = 100) -> "FormDiagram":
         """Construct a FormDiagram based on an arch linear discretisation.
         Note: The nodes of the form diagram are spaced following a projection in a semicircular arch.
 
@@ -202,15 +171,21 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'arch', 'L': L, 'H': H, 'x0': x0, 'discretisation': discretisation}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_arch_form_diagram(cls, H=H, L=L, x0=x0, discretisation=discretisation)
+        form.parameters = {
+            "type": "arch",
+            "L": L,
+            "H": H,
+            "x0": x0,
+            "discretisation": discretisation,
+        }
+        return form
 
     @classmethod
-    def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
-        """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
+    def create_linear_form_diagram(cls, L: float = 2.0, x0: float = 0.0, discretisation: int = 100) -> "FormDiagram":
+        """Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
 
         Parameters
         ----------
@@ -226,14 +201,18 @@ class FormDiagram(FormDiagram):
         :class:`~compas_tno.diagrams.FormDiagram`
             FormDiagram generated according to the parameters.
         """
-
-        data = {'type': 'linear_arch', 'L': L, 'x0': x0, 'discretisation': discretisation}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_linear_form_diagram(cls, L=L, x0=x0, discretisation=discretisation)
+        form.parameters = {
+            "type": "linear_arch",
+            "L": L,
+            "x0": x0,
+            "discretisation": discretisation,
+        }
+        return form
 
     @classmethod
-    def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisation=100):
-        """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
+    def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisation=100) -> "FormDiagram":
+        """Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
 
         Parameters
         ----------
@@ -249,13 +228,17 @@ class FormDiagram(FormDiagram):
         :class:`~compas_tno.diagrams.FormDiagram`
             FormDiagram generated according to the parameters.
         """
-
-        data = {'type': 'linear_arch_sp_ep', 'ep': ep, 'sp': sp, 'discretisation': discretisation}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_linear_form_diagram_sp_ep(cls, sp=sp, ep=ep, discretisation=discretisation)
+        form.parameters = {
+            "type": "linear_arch_sp_ep",
+            "ep": ep,
+            "sp": sp,
+            "discretisation": discretisation,
+        }
+        return form
 
     @classmethod
-    def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
+    def create_cross_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix="corners") -> "FormDiagram":
         """Construct a FormDiagram based on cross discretiastion with orthogonal arrangement and diagonal.
 
         Parameters
@@ -271,14 +254,25 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'cross_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_cross_form(cls, xy_span=xy_span, discretisation=discretisation, fix=fix)
+        form.parameters = {
+            "type": "cross_fd",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "fix": fix,
+        }
+        return form
 
     @classmethod
-    def create_cross_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, partial_bracing_modules=None, fix='corners'):
+    def create_cross_diagonal(
+        cls,
+        xy_span=[[0.0, 10.0], [0.0, 10.0]],
+        discretisation=10,
+        partial_bracing_modules=None,
+        fix="corners",
+    ) -> "FormDiagram":
         """Construct a FormDiagram based on a mixture of cross and fan discretiastion
 
         Parameters
@@ -296,15 +290,21 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'cross_diagonal', 'xy_span': xy_span, 'discretisation': discretisation, 'partial_bracing_modules': partial_bracing_modules, 'fix': fix}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_cross_diagonal(cls, xy_span=xy_span, partial_bracing_modules=partial_bracing_modules, discretisation=discretisation, fix=fix)
+        form.parameters = {
+            "type": "cross_diagonal",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "partial_bracing_modules": partial_bracing_modules,
+            "fix": fix,
+        }
+        return form
 
     @classmethod
-    def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix='corners'):
-        """ Construct a FormDiagram based on cross discretiastion with diagonals.
+    def create_cross_with_diagonal(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, fix="corners") -> "FormDiagram":
+        """Construct a FormDiagram based on cross discretiastion with diagonals.
 
         Parameters
         ----------
@@ -319,15 +319,20 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'cross_with_diagonal', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_cross_with_diagonal(cls, xy_span=xy_span, discretisation=discretisation, fix=fix)
+        form.parameters = {
+            "type": "cross_with_diagonal",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "fix": fix,
+        }
+        return form
 
     @classmethod
-    def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
-        """ Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
+    def create_fan_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix="corners") -> "FormDiagram":
+        """Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
 
         Parameters
         ----------
@@ -342,15 +347,26 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'fan_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_fan_form(cls, xy_span=xy_span, discretisation=discretisation, fix=fix)
+        form.parameters = {
+            "type": "fan_fd",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "fix": fix,
+        }
+        return form
 
     @classmethod
-    def create_parametric_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, lambd=0.5, fix='corners'):
-        """ Helper to construct a FormDiagram envelop that includes fan and cross diagrams. The diagram is modified by the parameter lambda.
+    def create_parametric_form(
+        cls,
+        xy_span=[[0.0, 10.0], [0.0, 10.0]],
+        discretisation=10,
+        lambd=0.5,
+        fix="corners",
+    ) -> "FormDiagram":
+        """Helper to construct a FormDiagram envelop that includes fan and cross diagrams. The diagram is modified by the parameter lambda.
 
         Parameters
         ----------
@@ -367,15 +383,27 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'parametric_form', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix, 'lambd': lambd}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_parametric_form(cls, xy_span=xy_span, discretisation=discretisation, lambd=lambd, fix=fix)
+        form.parameters = {
+            "type": "parametric_form",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "fix": fix,
+            "lambd": lambd,
+        }
+        return form
 
     @classmethod
-    def create_delta_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=10, delta=0.5, fix='corners'):
-        """ Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
+    def create_delta_form(
+        cls,
+        xy_span=[[0.0, 10.0], [0.0, 10.0]],
+        discretisation=10,
+        delta=0.5,
+        fix="corners",
+    ) -> "FormDiagram":
+        """Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
 
         Parameters
         ----------
@@ -392,15 +420,21 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'delta_form', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix, 'delta': delta}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_delta_form(cls, xy_span=xy_span, discretisation=discretisation, delta=delta, fix=fix)
+        form.parameters = {
+            "type": "delta_form",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "fix": fix,
+            "delta": delta,
+        }
+        return form
 
     @classmethod
-    def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix='corners'):
-        """ Helper to construct a FormDiagram based on a simple orthogonal discretisation.
+    def create_ortho_form(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=[10, 10], fix="corners") -> "FormDiagram":
+        """Helper to construct a FormDiagram based on a simple orthogonal discretisation.
 
         Parameters
         ----------
@@ -415,14 +449,27 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'ortho_fd', 'xy_span': xy_span, 'discretisation': discretisation, 'fix': fix}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_ortho_form(cls, xy_span=xy_span, discretisation=discretisation, fix=fix)
+        form.parameters = {
+            "type": "ortho_fd",
+            "xy_span": xy_span,
+            "discretisation": discretisation,
+            "fix": fix,
+        }
+        return form
 
     @classmethod
-    def create_circular_radial_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
+    def create_circular_radial_form(
+        cls,
+        center=[5.0, 5.0],
+        radius=5.0,
+        discretisation=[8, 20],
+        r_oculus=0.0,
+        diagonal=False,
+        partial_diagonal=False,
+    ) -> "FormDiagram":
         """Construct a circular radial FormDiagram with hoops not equally spaced in plan.
 
         Parameters
@@ -444,16 +491,34 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'radial_fd', 'center': center, 'radius': radius, 'discretisation': discretisation,
-                'r_oculus': r_oculus, 'diagonal': diagonal, 'partial_diagonal': partial_diagonal}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_circular_radial_form(
+            cls, center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal
+        )
+        form.parameters = {
+            "type": "radial_fd",
+            "center": center,
+            "radius": radius,
+            "discretisation": discretisation,
+            "r_oculus": r_oculus,
+            "diagonal": diagonal,
+            "partial_diagonal": partial_diagonal,
+        }
+        return form
 
     @classmethod
-    def create_circular_radial_spaced_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0, diagonal=False, partial_diagonal=False):
-        """ Construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.
+    def create_circular_radial_spaced_form(
+        cls,
+        center=[5.0, 5.0],
+        radius=5.0,
+        discretisation=[8, 20],
+        r_oculus=0.0,
+        diagonal=False,
+        partial_diagonal=False,
+    ) -> "FormDiagram":
+        """Construct a circular radial FormDiagram with hoops not equally spaced in plan,
+        but equally spaced with regards to the projection on a hemisphere.
 
         Parameters
         ----------
@@ -474,16 +539,26 @@ class FormDiagram(FormDiagram):
         -------
         :class:`~compas_tno.diagrams.FormDiagram`
             The FormDiagram created.
+
         """
-
-        data = {'type': 'radial_spaced_fd', 'center': center, 'radius': radius, 'discretisation': discretisation,
-                'r_oculus': r_oculus, 'diagonal': diagonal, 'partial_diagonal': partial_diagonal}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_circular_radial_spaced_form(
+            cls, center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus, diagonal=diagonal, partial_diagonal=partial_diagonal
+        )
+        form.parameters = {
+            "type": "radial_spaced_fd",
+            "center": center,
+            "radius": radius,
+            "discretisation": discretisation,
+            "r_oculus": r_oculus,
+            "diagonal": diagonal,
+            "partial_diagonal": partial_diagonal,
+        }
+        return form
 
     @classmethod
-    def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0):
-        """ Construct a circular radial FormDiagram with hoops not equally spaced in plan, but equally spaced with regards to the projection on a hemisphere.
+    def create_circular_spiral_form(cls, center=[5.0, 5.0], radius=5.0, discretisation=[8, 20], r_oculus=0.0) -> "FormDiagram":
+        """Construct a circular radial FormDiagram with hoops not equally spaced in plan,
+        but equally spaced with regards to the projection on a hemisphere.
 
         Parameters
         ----------
@@ -500,166 +575,164 @@ class FormDiagram(FormDiagram):
         -------
         FormDiagram
             The FormDiagram created.
+
         """
-
-        data = {'type': 'spiral_fd', 'center': center, 'radius': radius, 'discretisation': discretisation, 'r_oculus': r_oculus}
-
-        return cls().from_library(data)
+        form: FormDiagram = create_circular_spiral_form(cls, center=center, radius=radius, discretisation=discretisation, r_oculus=r_oculus)
+        form.parameters = {
+            "type": "spiral_fd",
+            "center": center,
+            "radius": radius,
+            "discretisation": discretisation,
+            "r_oculus": r_oculus,
+        }
+        return form
 
     @classmethod
     def from_assembly(self):
         NotImplementedError
 
-    @classmethod
-    def from_singular(cls, json_path):
-        """Create form diagram from singular dense mesh.
+    # @classmethod
+    # def from_singular(cls, json_path):
+    #     """Create form diagram from singular dense mesh.
 
-        Parameters
-        ----------
-        json_path : str
-            Path of the mesh saved in JSON format.
+    #     Parameters
+    #     ----------
+    #     json_path : str
+    #         Path of the mesh saved in JSON format.
 
-        Returns
-        -------
-        :class:`~compas_tno.diagrams.FormDiagram`
-            The FormDiagram created.
-        """
+    #     Returns
+    #     -------
+    #     :class:`~compas_tno.diagrams.FormDiagram`
+    #         The FormDiagram created.
+    #     """
 
-        from compas.datastructures import mesh_delete_duplicate_vertices
-        mesh = Mesh.from_json(json_path)
-        mesh_delete_duplicate_vertices(mesh)
-        form = cls().from_mesh(mesh)
-        form.set_boundary_supports()
-        form.delete_boundary_edges()
+    #     from compas.datastructures import mesh_delete_duplicate_vertices
 
-        return form
+    #     mesh = Mesh.from_json(json_path)
+    #     mesh_delete_duplicate_vertices(mesh)
+    #     form = cls().from_mesh(mesh)
+    #     form.set_boundary_supports()
+    #     form.delete_boundary_edges()
 
-    @classmethod
-    def from_triangle(cls, boundary_points, area=0.5, angle=30):
-        """Generates a Form Diagram from triangle
+    #     return form
 
-        Parameters
-        ----------
-        boundary_points : [list]
-            Boundary point of pattern
-        area : float, optional
-            Average area of the trangles, by default 0.5
-        angle : int, optional
-            minimum angle in the triangless, by default 30
+    # @classmethod
+    # def from_triangle(cls, boundary_points, area=0.5, angle=30):
+    #     """Generates a Form Diagram from triangle
 
-        Returns
-        -------
-        :class:`~compas_tno.diagrams.FormDiagram`
-            The FormDiagram created.
-        """
+    #     Parameters
+    #     ----------
+    #     boundary_points : [list]
+    #         Boundary point of pattern
+    #     area : float, optional
+    #         Average area of the trangles, by default 0.5
+    #     angle : int, optional
+    #         minimum angle in the triangless, by default 30
 
-        from compas_triangle.delaunay import conforming_delaunay_triangulation
-        vertices, faces = conforming_delaunay_triangulation(boundary_points + boundary_points[:1], angle=angle, area=area)
-        mesh = Mesh.from_vertices_and_faces(vertices, faces)
-        form = cls().from_mesh(mesh)
+    #     Returns
+    #     -------
+    #     :class:`~compas_tno.diagrams.FormDiagram`
+    #         The FormDiagram created.
+    #     """
 
-        return form
+    #     from compas_triangle.delaunay import conforming_delaunay_triangulation
 
-    @classmethod
-    def from_skeleton(cls, data):
-        """Create form diagram from compas_skeleton
+    #     vertices, faces = conforming_delaunay_triangulation(
+    #         boundary_points + boundary_points[:1], angle=angle, area=area
+    #     )
+    #     mesh = Mesh.from_vertices_and_faces(vertices, faces)
+    #     form = cls().from_mesh(mesh)
 
-        Parameters
-        ----------
-        data : dict
-            Dictionary with the data for crerating the skeleton mesh.
+    #     return form
 
-        Returns
-        -------
-        :class:`~compas_tno.diagrams.FormDiagram`
-            The FormDiagram created.
-        """
+    # @classmethod
+    # def from_skeleton(cls, data):
+    #     """Create form diagram from compas_skeleton
 
-        from compas_skeleton.datastructure import Skeleton
-        from compas.geometry import matrix_from_scale_factors
-        from compas.datastructures import mesh_transform
+    #     Parameters
+    #     ----------
+    #     data : dict
+    #         Dictionary with the data for crerating the skeleton mesh.
 
-        skeleton_type = data['type']
+    #     Returns
+    #     -------
+    #     :class:`~compas_tno.diagrams.FormDiagram`
+    #         The FormDiagram created.
+    #     """
 
-        if skeleton_type == 'circular':
+    #     from compas_skeleton.datastructure import Skeleton
+    #     from compas.geometry import matrix_from_scale_factors
+    #     from compas.datastructures import mesh_transform
 
-            point = data.get('center', [0, 0, 0])
-            subdivisions = data.get('subdivision', 3)
-            radius = data.get('radius', 5.0)
+    #     skeleton_type = data["type"]
 
-            skeleton = Skeleton.from_center_point(point)
-            skeleton.node_width = 7.5
-            skeleton.update_mesh_vertices_pos()
-            skeleton.vertex_attribute(0, 'z', 10.0)
-            skeleton.subdivide(subdivisions)
-            skeleton_mesh = skeleton.to_mesh()
+    #     if skeleton_type == "circular":
 
-            max_x = 0
-            for key in skeleton_mesh.vertices():
-                x, _, _ = skeleton_mesh.vertex_coordinates(key)
-                if x > max_x:
-                    max_x = x
-            scale = radius / max_x
-            T = matrix_from_scale_factors([scale, scale, 0.0])
-            mesh_transform(skeleton_mesh, T)
-            form = cls().from_mesh(skeleton_mesh)
-            form.set_boundary_supports()
-            form.delete_boundary_edges()
+    #         point = data.get("center", [0, 0, 0])
+    #         subdivisions = data.get("subdivision", 3)
+    #         radius = data.get("radius", 5.0)
 
-        return form
+    #         skeleton = Skeleton.from_center_point(point)
+    #         skeleton.node_width = 7.5
+    #         skeleton.update_mesh_vertices_pos()
+    #         skeleton.vertex_attribute(0, "z", 10.0)
+    #         skeleton.subdivide(subdivisions)
+    #         skeleton_mesh = skeleton.to_mesh()
 
-    # --------------------------------------------------------------------------
-    # Plot
-    # --------------------------------------------------------------------------
+    #         max_x = 0
+    #         for key in skeleton_mesh.vertices():
+    #             x, _, _ = skeleton_mesh.vertex_coordinates(key)
+    #             if x > max_x:
+    #                 max_x = x
+    #         scale = radius / max_x
+    #         T = matrix_from_scale_factors([scale, scale, 0.0])
+    #         mesh_transform(skeleton_mesh, T)
+    #         form = cls().from_mesh(skeleton_mesh)
+    #         form.set_boundary_supports()
+    #         form.delete_boundary_edges()
 
-    def plot(self):
-        """Plot a form diagram with a plotter with all the default settings."""
-        from compas_plotters import Plotter
-        plotter = Plotter(figsize=(8, 8))
-        plotter.add(self)
-        plotter.show()
+    #     return form
 
     # --------------------------------------------------------------- #
     # -----------------------ULTILITIES------------------------------ #
     # --------------------------------------------------------------- #
 
-    def q(self):
-        """Return the force densities ``q`` of the diagram."""
-        return [self.edge_attribute(edge, 'q') for edge in self.edges_where({'_is_edge': True})]
+    def q(self) -> list[float]:
+        """Return the force densities of the (real) edges of the diagram."""
+        return [self.edge_attribute(edge, "q") for edge in self.edges_where(_is_edge=True)]
 
-    def xy(self):
-        """Return the ``xy`` coordinates of the diagram."""
-        return self.vertices_attributes('xy')
+    def xy(self) -> list[Annotated[list[float], 2]]:
+        """Return the xy coordinates of the diagram."""
+        return self.vertices_attributes("xy")
 
-    def fixed(self):
+    def fixed(self) -> list[int]:
         """Return the keys of the fixed vertices of the diagram."""
-        return list(self.vertices_where({'is_fixed': True}))
+        return list(self.vertices_where(is_fixed=True))
 
-    def fixed_x(self):
+    def fixed_x(self) -> list[int]:
         """Return the keys of the fixed-in-x vertices of the diagram."""
-        return list(self.vertices_where({'is_fixed_x': True, 'is_fixed': False}))
+        return list(self.vertices_where(is_fixed_x=True, is_fixed=False))
 
-    def fixed_y(self):
+    def fixed_y(self) -> list[int]:
         """Return the keys of the fixed-in-y vertices of the diagram."""
-        return list(self.vertices_where({'is_fixed_y': True, 'is_fixed': False}))
+        return list(self.vertices_where(is_fixed_y=True, is_fixed=False))
 
-    def ind(self):
+    def ind(self) -> list[int]:
         """Return the identifiers for the edges selected as independents on the diagram."""
-        return list(self.edges_where({'is_ind': True}))
+        return list(self.edges_where(is_ind=True))
 
-    def number_of_real_edges(self):
-        """Return the identifiers for the edges selected as independents on the diagram."""
-        return len(list(self.edges_where({'_is_edge': True})))
+    def number_of_real_edges(self) -> int:
+        """Return the number of real edges (_is_edge=True) in the diagram."""
+        return len(list(self.edges_where(_is_edge=True)))
 
-    def update_f(self):
-        """Update attributes force ``f`` based on force densities ``q``and lengths ``l``."""
+    def update_f(self) -> None:
+        """Update the edge forces based on force density and length."""
+        for edge in self.edges():
+            f = self.edge_attribute(edge, name="q") * self.edge_length(edge)
+            self.edge_attribute(edge, name="f", value=f)
 
-        for u, v in self.edges():
-            f = self.edge_attribute((u, v), 'q') * self.edge_length(u, v)
-            self.edge_attribute((u, v), 'f', f)
-
-    def add_pz(self, key, force=0.0):
-        """_summary_
+    def add_pz(self, key: int, force: float = 0.0) -> None:
+        """Add a vertical load to the loads applied to a specific vertex.
 
         Parameters
         ----------
@@ -669,82 +742,70 @@ class FormDiagram(FormDiagram):
             Load to add at the node in the attribute 'pz', by default 0.0
 
         """
+        pz0 = self.vertex_attribute(key, name="pz")
+        self.vertex_attribute(key, name="pz", value=pz0 + force)
 
-        pz0 = self.vertex_attribute(key, 'pz')
-        self.vertex_attribute(key, 'pz', pz0 + force)
-
-    def assign_inds(self, edges=None, printout=True):
+    def assign_inds(self, edges: Optional[list[tuple[int, int]]] = None, printout: bool = True) -> None:
         """Assign manually independent edges to the pattern
 
         Parameters
         ----------
-        edges : [edges], optional
+        edges : list[tuple[int, int]], optional
             List of edges to be assigned as independents, by default None
         printout : bool, optional
             Whether the number of assigned independent edges should appear, by default True
 
         """
-
         if not edges:
             return
 
-        self.edges_attribute('is_ind', False)
-
-        i = 0
-        for edge in edges:
-            u, v = edge
-            try:
-                self.edge_attribute((u, v), 'is_ind', True)
-            except BaseException:
-                self.edge_attribute((v, u), 'is_ind', True)
-            i += 1
-
+        self.edges_attribute(name="is_ind", value=False)
+        self.edges_attribute(name="is_ind", value=True, keys=edges)
         self.store_indset(edges)
 
         if printout:
-            print('Assigned {} independent edges to the pattern.'.format(i))
+            print(f"Assigned {len(edges)} independent edges to the pattern.")
 
-    def store_indset(self, edges=None):
+    def store_indset(self, edges: Optional[list[tuple[int, int]]] = None) -> None:
         """Store the indset with the information about the independent edges (used within algorithms)
 
         Parameters
         ----------
-        edges : [edges], optional
+        edges : list[tuple[int, int]], optional
             List of edges to be assigned as independents, by default None
 
         """
 
         if not edges:
-            self.attributes['indset'] = None
+            self.attributes["indset"] = None
             return
 
         points = []
         for edge in edges:
-            points.append(Point(*(self.edge_midpoint(*edge)[:2] + [0])))
+            point = self.edge_midpoint(edge)
+            point.z = 0
+            points.append(point)
 
-        self.attributes['indset'] = points
+        self.attributes["indset"] = points
 
-    def update_indset(self):
-        """Update the indset with the information about the independent edges (used within algorithms)
-        """
-
-        edges = list(self.edges_where({'is_ind': True}))
-
+    def update_indset(self) -> None:
+        """Update the indset with the information about the independent edges (used within algorithms)"""
+        edges = list(self.edges_where(is_ind=True))
         if not edges:
-            self.attributes['indset'] = None
+            self.attributes["indset"] = None
             return
 
         self.store_indset(edges)
 
-    def tributary_dict(self):
+    def tributary_dict(self) -> dict[int, dict[int, list[int]]]:
         """Make a tributary dictionary to help in the calculation of the tributary weights to the nodes afterwards.
 
         Returns
         -------
-        tributary_dict
+        dict[int, dict[int, list[int]]]
             The tributary area dictionary
-        """
 
+        """
         tributary_dict = {}
         vertex_index = self.vertex_index()
 
@@ -768,7 +829,7 @@ class FormDiagram(FormDiagram):
 
         return tributary_dict
 
-    def tributary_matrices(self, sparse=False):
+    def tributary_matrices(self, sparse: bool = False) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
         """Returns the Matrices used for computation of the tributary area.
 
         Parameters
@@ -786,11 +847,8 @@ class FormDiagram(FormDiagram):
             Mark the influence of the neighbor points the calculation
         V2 : array [g x f]
             Mark the influence of the centroid points the calculation
+
         """
-
-        from numpy import zeros
-        from numpy import vstack
-
         n = self.number_of_vertices()
         f = self.number_of_faces()
 
@@ -807,7 +865,7 @@ class FormDiagram(FormDiagram):
             faceindices = [vertex_index[v] for v in self.face_vertices(fkey)]
             np = float(len(faceindices))
             for j in faceindices:
-                F[i, j] = 1.0/np
+                F[i, j] = 1.0 / np
 
         ig = 0
         for key in self.vertices():
@@ -856,7 +914,7 @@ class FormDiagram(FormDiagram):
 
         return F, V0, V1, V2
 
-    def update_lumped_weights(self, thickness=0.5, density=20.0):
+    def update_lumped_weights(self, thickness: float = 0.5, density: float = 20.0) -> None:
         """Update the lumped weights based on the curent geometry of the thrust network
         The loads are computed based on the tributary area times the thickness times the density.
         For variable thickness the nodal attribute `thk` is considered.
@@ -874,11 +932,9 @@ class FormDiagram(FormDiagram):
         None
             Loads are updated in place.
         """
-
-        from compas_tno.utilities import apply_selfweight_from_thrust
         apply_selfweight_from_thrust(self, thickness=thickness, density=density)
 
-    def overview_forces(self):
+    def overview_forces(self) -> None:
         """Print an overview of the forces in the ``Form Diagram``."""
 
         self.update_f()
@@ -890,87 +946,87 @@ class FormDiagram(FormDiagram):
 
         lp = 0
 
-        for u, v in self.edges_where({'_is_edge': True}):
-            qi = self.edge_attribute((u, v), 'q')
-            li = self.edge_length(u, v)
-            lp += qi*li**2
+        for edge in self.edges_where(_is_edge=True):
+            qi = self.edge_attribute(edge, name="q")
+            li = self.edge_length(edge)
+            lp += qi * li**2
             q.append(qi)
-            f.append(qi*li)
+            f.append(qi * li)
 
-        print('='*20)
-        print('Overview on forces:')
+        print("=" * 20)
+        print("Overview on forces:")
 
-        print('q: {0:.3f} : {1:.3f}'.format(float(min(q)), float(max(q))))
-        print('f: {0:.3f} : {1:.3f}'.format(float(min(f)), float(max(f))))
+        print("q: {0:.3f} : {1:.3f}".format(float(min(q)), float(max(q))))
+        print("f: {0:.3f} : {1:.3f}".format(float(min(f)), float(max(f))))
         for key in self.vertices():
-            z.append(self.vertex_attribute(key, 'z'))
-            pz += self.vertex_attribute(key, 'pz')
-        print('z: {0:.3f} : {1:.3f}'.format(float(min(z)), float(max(z))))
-        print('pz: {0:.3f}'.format(pz))
-        print('lp: {0:.3f}'.format(lp))
-        self.attributes['loadpath'] = lp
+            z.append(self.vertex_attribute(key, "z"))
+            pz += self.vertex_attribute(key, "pz")
+        print("z: {0:.3f} : {1:.3f}".format(float(min(z)), float(max(z))))
+        print("pz: {0:.3f}".format(pz))
+        print("lp: {0:.3f}".format(lp))
+        self.attributes["loadpath"] = lp
 
-        return
-
-    def thrust(self):
-        """Computes the the (horizontal) thrust"""
+    def thrust(self) -> float:
+        """Computes the total (horizontal) thrust"""
 
         thrust = 0
-        for key in self.vertices_where({'is_fixed': True}):
-            rx = self.vertex_attribute(key, '_rx')
-            ry = self.vertex_attribute(key, '_ry')
+        for key in self.vertices_where(is_fixed=True):
+            rx = self.vertex_attribute(key, name="_rx")
+            ry = self.vertex_attribute(key, name="_ry")
             r = math.sqrt(rx**2 + ry**2)
             thrust += r
 
         return thrust
 
-    def lumped_swt(self):
+    def lumped_swt(self) -> float:
         """Returns the lumped selfweight on the nodes."""
 
         swt = 0
         for key in self.vertices():
-            pz = self.vertex_attribute(key, 'pz')
+            pz = self.vertex_attribute(key, "pz")
             swt += pz
 
         return swt
 
-    def distance_target(self):
-        """ Compute the squared vertical distance from a target."""
+    def distance_target(self) -> float:
+        """Compute the squared vertical distance from a target."""
 
         f = 0
         for key in self.vertices():
-            z = self.vertex_attribute(key, 'z')
-            s = self.vertex_attribute(key, 'target')
-            f += (z - s)**2
+            z = self.vertex_attribute(key, "z")
+            s = self.vertex_attribute(key, "target")
+            f += (z - s) ** 2
 
         return f
 
-    def loadpath(self):
-        """ Compute loadpath in the current configuration based on the force attributes stored in the ``FormDiagram``. """
+    def loadpath(self) -> float:
+        """Compute loadpath in the current configuration based on the force attributes stored in the ``FormDiagram``."""
 
         lp = 0
-        for u, v in self.edges_where({'_is_edge': True}):
-            qi = abs(self.edge_attribute((u, v), 'q'))
-            li = self.edge_length(u, v)
-            lp += qi*li**2
+        for edge in self.edges_where(_is_edge=True):
+            qi = abs(self.edge_attribute(edge, "q"))
+            li = self.edge_length(edge)
+            lp += qi * li**2
 
-        self.attributes['loadpath'] = lp
+        self.attributes["loadpath"] = lp
 
         return lp
 
-    def number_of_independents(self):
-        """ Compute the number of independent edges."""
-        return len(list(self.edges_where({'is_ind': True})))
+    def number_of_independents(self) -> int:
+        """Compute the number of independent edges."""
+
+        return len(list(self.edges_where(is_ind=True)))
 
     # --------------------------------------------------------------- #
     # -----------------------BOUNDARIES------------------------------ #
     # --------------------------------------------------------------- #
 
-    def number_of_supports(self):
-        """ Compute the number of supports."""
-        return len(list(self.vertices_where({'is_fixed': True})))
+    def number_of_supports(self) -> int:
+        """Compute the number of supports."""
 
-    def delete_boundary_edges(self, delete_corner_vertex=True):
+        return len(list(self.vertices_where(is_fixed=True)))
+
+    def delete_boundary_edges(self, delete_corner_vertex: bool = True) -> None:
         """
         Delete boundary edges on a diagram.
 
@@ -987,8 +1043,8 @@ class FormDiagram(FormDiagram):
         """
 
         for u, v in self.edges_on_boundary():
-            if self.vertex_attribute(u, 'is_fixed') and self.vertex_attribute(v, 'is_fixed'):
-                self.edge_attribute((u, v), '_is_edge', False)
+            if self.vertex_attribute(u, "is_fixed") and self.vertex_attribute(v, "is_fixed"):
+                self.edge_attribute((u, v), "_is_edge", False)
 
         if delete_corner_vertex:
             corners = [key for key in self.corners()]
@@ -1005,19 +1061,15 @@ class FormDiagram(FormDiagram):
                         new_face.append(key_)
                 self.delete_vertex(key)
                 self.add_face(new_face)
-                self.edge_attribute((neighbors[0], neighbors[1]), '_is_edge', False)
+                self.edge_attribute((neighbors[0], neighbors[1]), "_is_edge", False)
 
-        return self
-
-    def set_boundary_supports(self):
-        """ Set all node on the boundary of a pattern as supports."""
+    def set_boundary_supports(self) -> None:
+        """Set all node on the boundary of a pattern as supports."""
 
         for key in self.vertices_on_boundary():
-            self.vertex_attribute(key, 'is_fixed', True)
+            self.vertex_attribute(key, "is_fixed", True)
 
-        return
-
-    def set_boundary_rollers(self, max_rx=[0.0, 0.0], max_ry=[0.0, 0.0], total_rx=None, total_ry=None):
+    def set_boundary_rollers(self, max_rx=[0.0, 0.0], max_ry=[0.0, 0.0], total_rx=None, total_ry=None) -> None:
         """
         Set boundary vertices as rollers.
 
@@ -1038,7 +1090,7 @@ class FormDiagram(FormDiagram):
             The ``FormDiagram`` is modified in place.
 
         """
-        corners = mesh_bounding_box_xy(self)
+        corners = bounding_box_xy(self.vertices_attributes("xyz"))
         xs = [point[0] for point in corners]
         ys = [point[1] for point in corners]
         xlimits = [min(xs), max(xs)]
@@ -1046,87 +1098,85 @@ class FormDiagram(FormDiagram):
         if not total_rx:
             nx0 = 0
             nx1 = 0
-            for key in self.vertices_where({'x': xlimits[0]}):
+            for key in self.vertices_where(x=xlimits[0]):
                 nx0 += 1
-            for key in self.vertices_where({'x': xlimits[1]}):
+            for key in self.vertices_where(x=xlimits[1]):
                 nx1 += 1
-            max_rx = [total_rx[0]/nx0, total_rx[1]/nx1]
+            max_rx = [total_rx[0] / nx0, total_rx[1] / nx1]
         if not total_ry:
             ny0 = 0
             ny1 = 0
-            for key in self.vertices_where({'y': ylimits[0]}):
+            for key in self.vertices_where(y=ylimits[0]):
                 ny0 += 1
-            for key in self.vertices_where({'y': ylimits[1]}):
+            for key in self.vertices_where(y=ylimits[1]):
                 ny1 += 1
-            max_ry = [total_ry[0]/ny0, total_ry[1]/ny1]
+            max_ry = [total_ry[0] / ny0, total_ry[1] / ny1]
         for key in self.vertices_on_boundary():
-            if self.vertex_attribute(key, 'is_fixed') is False:
+            if self.vertex_attribute(key, "is_fixed") is False:
                 x, y, _ = self.vertex_coordinates(key)
                 if x == xlimits[0]:
-                    self.vertex_attribute(key, 'rol_x', True)
-                    self.vertex_attribute(key, 'max_rx', max_rx[0])
+                    self.vertex_attribute(key, "rol_x", True)
+                    self.vertex_attribute(key, "max_rx", max_rx[0])
                 elif x == xlimits[1]:
-                    self.vertex_attribute(key, 'rol_x', True)
-                    self.vertex_attribute(key, 'max_rx', max_rx[1])
+                    self.vertex_attribute(key, "rol_x", True)
+                    self.vertex_attribute(key, "max_rx", max_rx[1])
                 elif y == ylimits[0]:
-                    self.vertex_attribute(key, 'rol_y', True)
-                    self.vertex_attribute(key, 'max_ry', max_ry[0])
+                    self.vertex_attribute(key, "rol_y", True)
+                    self.vertex_attribute(key, "max_ry", max_ry[0])
                 elif y == ylimits[1]:
-                    self.vertex_attribute(key, 'rol_y', True)
-                    self.vertex_attribute(key, 'max_ry', max_ry[1])
-
-        return
+                    self.vertex_attribute(key, "rol_y", True)
+                    self.vertex_attribute(key, "max_ry", max_ry[1])
 
     # --------------------------------------------------------------- #
     # --------------------------SYMMETRY----------------------------- #
     # --------------------------------------------------------------- #
 
-    def number_of_sym_edges(self, printout=False):
-        """ Compute the symmetric edges."""
+    def number_of_sym_edges(self, printout=False) -> int:
+        """Compute the symmetric edges."""
 
         i_sym_max = 0
-        for u, v in self.edges_where({'_is_edge': True}):
+        for u, v in self.edges_where(_is_edge=True):
             try:
-                i_sym = self.edge_attribute((u, v), 'sym_key')
+                i_sym = self.edge_attribute((u, v), "sym_key")
             except BaseException:
-                print('Warning, no symmetry relation found!')
+                print("Warning, no symmetry relation found!")
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
         i_sym_max += 1
 
         return i_sym_max
 
-    def number_of_sym_vertices(self):
-        """ Compute the symmetric vertices."""
+    def number_of_sym_vertices(self) -> int:
+        """Compute the symmetric vertices."""
 
         i_sym_max = 0
         for key in self.vertices():
             try:
-                i_sym = self.vertex_attribute(key, 'sym_key')
+                i_sym = self.vertex_attribute(key, "sym_key")
             except BaseException:
-                print('Warning, no symmetry relation found!')
+                print("Warning, no symmetry relation found!")
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
         i_sym_max += 1
 
         return i_sym_max
 
-    def number_of_sym_supports(self):
-        """ Compute the symmetric supports."""
+    def number_of_sym_supports(self) -> int:
+        """Compute the symmetric supports."""
 
         i_sym_max = 0
-        for key in self.vertices_where({'is_fixed': True}):
+        for key in self.vertices_where(is_fixed=True):
             try:
-                i_sym = self.vertex_attribute(key, 'sym_key')
+                i_sym = self.vertex_attribute(key, "sym_key")
             except BaseException:
-                print('Warning, no symmetry relation found!')
+                print("Warning, no symmetry relation found!")
             if i_sym > i_sym_max:
                 i_sym_max = i_sym
         i_sym_max += 1
 
         return i_sym_max
 
-    def build_symmetry_map(self):
+    def build_symmetry_map(self) -> dict[int, int]:
         """Build the dictionary mapsym (i -> j) that associate one edge j per group of symmetry i."""
 
         mapsym = {}
@@ -1136,7 +1186,7 @@ class FormDiagram(FormDiagram):
             j = 0
             has_i_sym = False
             for u, v in self.edges():
-                i_sym = self.edge_attribute((u, v), 'sym_key')
+                i_sym = self.edge_attribute((u, v), "sym_key")
                 if i_sym == i:
                     mapsym[i] = j
                     has_i_sym = True
@@ -1152,7 +1202,7 @@ class FormDiagram(FormDiagram):
     # -----------------------TNA-CONECTION--------------------------- #
     # --------------------------------------------------------------- #
 
-    def build_dual(self):
+    def build_dual(self) -> Mesh:
         """
         Build the dual of the form diagram.
 
@@ -1169,17 +1219,15 @@ class FormDiagram(FormDiagram):
         """
 
         self.modify_diagram_boundary()
-        dual = self.__class__.dual(self, Mesh)
+        return self.dual_diagram(cls=Mesh)
 
-        return dual
-
-    def build_complete_dual(self):
+    def build_complete_dual(self) -> Mesh:
         """
         Build the dual of the form diagram considering half-faces in the edges on the perimeter.
 
         Returns
         -------
-        dual
+        Mesh
             The middle dual mesh.
 
         Notes
@@ -1190,7 +1238,7 @@ class FormDiagram(FormDiagram):
         """
         dual = Mesh()
         fkey_centroid = {fkey: self.face_centroid(fkey) for fkey in self.faces()}
-        midpt_boundary = {(u, v): self.edge_midpoint(u, v) for u, v in self.edges()}
+        midpt_boundary = {edge: self.edge_midpoint(edge) for edge in self.edges()}
         fixed = self.fixed()
         boundary = list(self.vertices_on_boundary())
         vertices = {}
@@ -1242,7 +1290,7 @@ class FormDiagram(FormDiagram):
 
         return dual
 
-    def modify_diagram_boundary(self):
+    def modify_diagram_boundary(self) -> None:
         """
         Modify the diagram boundary adding the outer perimeter around the fixed vertices with edges having ``_is_edge`` False.
 
@@ -1259,13 +1307,11 @@ class FormDiagram(FormDiagram):
 
         """
 
-        corners = list(self.vertices_where({'is_fixed': True}))
-        self.vertices_attributes(('is_anchor', 'is_fixed'), (True, True), keys=corners)
+        corners = list(self.vertices_where(is_fixed=True))
+        self.vertices_attributes(names=("is_anchor", "is_fixed"), values=(True, True), keys=corners)
         self.update_boundaries()
 
-        return
-
-    def restore_diagram_boundary(self, tol=1e-3):
+    def restore_diagram_boundary(self, tol=1e-3) -> None:
         """
         Remove faces of the diagram with area zero.
 
@@ -1285,5 +1331,3 @@ class FormDiagram(FormDiagram):
 
         for face in faces_delete:
             self.delete_face(face)
-
-        return

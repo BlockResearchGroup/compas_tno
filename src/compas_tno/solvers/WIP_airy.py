@@ -6,33 +6,21 @@
 # from scipy import tensordot
 # from scipy.optimize import nnls
 
-from sympy import tensorproduct
-
-from compas.numerical import normrow
-from compas.geometry import normalize_vector
-from compas.geometry import is_ccw_xy
-
 from numpy import array
 from numpy import cross
 from numpy import dot
-from numpy import zeros
 from numpy import int8
+from numpy import zeros
+from sympy import tensorproduct
 
+from compas.geometry import is_ccw_xy
+from compas.geometry import normalize_vector
+from compas.numerical import normrow
 
-__all__ = [
-    'planes_trimesh',
-    'local_matrix',
-    'local_matrix_external',
-    'assembly_Cf',
-    'A_heights',
-    'A_stress',
-    'hessian',
-    'simple_nurbs'
-]
+__all__ = ["planes_trimesh", "local_matrix", "local_matrix_external", "assembly_Cf", "A_heights", "A_stress", "hessian", "simple_nurbs"]
 
 
 def planes_trimesh(form):
-
     # Planes Of the Triangles
 
     for key in form.faces():
@@ -47,8 +35,8 @@ def planes_trimesh(form):
         a, b, c = cp
         # d = -1 * dot(cp, p3)
         # sol = [a, b, c, d]
-        form.set_face_attribute(key, 'dx', value=a/abs(a))
-        form.set_face_attribute(key, 'dy', value=b/abs(b))
+        form.set_face_attribute(key, "dx", value=a / abs(a))
+        form.set_face_attribute(key, "dy", value=b / abs(b))
 
         # print('Sol:')
         # print(sol)
@@ -57,12 +45,11 @@ def planes_trimesh(form):
 
 
 def local_matrix(form, key, plot=False):
-
     k_i = form.key_index()
     uv_i = form.uv_index()
 
     if plot:
-        print('Internal -> key: {0} , index: {1}'.format(key, k_i[key]))
+        print("Internal -> key: {0} , index: {1}".format(key, k_i[key]))
 
     neighbors = form.vertex_neighbors(key, ordered=True)
 
@@ -72,7 +59,7 @@ def local_matrix(form, key, plot=False):
         neighbors.reverse()
 
     if plot:
-        print('neighbors:', neighbors)
+        print("neighbors:", neighbors)
     i = 0
 
     hn = []
@@ -102,12 +89,12 @@ def local_matrix(form, key, plot=False):
 
     # local matrix
 
-    j_ = zeros((pn, pn+1), dtype=int8)
-    j__ = zeros((pn, pn+1), dtype=int8)
-    j___ = zeros((pn, pn+1), dtype=int8)
+    j_ = zeros((pn, pn + 1), dtype=int8)
+    j__ = zeros((pn, pn + 1), dtype=int8)
+    j___ = zeros((pn, pn + 1), dtype=int8)
 
     for j in range(pn):
-        for k in range(pn+1):
+        for k in range(pn + 1):
             j_[j][k] = j
             if j_[j][k] > 0:
                 j__[j][k] = j_[j][k] - 1
@@ -122,23 +109,26 @@ def local_matrix(form, key, plot=False):
     # print(j__)
     # print(j___)
 
-    C = zeros((pn, pn+1))
+    C = zeros((pn, pn + 1))
 
     for j in range(pn):
-        for k in range(pn+1):
+        for k in range(pn + 1):
             m = j_[j][k]
             n = j__[j][k]
             p = j___[j][k]
             C[j][k] = 0.0
             if k == m:
-                C[j][k] = dot(hn[p], hn[m])/(ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m])/(ln[m] * dot(hn[n], kn[m]))
+                C[j][k] = dot(hn[p], hn[m]) / (ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m]) / (ln[m] * dot(hn[n], kn[m]))
             if k == n:
-                C[j][k] = -1 * dot(hn[m], hn[m])/(ln[n] * dot(hn[m], kn[n]))
+                C[j][k] = -1 * dot(hn[m], hn[m]) / (ln[n] * dot(hn[m], kn[n]))
             if k == p:
-                C[j][k] = dot(hn[m], hn[m])/(ln[p] * dot(hn[m], kn[p]))
+                C[j][k] = dot(hn[m], hn[m]) / (ln[p] * dot(hn[m], kn[p]))
             if k == pn:
-                C[j][k] = -1 * (dot(hn[p], hn[m])/(ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m])/(ln[m] * dot(hn[n], kn[m]))) - 1 * \
-                    (-1 * dot(hn[m], hn[m])/(ln[n] * dot(hn[m], kn[n]))) - 1 * (dot(hn[m], hn[m])/(ln[p] * dot(hn[m], kn[p])))
+                C[j][k] = (
+                    -1 * (dot(hn[p], hn[m]) / (ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m]) / (ln[m] * dot(hn[n], kn[m])))
+                    - 1 * (-1 * dot(hn[m], hn[m]) / (ln[n] * dot(hn[m], kn[n])))
+                    - 1 * (dot(hn[m], hn[m]) / (ln[p] * dot(hn[m], kn[p])))
+                )
 
     # print('Local Matrix C int')
     # print(C.shape)
@@ -149,7 +139,6 @@ def local_matrix(form, key, plot=False):
 
 
 def local_matrix_external(form, key, plot=False):
-
     k_i = form.key_index()
     uv_i = form.uv_index()
 
@@ -159,24 +148,24 @@ def local_matrix_external(form, key, plot=False):
     else:
         neighbors.reverse()
         if plot:
-            print('Reversed Local Matrix')
+            print("Reversed Local Matrix")
 
     boundary = form.vertices_on_boundary()
 
     if plot:
-        print('External -> key: {0} , index: {1}'.format(key, k_i[key]))
+        print("External -> key: {0} , index: {1}".format(key, k_i[key]))
 
     # Shift list so it starts in the one in boundary
 
     if neighbors[0] not in boundary:
         if plot:
-            print('Shift')
+            print("Shift")
         for i in range(1, len(neighbors)):
             if neighbors[i] in boundary:
                 neighbors = neighbors[i:] + neighbors[:i]
 
     if plot:
-        print('neighbors:', neighbors)
+        print("neighbors:", neighbors)
     i = 0
     j = 0
 
@@ -206,17 +195,17 @@ def local_matrix_external(form, key, plot=False):
     k_lg[i] = k_i[key]
 
     # quantity of neighbors in boundary
-    nj = len(neighbors[1:len(neighbors)-1])  # in reality
+    nj = len(neighbors[1 : len(neighbors) - 1])  # in reality
     pn = len(neighbors)
 
     # local matrix
 
-    j_ = zeros((nj, pn+1), dtype=int8)
-    j__ = zeros((nj, pn+1), dtype=int8)
-    j___ = zeros((nj, pn+1), dtype=int8)
+    j_ = zeros((nj, pn + 1), dtype=int8)
+    j__ = zeros((nj, pn + 1), dtype=int8)
+    j___ = zeros((nj, pn + 1), dtype=int8)
 
     for j in range(nj):
-        for k in range(pn+1):
+        for k in range(pn + 1):
             j_[j][k] = j + 1
             j__[j][k] = j + 2
             j___[j][k] = j + 2
@@ -225,23 +214,26 @@ def local_matrix_external(form, key, plot=False):
     # print(j__)
     # print(j___)
 
-    C = zeros((nj, pn+1))
+    C = zeros((nj, pn + 1))
 
     for j in range(nj):
-        for k in range(pn+1):
+        for k in range(pn + 1):
             m = j_[j][k]
             n = j__[j][k]
             p = j___[j][k]
             C[j][k] = 0.0
             if k == m:
-                C[j][k] = dot(hn[p], hn[m])/(ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m])/(ln[m] * dot(hn[n], kn[m]))
+                C[j][k] = dot(hn[p], hn[m]) / (ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m]) / (ln[m] * dot(hn[n], kn[m]))
             if k == n:
-                C[j][k] = -1 * dot(hn[m], hn[m])/(ln[n] * dot(hn[m], kn[n]))
+                C[j][k] = -1 * dot(hn[m], hn[m]) / (ln[n] * dot(hn[m], kn[n]))
             if k == p:
-                C[j][k] = dot(hn[m], hn[m])/(ln[p] * dot(hn[m], kn[p]))
+                C[j][k] = dot(hn[m], hn[m]) / (ln[p] * dot(hn[m], kn[p]))
             if k == pn:
-                C[j][k] = -1 * (dot(hn[p], hn[m])/(ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m])/(ln[m] * dot(hn[n], kn[m]))) - 1 * \
-                    (-1 * dot(hn[m], hn[m])/(ln[n] * dot(hn[m], kn[n]))) - 1 * (dot(hn[m], hn[m])/(ln[p] * dot(hn[m], kn[p])))
+                C[j][k] = (
+                    -1 * (dot(hn[p], hn[m]) / (ln[m] * dot(hn[p], kn[m])) - dot(hn[n], hn[m]) / (ln[m] * dot(hn[n], kn[m])))
+                    - 1 * (-1 * dot(hn[m], hn[m]) / (ln[n] * dot(hn[m], kn[n])))
+                    - 1 * (dot(hn[m], hn[m]) / (ln[p] * dot(hn[m], kn[p])))
+                )
 
     # print('Local Matrix C ext')
     # print(C.shape)
@@ -252,7 +244,6 @@ def local_matrix_external(form, key, plot=False):
 
 
 def assembly_Cf(form, plot=False):
-
     Cn = {}
     nodes_lg = {}
     edges_lg = {}
@@ -278,7 +269,7 @@ def assembly_Cf(form, plot=False):
         except BaseException:
             ext_edges.append(uv_i[(v, u)])
     edges_int = E - len(form.edges_on_boundary())
-    print('Form has {0} interior edges\n   {1} bound edges\n   {2} total nodes\n   {3} boundaries nodes'.format(edges_int, len(ext_edges), N, len(form.vertices_on_boundary())))
+    print("Form has {0} interior edges\n   {1} bound edges\n   {2} total nodes\n   {3} boundaries nodes".format(edges_int, len(ext_edges), N, len(form.vertices_on_boundary())))
     Cf = zeros((E, N))
     if plot:
         print(Cf.shape)
@@ -302,7 +293,6 @@ def assembly_Cf(form, plot=False):
 
 
 def A_heights(form):
-
     uv_i = form.uv_index()
     k_i = form.key_index()
 
@@ -312,25 +302,24 @@ def A_heights(form):
 
     for key in form.vertices():
         ngb = form.vertex_neighbors(key, ordered=True)
-        zi = form.vertex_attribute(key, 'z')
+        zi = form.vertex_attribute(key, "z")
         i_vertex = k_i[key]
         for m in ngb:
             if m not in form.edges_on_boundary():
-                zm = form.vertex_attribute(m, 'z')
+                zm = form.vertex_attribute(m, "z")
                 try:
                     i_edge = uv_i[key, m]
                     h_ij = form.edge_length(key, m)
                 except BaseException:
                     i_edge = uv_i[m, key]
                     h_ij = form.edge_length(m, key)
-                val = (zi - zm)/h_ij
+                val = (zi - zm) / h_ij
                 A[i_vertex][i_edge] += val
 
     return A
 
 
 def A_stress(form, Rm):
-
     uv_i = form.uv_index()
     k_i = form.key_index()
 
@@ -350,19 +339,18 @@ def A_stress(form, Rm):
                     i_edge = uv_i[m, key]
                     h_ij = form.edge_length(m, key)
                 Rmij = Rm[i_edge]
-                val = Rmij/h_ij
-                A[i_hor][i_ver] += - 1 * val
+                val = Rmij / h_ij
+                A[i_hor][i_ver] += -1 * val
                 A[i_hor][i_hor] += val
 
     return A
 
 
 def hessian(form):
-
     # Method per Node
 
     for key in form.vertices():
-        area = form.vertex_attribute(key, 'pz')
+        area = form.vertex_attribute(key, "pz")
         neighbors = form.vertex_neighborhood(key)
         jump = array([[0, 0], [0, 0]])
         u = key
@@ -374,33 +362,33 @@ def hessian(form):
             # print(Hi) # Check if it should be planar
             df = form.vertex_coordinates(v)[2] - form.vertex_coordinates(u)[2]
             jump += df * Hi
-        form.vertex_attribute(key, 'jump', jump)
-        form.vertex_attribute(key, 'hessian', jump/area)
-        print(jump/area)
+        form.vertex_attribute(key, "jump", jump)
+        form.vertex_attribute(key, "hessian", jump / area)
+        print(jump / area)
 
     # Method per edge connected to the node
 
     for key in form.vertices():
-        area = form.vertex_attribute(key, 'pz')
+        area = form.vertex_attribute(key, "pz")
         neighbors = form.vertex_neighborhood(key)
         hess = array([[0, 0, 0], [0, 0, 0], [0, 0, 0]])
         u = key
         for v in neighbors:
             try:
-                dfHi = form.edge_attribute((u, v), 'jump')
+                dfHi = form.edge_attribute((u, v), "jump")
             except BaseException:
-                dfHi = form.edge_attribute((v, u), 'jump')
+                dfHi = form.edge_attribute((v, u), "jump")
             hess += dfHi
-        form.vertex_attribute(key, 'hessian', hess)
+        form.vertex_attribute(key, "hessian", hess)
         print(hess)
 
     return
 
 
 def simple_nurbs(a, b, h, par=20, plot=False):
-
-    from geomdl import CPGen
     from geomdl import BSpline
+    from geomdl import CPGen
+
     # from geomdl import NURBS
     from geomdl import utilities
     from geomdl.visualization import VisMPL
@@ -439,6 +427,6 @@ def simple_nurbs(a, b, h, par=20, plot=False):
         surf.vis = VisMPL.VisSurface(ctrlpts=True, legend=False)
 
         # Plot the surface
-        surf.render(colormap=cm.get_cmap('cool'))
+        surf.render(colormap=cm.get_cmap("cool"))
 
     return surf

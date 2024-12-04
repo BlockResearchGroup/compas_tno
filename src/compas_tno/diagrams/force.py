@@ -1,37 +1,41 @@
-from compas_tna.diagrams import ForceDiagram
-from compas.datastructures import mesh_dual
+from typing import Annotated
+from typing import Generator
+from typing import Optional
+
+from compas_tna.diagrams import ForceDiagram as TNAForceDiagram
+
+from .form import FormDiagram
 
 
-class ForceDiagram(ForceDiagram):
-    """The ``ForceDiagram`` represents the equilibrium of the forces in the form diagram.
+class ForceDiagram(TNAForceDiagram):
+    """The ForceDiagram represents the equilibrium of the forces in the form diagram."""
 
-    Parameters
-    ----------
+    dual: FormDiagram
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
-    Attributes
-    ----------
-
-    """
-
-    def __init__(self):
-        super(ForceDiagram, self).__init__()
-        self.attributes.update({
-            'name': 'Force'})
-        self.update_default_vertex_attributes({
-            'is_fixed': False,
-            'is_param': False})
-        self.update_default_edge_attributes({
-            'l': 0.0,
-            'target_vector': None,
-            'target_length': None})
+        self.attributes.update({"name": "Force"})
+        self.update_default_vertex_attributes(
+            {
+                "is_fixed": False,
+                "is_param": False,
+            }
+        )
+        self.update_default_edge_attributes(
+            {
+                "l": 0.0,
+                "target_vector": None,
+                "target_length": None,
+            }
+        )
 
     # --------------------------------------------------------------------------
     # Constructors
     # --------------------------------------------------------------------------
 
     @classmethod
-    def from_formdiagram(cls, formdiagram):
+    def from_formdiagram(cls, formdiagram: FormDiagram) -> "ForceDiagram":
         """Construct a force diagram from a form diagram.
 
         Parameters
@@ -42,8 +46,9 @@ class ForceDiagram(ForceDiagram):
         Returns
         -------
         :class:`~compas_tno.diagrams.ForceDiagram`
+
         """
-        forcediagram = mesh_dual(formdiagram, cls)
+        forcediagram: ForceDiagram = formdiagram.build_dual(cls)
         forcediagram.dual = formdiagram
         formdiagram.dual = forcediagram
         return forcediagram
@@ -52,25 +57,26 @@ class ForceDiagram(ForceDiagram):
     # Convenience functions for retrieving attributes of the force diagram.
     # --------------------------------------------------------------------------
 
-    def xy(self):
+    def xy(self) -> Annotated[list[float], 2]:
         """The XY coordinates of the vertices.
 
         Returns
         -------
         list
-        """
-        return self.vertices_attributes('xy')
 
-    def fixed(self):
+        """
+        return self.vertices_attributes("xy")
+
+    def fixed(self) -> list[int]:
         """The identifiers of the fixed vertices.
 
         Returns
         -------
         list
         """
-        return list(self.vertices_where({'is_fixed': True}))
+        return list(self.vertices_where(is_fixed=True))
 
-    def anchor(self):
+    def anchor(self) -> int:
         """Get an anchor to the force diagram.
 
         Returns
@@ -80,21 +86,10 @@ class ForceDiagram(ForceDiagram):
         return next(self.vertices())
 
     # --------------------------------------------------------------------------
-    # Plot
-    # --------------------------------------------------------------------------
-
-    def plot(self):
-        """Plot a force diagram with a plotter with all the default settings."""
-        from compas_plotters import Plotter
-        plotter = Plotter(figsize=(8, 8))
-        plotter.add(self)
-        plotter.show()
-
-    # --------------------------------------------------------------------------
     # Helpers
     # --------------------------------------------------------------------------
 
-    def edges_where_dual(self, conditions, data=False):
+    def edges_where_dual(self, conditions, data=False) -> Generator[tuple[int, int], None, None]:
         """Get edges for which a certain condition or set of conditions is true for the corresponding edges in the diagram's dual.
 
         Parameters
@@ -112,10 +107,6 @@ class ForceDiagram(ForceDiagram):
         2-tuple
             The next edge as a (u, v) tuple, if ``data=False``.
             The next edge as a ((u, v), data) tuple, if ``data=True``.
-
-        Examples
-        --------
-        >>>
 
         """
         for edge in list(self.edges()):
@@ -155,7 +146,7 @@ class ForceDiagram(ForceDiagram):
                 else:
                     yield edge
 
-    def dual_edge(self, edge):
+    def dual_edge(self, edge: tuple[int, int]) -> tuple[int, int]:
         """Find the cooresponding edge in the diagram's dual.
 
         Parameters
@@ -174,7 +165,7 @@ class ForceDiagram(ForceDiagram):
                     return u, v
                 return v, u
 
-    def is_dual_edge_external(self, edge):
+    def is_dual_edge_external(self, edge: tuple[int, int]) -> bool:
         """Verify if the corresponding edge in the diagram's dual is marked as "external".
 
         Parameters
@@ -185,10 +176,11 @@ class ForceDiagram(ForceDiagram):
         Returns
         -------
         bool
-        """
-        return self.dual.edge_attribute(self.dual_edge(edge), 'is_external')
 
-    def is_dual_edge_reaction(self, edge):
+        """
+        return self.dual.edge_attribute(self.dual_edge(edge), "is_external")
+
+    def is_dual_edge_reaction(self, edge: tuple[int, int]) -> bool:
         """Verify if the corresponding edge in the diagram's dual is marked as "reaction".
 
         Parameters
@@ -199,10 +191,11 @@ class ForceDiagram(ForceDiagram):
         Returns
         -------
         bool
-        """
-        return self.dual.edge_attribute(self.dual_edge(edge), 'is_reaction')
 
-    def is_dual_edge_load(self, edge):
+        """
+        return self.dual.edge_attribute(self.dual_edge(edge), "is_reaction")
+
+    def is_dual_edge_load(self, edge: tuple[int, int]) -> bool:
         """Verify if the corresponding edge in the diagram's dual is marked as "load".
 
         Parameters
@@ -214,9 +207,9 @@ class ForceDiagram(ForceDiagram):
         -------
         bool
         """
-        return self.dual.edge_attribute(self.dual_edge(edge), 'is_load')
+        return self.dual.edge_attribute(self.dual_edge(edge), "is_load")
 
-    def is_dual_edge_ind(self, edge):
+    def is_dual_edge_ind(self, edge: tuple[int, int]) -> bool:
         """Verify if the corresponding edge in the diagram's dual is marked as "independent".
 
         Parameters
@@ -228,9 +221,9 @@ class ForceDiagram(ForceDiagram):
         -------
         bool
         """
-        return self.dual.edge_attribute(self.dual_edge(edge), 'is_ind')
+        return self.dual.edge_attribute(self.dual_edge(edge), "is_ind")
 
-    def dual_edge_force(self, edge):
+    def dual_edge_force(self, edge: tuple[int, int]) -> float:
         """Retrieve the force in the corresponding edge of the diagram's dual.
 
         Parameters
@@ -242,9 +235,9 @@ class ForceDiagram(ForceDiagram):
         -------
         float
         """
-        return self.dual.edge_attribute(self.dual_edge(edge), 'f')
+        return self.dual.edge_attribute(self.dual_edge(edge), "f")
 
-    def dual_edge_angledeviation(self, edge):
+    def dual_edge_angledeviation(self, edge: tuple[int, int]) -> float:
         """Retrieve the angle deviation in the corresponding edge of the diagram's dual.
 
         Parameters
@@ -256,9 +249,9 @@ class ForceDiagram(ForceDiagram):
         -------
         float
         """
-        return self.dual.edge_attribute(self.dual_edge(edge), 'a')
+        return self.dual.edge_attribute(self.dual_edge(edge), "a")
 
-    def edge_index(self, form=None):
+    def edge_index(self, form: Optional[FormDiagram] = None) -> dict[tuple[int, int], int]:
         """Construct a mapping between the identifiers of edges and the corresponding indices in a list of edges.
 
         Parameters
@@ -275,18 +268,17 @@ class ForceDiagram(ForceDiagram):
         """
         if not form:
             return {edge: index for index, edge in enumerate(self.edges())}
-            # return {edge: index for index, edge in enumerate(form.edges_where({'_is_edge': True}))}
+
         edge_index = dict()
-        # for index, (u, v) in enumerate(form.edges()):
-        for index, (u, v) in enumerate(form.edges_where({'_is_edge': True})):
+        for index, (u, v) in enumerate(form.edges_where(_is_edge=True)):
             f1 = form.halfedge[u][v]
             f2 = form.halfedge[v][u]
             edge_index[f1, f2] = index
             # the weird side-effect of this is that edges get rotated if necessary
         return edge_index
 
-    def ordered_edges(self, form):
-        """"Construct a list of edges with the same order as the corresponding edges of the form diagram.
+    def ordered_edges(self, form: FormDiagram) -> list[tuple[int, int]]:
+        """ "Construct a list of edges with the same order as the corresponding edges of the form diagram.
 
         Parameters
         ----------

@@ -1,9 +1,15 @@
-from compas.datastructures import mesh_dual
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compas_tno.diagrams import FormDiagram
+
 from compas.datastructures import Mesh
-from compas.geometry import add_vectors, scale_vector
+from compas.datastructures.mesh.duality import mesh_dual
+from compas.geometry import add_vectors
+from compas.geometry import scale_vector
 
 
-def extended_dual(form, cls=None):
+def extended_dual(form: "FormDiagram", cls=None):
     """Create the extended dual of the mesh, which is the centroid dual added with the faces in the boundary.
 
     Parameters
@@ -19,7 +25,7 @@ def extended_dual(form, cls=None):
         Extended dual mesh in the class required
     """
 
-    dual = mesh_dual(form, cls)
+    dual: Mesh = mesh_dual(form, cls)
     dual.flip_cycles()
 
     edge_vertex = {}
@@ -64,8 +70,8 @@ def blocks_from_dual(dual, thk):
         point = dual.vertex_coordinates(vertex)
         normal = dual.vertex_normal(vertex)
 
-        idos.vertex_attributes(vertex, 'xyz', add_vectors(point, scale_vector(normal, -0.5 * thk)))
-        edos.vertex_attributes(vertex, 'xyz', add_vectors(point, scale_vector(normal, 0.5 * thk)))
+        idos.vertex_attributes(vertex, "xyz", add_vectors(point, scale_vector(normal, -0.5 * thk)))
+        edos.vertex_attributes(vertex, "xyz", add_vectors(point, scale_vector(normal, 0.5 * thk)))
 
     faceslist = list(idos.faces())
     for face in idos.faces():
@@ -74,9 +80,7 @@ def blocks_from_dual(dual, thk):
 
         f = len(bottom)
 
-        faces = [
-            list(range(f)),
-            list(range(f + f - 1, f - 1, -1))]
+        faces = [list(range(f)), list(range(f + f - 1, f - 1, -1))]
 
         for i in range(f - 1):
             faces.append([i, i + f, i + f + 1, i + 1])

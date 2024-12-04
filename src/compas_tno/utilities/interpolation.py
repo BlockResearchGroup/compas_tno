@@ -1,25 +1,12 @@
-from compas_tno.shapes import MeshDos
-from numpy import array
-from scipy import interpolate
 import math
 
+from numpy import array
+from scipy import interpolate
 
-__all__ = [
-    'interpolate_from_pointcloud',
-    'get_shape_ub',
-    'get_shape_ub_pattern',
-    'get_shape_ub_fill',
-    'get_shape_lb',
-    'get_shape_lb_pattern',
-    'get_shape_middle',
-    'delaunay_mesh_from_points',
-    'mesh_from_pointcloud',
-    'create_mesh_from_topology_and_pointcloud',
-    'create_mesh_from_topology_and_basemesh'
-]
+from compas_tno.shapes import MeshDos
 
 
-def interpolate_from_pointcloud(pointcloud, XY, method='linear'):
+def interpolate_from_pointcloud(pointcloud, XY, method="linear"):
     pointcloud_array = array(pointcloud)  # TODO: Use instance
     return interpolate.griddata(pointcloud_array[:, :2], pointcloud_array[:, 2], array(XY), method=method)
 
@@ -41,8 +28,8 @@ def get_shape_ub(shape, x, y):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.extrados.vertices_attributes('xyz'), [x, y], method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.extrados.vertices_attributes("xyz"), [x, y], method=method)
 
 
 def get_shape_ub_pattern(shape, XY):
@@ -60,8 +47,8 @@ def get_shape_ub_pattern(shape, XY):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.extrados.vertices_attributes('xyz'), XY, method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.extrados.vertices_attributes("xyz"), XY, method=method)
 
 
 def get_shape_ub_fill(shape, x, y):
@@ -81,8 +68,8 @@ def get_shape_ub_fill(shape, x, y):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.extrados_fill.vertices_attributes('xyz'), [x, y], method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.extrados_fill.vertices_attributes("xyz"), [x, y], method=method)
 
 
 def get_shape_lb(shape, x, y):
@@ -102,8 +89,8 @@ def get_shape_lb(shape, x, y):
     z : float
         The intrados evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.intrados.vertices_attributes('xyz'), [x, y], method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.intrados.vertices_attributes("xyz"), [x, y], method=method)
 
 
 def get_shape_lb_pattern(shape, XY):
@@ -121,8 +108,8 @@ def get_shape_lb_pattern(shape, XY):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.intrados.vertices_attributes('xyz'), XY, method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.intrados.vertices_attributes("xyz"), XY, method=method)
 
 
 def get_shape_middle(shape, x, y):
@@ -142,8 +129,8 @@ def get_shape_middle(shape, x, y):
     z : float
         The middle surface evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.middle.vertices_attributes('xyz'), [x, y], method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.middle.vertices_attributes("xyz"), [x, y], method=method)
 
 
 def get_shape_middle_pattern(shape, XY):
@@ -161,8 +148,8 @@ def get_shape_middle_pattern(shape, XY):
     z : float
         The extrados evaluated in the point.
     """
-    method = shape.datashape.get('interpolation', 'linear')
-    return interpolate_from_pointcloud(shape.middle.vertices_attributes('xyz'), XY, method=method)
+    method = shape.datashape.get("interpolation", "linear")
+    return interpolate_from_pointcloud(shape.middle.vertices_attributes("xyz"), XY, method=method)
 
 
 def delaunay_mesh_from_points(points):
@@ -224,11 +211,11 @@ def mesh_from_pointcloud(points):
     """
 
     mesh = delaunay_mesh_from_points(points)
-    XY = mesh.vertices_attributes('xy')
+    XY = mesh.vertices_attributes("xy")
     z = interpolate_from_pointcloud(points, XY)
 
     for i, key in enumerate(mesh.vertices()):
-        mesh.vertex_attribute(key, 'z', z[i])
+        mesh.vertex_attribute(key, "z", z[i])
 
     return mesh
 
@@ -254,14 +241,14 @@ def create_mesh_from_topology_and_pointcloud(meshtopology, pointcloud, isnan_hei
     """
     vertices, faces = meshtopology.to_vertices_and_faces()
     mesh = MeshDos.from_vertices_and_faces(vertices, faces)
-    XY = mesh.vertices_attributes('xy')
+    XY = mesh.vertices_attributes("xy")
     z = interpolate_from_pointcloud(pointcloud, XY)
 
     for i, key in enumerate(mesh.vertices()):
         if math.isnan(z[i]):
-            print('Height (nan) for [x,y]:', XY[i])
+            print("Height (nan) for [x,y]:", XY[i])
             z[i] = isnan_height
-        mesh.vertex_attribute(key, 'z', float(z[i]))
+        mesh.vertex_attribute(key, "z", float(z[i]))
 
     return mesh
 
@@ -285,11 +272,11 @@ def create_mesh_from_topology_and_basemesh(meshtopology, mesh_base):
     """
     vertices, faces = meshtopology.to_vertices_and_faces()
     mesh = MeshDos.from_vertices_and_faces(vertices, faces)
-    XY = mesh.vertices_attributes('xy')
-    XYZ_base = mesh_base.vertices_attributes('xyz')
+    XY = mesh.vertices_attributes("xy")
+    XYZ_base = mesh_base.vertices_attributes("xyz")
     z = interpolate_from_pointcloud(XYZ_base, XY)
 
     for i, key in enumerate(mesh.vertices()):
-        mesh.vertex_attribute(key, 'z', float(z[i]))
+        mesh.vertex_attribute(key, "z", float(z[i]))
 
     return mesh

@@ -1,26 +1,32 @@
-import cyipopt
-
 import time
+from typing import TYPE_CHECKING
 
-from numpy import hstack
+import cyipopt
 from numpy import array
+from numpy import hstack
 
 try:
     from torch import tensor
 
-    from compas_tno.autodiff.equilibrium_pytorch import f_constraints_pytorch
-    from compas_tno.autodiff.equilibrium_pytorch import f_objective_pytorch
     from compas_tno.autodiff.equilibrium_pytorch import compute_autograd
     from compas_tno.autodiff.equilibrium_pytorch import compute_autograd_jacobian
-except BaseException:
+    from compas_tno.autodiff.equilibrium_pytorch import f_constraints_pytorch
+    from compas_tno.autodiff.equilibrium_pytorch import f_objective_pytorch
+
+except Exception:
     pass  # Module tensor not available
+
+if TYPE_CHECKING:
+    from compas_tno.analysis import Analysis
+    from compas_tno.optimisers import Optimiser
+    from compas_tno.problems import Problem
 
 from .post_process import post_process_general
 
 
-class Wrapper_ipopt_autodiff(object):
-    """Wrapper to send to IPOPT using autodifferentiation
-    """
+class Wrapper_ipopt_autodiff:
+    """Wrapper to send to IPOPT using autodifferentiation"""
+
     def __init__(self):
         self.fobj = None
         self.fconstr = None
@@ -101,9 +107,9 @@ class Wrapper_ipopt_autodiff(object):
         return array(compute_autograd_jacobian(variables, constraints)).flatten()
 
 
-class Wrapper_ipopt(object):
-    """Wrapper to send to IPOPT using analytical derivatives
-    """
+class Wrapper_ipopt:
+    """Wrapper to send to IPOPT using analytical derivatives"""
+
     def __init__(self):
         self.fobj = None
         self.fconstr = None
@@ -183,8 +189,8 @@ class Wrapper_ipopt(object):
         return self.fjac(x, *self.args).flatten()
 
 
-def run_optimisation_ipopt(analysis):
-    """ Run nonlinear optimisation problem with IPOPT
+def run_optimisation_ipopt(analysis: "Analysis"):
+    """Run nonlinear optimisation problem with IPOPT
 
     Parameters
     ----------
@@ -193,24 +199,24 @@ def run_optimisation_ipopt(analysis):
 
     Returns
     -------
-    obj : analysis
+    analysis
         Analysis object optimised.
 
     """
 
     optimiser = analysis.optimiser
 
-    constraints = optimiser.settings['constraints']
-    objective = optimiser.settings['objective']
-    printout = optimiser.settings.get('printout', False)
-    gradients = optimiser.settings.get('gradient', False)
-    variables = optimiser.settings['variables']
+    constraints = optimiser.settings["constraints"]
+    objective = optimiser.settings["objective"]
+    printout = optimiser.settings.get("printout", False)
+    gradients = optimiser.settings.get("gradient", False)
+    variables = optimiser.settings["variables"]
     callback = optimiser.callback
 
     bounds = optimiser.bounds
     x0 = optimiser.x0
     g0 = optimiser.g0
-    args = [optimiser.M]
+    args = [optimiser.problem]
 
     lower = [lw[0] for lw in bounds]
     upper = [up[1] for up in bounds]
@@ -218,11 +224,58 @@ def run_optimisation_ipopt(analysis):
     # Tensor modification
 
     if not gradients:
+        (
+            q,
+            ind,
+            dep,
+            E,
+            Edinv,
+            Ei,
+            C,
+            Ct,
+            Ci,
+            Cit,
+            Cf,
+            U,
+            V,
+            p,
+            px,
+            py,
+            pz,
+            z,
+            free,
+            fixed,
+            lh,
+            sym,
+            k,
+            lb,
+            ub,
+            lb_ind,
+            ub_ind,
+            s,
+            Wfree,
+            x,
+            y,
+            b,
+            joints,
+            cracks_lb,
+            cracks_ub,
+            free_x,
+            free_y,
+            rol_x,
+            rol_y,
+            Citx,
+            City,
+            Cftx,
+            Cfty,
+            qmin,
+            constraints,
+            max_rol_rx,
+            max_rol_ry,
+            Asym,
+        ) = args[:48]
 
-        (q, ind, dep, E, Edinv, Ei, C, Ct, Ci, Cit, Cf, U, V, p, px, py, pz, z, free, fixed, lh, sym, k, lb, ub, lb_ind, ub_ind, s, Wfree, x, y, b, joints, cracks_lb, cracks_ub,
-         free_x, free_y, rol_x, rol_y, Citx, City, Cftx, Cfty, qmin, constraints, max_rol_rx, max_rol_ry, Asym) = args[:48]
-
-        EdinvEi = Edinv*Ei
+        EdinvEi = Edinv * Ei
         Edinv_p = Edinv.dot(p)
 
         EdinvEi_th = tensor(EdinvEi)
@@ -239,8 +292,38 @@ def run_optimisation_ipopt(analysis):
         V_th = tensor(V.toarray())
 
         args_obj = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, objective)
-        args_constr = (Edinv_p_th, EdinvEi_th, ind, dep, C_th, Ci_th, Cit_th, Cf_th, pzfree, xyz, xy, pfixed, k, free, fixed,
-                       ub, lb, ub_ind, lb_ind, b, constraints, max_rol_rx, max_rol_ry, rol_x, rol_y, px, py, Asym, U_th, V_th)
+        args_constr = (
+            Edinv_p_th,
+            EdinvEi_th,
+            ind,
+            dep,
+            C_th,
+            Ci_th,
+            Cit_th,
+            Cf_th,
+            pzfree,
+            xyz,
+            xy,
+            pfixed,
+            k,
+            free,
+            fixed,
+            ub,
+            lb,
+            ub_ind,
+            lb_ind,
+            b,
+            constraints,
+            max_rol_rx,
+            max_rol_ry,
+            rol_x,
+            rol_y,
+            px,
+            py,
+            Asym,
+            U_th,
+            V_th,
+        )
 
         problem_obj = Wrapper_ipopt_autodiff()
         problem_obj.fobj = f_objective_pytorch
@@ -255,7 +338,6 @@ def run_optimisation_ipopt(analysis):
         g0 = f_constraints_pytorch(variables, *args_constr)
 
     else:
-
         problem_obj = Wrapper_ipopt()
         problem_obj.fobj = optimiser.fobj
         problem_obj.fconstr = optimiser.fconstr
@@ -269,22 +351,14 @@ def run_optimisation_ipopt(analysis):
         if printout:
             g0 = optimiser.fconstr(x0, *args)
 
-    cu = [10e10]*len(g0)
-    cl = [0.0]*len(g0)
+    cu = [10e10] * len(g0)
+    cl = [0.0] * len(g0)
     # if any(el in ['symmetry', 'symmetry-horizontal', 'symmetry-vertical'] for el in constraints):
     #     nsym = Asym.shape[0]
     #     cu[-nsym:] = [0.0]*nsym
     #     cl[-nsym:] = [0.0]*nsym
 
-    nlp = cyipopt.Problem(
-        n=len(x0),
-        m=len(g0),
-        problem_obj=problem_obj,
-        lb=lower,
-        ub=upper,
-        cl=cl,
-        cu=cu
-    )
+    nlp = cyipopt.Problem(n=len(x0), m=len(g0), problem_obj=problem_obj, lb=lower, ub=upper, cl=cl, cu=cu)
 
     # Set Options and Time
     nlp = _nlp_options(nlp, optimiser)
@@ -292,20 +366,21 @@ def run_optimisation_ipopt(analysis):
 
     # Solve
     xopt, info = nlp.solve(x0)
-    fopt = info['obj_val']
-    exitflag = info['status']
+    fopt = info["obj_val"]
+    exitflag = info["status"]
     if exitflag == 1 or exitflag == 0:  # IPOPT consider solved = 1. Solved in tolerances 0 -> TNO solved = 0
         exitflag = 0
-        msg = 'Solved successfully with IPOPT'
+        msg = "Solved successfully with IPOPT"
     else:
         exitflag = 1
-        msg = 'Error: Did not find convergence (IPOPT)'
+        msg = "Error: Did not find convergence (IPOPT)"
     if printout:
-        print(str(info['status_msg']))
+        print(str(info["status_msg"]))
 
     elapsed_time = time.time() - start_time
+
     if printout:
-        print('Solving Time: {0:.1f} sec'.format(elapsed_time))
+        print("Solving Time: {0:.1f} sec".format(elapsed_time))
 
     optimiser.exitflag = exitflag
     optimiser.time = elapsed_time
@@ -321,7 +396,7 @@ def run_optimisation_ipopt(analysis):
     return analysis
 
 
-def _nlp_options(nlp, optimiser):
+def _nlp_options(nlp, optimiser: "Optimiser"):
     """Set NLP options for IPOPT
 
     Parameters
@@ -354,18 +429,21 @@ def _nlp_options(nlp, optimiser):
     # nlp.add_option('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2
     # nlp.add_option('max_iter', 500)
 
-    scaling = optimiser.settings.get('nlp_scaling_method', None)
+    scaling = optimiser.settings.get("nlp_scaling_method", None)
 
-    if not optimiser.settings['printout']:
-        nlp.add_option('print_level', 0)
-    if optimiser.settings.get('derivative_test', None):
-        nlp.add_option('derivative_test', 'first-order')
+    if not optimiser.settings["printout"]:
+        nlp.add_option("print_level", 0)
+
+    if optimiser.settings.get("derivative_test", None):
+        nlp.add_option("derivative_test", "first-order")
         # nlp.add_option('derivative_test_perturbation') #, 10e-8
         # nlp.add_option('derivative_test_print_all', 'yes')
-    if optimiser.settings.get('max_iter', None):
-        nlp.add_option('max_iter', optimiser.settings['max_iter'])
+
+    if optimiser.settings.get("max_iter", None):
+        nlp.add_option("max_iter", optimiser.settings["max_iter"])
+
     if scaling:
-        print('Applied sollver scaling:', scaling)
-        nlp.add_option('nlp_scaling_method', scaling)
+        print("Applied sollver scaling:", scaling)
+        nlp.add_option("nlp_scaling_method", scaling)
 
     return nlp

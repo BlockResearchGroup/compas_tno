@@ -1,23 +1,32 @@
-from __future__ import print_function
-from __future__ import absolute_import
-from __future__ import division
-
+import math  # noqa: I001
 from copy import deepcopy
-from compas.geometry import subtract_vectors
-from compas.geometry import length_vector
+
+from compas.data import Data
 from compas.geometry import cross_vectors
+from compas.geometry import length_vector
 from compas.geometry import normalize_vector
+from compas.geometry import subtract_vectors
 
 from compas_tno.shapes import MeshDos
 
-from compas.datastructures import Datastructure
+from compas_tno.shapes import arch_shape
+from compas_tno.shapes import arch_shape_polar
+from compas_tno.shapes import cross_vault_highfields
+from compas_tno.shapes import domical_vault
+from compas_tno.shapes import parabolic_shell_highfields
+from compas_tno.shapes import pavillion_vault_highfields
+from compas_tno.shapes import pointed_arch_shape
+from compas_tno.shapes import pointed_vault_heightfields
+from compas_tno.shapes import set_dome_heighfield
+from compas_tno.shapes import set_dome_polar_coord
+from compas_tno.shapes import set_dome_with_spr
 
-import math
+# from compas_tno.utilities import create_mesh_from_topology_and_basemesh
+# from compas_tno.utilities import create_mesh_from_topology_and_pointcloud
+# from compas_tno.utilities import mesh_from_pointcloud
 
-__all__ = ['Shape']
 
-
-class Shape(Datastructure):
+class Shape(Data):
     """The ``Shape`` class deals with the geometry of a masonry vault, where the definition of Extrados, Intrados and Middle surfaces are of interest.
 
     The class imports the attributes and set ups from ``compas_tna.diagrams.FormDiagram`` and include some
@@ -62,7 +71,7 @@ class Shape(Datastructure):
     Examples
     --------
     >>> from compas_tno.shapes import Shape
-    >>> data = {'type': 'crossvault', 'thk': 0.5, 'discretisation': 10, 'xy_span': [[0.0, 10.0], [0.0, 10.0]], 't': 0.0 }
+    >>> data = {"type": "crossvault", "thk": 0.5, "discretisation": 10, "xy_span": [[0.0, 10.0], [0.0, 10.0]], "t": 0.0}
     >>> shape = Shape.from_library(data)
 
 
@@ -102,16 +111,15 @@ class Shape(Datastructure):
 
     """
 
-    # __module__ = 'compas_tno.shapes'
-
     def __init__(self):
-        super(Shape, self).__init__()
+        super().__init__()
+
         self.datashape = {
-            'type': None,
-            'thk': 1.0,
-            'discretisation': [20, 20],
-            'xy_span': [0.0, 10.0],
-            't': 10.0,
+            "type": None,
+            "thk": 1.0,
+            "discretisation": [20, 20],
+            "xy_span": [0.0, 10.0],
+            "t": 10.0,
         }
         self.intrados = None
         self.extrados = None
@@ -123,55 +131,54 @@ class Shape(Datastructure):
         self.fill = False
         self.fill_ro = 14.0
 
-    @property
-    def data(self):
-        """ A data dict representing the shape data structure for serialization.
-        """
-        dataintrados = None
-        dataextrados = None
-        datamiddle = None
+    # @property
+    # def data(self):
+    #     """A data dict representing the shape data structure for serialization."""
+    #     dataintrados = None
+    #     dataextrados = None
+    #     datamiddle = None
 
-        if self.intrados:
-            dataintrados = self.intrados.to_data()
-        if self.extrados:
-            dataextrados = self.extrados.to_data()
-        if self.middle:
-            datamiddle = self.middle.to_data()
+    #     if self.intrados:
+    #         dataintrados = self.intrados.to_data()
+    #     if self.extrados:
+    #         dataextrados = self.extrados.to_data()
+    #     if self.middle:
+    #         datamiddle = self.middle.to_data()
 
-        data = {
-            'datashape': self.datashape,
-            'intrados': dataintrados,
-            'extrados': dataextrados,
-            'middle': datamiddle,
-            'name': self.name,
-            'total_selfweight': self.total_selfweight,
-            'area': self.area,
-            'ro': self.ro,
-            'fill': self.fill,
-            'fill_ro': self.fill_ro
-        }
-        return data
+    #     data = {
+    #         "datashape": self.datashape,
+    #         "intrados": dataintrados,
+    #         "extrados": dataextrados,
+    #         "middle": datamiddle,
+    #         "name": self.name,
+    #         "total_selfweight": self.total_selfweight,
+    #         "area": self.area,
+    #         "ro": self.ro,
+    #         "fill": self.fill,
+    #         "fill_ro": self.fill_ro,
+    #     }
+    #     return data
 
-    @data.setter
-    def data(self, data):
-        if 'data' in data:
-            data = data['data']
-        self.datashape = data.get('datashape') or {}
+    # @data.setter
+    # def data(self, data):
+    #     if "data" in data:
+    #         data = data["data"]
+    #     self.datashape = data.get("datashape") or {}
 
-        self.name = data.get('name') or "shape"
-        self.total_selfweight = data.get('total_selfweight') or 0.0
-        self.area = data.get('area') or 0.0
-        self.ro = data.get('ro') or 20.0
-        self.fill = data.get('fill') or False
-        self.fill_ro = data.get('ro') or 20.0
+    #     self.name = data.get("name") or "shape"
+    #     self.total_selfweight = data.get("total_selfweight") or 0.0
+    #     self.area = data.get("area") or 0.0
+    #     self.ro = data.get("ro") or 20.0
+    #     self.fill = data.get("fill") or False
+    #     self.fill_ro = data.get("ro") or 20.0
 
-        dataintrados = data.get('intrados')
-        dataextrados = data.get('extrados')
-        datamiddle = data.get('middle')
+    #     dataintrados = data.get("intrados")
+    #     dataextrados = data.get("extrados")
+    #     datamiddle = data.get("middle")
 
-        self.intrados = MeshDos.from_data(dataintrados) if dataintrados else None
-        self.extrados = MeshDos.from_data(dataextrados) if dataintrados else None
-        self.middle = MeshDos.from_data(datamiddle) if dataintrados else None
+    #     self.intrados = MeshDos.from_data(dataintrados) if dataintrados else None
+    #     self.extrados = MeshDos.from_data(dataextrados) if dataintrados else None
+    #     self.middle = MeshDos.from_data(datamiddle) if dataintrados else None
 
     @classmethod
     def from_library(cls, data):
@@ -188,140 +195,67 @@ class Shape(Datastructure):
             A Shape object.
 
         """
-
-        from compas_tno.shapes import cross_vault_highfields
-        from compas_tno.shapes import pavillion_vault_highfields
-        from compas_tno.shapes import set_dome_heighfield
-        from compas_tno.shapes import set_dome_with_spr
-        from compas_tno.shapes import set_dome_polar_coord
-        from compas_tno.shapes import arch_shape
-        from compas_tno.shapes import arch_shape_polar
-        from compas_tno.shapes import pointed_arch_shape
-        from compas_tno.shapes import pointed_vault_heightfields
-        from compas_tno.shapes import domical_vault
-        from compas_tno.shapes import parabolic_shell_highfields
-
         shape = cls()
 
-        typevault = data['type']
-        thk = data['thk']
-        discretisation = data['discretisation']
-        t = data.get('t', 0.0)
-        expanded = data.get('expanded', False)
+        typevault = data["type"]
+        thk = data["thk"]
+        discretisation = data["discretisation"]
+        t = data.get("t", 0.0)
+        expanded = data.get("expanded", False)
 
-        if typevault == 'crossvault':
-            xy_span = data['xy_span']
+        if typevault == "crossvault":
+            xy_span = data["xy_span"]
             intrados, extrados, middle = cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
-        elif typevault == 'pavillionvault':
-            xy_span = data['xy_span']
-            spr_angle = data.get('spr_angle', 0.0)
+        elif typevault == "pavillionvault":
+            xy_span = data["xy_span"]
+            spr_angle = data.get("spr_angle", 0.0)
             intrados, extrados, middle = pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t, spr_angle=spr_angle, expanded=expanded)
-        elif typevault == 'dome':
-            center = data['center']
-            radius = data['radius']
+        elif typevault == "dome":
+            center = data["center"]
+            radius = data["radius"]
             intrados, extrados, middle = set_dome_heighfield(center, radius=radius, thk=thk, discretisation=discretisation, t=t, expanded=expanded)
-        elif typevault == 'dome_polar':
-            center = data['center']
-            radius = data['radius']
+        elif typevault == "dome_polar":
+            center = data["center"]
+            radius = data["radius"]
             intrados, extrados, middle = set_dome_polar_coord(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
-        elif typevault == 'dome_spr':
-            center = data['center']
-            radius = data['radius']
-            theta = data['theta']
+        elif typevault == "dome_spr":
+            center = data["center"]
+            radius = data["radius"]
+            theta = data["theta"]
             intrados, extrados, middle = set_dome_with_spr(center, radius=radius, thk=thk, theta=theta, discretisation=discretisation, t=t)
-        elif typevault == 'parabolic_shell':
-            xy_span = data['xy_span']
+        elif typevault == "parabolic_shell":
+            xy_span = data["xy_span"]
             intrados, extrados, middle = parabolic_shell_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
-        elif typevault == 'arch':
-            H = data['H']
-            L = data['L']
-            b = data['b']
-            x0 = data['x0']
+        elif typevault == "arch":
+            H = data["H"]
+            L = data["L"]
+            b = data["b"]
+            x0 = data["x0"]
             intrados, extrados, middle = arch_shape(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
-        elif typevault == 'arch_polar':
-            H = data['H']
-            L = data['L']
-            b = data['b']
-            x0 = data['x0']
+        elif typevault == "arch_polar":
+            H = data["H"]
+            L = data["L"]
+            b = data["b"]
+            x0 = data["x0"]
             intrados, extrados, middle = arch_shape_polar(H=H, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b)
-        elif typevault == 'pointed_arch':
-            hc = data['hc']
-            L = data['L']
-            b = data['b']
-            x0 = data['x0']
+        elif typevault == "pointed_arch":
+            hc = data["hc"]
+            L = data["L"]
+            b = data["b"]
+            x0 = data["x0"]
             intrados, extrados, middle = pointed_arch_shape(hc=hc, L=L, x0=x0, thk=thk, total_nodes=discretisation, b=b, t=t)
-        elif typevault == 'pointed_crossvault':
-            xy_span = data['xy_span']
-            hc = data['hc']
-            hm = data.get('hm', None)
-            he = data.get('he', None)
+        elif typevault == "pointed_crossvault":
+            xy_span = data["xy_span"]
+            hc = data["hc"]
+            hm = data.get("hm", None)
+            he = data.get("he", None)
             intrados, extrados, middle = pointed_vault_heightfields(xy_span=xy_span, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm, thk=thk)
-        elif typevault == 'domicalvault':
-            xy_span = data['xy_span']
-            center = [sum(xy_span[0])/2, sum(xy_span[1])/2]
-            radius = data.get('radius', None)
+        elif typevault == "domicalvault":
+            xy_span = data["xy_span"]
+            center = [sum(xy_span[0]) / 2, sum(xy_span[1]) / 2]
+            radius = data.get("radius", None)
             intrados, extrados, middle = domical_vault(xy_span=xy_span, thk=thk, radius=radius, center=center, t=t, discretisation=discretisation)
 
-        shape.datashape = data
-        shape.intrados = intrados
-        shape.extrados = extrados
-        shape.middle = middle
-
-        shape.area = middle.area()
-        shape.volume = shape.compute_volume()
-        shape.total_selfweight = shape.compute_selfweight()
-
-        return shape
-
-    @classmethod
-    def from_library_proxy(cls, data):
-        """Construct a Shape from a library using a proxy implementation (compatible with Rhinoceros).
-
-        Parameters
-        ----------
-        data : dict
-            Dictionary with the setttings to create the vault.
-
-        Returns
-        -------
-        Shape
-            A Shape object.
-
-        """
-
-        from compas.rpc import Proxy
-
-        proxy = Proxy()
-        proxy.package = 'compas_tno.shapes'
-
-        typevault = data['type']
-        thk = data['thk']
-        discretisation = data['discretisation']
-        t = data.get('t', 0.0)
-        # expanded = data.get('expanded', False)
-
-        if typevault == 'crossvault':
-            xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.cross_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
-        elif typevault == 'pavillionvault':
-            xy_span = data['xy_span']
-            intra_data, extra_data, middle_data = proxy.pavillion_vault_highfields(xy_span, thk=thk, discretisation=discretisation, t=t)
-        elif typevault == 'pointed_crossvault':
-            xy_span = data['xy_span']
-            hc = data['hc']
-            hm = data.get('hm', None)
-            he = data.get('he', None)
-            intra_data, extra_data, middle_data = proxy.pointed_vault_heightfields(xy_span=xy_span, thk=thk, discretisation=discretisation, t=t, hc=hc, he=he, hm=hm)
-        elif typevault == 'dome':
-            center = data['center']
-            radius = data['radius']
-            intra_data, extra_data, middle_data = proxy.dome_heightfields(center, radius=radius, thk=thk, discretisation=discretisation, t=t)
-
-        intrados = MeshDos.from_data(intra_data)
-        extrados = MeshDos.from_data(extra_data)
-        middle = MeshDos.from_data(middle_data)
-
-        shape = cls()
         shape.datashape = data
         shape.intrados = intrados
         shape.extrados = extrados
@@ -357,7 +291,7 @@ class Shape(Datastructure):
 
         """
 
-        data = {'type': 'dome', 'thk': thk, 'discretisation': discretisation, 'center': center, 'radius': radius, 't': t}
+        data = {"type": "dome", "thk": thk, "discretisation": discretisation, "center": center, "radius": radius, "t": t}
 
         return cls().from_library(data)
 
@@ -385,7 +319,7 @@ class Shape(Datastructure):
 
         """
 
-        data = {'type': 'dome_polar', 'thk': thk, 'discretisation': discretisation, 'center': center, 'radius': radius, 't': t}
+        data = {"type": "dome_polar", "thk": thk, "discretisation": discretisation, "center": center, "radius": radius, "t": t}
 
         return cls().from_library(data)
 
@@ -417,7 +351,7 @@ class Shape(Datastructure):
 
         """
 
-        data = {'type': 'arch', 'thk': thk, 'discretisation': discretisation, 'H': H, 'L': L, 'x0': x0, 'b': b, 't': t}
+        data = {"type": "arch", "thk": thk, "discretisation": discretisation, "H": H, "L": L, "x0": x0, "b": b, "t": t}
 
         return cls().from_library(data)
 
@@ -449,7 +383,7 @@ class Shape(Datastructure):
 
         """
 
-        data = {'type': 'arch_polar', 'thk': thk, 'discretisation': discretisation, 'H': H, 'L': L, 'x0': x0, 'b': b, 't': t}
+        data = {"type": "arch_polar", "thk": thk, "discretisation": discretisation, "H": H, "L": L, "x0": x0, "b": b, "t": t}
 
         return cls().from_library(data)
 
@@ -479,17 +413,17 @@ class Shape(Datastructure):
 
         if spr_angle:  # amplify the bounds if springing angle is present
             x0, xf = xy_span[0]
-            alpha = 1/math.cos(math.radians(spr_angle))
+            alpha = 1 / math.cos(math.radians(spr_angle))
             Ldiff = (xf - x0) * (alpha - 1)
-            xyspan_shape = [[x0 - Ldiff/2, xf + Ldiff/2], [x0 - Ldiff/2, xf + Ldiff/2]]
+            xyspan_shape = [[x0 - Ldiff / 2, xf + Ldiff / 2], [x0 - Ldiff / 2, xf + Ldiff / 2]]
             xy_span = xyspan_shape
 
-        data = {'type': 'crossvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t}
+        data = {"type": "crossvault", "thk": thk, "discretisation": discretisation, "xy_span": xy_span, "t": t}
 
         return cls().from_library(data)
 
     @classmethod
-    def create_pointedcrossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None,  t=0.0):
+    def create_pointedcrossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None, t=0.0):
         """Create the shape representing a Pointed Crossvault
 
         Parameters
@@ -515,8 +449,16 @@ class Shape(Datastructure):
             The shape of the dome.
 
         """
-
-        data = {'type': 'pointed_crossvault', 'xy_span': xy_span, 'thk': thk, 'discretisation': discretisation, 't': t, 'hc': hc, 'he': he, 'hm': hm}
+        data = {
+            "type": "pointed_crossvault",
+            "xy_span": xy_span,
+            "thk": thk,
+            "discretisation": discretisation,
+            "t": t,
+            "hc": hc,
+            "he": he,
+            "hm": hm,
+        }
 
         return cls().from_library(data)
 
@@ -545,13 +487,20 @@ class Shape(Datastructure):
             The shape of the dome.
 
         """
-
-        data = {'type': 'pavillionvault', 'thk': thk, 'discretisation': discretisation, 'xy_span': xy_span, 't': t, 'spr_angle': spr_angle, 'expanded': expanded}
+        data = {
+            "type": "pavillionvault",
+            "thk": thk,
+            "discretisation": discretisation,
+            "xy_span": xy_span,
+            "t": t,
+            "spr_angle": spr_angle,
+            "expanded": expanded,
+        }
 
         return cls().from_library(data)
 
     @classmethod
-    def from_meshes(cls, intrados, extrados, middle=None, fill=None, data={'type': 'general', 'thk': 0.50, 't': 0.0}):
+    def from_meshes(cls, intrados, extrados, middle=None, fill=None, data={"type": "general", "thk": 0.50, "t": 0.0}):
         """Construct a Shape from meshes for intrados, extrados, and middle.
 
         Parameters
@@ -586,9 +535,9 @@ class Shape(Datastructure):
             shape.interpolate_middle_from_ub_lb()
             shape.middle = MeshDos.from_mesh(shape.intrados.copy())
             for key in shape.intrados.vertices():
-                ub = shape.extrados.vertex_attribute(key, 'z')
-                lb = shape.intrados.vertex_attribute(key, 'z')
-                shape.middle.vertex_attribute(key, 'z', (ub + lb)/2)
+                ub = shape.extrados.vertex_attribute(key, "z")
+                lb = shape.intrados.vertex_attribute(key, "z")
+                shape.middle.vertex_attribute(key, "z", (ub + lb) / 2)
 
         if fill:
             shape.fill = fill
@@ -601,7 +550,7 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_pointcloud(cls, intrados_pts, extrados_pts, middle_pts=None, data={'type': 'general', 't': 0.0}):
+    def from_pointcloud(cls, intrados_pts, extrados_pts, middle_pts=None, data={"type": "general", "t": 0.0}):
         """Construct a Shape from a pointcloud.
 
         Parameters
@@ -622,9 +571,6 @@ class Shape(Datastructure):
             A Shape object.
 
         """
-
-        from compas_tno.utilities import mesh_from_pointcloud
-
         mesh_extrados = mesh_from_pointcloud(extrados_pts)
         mesh_intrados = mesh_from_pointcloud(intrados_pts)
         mesh_middle = None
@@ -635,7 +581,7 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_middle(cls, middle, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
+    def from_middle(cls, middle, thk=0.50, treat_creases=False, printout=False, data={"type": "general", "t": 0.0, "xy_span": [[0.0, 10.0], [0.0, 10.0]]}):
         """Construct a Shape from a middle mesh and a thickness (offset happening to compute new extrados).
 
         Parameters
@@ -653,19 +599,19 @@ class Shape(Datastructure):
         """
         middle = MeshDos.from_mesh(middle)
         if treat_creases:
-            middle.identify_creases_at_diagonals(xy_span=data['xy_span'])
+            middle.identify_creases_at_diagonals(xy_span=data["xy_span"])
             middle.store_normals(correct_creases=True)
         else:
             middle.store_normals()
-        extrados_mesh = middle.offset_mesh(thk/2, direction='up')
-        intrados_mesh = middle.offset_mesh(thk/2, direction='down')
-        data['thk'] = thk
+        extrados_mesh = middle.offset_mesh(thk / 2, direction="up")
+        intrados_mesh = middle.offset_mesh(thk / 2, direction="down")
+        data["thk"] = thk
         shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
 
         return shape
 
     @classmethod
-    def from_intrados(cls, intrados, thk=0.50, treat_creases=False, printout=False, data={'type': 'general', 't': 0.0, 'xy_span': [[0.0, 10.0], [0.0, 10.0]]}):
+    def from_intrados(cls, intrados, thk=0.50, treat_creases=False, printout=False, data={"type": "general", "t": 0.0, "xy_span": [[0.0, 10.0], [0.0, 10.0]]}):
         """Construct a Shape from an intrados mesh and a thickness (offset happening to both sides).
 
         Parameters
@@ -683,13 +629,13 @@ class Shape(Datastructure):
         """
         intrados = MeshDos.from_mesh(intrados)
         if treat_creases:
-            intrados.identify_creases_at_diagonals(xy_span=data['xy_span'])
+            intrados.identify_creases_at_diagonals(xy_span=data["xy_span"])
             intrados.store_normals(correct_creases=True)
         else:
             intrados.store_normals()
-        extrados = intrados.offset_mesh(thk, direction='up')
+        extrados = intrados.offset_mesh(thk, direction="up")
 
-        data['thk'] = thk
+        data["thk"] = thk
         # bbox = intrados.bounding_box_xy()
         # data['xy_span'] = TAKE THIS FROM BBOX
 
@@ -735,7 +681,7 @@ class Shape(Datastructure):
     #     return shape
 
     @classmethod
-    def from_pointcloud_and_topology(cls, meshtopology, intrados_pts, extrados_pts, middle_pts=None, fill_pts=None, data={'type': 'general', 't': 0.0}):
+    def from_pointcloud_and_topology(cls, meshtopology, intrados_pts, extrados_pts, middle_pts=None, fill_pts=None, data={"type": "general", "t": 0.0}):
         """Construct a Shape from a pointcloud and a given topology.
 
         Parameters
@@ -761,9 +707,6 @@ class Shape(Datastructure):
             A Shape object.
 
         """
-
-        from compas_tno.utilities import create_mesh_from_topology_and_pointcloud
-
         intrados_mesh = create_mesh_from_topology_and_pointcloud(meshtopology, intrados_pts)
         extrados_mesh = create_mesh_from_topology_and_pointcloud(meshtopology, extrados_pts)
         middle_mesh = None
@@ -777,7 +720,7 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
+    def from_meshes_and_formdiagram(cls, form, intrados, extrados, middle=None, data={"type": "general", "t": 0.0}):
         """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.
 
         Parameters
@@ -799,9 +742,6 @@ class Shape(Datastructure):
             A Shape object.
 
         """
-
-        from compas_tno.utilities import create_mesh_from_topology_and_basemesh
-
         # intrados_mesh = MeshDos.from_topology_and_mesh(form, intrados, keep_normals=True)
         intrados_mesh = create_mesh_from_topology_and_basemesh(form, intrados)
         extrados_mesh = create_mesh_from_topology_and_basemesh(form, extrados)
@@ -811,45 +751,7 @@ class Shape(Datastructure):
         return shape
 
     @classmethod
-    def from_meshes_and_formdiagram_proxy(cls, form, intrados, extrados, middle=None, data={'type': 'general', 't': 0.0}):
-        """Construct a Shape from a pair of meshes and a formdiagram that will have its topology copied and normals copied.
-
-        Parameters
-        ----------
-        form: FormDiagram
-            Form Diagram with the topology to be used
-        intrados : mesh
-            Mesh for intrados
-        extrados : mesh
-            Mesh for extrados
-        middle : mesh, optional
-            Mesh for middle, the default is None
-        data : dict,  optional
-            Dictionary with the data in required, the default is None
-
-        Returns
-        -------
-        Shape
-            A Shape object.
-
-        """
-
-        from compas.rpc import Proxy
-
-        proxy = Proxy()
-        proxy.package = 'compas_tno.utilities'
-
-        # from compas_tno.utilities import create_mesh_from_topology_and_basemesh
-
-        intrados_mesh = proxy.create_mesh_from_topology_and_basemesh(form, intrados)
-        extrados_mesh = proxy.create_mesh_from_topology_and_basemesh(form, extrados)
-
-        shape = cls().from_meshes(intrados_mesh, extrados_mesh, middle=middle, data=data)
-
-        return shape
-
-    @classmethod
-    def from_formdiagram_and_attributes(cls, form, data={'type': 'general', 't': 0.0}):
+    def from_formdiagram_and_attributes(cls, form, data={"type": "general", "t": 0.0}):
         """Construct a Shape from the form diagram and its attributes 'ub' and 'lb'.
 
         Parameters
@@ -878,9 +780,9 @@ class Shape(Datastructure):
         middle = MeshDos.from_vertices_and_faces(vertices, faces)
 
         for key in form.vertices():
-            intra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'lb'))
-            extra.vertex_attribute(key, 'z', form.vertex_attribute(key, 'ub'))
-            middle.vertex_attribute(key, 'z', form.vertex_attribute(key, 'target'))
+            intra.vertex_attribute(key, "z", form.vertex_attribute(key, "lb"))
+            extra.vertex_attribute(key, "z", form.vertex_attribute(key, "ub"))
+            middle.vertex_attribute(key, "z", form.vertex_attribute(key, "target"))
 
         shape = cls().from_meshes(intra, extra, middle=middle, data=data)
 
@@ -923,9 +825,9 @@ class Shape(Datastructure):
         self.middle = MeshDos.from_mesh(self.intrados.copy())
 
         for key in self.intrados.vertices():
-            ub = self.extrados.vertex_attribute(key, 'z')
-            lb = self.intrados.vertex_attribute(key, 'z')
-            self.middle.vertex_attribute(key, 'z', (ub + lb)/2)
+            ub = self.extrados.vertex_attribute(key, "z")
+            lb = self.intrados.vertex_attribute(key, "z")
+            self.middle.vertex_attribute(key, "z", (ub + lb) / 2)
 
         return
 
@@ -951,21 +853,21 @@ class Shape(Datastructure):
         intrados.store_normals()
         extrados.store_normals()
 
-        intrados.vertices_attribute('is_outside', False)
-        extrados.vertices_attribute('is_outside', False)
+        intrados.vertices_attribute("is_outside", False)
+        extrados.vertices_attribute("is_outside", False)
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
-                t = self.datashape['t']
+                t = self.datashape["t"]
             except BaseException:
-                print('No t is assigned to vertices in intrados.')
+                print("No t is assigned to vertices in intrados.")
                 t = None
             if t is not None:
                 for key in intrados.vertices():
-                    if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        intrados.vertex_attribute(key, 'is_outside', True)
-                    if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        extrados.vertex_attribute(key, 'is_outside', True)
+                    if abs(intrados.vertex_attribute(key, "z") - t) < 10e-3:
+                        intrados.vertex_attribute(key, "is_outside", True)
+                    if abs(extrados.vertex_attribute(key, "z") - t) < 10e-3:
+                        extrados.vertex_attribute(key, "is_outside", True)
 
         if plot:
             intrados.plot_normals()
@@ -994,8 +896,8 @@ class Shape(Datastructure):
         else:
             data = self.datashape
 
-        if data['type'] == 'dome':
-            xc, yc = data['center']
+        if data["type"] == "dome":
+            xc, yc = data["center"]
         else:
             return Exception
 
@@ -1007,24 +909,24 @@ class Shape(Datastructure):
             _, _, zub = extrados.vertex_coordinates(key)
             nlb = normalize_vector([(x - xc), (y - yc), zlb])
             nub = normalize_vector([(x - xc), (y - yc), zub])
-            intrados.vertex_attribute(key, 'n', nlb)
-            extrados.vertex_attribute(key, 'n', nub)
+            intrados.vertex_attribute(key, "n", nlb)
+            extrados.vertex_attribute(key, "n", nub)
 
-        intrados.vertices_attribute('is_outside', False)
-        extrados.vertices_attribute('is_outside', False)
+        intrados.vertices_attribute("is_outside", False)
+        extrados.vertices_attribute("is_outside", False)
 
         if mark_fixed_LB:  # Look for the vertices with LB == 't'
             try:
-                t = self.datashape['t']
+                t = self.datashape["t"]
             except BaseException:
-                print('No t is assigned to vertices in intrados.')
+                print("No t is assigned to vertices in intrados.")
                 t = None
             if t is not None:
                 for key in intrados.vertices():
-                    if abs(intrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        intrados.vertex_attribute(key, 'is_outside', True)
-                    if abs(extrados.vertex_attribute(key, 'z') - t) < 10e-3:
-                        extrados.vertex_attribute(key, 'is_outside', True)
+                    if abs(intrados.vertex_attribute(key, "z") - t) < 10e-3:
+                        intrados.vertex_attribute(key, "is_outside", True)
+                    if abs(extrados.vertex_attribute(key, "z") - t) < 10e-3:
+                        extrados.vertex_attribute(key, "is_outside", True)
 
         return
 
@@ -1040,7 +942,7 @@ class Shape(Datastructure):
         middle = self.middle
         ro = self.ro
         try:
-            thk = self.datashape['thk']
+            thk = self.datashape["thk"]
             area = middle.area()
             total_selfweight = thk * area * ro
         except BaseException:
@@ -1048,7 +950,7 @@ class Shape(Datastructure):
             extrados = self.extrados
             total_selfweight = 0
             for key in intrados.vertices():
-                h = extrados.vertex_attribute(key, 'z') - intrados.vertex_attribute(key, 'z')
+                h = extrados.vertex_attribute(key, "z") - intrados.vertex_attribute(key, "z")
                 vol = h * middle.vertex_projected_area(key)
                 total_selfweight += vol * ro
 
@@ -1064,7 +966,7 @@ class Shape(Datastructure):
         """
 
         middle = self.middle
-        thk = self.datashape['thk']
+        thk = self.datashape["thk"]
         area = middle.area()
         volume = thk * area
 
@@ -1084,15 +986,15 @@ class Shape(Datastructure):
         """
 
         self.extrados_fill = deepcopy(self.extrados)
-        volume = 0.
-        proj_area_total = 0.
+        volume = 0.0
+        proj_area_total = 0.0
 
         for key in self.extrados_fill.vertices():
-            zi = self.extrados_fill.vertex_attribute(key, 'z')
+            zi = self.extrados_fill.vertex_attribute(key, "z")
             if zi < height:
-                self.extrados_fill.vertex_attribute(key, 'z', height)
+                self.extrados_fill.vertex_attribute(key, "z", height)
                 # this should become a method
-                area = 0.
+                area = 0.0
                 p0 = self.extrados_fill.vertex_coordinates(key)
                 p0[2] = 0
                 for nbr in self.extrados_fill.halfedge[key]:
@@ -1114,12 +1016,12 @@ class Shape(Datastructure):
                 proj_area = area * 0.25
                 proj_area_total += proj_area
                 # this should become a method
-                vol_i = proj_area*(height - zi)
+                vol_i = proj_area * (height - zi)
                 volume += vol_i
 
         self.fill = True
         self.fill_volume = volume
-        print('Proj area total of shape', proj_area_total)
+        print("Proj area total of shape", proj_area_total)
         self.fill_ro = fill_ro
 
         return

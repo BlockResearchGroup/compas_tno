@@ -1,12 +1,6 @@
 import math
 
 
-__all__ = [
-    'paraboloid',
-    'dome'
-]
-
-
 def paraboloid(x, y, coef=-0.1):
     """Function of a paraboloid
 
@@ -25,7 +19,7 @@ def paraboloid(x, y, coef=-0.1):
         Value at (x, y)
     """
 
-    return coef * (x*x + y*y)
+    return coef * (x * x + y * y)
 
 
 def dome(x, y, r):
@@ -46,4 +40,4 @@ def dome(x, y, r):
         Value at (x, y)
     """
 
-    return math.sqrt(r*r - x*x - y*y)
+    return math.sqrt(r * r - x * x - y * y)

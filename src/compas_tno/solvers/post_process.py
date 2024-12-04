@@ -1,14 +1,21 @@
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compas_tno.analysis import Analysis
+    from compas_tno.diagrams import FormDiagram
+    from compas_tno.optimisers import Optimiser
+    from compas_tno.problems import Problem
+
 from compas_tno.algorithms import compute_reactions
-from compas_tno.algorithms import xyz_from_q
 from compas_tno.algorithms import q_from_variables
-from compas_tno.shapes import Shape
-from compas_tno.shapes.meshdos import MeshDos
-from compas_tno.utilities import apply_envelope_from_shape
+from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import save_geometry_at_iterations
+from compas_tno.shapes import Shape
+from compas_tno.utilities import apply_envelope_from_shape
 from compas_tno.utilities.envelopes import apply_bounds_reactions
 
 
-def post_process_general(analysis):
+def post_process_general(analysis: "Analysis"):
     """Post processing of the optimisation.
 
     Parameters
@@ -22,133 +29,136 @@ def post_process_general(analysis):
         The Analysis object updated
     """
 
-    form = analysis.form
-    optimiser = analysis.optimiser
-    shape = analysis.shape
+    form: "FormDiagram" = analysis.form
+    optimiser: "Optimiser" = analysis.optimiser
+    shape: "Shape" = analysis.shape
 
-    M = optimiser.M
-    summary = optimiser.settings.get('summary', False)
-    printout = optimiser.settings.get('printout', True)
-    thickness_type = optimiser.settings.get('thickness_type', 'constant')
-    features = optimiser.settings.get('features', [])
-    save_iterations = optimiser.settings.get('save_iterations', False)
-    show_force_diagram = optimiser.settings.get('save_force_diagram', True)
+    problem: "Problem" = optimiser.problem
+    summary = optimiser.settings.get("summary", False)
+    printout = optimiser.settings.get("printout", True)
+    thickness_type = optimiser.settings.get("thickness_type", "constant")
+    features = optimiser.settings.get("features", [])
+    save_iterations = optimiser.settings.get("save_iterations", False)
+    show_force_diagram = optimiser.settings.get("save_force_diagram", True)
 
     fconstr = optimiser.fconstr
     xopt = optimiser.xopt
     fopt = optimiser.fopt
     message = optimiser.message
-    thk = M.thk
+    thk = problem.thk
 
     i_uv = form.index_uv()
 
-    check = M.k
-    qid = xopt[:M.k].reshape(-1, 1)
+    check = problem.k
+    qid = xopt[: problem.k].reshape(-1, 1)
 
-    if 'xyb' in M.variables:
-        xyb = xopt[check:check + 2*M.nb]
-        check = check + 2*M.nb
-        M.X[M.fixed, :2] = xyb.reshape(-1, 2, order='F')
-    if 'zb' in M.variables:
-        zb = xopt[check: check + M.nb]
-        check = check + M.nb
-        M.X[M.fixed, [2]] = zb.flatten()
-    if 't' in M.variables:
+    if "xyb" in problem.variables:
+        xyb = xopt[check : check + 2 * problem.nb]
+        check = check + 2 * problem.nb
+        problem.X[problem.fixed, :2] = xyb.reshape(-1, 2, order="F")
+    if "zb" in problem.variables:
+        zb = xopt[check : check + problem.nb]
+        check = check + problem.nb
+        problem.X[problem.fixed, [2]] = zb.flatten()
+    if "t" in problem.variables:
         thk = xopt[-1]
-    if 'n' in M.variables:
+    if "n" in problem.variables:
         n = xopt[-1]
-    if 'lambdh' in M.variables:
-        lambdh = xopt[check: check + 1]
-        M.P[:, [0]] = lambdh * M.px0
-        M.P[:, [1]] = lambdh * M.py0
-        M.d = lambdh * M.d0
-    if 'lambdv' in M.variables:
-        lambdv = xopt[check: check + 1]
-        M.P[:, [2]] = lambdv * M.pzv + M.pz0
-    if 'tub' in M.variables:
-        tub = xopt[check:check + M.n]
-        check = check + M.n
-    if 'tlb' in M.variables:
-        tlb = xopt[check:check + M.n]
-        check = check + M.n
-    if 'tub_reac' in M.variables:
-        tub_reac = xopt[check: check + 2*M.nb]
-        check = check + 2*M.nb
+    if "lambdh" in problem.variables:
+        lambdh = xopt[check : check + 1]
+        problem.P[:, [0]] = lambdh * problem.px0
+        problem.P[:, [1]] = lambdh * problem.py0
+        problem.d = lambdh * problem.d0
+    if "lambdv" in problem.variables:
+        lambdv = xopt[check : check + 1]
+        problem.P[:, [2]] = lambdv * problem.pzv + problem.pz0
+    if "tub" in problem.variables:
+        tub = xopt[check : check + problem.n]
+        check = check + problem.n
+    if "tlb" in problem.variables:
+        tlb = xopt[check : check + problem.n]
+        check = check + problem.n
+    if "tub_reac" in problem.variables:
+        tub_reac = xopt[check : check + 2 * problem.nb]
+        check = check + 2 * problem.nb
 
-    M.q = q_from_variables(qid, M.B, M.d)
+    problem.q = q_from_variables(qid, problem.B, problem.d)
 
     # ADD 'lambdv' to post-process
 
     # if 's' in variables:
     #     s = xopt[-1]
 
-    g_final = fconstr(xopt, M)
-    M.X[M.free] = xyz_from_q(M.q, M.P[M.free], M.X[M.fixed], M.Ci, M.Cit, M.Cb)
+    g_final = fconstr(xopt, problem)
+    problem.X[problem.free] = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
 
     # if printout:
-    #     print('post-processing min, max z:', min(M.X[:, 2].flatten()), max(M.X[:, 2].flatten()))
+    #     print('post-processing min, max z:', min(problem.X[:, 2].flatten()), max(problem.X[:, 2].flatten()))
 
     i = 0
     for key in form.vertices():
-        form.vertex_attribute(key, 'x', M.X[i, 0])
-        form.vertex_attribute(key, 'y', M.X[i, 1])
-        form.vertex_attribute(key, 'z', M.X[i, 2])
-        form.vertex_attribute(key, 'px', M.P[i, 0])
-        form.vertex_attribute(key, 'py', M.P[i, 1])
-        form.vertex_attribute(key, 'pz', M.P[i, 2])
+        form.vertex_attribute(key, "x", problem.X[i, 0])
+        form.vertex_attribute(key, "y", problem.X[i, 1])
+        form.vertex_attribute(key, "z", problem.X[i, 2])
+        form.vertex_attribute(key, "px", problem.P[i, 0])
+        form.vertex_attribute(key, "py", problem.P[i, 1])
+        form.vertex_attribute(key, "pz", problem.P[i, 2])
         i = i + 1
 
-    for c, qi in enumerate(list(M.q.ravel())):
+    for c, qi in enumerate(list(problem.q.ravel())):
         u, v = i_uv[c]
-        li = form.edge_length(u, v)
-        form.edge_attribute((u, v), 'q', float(qi))
-        form.edge_attribute((u, v), 'f', float(qi*li))
+        li = form.edge_length((u, v))
+        form.edge_attribute((u, v), "q", float(qi))
+        form.edge_attribute((u, v), "f", float(qi * li))
 
-    form.attributes['loadpath'] = form.loadpath()
+    form.attributes["loadpath"] = form.loadpath()
     compute_reactions(form)
 
-    if 't' in M.variables:
-        if shape.datashape['type'] == 'general':
-            if thickness_type == 'constant':
-                form.attributes['thk'] = thk
-                shape.datashape['thk'] = thk
-                shape.intrados = shape.middle.offset_mesh(n=thk/2, direction='down')
-                shape.extrados = shape.middle.offset_mesh(n=thk/2, direction='up')
+    if "t" in problem.variables:
+        if shape.datashape["type"] == "general":
+            if thickness_type == "constant":
+                form.attributes["thk"] = thk
+                shape.datashape["thk"] = thk
+                shape.intrados = shape.middle.offset_mesh(n=thk / 2, direction="down")
+                shape.extrados = shape.middle.offset_mesh(n=thk / 2, direction="up")
                 apply_envelope_from_shape(form, shape)
-            elif thickness_type == 'variable':
-                t0 = shape.datashape['thk']
+
+            elif thickness_type == "variable":
+                t0 = shape.datashape["thk"]
                 thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
-                form.attributes['thk'] = thk
-                shape.datashape['thk'] = thk
+                form.attributes["thk"] = thk
+                shape.datashape["thk"] = thk
                 if printout:
-                    print('Optimum Value corresponds to a thickness of:', thk)
+                    print("Optimum Value corresponds to a thickness of:", thk)
                 shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
                 apply_envelope_from_shape(form, shape)
-            elif thickness_type == 'intrados':
-                form.attributes['thk'] = thk
-                shape.datashape['thk'] = thk
-                shape.middle = shape.intrados.offset_mesh(n=thk/2, direction='up')
-                shape.extrados = shape.intrados.offset_mesh(n=thk, direction='up')
+
+            elif thickness_type == "intrados":
+                form.attributes["thk"] = thk
+                shape.datashape["thk"] = thk
+                shape.middle = shape.intrados.offset_mesh(n=thk / 2, direction="up")
+                shape.extrados = shape.intrados.offset_mesh(n=thk, direction="up")
                 form.envelope_from_shape(shape)
         else:
-            form.attributes['thk'] = thk
-            shape.datashape['thk'] = thk
+            form.attributes["thk"] = thk
+            shape.datashape["thk"] = thk
             shape = Shape.from_library(shape.datashape)
             apply_envelope_from_shape(form, shape)  # Check if this is ok for adapted pattern
             apply_bounds_reactions(form, shape)
+
             i = 0
             for key in form.vertices():  # this resolve the problem due to the adapted pattern
-                form.vertex_attribute(key, 'ub', float(M.ub[i]))
-                form.vertex_attribute(key, 'lb', float(M.lb[i]))
+                form.vertex_attribute(key, "ub", float(problem.ub[i]))
+                form.vertex_attribute(key, "lb", float(problem.lb[i]))
                 i += 1
 
-    if 'update-envelope' in features:
-        form.attributes['thk'] = thk
-        shape.datashape['thk'] = thk
+    if "update-envelope" in features:
+        form.attributes["thk"] = thk
+        shape.datashape["thk"] = thk
         shape = Shape.from_library(shape.datashape)
         apply_envelope_from_shape(form, shape)
 
-    # if 's' in M.variables:
+    # if 's' in problem.variables:
     #     s = -1 * fopt
     #     for key in form.vertices():
     #         ub = form.vertex_attribute(key, 'ub')
@@ -156,38 +166,38 @@ def post_process_general(analysis):
     #         form.vertex_attribute(key, 'ub', ub - s * (ub - lb))
     #         form.vertex_attribute(key, 'lb', lb + s * (ub - lb))
 
-    if 'n' in M.variables:
-        print('Value of N:', n)
+    if "n" in problem.variables:
+        print("Value of N:", n)
         n = -1 * fopt
-        shape.intrados: MeshDos = shape.intrados.offset_mesh(n=n, direction='up')
-        shape.extrados: MeshDos = shape.extrados.offset_mesh(n=n, direction='down')
+        shape.intrados = shape.intrados.offset_mesh(n=n, direction="up")
+        shape.extrados = shape.extrados.offset_mesh(n=n, direction="down")
         apply_envelope_from_shape(form, shape)
 
-    if 'tub' in M.variables:
+    if "tub" in problem.variables:
         for i, key in enumerate(form.vertices()):
-            zub = form.vertex_attribute(key, 'ub')
-            form.vertex_attribute(key, 'tub', tub[i])
-            form.vertex_attribute(key, 'ub', zub + tub[i])
+            zub = form.vertex_attribute(key, "ub")
+            form.vertex_attribute(key, "tub", tub[i])
+            form.vertex_attribute(key, "ub", zub + tub[i])
 
-    if 'tlb' in M.variables:
+    if "tlb" in problem.variables:
         for i, key in enumerate(form.vertices()):
-            zub = form.vertex_attribute(key, 'lb')
-            form.vertex_attribute(key, 'tlb', tlb[i])
-            form.vertex_attribute(key, 'lb', zub - tlb[i])
+            zub = form.vertex_attribute(key, "lb")
+            form.vertex_attribute(key, "tlb", tlb[i])
+            form.vertex_attribute(key, "lb", zub - tlb[i])
 
-    if 'tub_reac' in M.variables:
-        for i, key in enumerate(form.vertices_where({'is_fixed': True})):
+    if "tub_reac" in problem.variables:
+        for i, key in enumerate(form.vertices_where({"is_fixed": True})):
             print(i, key, tub_reac)
-            form.vertex_attribute(key, 'tub_reac', [tub_reac[i], tub_reac[i + M.nb]])
+            form.vertex_attribute(key, "tub_reac", [tub_reac[i], tub_reac[i + problem.nb]])
 
-    if 'lambdv' in M.variables:
-        added_load = lambdv * M.pzv
+    if "lambdv" in problem.variables:
+        added_load = lambdv * problem.pzv
         for i, key in enumerate(form.vertices()):
             p_added = added_load[i]
-            form.vertex_attribute(key, 'pzext', float(p_added))
+            form.vertex_attribute(key, "pzext", float(p_added))
 
-    if 'lambdh' in M.variables:
-        form.attributes['lambdh'] = lambdh  # can be improved. It currently takes fopt, but if loads at start are 0.1*SWT, the obj is lambd/0.1
+    if "lambdh" in problem.variables:
+        form.attributes["lambdh"] = lambdh  # can be improved. It currently takes fopt, but if loads at start are 0.1*SWT, the obj is lambd/0.1
 
     analysis.form = form
     analysis.optimiser = optimiser
@@ -199,15 +209,15 @@ def post_process_general(analysis):
         analysis.optimiser.Xforce = file_Xforce
 
     if printout or summary:
-        print('\n' + '-' * 50)
-        print('Solution  :', message)
+        print("\n" + "-" * 50)
+        print("Solution  :", message)
         try:
-            print('q range : {0:.3f} : {1:.3f}'.format(min(M.q), max(M.q)))
+            print("q range : {0:.3f} : {1:.3f}".format(min(problem.q), max(problem.q)))
         except BaseException:
-            print('q range : {0:.3f} : {1:.3f}'.format(min(M.q.flatten()), max(M.q.flatten())))
-        print('zb range  : {0:.3f} : {1:.3f}'.format(min(M.X[M.fixed, [2]]), max(M.X[M.fixed, [2]])))
-        print('constr    : {0:.3f} : {1:.3f}'.format(min(g_final), max(g_final)))
-        print('fopt      : {0:.3f}'.format(fopt))
-        print('-' * 50 + '\n')
+            print("q range : {0:.3f} : {1:.3f}".format(min(problem.q.flatten()), max(problem.q.flatten())))
+        print("zb range  : {0:.3f} : {1:.3f}".format(min(problem.X[problem.fixed, [2]]), max(problem.X[problem.fixed, [2]])))
+        print("constr    : {0:.3f} : {1:.3f}".format(min(g_final), max(g_final)))
+        print("fopt      : {0:.3f}".format(fopt))
+        print("-" * 50 + "\n")
 
     return analysis
