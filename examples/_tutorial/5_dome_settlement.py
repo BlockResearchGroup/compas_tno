@@ -1,10 +1,10 @@
-from compas_tno.shapes import Shape
-from compas_tno.diagrams import FormDiagram
-from compas_tno.viewers import Viewer
-from compas_tno.analysis import Analysis
-from compas.geometry import Vector, Point
 from numpy import array
 
+from compas.geometry import Point
+from compas.geometry import Vector
+from compas_tno.analysis import Analysis
+from compas_tno.diagrams import FormDiagram
+from compas_tno.shapes import Shape
 
 # ----------------------------------------
 # 1. Shape geometric definition
@@ -30,7 +30,7 @@ vectors_plot = []
 base_plot = []
 xc = center[0]
 
-for key in form.vertices_where({'is_fixed': True}):
+for key in form.vertices_where({"is_fixed": True}):
     x, y, z = form.vertex_coordinates(key)
     dXbi = [0, 0, 0]
     if x - xc > 0.1:
@@ -49,22 +49,22 @@ dXb = array(vector_supports)
 # --------------------------------------------
 # 4. Create analysis, run and visualise
 # --------------------------------------------
-analysis = Analysis.create_compl_energy_analysis(form, dome, solver='IPOPT', support_displacement=dXb, printout=True)
-analysis.optimiser.set_constraints(['funicular', 'envelope', 'reac_bounds'])
+analysis = Analysis.create_compl_energy_analysis(form, dome, solver="IPOPT", support_displacement=dXb, printout=True)
+analysis.optimiser.set_constraints(["funicular", "envelope", "reac_bounds"])
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
-view = Viewer(form, dome)
-view.scale_edge_thickness(5.0)
-view.draw_form()
-view.draw_shape()
-view.draw_reactions(extend_reactions=True)
-view.draw_cracks()
-for i in range(len(vectors_plot)):
-    vector = vectors_plot[i]
-    base = base_plot[i]
-    view.draw_vector(vector=vector, base=base)
-view.show()
+# view = Viewer(form, dome)
+# view.scale_edge_thickness(5.0)
+# view.draw_form()
+# view.draw_shape()
+# view.draw_reactions(extend_reactions=True)
+# view.draw_cracks()
+# for i in range(len(vectors_plot)):
+#     vector = vectors_plot[i]
+#     base = base_plot[i]
+#     view.draw_vector(vector=vector, base=base)
+# view.show()

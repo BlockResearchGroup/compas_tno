@@ -1,8 +1,6 @@
-from compas_tno.shapes import Shape
-from compas_tno.diagrams import FormDiagram
-from compas_tno.viewers import Viewer
 from compas_tno.analysis import Analysis
-
+from compas_tno.diagrams import FormDiagram
+from compas_tno.shapes import Shape
 
 # ----------------------------------------
 # 1. Shape geometric definition
@@ -28,9 +26,9 @@ analysis.apply_envelope()
 analysis.set_up_optimiser()
 analysis.run()
 
-view = Viewer(form)
-view.settings['scale.reactions'] = 0.004
-view.show_solution()
+# view = Viewer(form)
+# view.settings['scale.reactions'] = 0.004
+# view.show_solution()
 
 # --------------------------------------------
 # 4. Maximum thurst solution and visualisation
@@ -41,6 +39,6 @@ analysis.apply_envelope()
 analysis.set_up_optimiser()
 analysis.run()
 
-view = Viewer(form)
-view.settings['scale.reactions'] = 0.004
-view.show_solution()
+# view = Viewer(form)
+# view.settings['scale.reactions'] = 0.004
+# view.show_solution()
