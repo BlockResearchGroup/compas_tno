@@ -21,11 +21,6 @@ from compas_tno.algorithms import vertical_equilibrium_fdm
 # from compas_tna.diagrams import ForceDiagram
 from compas_tno.plotters import plot_form
 
-__all__ = [
-    "optimise_fdm",
-    "optimise_tna",
-]
-
 
 def optimise_fdm(form, plot=True, surf=False):
     # Mapping

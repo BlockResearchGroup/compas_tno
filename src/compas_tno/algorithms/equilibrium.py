@@ -468,7 +468,7 @@ def xyz_from_xopt(variables, M):
     k = M.k  # number of force variables
     n = M.n  # number of vertices
     nb = len(M.fixed)  # number of fixed vertices
-    # t = M.shape.datashape['t']
+    # t = M.shape.parameters['t']
 
     qid = variables[:k]
     check = k

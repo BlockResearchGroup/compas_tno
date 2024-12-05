@@ -17,8 +17,6 @@ from compas.geometry import is_ccw_xy
 from compas.geometry import normalize_vector
 from compas.numerical import normrow
 
-__all__ = ["planes_trimesh", "local_matrix", "local_matrix_external", "assembly_Cf", "A_heights", "A_stress", "hessian", "simple_nurbs"]
-
 
 def planes_trimesh(form):
     # Planes Of the Triangles

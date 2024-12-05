@@ -53,7 +53,7 @@ def limit_analysis_GSF(
     form0 = analysis.form.copy()
     thk_reduction0 = thk_reduction
     data_diagram = analysis.form.parameters
-    data_shape = analysis.shape.datashape
+    data_shape = analysis.shape.parameters
     ro = analysis.shape.ro
     last_min = 0
     last_max = 100
@@ -202,7 +202,7 @@ def thk_minmax_GSF(
     thicknesses_max = []
     objectives = ["min", "max"]
     ro = analysis.shape.ro
-    data_shape = analysis.shape.datashape
+    data_shape = analysis.shape.parameters
 
     # Find extreme (min thickness) solution:
 
@@ -384,7 +384,7 @@ def max_n_minmax_GSF(
     thicknesses_max = []
     objectives = ["min", "max"]
     ro = analysis.shape.ro
-    data_shape = analysis.shape.datashape
+    data_shape = analysis.shape.parameters
     thk0 = data_shape["thk"]
     t = data_shape["t"]
     initial_intrados = analysis.shape.intrados.copy()

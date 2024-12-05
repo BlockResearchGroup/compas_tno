@@ -18,15 +18,6 @@ from compas_tno.solvers import run_optimisation_ipopt
 from compas_tno.solvers import run_optimisation_MATLAB
 from compas_tno.solvers import run_optimisation_MMA
 from compas_tno.solvers import run_optimisation_scipy
-from compas_tno.utilities import apply_bounds_on_q
-from compas_tno.utilities import apply_bounds_reactions
-from compas_tno.utilities import apply_envelope_from_shape
-from compas_tno.utilities import apply_envelope_on_xy
-from compas_tno.utilities import apply_horizontal_multiplier
-from compas_tno.utilities import apply_selfweight_from_pattern
-from compas_tno.utilities import apply_selfweight_from_shape
-from compas_tno.utilities import get_shape_lb
-from compas_tno.utilities import get_shape_ub
 
 
 class Analysis(Data):
@@ -541,7 +532,7 @@ class Analysis(Data):
 
     def apply_selfweight(self, normalize_loads=True):
         """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
-        apply_selfweight_from_shape(self.form, self.shape, normalize=normalize_loads)
+        self.form.apply_selfweight_from_shape(self.shape, normalize=normalize_loads)
 
     def apply_selfweight_from_pattern(self, pattern, plot=False):
         """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
@@ -551,22 +542,22 @@ class Analysis(Data):
         The base pattern has to coincide with nodes from the original form diagram.
 
         """
-        apply_selfweight_from_pattern(self.form, pattern, plot=plot)
+        self.form.apply_selfweight_from_pattern(pattern, plot=plot)
 
     def apply_hor_multiplier(self, multiplier, component):
         """Apply a multiplier on the selfweight to the nodes of the form diagram based"""
 
-        apply_horizontal_multiplier(self.form, lambd=multiplier, direction=component)
+        self.form.apply_horizontal_multiplier(lambd=multiplier, direction=component)
 
     def apply_envelope(self):
         """Invoke method to apply ub and lb to the nodes based on the shape's intrados and extrados"""
 
-        apply_envelope_from_shape(self.form, self.shape)
+        self.form.apply_envelope_from_shape(self.shape)
 
     def apply_bounds_on_q(self, qmax=0.0, qmin=-10000.0):
         """Invoke method to apply bounds on the force densities of the pattern (qmax, qmin)"""
 
-        apply_bounds_on_q(self.form, qmax=qmax, qmin=qmin)
+        self.form.apply_bounds_on_q(qmax=qmax, qmin=qmin)
 
     def apply_envelope_with_damage(self):
         """Apply ub and lb to the nodes based on the shape's intrados and extrados and in the intra/extra damaged"""
@@ -575,13 +566,13 @@ class Analysis(Data):
 
         for key in self.form.vertices():
             x, y, _ = self.form.vertex_coordinates(key)
-            ub_ = get_shape_ub(self.shape, x, y)
-            lb_ = get_shape_lb(self.shape, x, y)
+            ub_ = self.shape.get_ub(x, y)
+            lb_ = self.shape.get_lb(x, y)
             lb_damage = float(interpolate.griddata(intrados_damage[:, :2], intrados_damage[:, 2], [x, y]))
             ub_damage = float(interpolate.griddata(extrados_damage[:, :2], extrados_damage[:, 2], [x, y]))
 
             if math.isnan(lb_damage) or math.isnan(lb_):
-                lb_ = -1 * self.shape.datashape["t"]
+                lb_ = -1 * self.shape.parameters["t"]
             else:
                 lb_ = max(lb_, lb_damage)
 
@@ -607,7 +598,7 @@ class Analysis(Data):
             Distance in (x, y) to constraint the nodes limiting the hor. movement, by default 0.5
 
         """
-        apply_envelope_on_xy(self.form, c=c)
+        self.form.apply_envelope_on_xy(c=c)
 
     def apply_cracks(self, key, position):
         """Apply cracks on the nodes (key) and in the positions up / down"""
@@ -615,7 +606,7 @@ class Analysis(Data):
 
     def apply_reaction_bounds(self, assume_shape=None):
         """Apply limit thk to be respected by the anchor points"""
-        apply_bounds_reactions(self.form, self.shape, assume_shape)
+        self.form.apply_bounds_reactions(self.shape, assume_shape)
 
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""

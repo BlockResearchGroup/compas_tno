@@ -5,8 +5,6 @@ from compas_tno.algorithms import xyz_from_q
 
 from .post_process import post_process_general
 
-__all__ = ["run_optimisation_pyOpt"]
-
 
 def run_optimisation_pyOpt(analysis):
     """Run Optimisation using PyOpt (requires installation).

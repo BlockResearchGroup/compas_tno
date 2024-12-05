@@ -1,4 +1,5 @@
 import math
+from typing import TYPE_CHECKING
 
 from compas.datastructures import Mesh
 from compas.geometry import angle_vectors
@@ -12,6 +13,9 @@ from compas.geometry import normalize_vector
 from compas.geometry import scale_vector
 from compas.geometry import subtract_vectors
 from compas.geometry import sum_vectors
+
+if TYPE_CHECKING:
+    from compas_tno.diagrams import FormDiagram
 
 
 class MeshDos(Mesh):
@@ -29,7 +33,7 @@ class MeshDos(Mesh):
     """
 
     @classmethod
-    def from_mesh(cls, mesh: Mesh):
+    def from_mesh(cls, mesh: Mesh) -> "MeshDos":
         """Construct object from an existing COMPAS mesh.
 
         Parameters
@@ -42,13 +46,13 @@ class MeshDos(Mesh):
         mesh
             A mesh MeshDos mesh.
         """
-
+        # this is a copy of the vertices and faces only
+        # other data is lost...
         vertices, faces = mesh.to_vertices_and_faces()
-
         return cls.from_vertices_and_faces(vertices, faces)
 
     @classmethod
-    def from_formdiagram_attribute(cls, formdiagram, attribute="lb"):
+    def from_formdiagram_attribute(cls, formdiagram: "FormDiagram", attribute="lb") -> "MeshDos":
         """Create a MeshDos object from a base form diagram and an attribute.
 
         Parameters
@@ -63,7 +67,8 @@ class MeshDos(Mesh):
         mesh
             MeshDos
         """
-
+        # this is a copy of the vertices and faces only
+        # other data is lost...
         vertices, faces = formdiagram.to_vertices_and_faces()
         mesh = cls.from_vertices_and_faces(vertices, faces)
 
@@ -73,7 +78,7 @@ class MeshDos(Mesh):
 
         return mesh
 
-    def offset_mesh(self, n=0.1, direction="up", t=0.0):
+    def offset_mesh(self, n=0.1, direction="up", t=0.0) -> "MeshDos":
         """Offset the mesh upwards considering it as intrados.
 
         Parameters
@@ -87,10 +92,9 @@ class MeshDos(Mesh):
 
         Returns
         -------
-        mesh
-            MeshDos
-        """
+        MeshDos
 
+        """
         offset_list = []
         mesh_copy: "MeshDos" = self.copy()
 
@@ -102,7 +106,6 @@ class MeshDos(Mesh):
                 offset_list.append(t)
             else:
                 deviation = 1 / math.sqrt(1 / (1 + (normal[0] ** 2 + normal[1] ** 2) / normal[2] ** 2))
-                # print('deviation:', deviation)
                 if direction == "up":
                     offset_list.append(z + n * deviation * norm_vector(normal))  # Experimenting with this normal norm!
                 else:

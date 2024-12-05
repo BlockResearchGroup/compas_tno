@@ -22,7 +22,6 @@ from compas_tno.problems import initialize_loadpath
 from compas_tno.problems import initialize_tna
 from compas_tno.problems import objective_selector
 from compas_tno.problems import sensitivities_wrapper
-from compas_tno.utilities import apply_bounds_on_q
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import set_b_constraint
@@ -69,7 +68,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     pattern_center = form.parameters.get("center", None)
 
     if shape:
-        thk = shape.datashape.get("thk", None)
+        thk = shape.parameters.get("thk", None)
         form.attributes["thk"] = thk  # for safety storing the thk. If optimisation is minthk, this will be overwritten
     else:
         thk = 0.50
@@ -84,7 +83,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     for qmin_applied_i in qmin_applied:
         if qmin_applied_i is None:
             print("Appied qmin / qmax:", qmin, qmax)
-            apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+            form.apply_bounds_on_q(qmin=qmin, qmax=qmax)
             break
 
     problem = optimiser.problem
@@ -244,7 +243,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         bounds = bounds + [[min_thk, max_thk]]
 
     if "n" in variables:
-        thk0_approx = thk  # shape.datashape['thk']
+        thk0_approx = thk  # shape.parameters['thk']
         print("Thickness approximate:", thk0_approx)
         x0 = append(x0, 0.0).reshape(-1, 1)
         min_limit = 0.0  # /2  # 0.0
@@ -434,7 +433,7 @@ def set_up_convex_optimisation(analysis: "Analysis"):
     else:
         print("Warning: Non-convex problem for the constraints: ", constraints, ". Considering only 'funicular' instead.")
 
-    apply_bounds_on_q(form, qmin=qmin, qmax=qmax)
+    form.apply_bounds_on_q(qmin=qmin, qmax=qmax)
 
     problem = initialise_problem_general(form)
     problem.variables = variables

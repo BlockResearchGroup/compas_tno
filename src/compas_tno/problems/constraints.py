@@ -38,7 +38,7 @@ def constr_wrapper(variables, M):
     lambdh = 1.0
     delta = 0.0
     thk = M.thk
-    t = M.shape.datashape["t"]
+    t = M.shape.parameters["t"]
 
     if "xyb" in M.variables:
         xyb = variables[check : check + 2 * nb]

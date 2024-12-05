@@ -6,7 +6,8 @@ from compas.datastructures import mesh_smooth_centerofmass
 from compas.datastructures.mesh.smoothing import mesh_smooth_area
 from compas.datastructures.mesh.smoothing import mesh_smooth_centroid
 from compas.geometry import closest_point_on_line
-from compas_tno.algorithms.equilibrium import equilibrium_fdm
+
+from .equilibrium import equilibrium_fdm
 
 
 # this could be reimplemented with Constraints

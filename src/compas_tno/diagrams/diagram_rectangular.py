@@ -10,8 +10,8 @@ from compas.geometry import rotate_points_xy
 from compas.tolerance import TOL
 from compas_tno.utilities import mesh_remove_two_valent_nodes
 from compas_tno.utilities import move_pattern_to_origin
+from compas_tno.utilities import slide_pattern_inwards
 from compas_tno.utilities import split_intersection_lines
-from compas_tno.utilities.form import slide_pattern_inwards
 
 if TYPE_CHECKING:
     from compas_tno.diagrams import FormDiagram

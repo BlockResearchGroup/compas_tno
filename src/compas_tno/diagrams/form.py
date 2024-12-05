@@ -9,7 +9,18 @@ from numpy import zeros
 from compas.datastructures import Mesh
 from compas.geometry import bounding_box_xy
 from compas_tna.diagrams import FormDiagram as TNAFormDiagram
-from compas_tno.utilities import apply_selfweight_from_thrust
+from compas_tno.shapes import Shape
+
+# this needs to be internalised by the shape class
+from compas_tno.shapes import arch_ub_lb_update
+from compas_tno.shapes import crossvault_middle_update
+from compas_tno.shapes import crossvault_ub_lb_update
+from compas_tno.shapes import dome_ub_lb_update
+from compas_tno.shapes import dome_zt_update
+from compas_tno.shapes import pavillionvault_ub_lb_update
+from compas_tno.shapes import pointed_arch_ub_lb_update
+from compas_tno.shapes import pointed_vault_middle_update
+from compas_tno.shapes import pointed_vault_ub_lb_update
 
 from .diagram_arch import create_arch_form_diagram
 from .diagram_arch import create_linear_form_diagram
@@ -87,21 +98,21 @@ class FormDiagram(TNAFormDiagram):
         self.attributes["loadpath"] = 0.0
         self.attributes["indset"] = None
         self.parameters = {
-            "type": None,
-            "discretisation": None,
-            "E": None,
-            "Ah": None,
-            # 'x0': None,
-            # 'discretisation': 20,
-            # 'xy_span': [[0,10],[0,10]],
-            # 'discretisation': [10,10],
-            # 'fix': 'corners',
-            # 'r_oculus:' None,
+            # "type": None,
+            # "discretisation": None,
+            # "E": None,
+            # "Ah": None,
+            # # 'x0': None,
+            # # 'discretisation': 20,
+            # # 'xy_span': [[0,10],[0,10]],
+            # # 'discretisation': [10,10],
+            # # 'fix': 'corners',
+            # # 'r_oculus:' None,
         }
 
-    # --------------------------------------------------------------- #
-    # -----------------------CONSTRUCTORS---------------------------- #
-    # --------------------------------------------------------------- #
+    # =============================================================================
+    # Constructors
+    # =============================================================================
 
     @classmethod
     def from_library(cls, data: dict) -> "FormDiagram":
@@ -147,7 +158,7 @@ class FormDiagram(TNAFormDiagram):
         elif form_type == "delta_form":
             form = cls.create_delta_form(**data)
         else:
-            raise NotImplementedError()
+            raise NotImplementedError
 
         return form
 
@@ -693,9 +704,9 @@ class FormDiagram(TNAFormDiagram):
 
     #     return form
 
-    # --------------------------------------------------------------- #
-    # -----------------------ULTILITIES------------------------------ #
-    # --------------------------------------------------------------- #
+    # =============================================================================
+    # Methods - Utility
+    # =============================================================================
 
     def q(self) -> list[float]:
         """Return the force densities of the (real) edges of the diagram."""
@@ -932,7 +943,7 @@ class FormDiagram(TNAFormDiagram):
         None
             Loads are updated in place.
         """
-        apply_selfweight_from_thrust(self, thickness=thickness, density=density)
+        self.apply_selfweight_from_thrust(thickness=thickness, density=density)
 
     def overview_forces(self) -> None:
         """Print an overview of the forces in the ``Form Diagram``."""
@@ -1017,9 +1028,9 @@ class FormDiagram(TNAFormDiagram):
 
         return len(list(self.edges_where(is_ind=True)))
 
-    # --------------------------------------------------------------- #
-    # -----------------------BOUNDARIES------------------------------ #
-    # --------------------------------------------------------------- #
+    # =============================================================================
+    # Methods - Boundaries
+    # =============================================================================
 
     def number_of_supports(self) -> int:
         """Compute the number of supports."""
@@ -1127,9 +1138,9 @@ class FormDiagram(TNAFormDiagram):
                     self.vertex_attribute(key, "rol_y", True)
                     self.vertex_attribute(key, "max_ry", max_ry[1])
 
-    # --------------------------------------------------------------- #
-    # --------------------------SYMMETRY----------------------------- #
-    # --------------------------------------------------------------- #
+    # =============================================================================
+    # Methods - Symmetry
+    # =============================================================================
 
     def number_of_sym_edges(self, printout=False) -> int:
         """Compute the symmetric edges."""
@@ -1198,9 +1209,9 @@ class FormDiagram(TNAFormDiagram):
 
         return mapsym
 
-    # --------------------------------------------------------------- #
-    # -----------------------TNA-CONECTION--------------------------- #
-    # --------------------------------------------------------------- #
+    # =============================================================================
+    # Methods - TNA
+    # =============================================================================
 
     def build_dual(self) -> Mesh:
         """
@@ -1331,3 +1342,454 @@ class FormDiagram(TNAFormDiagram):
 
         for face in faces_delete:
             self.delete_face(face)
+
+    # =============================================================================
+    # Methods - Shape
+    # =============================================================================
+
+    def apply_envelope_from_shape(self, shape: Shape) -> None:
+        """Apply an envelope (intrados and extrados) to the FormDiagram based on the input shape.
+
+        Parameters
+        ----------
+        shape : Shape
+            The input Shape with intrados and extrardos.
+
+        Returns
+        -------
+        None
+            The formdiagram is updated in place.
+
+        """
+        x = self.vertices_attribute("x")  # check if array is necessary here
+        y = self.vertices_attribute("y")
+
+        # it is a bit silly to only use the shape type
+        # and not just hand this off to the shape itself...
+
+        if shape.parameters["type"] == "dome":
+            zub, zlb = dome_ub_lb_update(
+                x,
+                y,
+                shape.parameters["thk"],
+                shape.parameters["t"],
+                shape.parameters["center"],
+                shape.parameters["radius"],
+            )
+
+        elif shape.parameters["type"] == "crossvault":
+            zub, zlb = crossvault_ub_lb_update(
+                x,
+                y,
+                shape.parameters["thk"],
+                shape.parameters["t"],
+                shape.parameters["xy_span"],
+            )
+
+        elif shape.parameters["type"] == "pointed_crossvault":
+            zub, zlb = pointed_vault_ub_lb_update(
+                x,
+                y,
+                shape.parameters["thk"],
+                shape.parameters["t"],
+                shape.parameters["xy_span"],
+                hc=shape.parameters["hc"],
+                he=shape.parameters["he"],
+                hm=shape.parameters["hm"],
+            )
+
+        elif shape.parameters["type"] == "arch":
+            zub, zlb = arch_ub_lb_update(
+                x,
+                y,
+                shape.parameters["thk"],
+                shape.parameters["t"],
+                H=shape.parameters["H"],
+                L=shape.parameters["L"],
+                x0=shape.parameters["x0"],
+            )
+
+        elif shape.parameters["type"] == "pointed_arch":
+            zub, zlb = pointed_arch_ub_lb_update(
+                x,
+                y,
+                shape.parameters["thk"],
+                shape.parameters["t"],
+                hc=shape.parameters["hc"],
+                L=shape.parameters["L"],
+                x0=shape.parameters["x0"],
+            )
+
+        elif shape.parameters["type"] == "pavillionvault":
+            zub, zlb = pavillionvault_ub_lb_update(
+                x,
+                y,
+                shape.parameters["thk"],
+                shape.parameters["t"],
+                shape.parameters["xy_span"],
+                shape.parameters["spr_angle"],
+            )
+
+        elif shape.parameters["type"] == "general":
+            XY = self.vertices_attributes("xy")
+            zub = shape.get_ub_pattern(XY)
+            zlb = shape.get_lb_pattern(XY)
+
+        else:
+            raise Exception
+
+        for index, vertex in enumerate(self.vertices()):
+            self.vertex_attribute(vertex, name="ub", value=float(zub[index]))
+            self.vertex_attribute(vertex, name="lb", value=float(zlb[index]))
+
+    def apply_envelope_on_xy(self, c=0.5) -> None:
+        """Apply an envelope to the FormDiagram in the plan (x, y) by a given distance.
+
+        Parameters
+        ----------
+        c : float, optional
+            The maximum allowed movement of the nodes in ``x`` or ``y``, by default 0.5
+
+        Returns
+        ----------
+        None
+            The formdiagram is updated in place in the attributes
+
+        """
+        for vertex in self.vertices():
+            x, y = self.vertex_attributes(vertex, names=["x", "y"])
+
+            self.vertex_attribute(vertex, name="xmin", value=x - c)
+            self.vertex_attribute(vertex, name="xmax", value=x + c)
+            self.vertex_attribute(vertex, name="ymin", value=y - c)
+            self.vertex_attribute(vertex, name="ymax", value=y + c)
+
+    def apply_envelope_on_xy_from_base(self, form_base: "FormDiagram", c=0.5) -> None:
+        """Apply an envelope to the FormDiagram considering a given distance applied to a base form diagram.
+
+        Parameters
+        ----------
+        form_base : FormDiagram
+            The base FormDiagram to consider.
+        c : float, optional
+            The maximum allowed movement of the nodes in ``x`` or ``y``, by default 0.5
+
+        Returns
+        -------
+        None
+            The formdiagram is updated in place in the attributes
+
+        """
+        for vertex in form_base.vertices():
+            x, y = form_base.vertex_attributes(vertex, names=["x", "y"])
+
+            self.vertex_attribute(vertex, name="xmin", value=x - c)
+            self.vertex_attribute(vertex, name="xmax", value=x + c)
+            self.vertex_attribute(vertex, name="ymin", value=y - c)
+            self.vertex_attribute(vertex, name="ymax", value=y + c)
+
+    def apply_bounds_on_q(self, qmin=-1e4, qmax=1e-8) -> None:
+        """Apply bounds on the magnitude of the edges'force densities.
+
+        Parameters
+        ----------
+        qmin : float, optional
+            The minimum allowed force density ``qmin``, by default -1e+4
+        qmax : float, optional
+            The maximum allowed force density ``qmax``, by default 1e-8
+
+        Returns
+        -------
+        None
+            The formdiagram is updated in place in the attributes.
+
+        """
+        if isinstance(qmin, list):
+            for i, edge in enumerate(self.edges_where({"_is_edge": True})):
+                self.edge_attribute(edge, "qmin", qmin[i])
+                self.edge_attribute(edge, "qmax", qmax[i])
+        else:
+            for u, v in self.edges_where({"_is_edge": True}):
+                self.edge_attribute(edge, "qmin", qmin)
+                self.edge_attribute(edge, "qmax", qmax)
+
+    def apply_bounds_reactions(self, shape: Shape, assume_shape=None):
+        """Apply bounds on the magnitude of the allowed increase in thickness of the upper-bound (tub), lower-bound (tlb), and of the reaction vector (tub_reacmax).
+
+        Parameters
+        ----------
+        shape : Shape
+            The shape of masonry to constraint the form diagram to.
+        assume_shape : dict, optional
+            Whether or not consider the settings of a different shape on the process, by default None
+
+        Returns
+        ----------
+        None
+            The formdiagram is updated in place in the attributes.
+        """
+        if assume_shape:
+            parameters = assume_shape
+        else:
+            parameters = shape.parameters
+
+        thk = parameters["thk"]
+
+        if parameters["type"] == "dome" or parameters["type"] == "dome_polar":
+            [x0, y0] = parameters["center"][:2]
+            for key in self.vertices_where({"is_fixed": True}):
+                x, y, _ = self.vertex_coordinates(key)
+                theta = math.atan2((y - y0), (x - x0))
+                x_ = thk / 2 * math.cos(theta)
+                y_ = thk / 2 * math.sin(theta)
+                self.vertex_attribute(key, "b", [x_, y_])
+
+        b_manual = parameters.get("b_manual", None)
+        if parameters["type"] == "arch":
+            H = parameters["H"]
+            L = parameters["L"]
+            thk = parameters["thk"]
+            radius = H / 2 + (L**2 / (8 * H))
+            zc = radius - H
+            re = radius + thk / 2
+            x = math.sqrt(re**2 - zc**2)
+            for key in self.vertices_where({"is_fixed": True}):
+                self.vertex_attribute(key, "b", [x - L / 2, 0.0])
+                if b_manual:
+                    self.vertex_attribute(key, "b", [b_manual, 0.0])
+                    print("Applied b manual")
+
+        if parameters["type"] == "dome_spr":
+            x0 = parameters["center"][0]
+            y0 = parameters["center"][1]
+            radius = parameters["radius"]
+            [_, theta_f] = parameters["theta"]
+            r_proj_e = (radius + thk / 2) * math.sin(theta_f)
+            r_proj_m = (radius) * math.sin(theta_f)
+            delt = r_proj_e - r_proj_m
+            for key in self.vertices_where({"is_fixed": True}):
+                x, y, _ = self.vertex_coordinates(key)
+                theta = math.atan2((y - y0), (x - x0))
+                x_ = delt * math.cos(theta)
+                y_ = delt * math.sin(theta)
+                self.vertex_attribute(key, "b", [x_, y_])
+
+        if parameters["type"] == "pavillionvault":
+            x0, x1 = parameters["xy_span"][0]
+            y0, y1 = parameters["xy_span"][1]
+            for key in self.vertices_where({"is_fixed": True}):
+                x, y, _ = self.vertex_coordinates(key)
+                if x == x0:
+                    self.vertex_attribute(key, "b", [-thk / 2, 0])
+                elif x == x1:
+                    self.vertex_attribute(key, "b", [+thk / 2, 0])
+                if y == y0:
+                    if self.vertex_attribute(key, "b"):
+                        b = self.vertex_attribute(key, "b")
+                        b[1] = -thk / 2
+                        self.vertex_attribute(key, "b", b)
+                    else:
+                        self.vertex_attribute(key, "b", [0, -thk / 2])
+                elif y == y1:
+                    if self.vertex_attribute(key, "b"):
+                        b = self.vertex_attribute(key, "b")
+                        b[1] = +thk / 2
+                        self.vertex_attribute(key, "b", b)
+                    else:
+                        self.vertex_attribute(key, "b", [0, +thk / 2])
+
+    def apply_bounds_tub_tlb(self, tubmax=0.5, tlbmax=0.5):
+        """Apply bounds on the magnitude of the allowed increase in thickness of the upper-bound (tub), lower-bound (tlb), and of the reaction vector (tub_reacmax).
+
+        Parameters
+        ----------
+        tubmax : float, optional
+            The maximum increase in thickness of the extrados. The default value is ``0.5``.
+        tlbmax : float, optional
+            The maximum increase in thickness of the intrados. The default value is ``0.5``.
+
+        Returns
+        -------
+        None
+            The formdiagram is updated in place in the attributes.
+
+        """
+        for vertex in self.vertices():
+            self.vertex_attribute(vertex, "tubmax", tubmax)
+            self.vertex_attribute(vertex, "tlbmax", tlbmax)
+
+    # =============================================================================
+    # Methods - Loads
+    # =============================================================================
+
+    def apply_selfweight_from_shape(self, shape: Shape, pz_negative=True, normalize=True) -> None:
+        """Apply selfweight to the nodes of the form diagram based on the shape
+
+        Parameters
+        ----------
+        shape : Shape
+            Shape of the masonry
+        pz_negative : bool, optional
+            Wether or not the vertical loads are negative, by default True
+        normalize : bool, optional
+            Wether or not normalise the selfweight to match shape.total_weight, by default True
+
+        Returns
+        -------
+        None
+            The FormDiagram is modified in place
+
+        """
+        form_: "FormDiagram" = self.copy()
+        total_selfweight = shape.compute_selfweight()
+        ro = shape.ro
+        thk = shape.parameters["thk"]
+
+        x = self.vertices_attribute("x")
+        y = self.vertices_attribute("y")
+
+        if shape.parameters["type"] == "dome":
+            zt = dome_zt_update(x, y, shape.parameters["radius"], shape.parameters["t"], shape.parameters["center"])
+
+        elif shape.parameters["type"] == "crossvault":
+            zt = crossvault_middle_update(x, y, shape.parameters["t"], xy_span=shape.parameters["xy_span"])
+
+        elif shape.parameters["type"] == "pointed_crossvault":
+            zt = pointed_vault_middle_update(
+                x,
+                y,
+                shape.parameters["t"],
+                xy_span=shape.parameters["xy_span"],
+                hc=shape.parameters["hc"],
+                he=shape.parameters["he"],
+                hm=shape.parameters["hm"],
+            )
+
+        else:
+            XY = self.vertices_attributes("xy")
+            zt = shape.get_middle_pattern(XY)
+
+        i = 0
+        for key in form_.vertices():
+            z = float(zt[i])
+            form_.vertex_attribute(key, "z", value=z)
+            self.vertex_attribute(key, "target", value=z)
+            i += 1
+
+        pzt = 0
+        for key in self.vertices():
+            pz = form_.vertex_area(key)
+            self.vertex_attribute(key, "pz", value=pz)
+            pzt += pz
+
+        if shape.parameters["type"] == "arch" or shape.parameters["type"] == "pointed_arch":
+            pzt = 0
+            for key in self.vertices():
+                self.vertex_attribute(key, "pz", value=1.0)
+                if self.vertex_attribute(key, "is_fixed") is True:
+                    self.vertex_attribute(key, "pz", value=0.5)
+                pzt += self.vertex_attribute(key, "pz")
+
+        factor = 1.0 * ro * thk  # Transform tributary area in tributary load
+        if normalize:
+            factor = total_selfweight / pzt
+        if pz_negative:
+            factor *= -1  # make loads negative
+
+        for key in self.vertices():
+            pzi = factor * self.vertex_attribute(key, "pz")
+            self.vertex_attribute(key, "pz", value=pzi)
+
+    def apply_selfweight_from_pattern(self, pattern: Mesh, pz_negative=True, tol=10e-4):
+        """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
+        Note: the base pattern has to coincide with nodes from the original form diagram.
+
+        Parameters
+        ----------
+        pattern : Mesh
+            Mesh in which the forces should be based.
+        plot : bool, optional
+            Whether or not plot the diagrams and its overlap, by False
+        pz_negative : bool, optional
+            Wether or not the vertical loads are negative by default ``True``.
+        tol : float, optional
+            Tolerance for the nodal position match of form and pattern, by default ``10e-4``.
+
+        Returns
+        -------
+        None
+            The FormDiagram is modified in place.
+        """
+        self.vertices_attribute("pz", 0.0)
+        key_real_to_key = {}
+
+        for key in pattern.vertices():
+            x, y, _ = pattern.vertex_coordinates(key)
+            for key_real in self.vertices():
+                x_real, y_real, _ = self.vertex_coordinates(key_real)
+                if x - tol < x_real < x + tol and y - tol < y_real < y + tol:
+                    key_real_to_key[key_real] = key
+                    break
+
+        pzt = 0
+        for key in key_real_to_key:
+            pz = pattern.vertex_attribute(key_real_to_key[key], "pz")
+            # if pz_negative:
+            #     pz *= -1  # make loads negative
+            self.vertex_attribute(key, "pz", value=pz)
+            pzt += pz
+
+    def apply_selfweight_from_thrust(self, thickness=0.5, density=20.0):
+        """Lump the selfweight in the nodes of the thrust network based on their current position.
+        The loads are computed based on the tributary area times the thickness times the density.
+        For variable thickness the nodal attribute `thk` is considered.
+
+        Parameters
+        ----------
+        thickness : float, optional
+            The thickness of the problem, by default 0.50
+            If None is passed, the thickness is taken from the nodal attribute `thk`
+        density : float, optional
+            The density of the material, by default 20.0
+
+        Return
+        ------
+        None
+            The form diagram is updated in place
+
+        """
+        for key in self.vertices():
+            ai = self.vertex_area(key)
+            if thickness:
+                load = -1 * ai * thickness * density
+            else:
+                thk = self.vertex_attribute(key, "thk")
+                load = -1 * ai * thk * density
+            self.vertex_attribute(key, "pz", load)
+
+    def apply_horizontal_multiplier(self, lambd=1.0, direction="x"):
+        """Modify the applied loads considering a load multiplier.
+
+        Parameters
+        ----------
+        lambd : float, optional
+            Value of the horizontal multiplier, by default ``1.0``.
+        direction : str, optional
+            Direction to apply the loads, ``x`` or ``y``, by default ``x``.
+
+        Returns
+        -------
+        None
+            The FormDiagram is modified in place.
+
+        """
+        arg = "p" + direction
+
+        for key in self.vertices():
+            pz = self.vertex_attribute(key, "pz")
+            self.vertex_attribute(key, arg, -1 * pz * lambd)  # considers that swt (pz) is negative
+
+    def apply_fill_load(self):
+        """Modify the applied loads considering a fill."""
+
+        raise NotImplementedError("Not implemented")

@@ -11,8 +11,6 @@ from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import save_geometry_at_iterations
 from compas_tno.shapes import Shape
-from compas_tno.utilities import apply_envelope_from_shape
-from compas_tno.utilities.envelopes import apply_bounds_reactions
 
 
 def post_process_general(analysis: "Analysis"):
@@ -115,36 +113,36 @@ def post_process_general(analysis: "Analysis"):
     compute_reactions(form)
 
     if "t" in problem.variables:
-        if shape.datashape["type"] == "general":
+        if shape.parameters["type"] == "general":
             if thickness_type == "constant":
                 form.attributes["thk"] = thk
-                shape.datashape["thk"] = thk
+                shape.parameters["thk"] = thk
                 shape.intrados = shape.middle.offset_mesh(n=thk / 2, direction="down")
                 shape.extrados = shape.middle.offset_mesh(n=thk / 2, direction="up")
-                apply_envelope_from_shape(form, shape)
+                form.apply_envelope_from_shape(shape)
 
             elif thickness_type == "variable":
-                t0 = shape.datashape["thk"]
+                t0 = shape.parameters["thk"]
                 thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
                 form.attributes["thk"] = thk
-                shape.datashape["thk"] = thk
+                shape.parameters["thk"] = thk
                 if printout:
                     print("Optimum Value corresponds to a thickness of:", thk)
                 shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
-                apply_envelope_from_shape(form, shape)
+                form.apply_envelope_from_shape(shape)
 
             elif thickness_type == "intrados":
                 form.attributes["thk"] = thk
-                shape.datashape["thk"] = thk
+                shape.parameters["thk"] = thk
                 shape.middle = shape.intrados.offset_mesh(n=thk / 2, direction="up")
                 shape.extrados = shape.intrados.offset_mesh(n=thk, direction="up")
-                form.envelope_from_shape(shape)
+                form.apply_envelope_from_shape(shape)
         else:
             form.attributes["thk"] = thk
-            shape.datashape["thk"] = thk
-            shape = Shape.from_library(shape.datashape)
-            apply_envelope_from_shape(form, shape)  # Check if this is ok for adapted pattern
-            apply_bounds_reactions(form, shape)
+            shape.parameters["thk"] = thk
+            shape = Shape.from_library(shape.parameters)
+            form.apply_envelope_from_shape(shape)  # Check if this is ok for adapted pattern
+            form.apply_bounds_reactions(shape)
 
             i = 0
             for key in form.vertices():  # this resolve the problem due to the adapted pattern
@@ -154,9 +152,9 @@ def post_process_general(analysis: "Analysis"):
 
     if "update-envelope" in features:
         form.attributes["thk"] = thk
-        shape.datashape["thk"] = thk
-        shape = Shape.from_library(shape.datashape)
-        apply_envelope_from_shape(form, shape)
+        shape.parameters["thk"] = thk
+        shape = Shape.from_library(shape.parameters)
+        form.apply_envelope_from_shape(shape)
 
     # if 's' in problem.variables:
     #     s = -1 * fopt
@@ -171,7 +169,7 @@ def post_process_general(analysis: "Analysis"):
         n = -1 * fopt
         shape.intrados = shape.intrados.offset_mesh(n=n, direction="up")
         shape.extrados = shape.extrados.offset_mesh(n=n, direction="down")
-        apply_envelope_from_shape(form, shape)
+        form.apply_envelope_from_shape(shape)
 
     if "tub" in problem.variables:
         for i, key in enumerate(form.vertices()):
