@@ -2,8 +2,8 @@ import math
 
 from compas_viewer import Viewer
 
-from compas.geometry import Cylinder
 from compas.colors import Color
+from compas.geometry import Cylinder
 from compas_tno.analysis import Analysis
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
