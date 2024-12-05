@@ -15,4 +15,3 @@ Additional solvers must be installed and a work-in-progress UI is available for 
     :glob:
 
     gettingstarted/solvers
-    gettingstarted/rhino
