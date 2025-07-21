@@ -1,18 +1,26 @@
+from math import sqrt
+from typing import Literal
+from typing import Optional
 
-from numpy import hstack
+import numpy.typing as npt
+from numpy import any
 from numpy import array
 from numpy import asarray
-from numpy import any
+from numpy import diag
+from numpy import float64
+from numpy import hstack
 from numpy.linalg import matrix_rank
 from numpy.linalg import svd
 from numpy.random import rand
-from numpy import diag
 from scipy.linalg import qr
-from math import sqrt
 
 
-def find_independents_forward(E, nind=None, tol=None):
-    """ Find independent edges of the matrix E with the forward method.
+def find_independents_forward(
+    E: npt.NDArray[float64],
+    nind: Optional[int] = None,
+    tol: Optional[float] = None,
+) -> list[int]:
+    """Find independent edges of the matrix E with the forward method.
     The matrix E is reconstructed column by column and the rank is computed at each step.
     Everytime that a column is added and the rank does not increase, the edge corresp. that column is selected as independent.
 
@@ -20,7 +28,7 @@ def find_independents_forward(E, nind=None, tol=None):
     ----------
     E : array
         Equilibrium matrix.
-    nind : ind
+    nind : int
         Number of independent to stop the process, if known in advance, by default None.
     tol : float
         Tolerance for small Singular Values. Default is None.
@@ -31,7 +39,6 @@ def find_independents_forward(E, nind=None, tol=None):
         Independent columns.
 
     """
-
     ind = []
     _, m = E.shape
 
@@ -62,8 +69,12 @@ def find_independents_forward(E, nind=None, tol=None):
     return ind
 
 
-def find_independents_backward(E, nind=None, tol=None):
-    """ Find independent edges of the matrix E with the backward method.
+def find_independents_backward(
+    E: npt.NDArray,
+    nind: Optional[int] = None,
+    tol: Optional[float] = None,
+) -> list[int]:
+    """Find independent edges of the matrix E with the backward method.
     The last columns of the matrix are removed sequentially and the rank is checked.
     Everytime thae rank does not decrease, the edge is selected as independent.
 
@@ -71,7 +82,7 @@ def find_independents_backward(E, nind=None, tol=None):
     ----------
     E : array
         Equilibrium matrix.
-    nind : ind
+    nind : int
         Number of independent to stop the process, if known in advance, by default None.
     tol : float
         Tolerance for small singular values. Default is None.
@@ -82,7 +93,6 @@ def find_independents_backward(E, nind=None, tol=None):
         Independent columns.
 
     """
-
     ind = []
     _, m = E.shape
 
@@ -113,8 +123,8 @@ def find_independents_backward(E, nind=None, tol=None):
     return ind
 
 
-def find_independents_QR(E, tol=None):
-    """ Find independent edges of the matrix E based on a permuted QR factorization.
+def find_independents_QR(E: npt.NDArray, tol: Optional[float] = None) -> list[int]:
+    """Find independent edges of the matrix E based on a permuted QR factorization.
     The matrix E [m x n] (n > m) is factored in Q, R, P matrices, where Q [m x m] is a square matrix, R [m x n] an upper triangular
     matrix and P is the column permutation applied.
     This method is faster, but it does not preserve the numbering structure of the form diagram.
@@ -132,21 +142,20 @@ def find_independents_QR(E, tol=None):
         Independent columns.
 
     """
-
     if not tol:
         tol = 1e-12
 
     _, R, P = qr(E, pivoting=True)
 
     dr = abs(diag(R))
-    rank_ = sum(dr > tol*dr[0])
+    rank_ = sum(dr > tol * dr[0])
     ind = sorted(list(P[rank_:]))
 
     return ind
 
 
-def find_independents(E, method='SVD', tol=None):
-    """ Overall method to find independent edges dependent on method
+def find_independents(E: npt.NDArray, method: Literal["SVD", "QR"] = "SVD", tol: Optional[float] = None) -> list[int]:
+    """Overall method to find independent edges dependent on method
 
     Parameters
     ----------
@@ -162,20 +171,24 @@ def find_independents(E, method='SVD', tol=None):
     ind : list
         Independent columns.
 
-    """
+    Raises
+    ------
+    ValueError
+        If `method` is not one of {"SVD", "QR"}.
 
-    if method == 'SVD':
+    """
+    if method == "SVD":
         ind = find_independents_forward(E, tol)
-    elif method == 'QR':
+    elif method == "QR":
         ind = find_independents_QR(E, tol)
     else:
-        raise ValueError('Plese select a valid method to find the independent edges')
+        raise ValueError("Plese select a valid method to find the independent edges")
 
     return ind
 
 
-def independents_exclude(E, outs):
-    """ Find inndependent edges with certain to exclude.
+def independents_exclude(E: npt.NDArray, outs: list[int]) -> list[int]:
+    """Find inndependent edges with certain to exclude.
 
     Parameters
     ----------
@@ -198,7 +211,7 @@ def independents_exclude(E, outs):
         Etemp = Eouts
         ind = []
     else:
-        print('Warning, could not exclude all')
+        print("Warning, could not exclude all")
         return find_independents_forward(E)
 
     for i in possible:
@@ -212,8 +225,8 @@ def independents_exclude(E, outs):
     return ind
 
 
-def independents_include(E, ins):
-    """ Find inndependent edges with certain to include.
+def independents_include(E: npt.NDArray, ins: list[int]) -> list[int]:
+    """Find inndependent edges with certain to include.
 
     Parameters
     ----------
@@ -227,25 +240,27 @@ def independents_include(E, ins):
     ind : list
         Independent columns.
 
-
     """
-
     n, m = E.shape
-    if len(ins) > (m-n):
-        print('Too many included edges - limit to number of independents: {0}'.format((m-n)))
-        ins = ins[:(m-n)]
+    if len(ins) > (m - n):
+        print("Too many included edges - limit to number of independents: {0}".format((m - n)))
+        ins = ins[: (m - n)]
+
     not_in = list(set(range(m)) - set(ins))
     Ein = E[:, ins]
+
     while matrix_rank(Ein) < Ein.shape[1]:
-        print('Warning, edges are dependent among each other')
+        print("Warning, edges are dependent among each other")
         ins = ins[matrix_rank(Ein)]
-    if len(ins) == (m-n):
+
+    if len(ins) == (m - n):
         Enot_in = E[:, not_in]
         if matrix_rank(Enot_in) == Enot_in.shape[1]:
             return ins
-        else:
-            print('Warning, edges do not form an independent set')
-            return find_independents_forward(E)
+
+        print("Warning, edges do not form an independent set")
+        return find_independents_forward(E)
+
     ind = ins
     Etemp = E[:, [not_in[0]]]
     Etemp.shape
@@ -261,8 +276,8 @@ def independents_include(E, ins):
     return ind
 
 
-def inds_incl_excl(E, ins, outs):
-    """ Find inndependent edges with certain to exclude and include.
+def inds_incl_excl(E: npt.NDArray, ins: list[int], outs: list[int]) -> list[int]:
+    """Find inndependent edges with certain to exclude and include.
 
     Parameters
     ----------
@@ -279,30 +294,32 @@ def inds_incl_excl(E, ins, outs):
         Independent columns.
 
     """
-
     n, m = E.shape
-    if len(ins) > (m-n):
-        print('Too many included edges - limit to number of independents: {0}'.format((m-n)))
-        ins = ins[:(m-n)]
+    if len(ins) > (m - n):
+        print("Too many included edges - limit to number of independents: {0}".format((m - n)))
+        ins = ins[: (m - n)]
+
     not_in = list(set(range(m)) - set(ins))
-    possible = list(set(not_in)-set(outs))
+    possible = list(set(not_in) - set(outs))
     Ein = E[:, ins]
     Eouts = E[:, outs]
+
     while matrix_rank(Ein) < Ein.shape[1]:
-        print('Warning, included edges are dependent among each other')
+        print("Warning, included edges are dependent among each other")
         ins = ins[matrix_rank(Ein)]
-    if len(ins) == (m-n):
+
+    if len(ins) == (m - n):
         Enot_in = E[:, not_in]
         if matrix_rank(Enot_in) == Enot_in.shape[1]:
             return ins
-        else:
-            print('Warning, edges do not form an independent set')
-            return find_independents_forward(E)
+        print("Warning, edges do not form an independent set")
+        return find_independents_forward(E)
+
     if matrix_rank(Eouts) == Eouts.shape[1]:
         Etemp = Eouts
         ind = ins
     else:
-        print('Warning, could not exclude all')
+        print("Warning, could not exclude all")
         ind = ins
         Etemp = E[:, [not_in[0]]]
         possible = not_in[1:]
@@ -318,8 +335,8 @@ def inds_incl_excl(E, ins, outs):
     return ind
 
 
-def check_independents(M, tol=0.001):
-    """ Run checks to verify the independennts.
+def check_independents(M, tol: float = 0.001) -> bool:
+    """Run checks to verify the independennts.
 
     Parameters
     ----------
@@ -335,18 +352,18 @@ def check_independents(M, tol=0.001):
         True if independents are checked.
 
     """
-
     checked = True
+
     if tol > 0:
         for i in range(10**2):
             qid = array(rand(M.k) * 10).reshape(-1, 1)
             q_ = M.B @ qid + M.d
-            res_x = M.Citx.dot(M.U * q_.ravel()) - M.ph[:len(M.free_x)].ravel()
-            res_y = M.City.dot(M.V * q_.ravel()) - M.ph[:len(M.free_y)].ravel()
+            res_x = M.Citx.dot(M.U * q_.ravel()) - M.ph[: len(M.free_x)].ravel()
+            res_y = M.City.dot(M.V * q_.ravel()) - M.ph[: len(M.free_y)].ravel()
             R = max(sqrt(max(res_x**2)), sqrt(max(res_y**2)))
             if R > tol:
                 checked = False
-                print('deviation exceeded limit:', R)
+                print("deviation exceeded limit:", R)
                 break
 
     # checked = True
@@ -366,8 +383,8 @@ def check_independents(M, tol=0.001):
     return checked
 
 
-def check_horizontal_loads(E, p):
-    """ Run checks to verify of a certain horizontal distribution can be taken by the fixed form diagram.
+def check_horizontal_loads(E: npt.NDArray, p: npt.NDArray) -> bool:
+    """Run checks to verify of a certain horizontal distribution can be taken by the fixed form diagram.
 
     Parameters
     ----------
@@ -382,7 +399,6 @@ def check_horizontal_loads(E, p):
         True if independents are checked.
 
     """
-
     r = matrix_rank(E)
     r_ = matrix_rank(hstack([E, p]))
 
@@ -394,8 +410,8 @@ def check_horizontal_loads(E, p):
     return checked
 
 
-def count_inds(E, tol=None):
-    """ Count the number of independent edges for a given singular value tolerance.
+def count_inds(E: npt.NDArray, tol: Optional[float] = None) -> tuple[int, int]:
+    """Count the number of independent edges for a given singular value tolerance.
 
     Parameters
     ----------
@@ -412,7 +428,6 @@ def count_inds(E, tol=None):
         Rank Deficiency of the Equilibrium Matrix.
 
     """
-
     nl, ncol = E.shape
     k = max(nl, ncol) - matrix_rank(E, tol=tol)
     rd = k - abs(nl - ncol)
@@ -420,8 +435,8 @@ def count_inds(E, tol=None):
     return k, rd
 
 
-def matrix_svd(E):
-    """ Return the singular values of the matrix E.
+def matrix_svd(E: npt.NDArray) -> npt.NDArray:
+    """Return the singular values of the matrix E.
 
     Parameters
     ----------
@@ -433,7 +448,6 @@ def matrix_svd(E):
     s : array
         vector with the singular values/
     """
-
     _, s, _ = svd(asarray(E))
 
     return s

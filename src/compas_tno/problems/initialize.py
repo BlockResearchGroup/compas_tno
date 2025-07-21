@@ -1,14 +1,13 @@
-from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
-from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
-
-from compas_tno.algorithms import form_update_with_parallelisation
-from compas_tno.algorithms import equilibrium_fdm
-from compas_tno.algorithms import compute_reactions
-
 import importlib.util
 
+from compas_tno.algorithms import compute_reactions
+from compas_tno.algorithms import equilibrium_fdm
+from compas_tno.algorithms import form_update_with_parallelisation
+from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
+from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
 
-def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVXPY', printout=False):
+
+def initialize_loadpath(form, problem=None, find_inds=False, solver_convex="CVXPY", printout=False):
     """Built-in function to optimise the loadpath considering diagram fixed projection.
     Note: This function will select the most appropriate solver (CVX or MOSEK)
 
@@ -31,16 +30,16 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex='CVXP
         The class with the main matrices of the problem
     """
 
-    if solver_convex == 'CVX' or solver_convex == 'MATLAB':
-        if not importlib.util.find_spec('matlab'):
-            raise ValueError('MATLAB/CVX not configured. Try changing the <solver_convex> attribute.')
+    if solver_convex == "CVX" or solver_convex == "MATLAB":
+        if not importlib.util.find_spec("matlab"):
+            raise ValueError("MATLAB/CVX not configured. Try changing the <solver_convex> attribute.")
         problem = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
-    elif solver_convex == 'CVXPY' or solver_convex == 'MOSEK':
-        if not importlib.util.find_spec('cvxpy'):
-            raise ValueError('CVXPY/MOSEK not configured. Try changing the <solver_convex> attribute.')
+    elif solver_convex == "CVXPY" or solver_convex == "MOSEK":
+        if not importlib.util.find_spec("cvxpy"):
+            raise ValueError("CVXPY/MOSEK not configured. Try changing the <solver_convex> attribute.")
         problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
     else:
-        raise ValueError('Could not initilalise loadpath optimisation with {}. Try changing the <solver_convex> attribute.'.format(solver_convex))
+        raise ValueError("Could not initilalise loadpath optimisation with {}. Try changing the <solver_convex> attribute.".format(solver_convex))
 
     return problem
 

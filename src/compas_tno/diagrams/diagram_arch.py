@@ -1,9 +1,25 @@
-from compas.datastructures import Mesh
-from compas.utilities import geometric_key
 import math
+from typing import TYPE_CHECKING
+from typing import Annotated
+from typing import Type
+from typing import Union
+
+from numpy import linspace
+
+from compas.geometry import Point
+from compas.tolerance import TOL
+
+if TYPE_CHECKING:
+    from compas_tno.diagrams import FormDiagram
 
 
-def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, discretisation=100):
+def create_arch_form_diagram(
+    cls: Type["FormDiagram"],
+    H: float = 1.0,
+    L: float = 2.0,
+    x0: float = 0.0,
+    discretisation: int = 100,
+) -> "FormDiagram":
     """Construct a FormDiagram based on an arch linear discretisation.
     Note: The nodes of the form diagram are spaced following a projection in a semicircular arch.
 
@@ -22,43 +38,48 @@ def create_arch_form_diagram(cls, H=1.0, L=2.0, x0=0.0, discretisation=100):
     -------
     :class:`~compas_tno.diagrams.FormDiagram`
         The FormDiagram created.
+
     """
-
     # Add option for starting from Hi and Li for a given thk.
-
     radius = H / 2 + (L**2 / (8 * H))
-    print('radius =', radius)
-    spr = math.atan2((L/2), (radius - H))
-    print('springing angle =', math.degrees(spr))
-    tot_angle = 2*spr
-    angle_init = (math.pi - tot_angle)/2
+    spr = math.atan2((L / 2), (radius - H))
+    tot_angle = 2 * spr
+    angle_init = (math.pi - tot_angle) / 2
     an = tot_angle / (discretisation - 1)
+
     lines = []
     gkey_fix = []
 
-    for i in range(discretisation-1):
+    for i in range(discretisation - 1):
         angle_i = angle_init + i * an
         angle_f = angle_init + (i + 1) * an
-        xi = L/2 - radius * math.cos(angle_i) + x0
-        xf = L/2 - radius * math.cos(angle_f) + x0
+        xi = L / 2 - radius * math.cos(angle_i) + x0
+        xf = L / 2 - radius * math.cos(angle_f) + x0
+
         lines.append([[xi, 0.0, 0.0], [xf, 0.0, 0.0]])
+
         if i == 0:
-            gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))
+            gkey_fix.append(TOL.geometric_key([xi, 0.0, 0.0], precision=6))
+
         elif i == discretisation - 2:
-            gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
+            gkey_fix.append(TOL.geometric_key([xf, 0.0, 0.0], precision=6))
 
-    mesh = Mesh.from_lines(lines)
-    form = cls.from_mesh(mesh)
-    gkey_key = form.gkey_key(precision=6)
+    form = cls.from_lines(lines)
+    gkey_key = {TOL.geometric_key(form.vertex_coordinates(vertex), precision=6): vertex for vertex in form.vertices()}
 
-    form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
-    form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_fixed", True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_fixed", True)
 
     return form
 
 
-def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
-    """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
+def create_linear_form_diagram(
+    cls: Type["FormDiagram"],
+    L: float = 2.0,
+    x0: float = 0.0,
+    discretisation: int = 100,
+) -> "FormDiagram":
+    """Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes.
 
     Parameters
     ----------
@@ -75,33 +96,38 @@ def create_linear_form_diagram(cls, L=2.0, x0=0.0, discretisation=100):
         FormDiagram generated according to the parameters.
 
     """
-
-    from numpy import linspace
     x = linspace(x0, x0 + L, discretisation)  # Continue this remove need of numpy in the future
     lines = []
     gkey_fix = []
 
-    for i in range(discretisation-1):
+    for i in range(discretisation - 1):
         xi = x[i]
         xf = x[i + 1]
+
         lines.append([[xi, 0.0, 0.0], [xf, 0.0, 0.0]])
+
         if i == 0:
-            gkey_fix.append(geometric_key([xi, 0.0, 0.0], precision=6))
+            gkey_fix.append(TOL.geometric_key([xi, 0.0, 0.0], precision=6))
+
         elif i == discretisation - 2:
-            gkey_fix.append(geometric_key([xf, 0.0, 0.0], precision=6))
+            gkey_fix.append(TOL.geometric_key([xf, 0.0, 0.0], precision=6))
 
-    mesh = Mesh.from_lines(lines)
-    form = cls.from_mesh(mesh)
-    gkey_key = form.gkey_key(precision=6)
+    form = cls.from_lines(lines)
+    gkey_key = {TOL.geometric_key(form.vertex_coordinates(vertex), precision=6): vertex for vertex in form.vertices()}
 
-    form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
-    form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_fixed", True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_fixed", True)
 
     return form
 
 
-def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisation=100):
-    """ Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes based on starting and ending points
+def create_linear_form_diagram_sp_ep(
+    cls: Type["FormDiagram"],
+    sp: Union[Point, Annotated[list[float], 3]] = [0, 0, 0],
+    ep: Union[Point, Annotated[list[float], 3]] = [2, 0, 0],
+    discretisation: int = 100,
+) -> "FormDiagram":
+    """Helper to create a arch linear form-diagram with equaly spaced (in 2D) nodes based on starting and ending points
 
     Parameters
     ----------
@@ -122,8 +148,8 @@ def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisa
     x0, y0 = sp[:2]
     xf, yf = ep[:2]
 
-    dx = (xf - x0)/discretisation
-    dy = (yf - y0)/discretisation
+    dx = (xf - x0) / discretisation
+    dy = (yf - y0) / discretisation
 
     lines = []
     gkey_fix = []
@@ -137,15 +163,15 @@ def create_linear_form_diagram_sp_ep(cls, sp=[0, 0, 0], ep=[2, 0, 0], discretisa
         lines.append([[xi, yi, 0.0], [xf, yf, 0.0]])
 
         if i == 0:
-            gkey_fix.append(geometric_key([xi, yi, 0.0], precision=6))
+            gkey_fix.append(TOL.geometric_key([xi, yi, 0.0], precision=6))
+
         elif i == discretisation - 1:
-            gkey_fix.append(geometric_key([xf, yf, 0.0], precision=6))
+            gkey_fix.append(TOL.geometric_key([xf, yi, 0.0], precision=6))
 
-    mesh = Mesh.from_lines(lines)
-    form = cls.from_mesh(mesh)
-    gkey_key = form.gkey_key(precision=6)
+    form = cls.from_lines(lines)
+    gkey_key = {TOL.geometric_key(form.vertex_coordinates(vertex), precision=6): vertex for vertex in form.vertices()}
 
-    form.vertex_attribute(gkey_key[gkey_fix[0]], 'is_fixed', True)
-    form.vertex_attribute(gkey_key[gkey_fix[1]], 'is_fixed', True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_fixed", True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_fixed", True)
 
     return form

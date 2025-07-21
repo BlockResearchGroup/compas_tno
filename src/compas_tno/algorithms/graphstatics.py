@@ -1,20 +1,23 @@
-from compas_tno.diagrams import ForceDiagram
-
-from compas_tna.equilibrium import horizontal_nodal
-
-from compas_tno.algorithms.equilibrium import vertical_equilibrium_fdm
-from compas_tno.plotters import TNOPlotter
-
-from compas.numerical import connectivity_matrix
-from compas.numerical import spsolve_with_known
-
 from numpy import array
 from numpy import float64
-
 from scipy.sparse import diags
 
+from compas.linalg import spsolve_with_known
+from compas.matrices import connectivity_matrix
+from compas_tna.equilibrium import horizontal_nodal
+from compas_tno.algorithms.equilibrium import vertical_equilibrium_fdm
+from compas_tno.diagrams import ForceDiagram
+from compas_tno.diagrams import FormDiagram
 
-def form_update_with_parallelisation(form, zmax=5.0, plot=False, printout=False, alpha=100.0, kmax=500, callback=None):
+
+def form_update_with_parallelisation(
+    form: FormDiagram,
+    zmax: float = 5.0,
+    printout: bool = False,
+    alpha: float = 100.0,
+    kmax: int = 500,
+    callback: callable = None,
+) -> ForceDiagram:
     """Parallelise a TNO form diagram using as starting point the centroidal dual as ForceDiagram.
 
     Parameters
@@ -24,10 +27,7 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, printout=False,
     zmax : float, optional
         The maximum height of a node in the thrust network.
         The default value is ``5.0``.
-    plot : bool, optional
-        If plots with form and force should display on the screen.
-        The default value is ``False``.
-    plot : bool, optional
+    printout : bool, optional
         If prints should appear in the screen with key information.
         The default value is ``False``.
     alpha : float, optional
@@ -43,90 +43,54 @@ def form_update_with_parallelisation(form, zmax=5.0, plot=False, printout=False,
         and the coordinates of the force diagram as input parameters.
         Default is ``None``.
 
-    Nores
-    ---------
-    See `compas tna <https://blockresearchgroup.github.io/compas_tna/>`_  package.
-
     Returns
     -------
-    force: ForceDiagram
+    :class:`ForceDiagram`
         The force diagram after the process.
+
+    Notes
+    -----
+    See `compas tna <https://blockresearchgroup.github.io/compas_tna/>`_  package.
+
     """
     # mark supports as 'is_anchor'
-    corners = list(form.vertices_where({'is_fixed': True}))
-    form.vertices_attribute('is_anchor', True, keys=corners)
+    corners = list(form.vertices_where({"is_fixed": True}))
+    form.vertices_attribute("is_anchor", True, keys=corners)
 
     # update bounds adding a new face to the open edges along boundaries
     # does not apply for continuous boundary cases, for such, the edges
     # on the boundary must be previously set with '_is_edge': False
     leaves = False
     for u, v in form.edges_on_boundary():
-        if form.edge_attribute((u, v), '_is_edge') is False:
+        if form.edge_attribute((u, v), "_is_edge") is False:
             leaves = True
             break
     if leaves is False:
         form.update_boundaries()
     force = ForceDiagram.from_formdiagram(form)
 
-    # ad = '/Users/mricardo/compas_dev/compas_tno/data/CISM/forces/force-0.json'
-    # force.to_json(ad)
-
-    # for force_edge in force.edges():
-    #     form_edge = force.dual_edge(force_edge)
-    #     q = form.edge_attribute(form_edge, 'q')
-    #     p1, p2 = form.edge_coordinates(*form_edge)
-    #     lh = distance_point_point_xy(p1, p2)
-    #     lmin = lmax = abs(q * lh)/10
-    #     force.edge_attribute(force_edge, 'lmax', lmax)
-    #     # if form.edge_attribute(form_edge, 'is_ind'):
-    #     #     force.edge_attribute(force_edge, 'lmin', lmin)
-
-    # def callback(k, xyz_force, edges):
-    #     print('Iteration:', k)
-    #     for i, key in enumerate(force.vertices()):
-    #         force.vertex_attribute(key, 'x', xyz_force[i][0])
-    #         force.vertex_attribute(key, 'y', xyz_force[i][1])
-
-    #     # ad = '/Users/mricardo/compas_dev/compas_tno/data/CISM/forces/force-' + str(k + 1) + '.json'
-    #     # force.to_json(ad)
-
-    #     plotter = TNOPlotter(force=force)
-    #     plotter.draw_force()
-    #     plotter.show()
-
-    # plot of diagrams @ initial state
-    if plot:
-        plotter = TNOPlotter(form=form, force=force, figsize=(16, 8))
-        plotter.draw_mesh()
-        plotter.draw_force()
-        plotter.show()
-
     # horizontal equilibrium
     horizontal_nodal(form, force, alpha=alpha, kmax=kmax, callback=callback)
 
     if printout:
-        dev = form.edges_attribute('_a')
-        print('max/min deviations:', max(dev), min(dev))
+        dev = form.edges_attribute("_a")
+        print("max/min deviations:", max(dev), min(dev))
 
-    # ****** change compression to negative (TNO convention)
-    q = [form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]
-    for index, edge in enumerate(form.edges_where({'_is_edge': True})):
-        form.edge_attribute(edge, 'q', -1 * q[index])
+    # change compression to negative (TNO convention)
+    q = [form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]
+    for index, edge in enumerate(form.edges_where({"_is_edge": True})):
+        form.edge_attribute(edge, "q", -1 * q[index])
 
     # update vertical equilibrium (only z coordinates change)
     vertical_equilibrium_fdm(form, zmax=zmax)
 
-    # plot of diagrams @ final state
-    if plot:
-        plotter = TNOPlotter(form=form, force=force, figsize=(16, 8))
-        plotter.draw_mesh()
-        plotter.draw_force()
-        plotter.show()
-
     return force
 
 
-def reciprocal_from_form(form, plot=False, restore_form_topology=True):
+def reciprocal_from_form(
+    form: FormDiagram,
+    restore_form_topology: bool = True,
+) -> ForceDiagram:
     """Find a reciprocal form diagram from the stored force densities in thisdiagram
     This is an algebraic solution to the duality. It should work as long as the force densities
     in the form diagram are equilibrated.
@@ -135,54 +99,37 @@ def reciprocal_from_form(form, plot=False, restore_form_topology=True):
     ----------
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to update.
-    plot : bool, optional
-        If plots with form and force should display on the screen.
-        The default value is ``False``.
     restore_form_topology : bool, optional
         If form topology should be restored.
         The default value is ``True``.
 
-    Notes
-    ---------
-    See `compas ags <https://blockresearchgroup.github.io/compas_ags/>`_  package.
-
     Returns
     -------
-    force : :class:`ForceDiagram`
+    :class:`ForceDiagram`
         The reciprocal force diagram.
+
+    Notes
+    -----
+    See `compas ags <https://blockresearchgroup.github.io/compas_ags/>`_  package.
 
     """
     # mark supports as 'is_anchor'
-    corners = list(form.vertices_where({'is_fixed': True}))
-    form.vertices_attribute('is_anchor', True, keys=corners)
+    corners = list(form.vertices_where({"is_fixed": True}))
+    form.vertices_attribute("is_anchor", True, keys=corners)
 
     # update bounds adding a new face to the open edges along boundaries
     # does not apply for continuous boundary cases, for such, the edges
     # on the boundary must be previously set with '_is_edge': False
     leaves = False
     for u, v in form.edges_on_boundary():
-        if form.edge_attribute((u, v), '_is_edge') is False:
+        if form.edge_attribute((u, v), "_is_edge") is False:
             leaves = True
             break
     if leaves is False:
         init_faces = list(form.faces())
         form.update_boundaries()
 
-    # print('edges', form.number_of_edges())
-    # print('vertices', form.number_of_vertices())
-    # print('faces', form.number_of_faces())
-
     force = ForceDiagram.from_formdiagram(form)
-
-    # print('force edges', force.number_of_edges())
-    # print('force vertices', force.number_of_vertices())
-    # print('force faces', force.number_of_faces())
-
-    if plot:
-        plotter = TNOPlotter(form=form, force=force, figsize=(16, 8))
-        plotter.draw_mesh()
-        plotter.draw_force()
-        plotter.show()
 
     force_update_from_form(force, form)
 
@@ -195,14 +142,10 @@ def reciprocal_from_form(form, plot=False, restore_form_topology=True):
             for fkey in new_faces:
                 form.delete_face(fkey)
 
-    if plot:
-        print('Plot of Reciprocal')
-        force.plot()
-
     return force
 
 
-def force_update_from_form(force, form):
+def force_update_from_form(force: ForceDiagram, form: FormDiagram) -> None:
     """Update the force diagram after modifying the (force densities of) the form diagram.
     This is an algebraic solution to the duality. It works as long as the force densities
     in the form diagram are equilibrated.
@@ -214,14 +157,15 @@ def force_update_from_form(force, form):
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to update.
 
-    Notes
-    ---------
-    See `compas tna <https://blockresearchgroup.github.io/compas_tna/>`_ package.
-
     Returns
     -------
     None
         The form and force diagram are updated in-place.
+
+    Notes
+    -----
+    See `compas tna <https://blockresearchgroup.github.io/compas_tna/>`_ package.
+
     """
     # --------------------------------------------------------------------------
     # form diagram
@@ -229,8 +173,8 @@ def force_update_from_form(force, form):
     vertex_index = form.vertex_index()
 
     xy = array(form.xy(), dtype=float64)
-    edges = [[vertex_index[u], vertex_index[v]] for u, v in form.edges_where({'_is_edge': True})]
-    C = connectivity_matrix(edges, 'csr')
+    edges = [[vertex_index[u], vertex_index[v]] for u, v in form.edges_where({"_is_edge": True})]
+    C = connectivity_matrix(edges, "csr")
     Q = diags([form.q()], [0])
     uv = C.dot(xy)
     # --------------------------------------------------------------------------
@@ -242,7 +186,7 @@ def force_update_from_form(force, form):
     _xy = array(force.xy(), dtype=float64)
     _edges = force.ordered_edges(form)
     _edges[:] = [(_vertex_index[u], _vertex_index[v]) for u, v in _edges]
-    _C = connectivity_matrix(_edges, 'csr')
+    _C = connectivity_matrix(_edges, "csr")
     _Ct = _C.transpose()
     # --------------------------------------------------------------------------
     # compute reciprocal for given q
@@ -265,6 +209,6 @@ def force_update_from_form(force, form):
     # --------------------------------------------------------------------------
     for vertex, attr in force.vertices(True):
         index = _vertex_index[vertex]
-        attr['x'] = _xy[index, 0]
-        attr['y'] = _xy[index, 1]
-        attr['z'] = 0.0
+        attr["x"] = _xy[index, 0]
+        attr["y"] = _xy[index, 1]
+        attr["z"] = 0.0

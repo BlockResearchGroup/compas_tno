@@ -34,9 +34,9 @@ def rectangular_topology(x, y):
 
             if i < len(x) - 1 and j < len(y) - 1:
                 p1 = (i, j)
-                p2 = (i, j+1)
-                p3 = (i+1, j)
-                p4 = (i+1, j+1)
+                p2 = (i, j + 1)
+                p3 = (i + 1, j)
+                p4 = (i + 1, j + 1)
                 if i != j and i + j != len(x) - 2:
                     face = [p1, p2, p4, p3]
                     faces.append(face)

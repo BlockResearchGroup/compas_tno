@@ -1,36 +1,41 @@
+import time
+from typing import Optional
+
 from numpy import array
-from numpy import zeros
-from numpy import vstack
+
+# from numpy import asarray
 from numpy import hstack
 from numpy import identity
-from numpy import asarray
+from numpy import vstack
+from numpy import zeros
 from numpy.linalg import pinv
-from numpy.linalg import svd
 
+# from numpy.linalg import svd
 from scipy.sparse import csr_matrix
 from scipy.sparse import diags
 from scipy.sparse import vstack as svstack
 
-from compas.numerical import connectivity_matrix
-
-from compas.utilities import reverse_geometric_key
-
 from compas.geometry import Point
 from compas.geometry import distance_point_point_xy
+from compas.matrices import connectivity_matrix
 
-from compas_tno.algorithms import check_independents
+# from compas.utilities import reverse_geometric_key
 from compas_tno.algorithms import check_horizontal_loads
-from compas_tno.algorithms import find_independents
 
+# from compas_tno.algorithms import check_independents
+from compas_tno.algorithms import find_independents
+from compas_tno.diagrams import FormDiagram
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
-from compas_tno.utilities import find_sym_axis_in_rect_patterns
 from compas_tno.utilities import build_symmetry_transformation
+from compas_tno.utilities import find_sym_axis_in_rect_patterns
 
-import time
+
+def reverse_geometric_key(gkey):
+    raise NotImplementedError
 
 
-class Problem():
+class Problem:
     """
     The ``Problem`` class stores the matrices used in the optimisation. These are listed as parameters of the class and described below.
 
@@ -134,7 +139,6 @@ class Problem():
     """
 
     def __init__(self):
-
         self.q = None
         self.m = None
         self.n = None
@@ -180,18 +184,24 @@ class Problem():
         self.dep = None
         self.B = None
 
-        pass
-
-    @classmethod
-    def from_formdiagram(cls, form, indset=None, printout=False, find_inds=False):
-        """Initialise the problem object form a form diagram."""
-        problem = cls()
-
-        return problem
+        self.variables = None
+        self.features = None
+        self.d = None
 
 
-def initialise_form(form, find_inds=True, method='SVD', printout=False, tol=None):
-    """ Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
+# =============================================================================
+# Constructors
+# =============================================================================
+
+
+def initialise_form(
+    form: FormDiagram,
+    find_inds: bool = True,
+    method: str = "SVD",
+    printout: bool = False,
+    tol: Optional[float] = None,
+) -> Problem:
+    """Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
     ----------
@@ -208,25 +218,24 @@ def initialise_form(form, find_inds=True, method='SVD', printout=False, tol=None
 
     Returns
     -------
-    M : :class:`~compas_tno.problems.Problem`
+    :class:`Problem`
         The object with all the matrices essential to the analysis.
 
-    Note
-    -------
+    Notes
+    -----
     The FormDiagram is updated in place. Check ``initialise_problem_general`` for more info.
 
     """
-
-    M = initialise_problem_general(form)
+    problem = initialise_problem_general(form)
 
     if find_inds:
-        adapt_problem_to_fixed_diagram(M, form, method=method, printout=printout, tol=tol)
+        adapt_problem_to_fixed_diagram(problem, form, method=method, printout=printout, tol=tol)
 
-    return M
+    return problem
 
 
-def initialise_problem_general(form):
-    """ Initialise the problem for a given Form-Diagram building the main matrices used in the subsequent analysis.
+def initialise_problem_general(form: FormDiagram) -> Problem:
+    """Initialise the problem for a given Form-Diagram building the main matrices used in the subsequent analysis.
 
     Parameters
     ----------
@@ -235,30 +244,29 @@ def initialise_problem_general(form):
 
     Returns
     -------
-    args
-        List of matrices and vectors used to perform the optimisation.
+    :class:`Problem`
 
     """
 
     # Mapping
 
-    k_i = form.key_index()
+    k_i = form.vertex_index()
     uv_i = form.uv_index()
     i_uv = form.index_uv()
 
     # Vertices and edges
 
     n = form.number_of_vertices()
-    m = len(list(form.edges_where({'_is_edge': True})))
+    m = len(list(form.edges_where({"_is_edge": True})))
     fixed = [k_i[key] for key in form.fixed()]
     nb = len(fixed)
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({'_is_edge': True})]
+    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({"_is_edge": True})]
     free = list(set(range(n)) - set(fixed))
     ni = len(free)
 
-    q = array([form.edge_attribute((u, v), 'q') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)  # review need of 'is_edge': True
-    qmax = array([form.edge_attribute((u, v), 'qmax') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
-    qmin = array([form.edge_attribute((u, v), 'qmin') for u, v in form.edges_where({'_is_edge': True})]).reshape(-1, 1)
+    q = array([form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)  # review need of 'is_edge': True
+    qmax = array([form.edge_attribute((u, v), "qmax") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
+    qmin = array([form.edge_attribute((u, v), "qmin") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
 
     # Co-ordinates, loads and constraints
 
@@ -278,30 +286,30 @@ def initialise_problem_general(form):
     for key, vertex in form.vertex.items():
         i = k_i[key]
         xyz[i, :] = form.vertex_coordinates(key)
-        x[i] = vertex.get('x')
-        y[i] = vertex.get('y')
-        z[i] = vertex.get('z')
-        px[i] = vertex.get('px', 0)
-        py[i] = vertex.get('py', 0)
-        pz[i] = vertex.get('pz', 0)
-        s[i] = vertex.get('target', 0)
+        x[i] = vertex.get("x")
+        y[i] = vertex.get("y")
+        z[i] = vertex.get("z")
+        px[i] = vertex.get("px", 0)
+        py[i] = vertex.get("py", 0)
+        pz[i] = vertex.get("pz", 0)
+        s[i] = vertex.get("target", 0)
         if abs(s[i]) < 1e-6:
             s[i] = 0.0
-        xlimits[i, 0] = vertex.get('xmin', None)
-        xlimits[i, 1] = vertex.get('xmax', None)
-        ylimits[i, 0] = vertex.get('ymin', None)
-        ylimits[i, 1] = vertex.get('ymax', None)
-        lb[i] = vertex.get('lb', None)
-        ub[i] = vertex.get('ub', None)
+        xlimits[i, 0] = vertex.get("xmin", None)
+        xlimits[i, 1] = vertex.get("xmax", None)
+        ylimits[i, 0] = vertex.get("ymin", None)
+        ylimits[i, 1] = vertex.get("ymax", None)
+        lb[i] = vertex.get("lb", None)
+        ub[i] = vertex.get("ub", None)
 
     # Partial supports, or rollers.
 
     rol_x = []
     rol_y = []
 
-    for key in form.vertices_where({'rol_x': True}):
+    for key in form.vertices_where({"rol_x": True}):
         rol_x.append(k_i[key])
-    for key in form.vertices_where({'rol_y': True}):
+    for key in form.vertices_where({"rol_y": True}):
         rol_y.append(k_i[key])
 
     free_x = list(set(free) - set(rol_x))
@@ -309,7 +317,7 @@ def initialise_problem_general(form):
 
     # C and E matrices
 
-    C = connectivity_matrix(edges, 'csr')
+    C = connectivity_matrix(edges, "csr")
     Ci = C[:, free]
     Cb = C[:, fixed]
     Cbtx = C[:, rol_x].transpose()
@@ -396,7 +404,18 @@ def initialise_problem_general(form):
     return problem
 
 
-def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, tol=None):
+# =============================================================================
+# Adaptors
+# =============================================================================
+
+
+def adapt_problem_to_fixed_diagram(
+    problem: Problem,
+    form: FormDiagram,
+    method: str = "SVD",
+    printout: bool = False,
+    tol: Optional[float] = None,
+) -> None:
     """Adapt the problem assuming that the form diagram is fixed in plan.
 
     Parameters
@@ -413,7 +432,6 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
         Tolerance of the singular values, by default None
 
     """
-
     ind = []
     tol_old_ind = 1e-3
 
@@ -421,14 +439,14 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
 
     # Independent and dependent branches
 
-    if form.attributes['indset']:
+    if form.attributes["indset"]:
         # check if it is a string and "restaure the points"
-        indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes['indset']]
+        indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes["indset"]]
         ind = []
 
-        for u, v in form.edges_where({'_is_edge': True}):
-            index = problem.uv_i[(u, v)]
-            edgemid = Point(*(form.edge_midpoint(u, v)[:2] + [0]))
+        for edge in form.edges_where({"_is_edge": True}):
+            index = problem.uv_i[edge]
+            edgemid = Point(*(form.edge_midpoint(edge)[:2] + [0]))
             for pt in indset:
                 if distance_point_point_xy(edgemid, pt) < tol_old_ind:
                     ind.append(index)
@@ -437,10 +455,10 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
                 indset.remove(pt)
 
         if printout:
-            print('Loaded {} previous independents'.format(len(form.attributes['indset'])))
-            print('Found {} independents in the new pattern'.format(len(ind)))
-        if len(form.attributes['indset']) != len(ind):
-            print('Did not match problem inds')
+            print("Loaded {} previous independents".format(len(form.attributes["indset"])))
+            print("Found {} independents in the new pattern".format(len(ind)))
+        if len(form.attributes["indset"]) != len(ind):
+            print("Did not match problem inds")
             ind = find_independents(problem.E, method=method, tol=tol)
     else:
         ind = find_independents(problem.E, method=method, tol=tol)
@@ -451,17 +469,17 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
     elapsed_time = time.time() - start_time
 
     if printout:
-        print('Reduced problem to {0} force variables with ind. edges'.format(k))
-        print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
+        print("Reduced problem to {0} force variables with ind. edges".format(k))
+        print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
 
     points = []
-    for u, v in form.edges_where({'_is_edge': True}):
-        if problem.uv_i[(u, v)] in ind:
-            form.edge_attribute((u, v), 'is_ind', True)
-            points.append(Point(*(form.edge_midpoint(u, v)[:2] + [0])))
+    for edge in form.edges_where({"_is_edge": True}):
+        if problem.uv_i[edge] in ind:
+            form.edge_attribute(edge, "is_ind", True)
+            points.append(Point(*(form.edge_midpoint(edge)[:2] + [0])))
         else:
-            form.edge_attribute((u, v), 'is_ind', False)
-    form.attributes['indset'] = points
+            form.edge_attribute(edge, "is_ind", False)
+    form.attributes["indset"] = points
 
     rcond = 1e-17
     if tol:
@@ -479,9 +497,9 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
     if any(problem.ph):
         check_hor = check_horizontal_loads(problem.E, problem.ph)
         if check_hor:
-            print('Horizontal Loads can be taken!')
+            print("Horizontal Loads can be taken!")
         else:
-            print('Horizontal Loads are not suitable for this FD!')
+            print("Horizontal Loads are not suitable for this FD!")
 
     problem.ind = ind
     problem.k = k
@@ -494,10 +512,15 @@ def adapt_problem_to_fixed_diagram(problem, form, method='SVD', printout=False, 
     problem.d0 = d
     problem.time_inds = elapsed_time
 
-    return
 
-
-def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=None, correct_loads=True, printout=False):
+def adapt_problem_to_sym_diagram(
+    problem: Problem,
+    form: FormDiagram,
+    list_axis_symmetry=None,
+    center=None,
+    correct_loads=True,
+    printout=False,
+) -> None:
     """Adapt the problem assuming that the form diagram is symmetric.
 
     Parameters
@@ -531,11 +554,11 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
     elapsed_time = time.time() - start_time
 
     if printout:
-        print('Reduced problem to {0} force variables by SYM'.format(k))
-        print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
+        print("Reduced problem to {0} force variables by SYM".format(k))
+        print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
 
-    for u, v in form.edges_where({'_is_edge': True}):
-        form.edge_attribute((u, v), 'is_ind', True if problem.uv_i[(u, v)] in ind else False)
+    for u, v in form.edges_where({"_is_edge": True}):
+        form.edge_attribute((u, v), "is_ind", True if problem.uv_i[(u, v)] in ind else False)
 
     B = Esym
 
@@ -547,8 +570,17 @@ def adapt_problem_to_sym_diagram(problem, form, list_axis_symmetry=None, center=
     return
 
 
-def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axis_symmetry=None, center=None, correct_loads=True, printout=False, tol=None):
-    """ Adapt the problem assuming that the form diagram is symmetric and fixed in plane.
+def adapt_problem_to_sym_and_fixed_diagram(
+    problem: Problem,
+    form: FormDiagram,
+    method: str = "SVD",
+    list_axis_symmetry: Optional[list] = None,
+    center=None,
+    correct_loads: bool = True,
+    printout: bool = False,
+    tol: Optional[float] = None,
+) -> None:
+    """Adapt the problem assuming that the form diagram is symmetric and fixed in plane.
 
     Parameters
     ----------
@@ -568,7 +600,6 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axi
         If prints should show in the screen, by default False
 
     """
-
     start_time = time.time()
 
     adapt_problem_to_fixed_diagram(problem, form, method=method, printout=printout, tol=tol)
@@ -584,7 +615,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axi
 
     for index in ind:
         u, v = i_uv[index]
-        index_sym = form.edge_attribute((u, v), 'sym_key')
+        index_sym = form.edge_attribute((u, v), "sym_key")
         if index_sym not in unique_sym:
             unique_sym.append(index_sym)
             ind_reduc.append(index)
@@ -594,7 +625,7 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axi
 
     j = 0
     for key in unique_sym:
-        edges_sym = [uv_i[(u, v)] for u, v in form.edges_where({'sym_key': key})]
+        edges_sym = [uv_i[(u, v)] for u, v in form.edges_where({"sym_key": key})]
         col = zeros((k, 1))
         for i, ind_i in enumerate(ind):
             if ind_i in edges_sym:
@@ -610,22 +641,25 @@ def adapt_problem_to_sym_and_fixed_diagram(problem, form, method='SVD', list_axi
     elapsed_time = time.time() - start_time
 
     if printout:
-        print('Reduced problem to {0} force variables'.format(k))
-        print('Elapsed Time: {0:.1f} sec'.format(elapsed_time))
+        print("Reduced problem to {0} force variables".format(k))
+        print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
 
-    for u, v in form.edges_where({'_is_edge': True}):
-        form.edge_attribute((u, v), 'is_ind', True if problem.uv_i[(u, v)] in ind else False)
+    for u, v in form.edges_where({"_is_edge": True}):
+        form.edge_attribute((u, v), "is_ind", True if problem.uv_i[(u, v)] in ind else False)
 
     problem.ind = ind
     problem.k = k
     problem.dep = dep
     problem.B = B
 
-    return
+
+# =============================================================================
+# Helpers
+# =============================================================================
 
 
-def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=True):
-    """ Apply symmetry to the form diagram.
+def apply_sym_to_form(form: FormDiagram, list_axis_symmetry=None, center=None, correct_loads=True) -> None:
+    """Apply symmetry to the form diagram.
 
     Parameters
     ----------
@@ -641,26 +675,22 @@ def apply_sym_to_form(form, list_axis_symmetry=None, center=None, correct_loads=
         If update should be done in the applied loads regarding the symmetry, by default True
 
     """
-
     if not list_axis_symmetry:
         data = form.parameters
-        if data['type'] in ['radial_fd', 'radial_spaced_fd', 'spiral_fd']:
+        if data["type"] in ["radial_fd", "radial_spaced_fd", "spiral_fd"]:
             apply_radial_symmetry(form, center=center, correct_loads=correct_loads)
-        elif data['type'] in ['cross_fd', 'fan_fd', 'cross_diagonal', 'cross_with_diagonal', 'ortho_fd']:
+        elif data["type"] in ["cross_fd", "fan_fd", "cross_diagonal", "cross_with_diagonal", "ortho_fd"]:
             list_axis_symmetry = find_sym_axis_in_rect_patterns(data)
-            print('Axis of Symmetry identified:', list_axis_symmetry)
+            print("Axis of Symmetry identified:", list_axis_symmetry)
         else:
-            print('Symmetry applied to a unknown form diagram type')
+            print("Symmetry applied to a unknown form diagram type")
             raise NotImplementedError
 
     if list_axis_symmetry:
         apply_symmetry_from_axis(form, list_axis_symmetry=list_axis_symmetry, correct_loads=correct_loads)
 
-    return
 
-
-def check_bad_independents(problem, form, printout=False, eps=10e+6):
-
+def check_bad_independents(problem: Problem, form: FormDiagram, printout=False, eps=10e6) -> None:
     keep_inds = []
 
     for i_ind in range(len(problem.ind)):
@@ -671,97 +701,95 @@ def check_bad_independents(problem, form, printout=False, eps=10e+6):
 
     if len(keep_inds) == problem.m:
         return
-    else:
-        print('original inds:', len(problem.ind), problem.ind)
-        print('Updating the relevant independent')
-        inds = []
-        for i_ind in keep_inds:
-            inds.append(problem.ind[i_ind])
 
-        q0 = zeros((problem.m, 1))
-        form.edges_attribute('is_ind', False)
-        for i, edge in enumerate(form.edges_where({'_is_edge': True})):
-            if i in inds:
-                form.edge_attribute(edge, 'is_ind', True)
-            elif i in problem.ind:
-                q0[i] = form.edge_attribute(edge, 'q')
+    print("original inds:", len(problem.ind), problem.ind)
+    print("Updating the relevant independent")
+    inds = []
+    for i_ind in keep_inds:
+        inds.append(problem.ind[i_ind])
 
-        print(q0)
+    q0 = zeros((problem.m, 1))
+    form.edges_attribute("is_ind", False)
+    for i, edge in enumerate(form.edges_where({"_is_edge": True})):
+        if i in inds:
+            form.edge_attribute(edge, "is_ind", True)
+        elif i in problem.ind:
+            q0[i] = form.edge_attribute(edge, "q")
 
-        problem.ind = inds
-        problem.dep = list(set(range(problem.m)) - set(inds))
-        problem.B = problem.B[:, keep_inds]
-        problem.d += q0
-        problem.k = len(inds)
-        print('final inds', len(problem.ind), problem.ind)
+    print(q0)
 
-    return
+    problem.ind = inds
+    problem.dep = list(set(range(problem.m)) - set(inds))
+    problem.B = problem.B[:, keep_inds]
+    problem.d += q0
+    problem.k = len(inds)
+    print("final inds", len(problem.ind), problem.ind)
 
 
-def plot_svds(M, tol=None):
-    """ Plot a diagram of SVD.
+# def plot_svds(M, tol=None):
+#     """Plot a diagram of SVD.
 
-    Parameters
-    ----------
-    M : :class:`~compas_tno.problems.Problem`
-        The problem with matrices for calculation
-    tol : float (optional)
-        The tolerance to find the independents
-    """
+#     Parameters
+#     ----------
+#     M : :class:`~compas_tno.problems.Problem`
+#         The problem with matrices for calculation
+#     tol : float (optional)
+#         The tolerance to find the independents
+#     """
 
-    import matplotlib.pyplot as plt
-    from numpy.linalg import matrix_rank
+#     import matplotlib.pyplot as plt
+#     from numpy.linalg import matrix_rank
 
-    k = len(M.ind)
-    n, m = M.E.shape
-    # mn_min = min(n, m)
+#     k = len(M.ind)
+#     n, m = M.E.shape
+#     # mn_min = min(n, m)
 
-    _, s, _ = svd(asarray(M.E))
-    # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
-    print('max/min singular vectors E', max(s), min(s), len(s))
-    print('Shape E: {} | #ind: {} | rank : {}:'.format(M.E.shape, k, matrix_rank(M.E, tol=tol)))
+#     _, s, _ = svd(asarray(M.E))
+#     # _, s, _ = svds(M.E, k=min(M.E.shape), solver='propack')
+#     print("max/min singular vectors E", max(s), min(s), len(s))
+#     print("Shape E: {} | #ind: {} | rank : {}:".format(M.E.shape, k, matrix_rank(M.E, tol=tol)))
 
-    # mn = max(m - n, n - m)
-    mn = max(m - n, 0)
-    zs = k - mn
-    print('# null-SVD:', zs)
+#     # mn = max(m - n, n - m)
+#     mn = max(m - n, 0)
+#     zs = k - mn
+#     print("# null-SVD:", zs)
 
-    # if zs + 3 > len(s):
-    #     print('Last {} SVs: {}'.format(len(s[-(zs + 3):]), s[-(zs + 3):]))
-    # print('ALL SVS:', s)
+#     # if zs + 3 > len(s):
+#     #     print('Last {} SVs: {}'.format(len(s[-(zs + 3):]), s[-(zs + 3):]))
+#     # print('ALL SVS:', s)
 
-    check = check_independents(M)
-    print('Check independents:', check)
-    print('Shape/ Rank Ed:', M.Ed.shape, matrix_rank(M.Ed))
+#     check = check_independents(M)
+#     print("Check independents:", check)
+#     print("Shape/ Rank Ed:", M.Ed.shape, matrix_rank(M.Ed))
 
-    if zs > 0:
-        first_zero = s[len(s)-zs]
-        last_non_zero = s[len(s)-zs - 1]
+#     if zs > 0:
+#         first_zero = s[len(s) - zs]
+#         last_non_zero = s[len(s) - zs - 1]
 
-        x_zs = list(range(len(s)))[-zs:]
-        y_zs = s[-zs:]
+#         x_zs = list(range(len(s)))[-zs:]
+#         y_zs = s[-zs:]
 
-        print('Last Non Zero:', last_non_zero)
-        print('First Zero SV:', first_zero)
+#         print("Last Non Zero:", last_non_zero)
+#         print("First Zero SV:", first_zero)
 
-        # len_zero = len(s[s<1.0])
-        lin_x = len(s) - zs
+#         # len_zero = len(s[s<1.0])
+#         lin_x = len(s) - zs
 
-        porcentage_key = (last_non_zero - first_zero)/last_non_zero
-        print('percentage key is:', porcentage_key)
+#         porcentage_key = (last_non_zero - first_zero) / last_non_zero
+#         print("percentage key is:", porcentage_key)
 
-        _, ax = plt.subplots()
-        ax.plot(s)
-        ax.scatter(x_zs, y_zs)
-        ax.plot([lin_x, lin_x], [0, 1.0], color='black')
-        ax.plot()
-        plt.show()
+#         _, ax = plt.subplots()
+#         ax.plot(s)
+#         ax.scatter(x_zs, y_zs)
+#         ax.plot([lin_x, lin_x], [0, 1.0], color="black")
+#         ax.plot()
+#         plt.show()
 
-    else:
-        print('EQ. Matrix is FULL rank: (k = m-n)')
-        _, ax = plt.subplots()
-        # ax.set_ylim(2.7, 3.0)
-        ax.plot(s)
-        plt.show()
+#     else:
+#         print("EQ. Matrix is FULL rank: (k = m-n)")
+#         _, ax = plt.subplots()
+#         # ax.set_ylim(2.7, 3.0)
+#         ax.plot(s)
+#         plt.show()
 
-    return
+#     return
