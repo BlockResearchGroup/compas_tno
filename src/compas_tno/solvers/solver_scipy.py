@@ -72,6 +72,7 @@ def run_optimisation_scipy(analysis: "Analysis"):
         if sucess is True:
             exitflag = 0
         else:
+            exitflag = 1
             print(message)
 
     elapsed_time = time.time() - start_time

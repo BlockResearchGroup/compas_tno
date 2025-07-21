@@ -520,6 +520,8 @@ class Analysis(Data):
         else:
             return False
 
+        # return False
+
     def set_optimiser_options(self, **kwargs):
         """Set the additional options of the optimisation."""
         if kwargs:
