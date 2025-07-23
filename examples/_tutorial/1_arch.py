@@ -5,6 +5,8 @@ from compas_tno.shapes import Shape
 # from compas_tno.viewers import Viewer
 # from compas_tno.plotters import TNOPlotter
 
+from compas_viewer import Viewer
+
 # ----------------------------------------
 # 1. Geometric definition
 # ----------------------------------------
@@ -50,7 +52,7 @@ analysis.run()
 # 5. Create analysis for maximum thrust and visualise
 # ----------------------------------------
 
-analysis = Analysis.create_maxthrust_analysis(form, arch)
+analysis = Analysis.create_maxthrust_analysis(form, arch, printout=True)
 analysis.optimiser.set_constraints(["funicular", "envelope", "reac_bounds"])
 analysis.optimiser.set_starting_point("current")
 analysis.apply_selfweight()
@@ -58,6 +60,12 @@ analysis.apply_envelope()
 analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
+
+print('Form Diagram:', form)
+
+viewer = Viewer()
+viewer.scene.add(form)
+viewer.show()
 
 # view = Viewer(form, arch)
 # view.settings['camera.target'] = [0.5, 0, 0]
