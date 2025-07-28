@@ -2,10 +2,13 @@ from compas_tno.analysis import Analysis
 from compas_tno.diagrams import FormDiagram
 from compas_tno.shapes import Shape
 
-# from compas_tno.viewers import Viewer
-# from compas_tno.plotters import TNOPlotter
+from compas_tno.viewer import TNOViewer
 
 from compas_viewer import Viewer
+
+from compas.colors import Color
+from compas.geometry import Cylinder
+import math
 
 # ----------------------------------------
 # 1. Geometric definition
@@ -39,14 +42,8 @@ analysis.run()
 # 4. Visualise solution
 # ----------------------------------------
 
-# view = Viewer(form, arch)
-# view.settings['camera.target'] = [0.5, 0, 0]
-# view.settings['camera.distance'] = 7.0
-# view.settings['camera.rx'] = 60
-# view.draw_form()
-# view.draw_shape()
-# view.draw_cracks()
-# view.show()
+viewer = TNOViewer(form, arch)
+viewer.show()
 
 # ----------------------------------------
 # 5. Create analysis for maximum thrust and visualise
@@ -61,18 +58,5 @@ analysis.apply_reaction_bounds()
 analysis.set_up_optimiser()
 analysis.run()
 
-print('Form Diagram:', form)
-
-viewer = Viewer()
-viewer.scene.add(form)
+viewer = TNOViewer(form, arch)
 viewer.show()
-
-# view = Viewer(form, arch)
-# view.settings['camera.target'] = [0.5, 0, 0]
-# view.settings['camera.distance'] = 7.0
-# view.settings['camera.rx'] = 60
-# view.draw_form()
-# view.draw_shape()
-# view.draw_cracks()
-# view.draw_reactions(extend_reactions=True)
-# view.show()

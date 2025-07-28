@@ -1509,7 +1509,7 @@ class FormDiagram(TNAFormDiagram):
                 self.edge_attribute(edge, "qmin", qmin[i])
                 self.edge_attribute(edge, "qmax", qmax[i])
         else:
-            for u, v in self.edges_where({"_is_edge": True}):
+            for i, edge in enumerate(self.edges_where({"_is_edge": True})):
                 self.edge_attribute(edge, "qmin", qmin)
                 self.edge_attribute(edge, "qmax", qmax)
 

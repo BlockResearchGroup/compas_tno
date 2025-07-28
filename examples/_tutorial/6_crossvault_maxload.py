@@ -12,38 +12,8 @@ import math
 from compas.colors import Color
 from compas.geometry import Cylinder
 
-# ----------------------------------------
-# 0. Vizualization function
-# ----------------------------------------
+from compas_tno.viewer import TNOViewer
 
-def visualization(vault, form):
-    viewer = Viewer()
-
-    # viewer.scene.add(vault.middle, show_lines=False, name="Middle")
-    viewer.scene.add(vault.intrados, show_lines=False, name="Intrados", opacity=0.5)
-    viewer.scene.add(vault.extrados, show_lines=False, name="Extrados", opacity=0.5)
-
-    edges = list(form.edges_where({"_is_edge": True}))
-
-    max_thick = 0.1
-    forces = [form.edge_attribute(edge, "q") * form.edge_length(edge) for edge in edges]
-    fmax = math.sqrt(max(abs(max(forces)), abs(min(forces))))
-
-    pipes = []
-    for edge in edges:
-        qi = form.edge_attribute(edge, "q")
-        line = form.edge_line(edge)
-        length = line.length
-        force = math.sqrt(abs(qi * length))
-        radius = force / fmax * max_thick
-        pipe = Cylinder.from_line_and_radius(line, radius)
-        if force > 1e-3:
-            pipes.append(pipe)
-        viewer.scene.add(pipe, color=Color.red())
-
-    # viewer.scene.add(pipes, name="Pipes", color=Color.red())
-
-    viewer.show()
 
 # ----------------------------------------
 # 1. Shape geometric definition
@@ -60,7 +30,7 @@ vault = Shape.create_crossvault(xy_span=xy_span, thk=thk, spr_angle=30)
 discretisation = 8
 form = FormDiagram.create_cross_form(xy_span=xy_span, discretisation=discretisation)
 
-load_pos = 3
+load_pos = 2
 xc = yc = L / 2
 yp = 2.5
 yp = yc - load_pos / (discretisation / 2) * yc
@@ -76,14 +46,15 @@ for key in form.vertices_where({"is_fixed": True}):
     if y < yc:
         supports.append(key)
 
-print(loaded_node, supports)
+if load_pos != 0:
+    print(loaded_node, supports)
+    form, loaded_node = form_add_lines_support(form, loaded_node=loaded_node, supports=supports)
 
-form, loaded_node = form_add_lines_support(form, loaded_node=loaded_node, supports=supports)
+# visualization(None, form)
 
-# plotter = TNOPlotter(form)
-# plotter.draw_form(scale_width=False, color=Color.black())
-# plotter.draw_supports(color=Color.red())
-# plotter.show()
+viewer = Viewer()
+viewer.scene.add(form, name="Form", color=Color.black())
+viewer.show()
 
 # ------------------------------------------------------------------------
 # 4. Define applied load case
@@ -99,26 +70,11 @@ print("New Loaded Node:", loaded_node)
 # --------------------------------------------
 analysis = Analysis.create_max_load_analysis(form, vault, 
                                              load_direction=load_direction, 
-                                             max_lambd=300, 
+                                             max_lambd=10000, 
                                              printout=True)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 analysis.set_up_optimiser()
 analysis.run()
 
-visualization(vault, form)
-
-# viewer = Viewer(form)
-# viewer.settings["scale.reactions"] = 0.004
-# viewer.draw_thrust()
-# viewer.draw_cracks()
-# viewer.draw_shape()
-# viewer.draw_reactions()
-
-# length = 2.0
-# x, y, z = form.vertex_coordinates(loaded_node)
-# z += length + 0.1
-# arrow = Arrow([x, y, z], [0, 0, -length])
-# viewer.app.add(arrow, linecolor=(0, 0, 0), facecolor=(0, 0, 0))
-
-# viewer.show()
+TNOViewer(form, vault).show()
