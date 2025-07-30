@@ -1,8 +1,3 @@
-'''compas_tno.viewer
-
-Minimal TNO form-diagram and shape viewer: pipes scaled by force, grouped with intrados/extrados, and cracks.
-'''
-
 from compas_viewer.config import Config
 from compas_viewer.viewer import Viewer
 from compas.geometry import Cylinder, Point
@@ -35,7 +30,7 @@ class TNOViewer:
         self.shape = shape
         self.groups = {}
         self.settings = {
-            'form_pipe_thick': 0.1,  # Maximum pipe radius for the largest detected force
+            'form_max_thk': 0.1,  # Maximum pipe radius for the largest detected force
             'intrados_color': Color.blue().darkened(30),
             'extrados_color': Color.green().darkened(30),
             'form_color': Color.red(),
@@ -88,7 +83,7 @@ class TNOViewer:
         max_thick : float, optional
             Maximum pipe radius for the largest detected force.
         """
-        max_thick = self.settings['form_pipe_thick']
+        max_thick = self.settings['form_max_thk']
         grp = self.viewer.scene.add_group(name='Form', show=True)
 
         edges = list(self.form.edges_where({'_is_edge': True}))
