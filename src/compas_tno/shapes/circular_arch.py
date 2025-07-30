@@ -358,7 +358,11 @@ def arch_db(x, y, thk, fixed, H=1.00, L=2.0, x0=0.0):
     db = zeros((len(fixed), 2))
     x_lim = math.sqrt(re**2 - zc**2)
 
+    print(db.shape)
+
     for i in range(len(fixed)):
-        db[i, :] = [1 / 2 * re / x_lim, 0.0]
+        # db[i, :] = [1 / 2 * re / x_lim, 0.0]
+        db[i, 0] = 1 / 2 * re / x_lim
+        db[i, 1] = 0.0
 
     return db
