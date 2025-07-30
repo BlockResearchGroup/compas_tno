@@ -1,3 +1,9 @@
+from typing import TYPE_CHECKING
+import numpy.typing as npt
+
+if TYPE_CHECKING:
+    from compas_tno.problems import Problem
+
 from numpy import divide
 from numpy import multiply
 from numpy import vstack
@@ -11,7 +17,7 @@ from compas_tno.problems.bounds_update import b_update
 from compas_tno.problems.bounds_update import ub_lb_update
 
 
-def constr_wrapper(variables, M):
+def constr_wrapper(variables : npt.NDArray, M: "Problem") -> npt.NDArray:
     """Wrapper of the constraints assigned.
 
     Parameters
@@ -30,6 +36,10 @@ def constr_wrapper(variables, M):
     if isinstance(M, list):
         M = M[0]
 
+    # Ensure M.variables is always a list for safe "in" checks
+    if M.variables is None:
+        M.variables = []
+
     k = M.k
     n = M.n
     nb = M.nb
@@ -37,8 +47,8 @@ def constr_wrapper(variables, M):
     qid = variables[:k].reshape(-1, 1)
     lambdh = 1.0
     delta = 0.0
-    thk = M.thk
-    t = M.shape.parameters["t"]
+    thk : float = M.thk # type: ignore
+    t = M.shape.parameters["t"] # type: ignore
 
     if "xyb" in M.variables:
         xyb = variables[check : check + 2 * nb]
@@ -142,7 +152,7 @@ def constr_wrapper(variables, M):
             Rx = Rx + abs(tub_reac[:nb])
             Ry = Ry + abs(tub_reac[nb:])
 
-        constraints = vstack([constraints, Rx, Ry])
+        constraints : npt.NDArray = vstack([constraints, Rx, Ry])
 
     if "displ_map" in M.constraints:
         if delta:

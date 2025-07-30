@@ -1,3 +1,9 @@
+from typing import Callable, Any, TYPE_CHECKING
+import numpy as np
+
+if TYPE_CHECKING:
+    from compas_tno.problems import Problem
+
 from numpy import hstack
 from numpy import identity
 from numpy import vstack
@@ -11,22 +17,27 @@ from compas_tno.problems.bounds_update import db_update
 from compas_tno.problems.bounds_update import dub_dlb_update
 
 
-def d_fconstr(fconstr, x0, eps, *args):
+def d_fconstr(
+    fconstr: Callable[[np.ndarray, Any], np.ndarray],
+    x0: np.ndarray,
+    eps: float,
+    *args: Any
+) -> np.ndarray:
     """Jacobian matrix approximated using finite differences.
 
     Parameters
     ----------
     fconstr : callable
         Function with the constraints
-    x0 : array
-        Point to compute the pertubation
+    x0 : np.ndarray
+        Point to compute the perturbation
     eps : float
-        Size of the pertubations
+        Size of the perturbations
 
     Returns
     -------
-    dfdx : array
-        Jacobian of the constraints computed using finite diferences
+    dfdx : np.ndarray
+        Jacobian of the constraints computed using finite differences
     """
 
     fval = fconstr(x0, *args).reshape(-1, 1)
@@ -41,21 +52,23 @@ def d_fconstr(fconstr, x0, eps, *args):
     return dfdx
 
 
-def sensitivities_wrapper(variables, M):
+def sensitivities_wrapper(
+    variables: np.ndarray,
+    M: "Problem"
+) -> np.ndarray:
     """Jacobian matrix computed analytically based on the constraints and variables assigned.
 
     Parameters
     ----------
-    variables : array (k x 1)
+    variables : np.ndarray
         Variables to pass to the function.
-    M : :class:`~compas_tno.problems.Problem`
+    M : Problem
         The class with necessary matrices, or arguments, to compute the objective function
 
     Returns
     -------
-    [type]
-        [description]
-
+    np.ndarray
+        The Jacobian matrix.
     Notes
     -----
         Observe the order in which variables are added.
@@ -63,6 +76,10 @@ def sensitivities_wrapper(variables, M):
 
     if isinstance(M, list):
         M = M[0]
+
+    # Ensure M.variables is always a list for safe "in" checks
+    if M.variables is None:
+        M.variables = []
 
     # variables
     k = M.k  # number of force variables

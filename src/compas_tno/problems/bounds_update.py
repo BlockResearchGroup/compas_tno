@@ -1,4 +1,8 @@
 import numpy.typing as npt
+from typing import List, Tuple,TYPE_CHECKING
+if TYPE_CHECKING:
+    from compas_tno.problems import Problem
+
 
 from compas_tno.shapes import Shape
 from compas_tno.shapes import arch_b_update
@@ -218,6 +222,8 @@ def b_update(
         Shape object to be updated
     b : array
         Current ``b`` limits
+    variables : list
+        List with the variables passed
 
     Returns
     -------
@@ -242,7 +248,7 @@ def b_update(
     raise Exception
 
 
-def db_update(x, y, thk, fixed, shape, b, variables):
+def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], shape: Shape, b: npt.NDArray, variables: List[str]):
     """Function to update the derrivatives of the limits of the extension of the reaction forces on the support vertices.
 
     Parameters
@@ -259,6 +265,8 @@ def db_update(x, y, thk, fixed, shape, b, variables):
         Shape object to be updated
     b : array
         Current ``b`` limits
+    variables : list
+        List with the variables passed
 
     Returns
     -------

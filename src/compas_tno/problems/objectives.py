@@ -88,7 +88,7 @@ def objective_selector(objective: str) -> tuple[Callable, Callable]:
     return fobj, fgrad
 
 
-def f_min_thrust(variables: npt.NDArray, problem: Problem) -> float:
+def f_min_thrust(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise the horizontal thrust
 
     Parameters
@@ -148,7 +148,7 @@ def f_min_thrust(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_max_thrust(variables: npt.NDArray, problem: Problem) -> float:
+def f_max_thrust(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to maximise the horizontal thrust
 
     Parameters
@@ -167,7 +167,7 @@ def f_max_thrust(variables: npt.NDArray, problem: Problem) -> float:
     return -1 * f_min_thrust(variables, problem)
 
 
-def f_bestfit(variables: npt.NDArray, problem: Problem) -> float:
+def f_bestfit(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise the vertical squared distance to a given target
 
     Parameters
@@ -202,7 +202,7 @@ def f_bestfit(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_horprojection(variables: npt.NDArray, problem: Problem) -> float:
+def f_horprojection(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern
 
     Parameters
@@ -237,7 +237,7 @@ def f_horprojection(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_loadpath_general(variables: npt.NDArray, problem: Problem) -> float:
+def f_loadpath_general(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise the loadpath
 
     Parameters
@@ -276,7 +276,7 @@ def f_loadpath_general(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_complementary_energy(variables: npt.NDArray, problem: Problem) -> float:
+def f_complementary_energy(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise the complementary energy to a given applied foundation displacement
 
     Parameters
@@ -313,7 +313,7 @@ def f_complementary_energy(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_complementary_energy_nonlinear(variables: npt.NDArray, problem: Problem) -> float:
+def f_complementary_energy_nonlinear(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise the nonlinear complementary energy to a given applied foundation displacement
 
     Parameters
@@ -340,7 +340,7 @@ def f_complementary_energy_nonlinear(variables: npt.NDArray, problem: Problem) -
     return f
 
 
-def f_max_section(variables: npt.NDArray, problem: Problem) -> float:
+def f_max_section(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to minimise additional thickness required to find a feasible thrust network
 
     Parameters
@@ -391,7 +391,7 @@ def f_max_section(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_constant(variables: npt.NDArray, problem: Problem) -> float:
+def f_constant(variables: npt.NDArray, problem: "Problem") -> float:
     """Constant or feasible objective function f=1
 
     Parameters
@@ -412,7 +412,7 @@ def f_constant(variables: npt.NDArray, problem: Problem) -> float:
     return f
 
 
-def f_reduce_thk(variables: npt.NDArray, problem: Problem) -> float:
+def f_reduce_thk(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to reduce the thickness of the structure
 
     Parameters
@@ -435,7 +435,7 @@ def f_reduce_thk(variables: npt.NDArray, problem: Problem) -> float:
     return variables[-1]
 
 
-def f_tight_crosssection(variables: npt.NDArray, problem: Problem) -> float:
+def f_tight_crosssection(variables: npt.NDArray, problem: "Problem") -> float:
     """Objective function to tight the cross section using normal vectors
 
     Parameters

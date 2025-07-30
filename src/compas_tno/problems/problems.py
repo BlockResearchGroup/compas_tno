@@ -1,5 +1,9 @@
 import time
-from typing import Optional
+import numpy.typing as npt
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compas_tno.shapes import Shape
 
 from numpy import array
 
@@ -35,6 +39,11 @@ def reverse_geometric_key(gkey):
     raise NotImplementedError
 
 
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+import numpy.typing as npt
+
+@dataclass
 class Problem:
     """
     The ``Problem`` class stores the matrices used in the optimisation. These are listed as parameters of the class and described below.
@@ -138,55 +147,55 @@ class Problem:
 
     """
 
-    def __init__(self):
-        self.q = None
-        self.m = None
-        self.n = None
-        self.ni = None
-        self.nb = None
-        self.E = None
-        self.C = None
-        self.Ct = None
-        self.Ci = None
-        self.Cit = None
-        self.Cb = None
-        self.U = None
-        self.V = None
-        self.P = None
-        self.free = None
-        self.fixed = None
-        self.ph = None
-        self.lb = None
-        self.ub = None
-        self.lb0 = None
-        self.ub0 = None
-        self.s = None
-        self.X = None
-        self.x0 = None
-        self.y0 = None
-        self.free_x = None
-        self.free_y = None
-        self.rol_x = None
-        self.rol_y = None
-        self.Citx = None
-        self.City = None
-        self.Cbtx = None
-        self.Cbty = None
-        self.xlimits = None
-        self.ylimits = None
-        self.qmin = None
-        self.qmax = None
-        self.k_i = None
-        self.uv_i = None
-        self.i_uv = None
-        self.ind = None
-        self.k = None
-        self.dep = None
-        self.B = None
-
-        self.variables = None
-        self.features = None
-        self.d = None
+    q: Optional[npt.NDArray] = None
+    m: Optional[int] = None
+    n: Optional[int] = None
+    ni: Optional[int] = None
+    nb: Optional[int] = None
+    E: Optional[npt.NDArray] = None
+    C: Optional[npt.NDArray] = None
+    Ct: Optional[npt.NDArray] = None
+    Ci: Optional[npt.NDArray] = None
+    Cit: Optional[npt.NDArray] = None
+    Cb: Optional[npt.NDArray] = None
+    U: Optional[npt.NDArray] = None
+    V: Optional[npt.NDArray] = None
+    P: Optional[npt.NDArray] = None
+    free: Optional[List[int]] = field(default_factory=list)
+    fixed: Optional[List[int]] = field(default_factory=list)
+    ph: Optional[npt.NDArray] = None
+    lb: Optional[npt.NDArray] = None
+    ub: Optional[npt.NDArray] = None
+    lb0: Optional[npt.NDArray] = None
+    ub0: Optional[npt.NDArray] = None
+    s: Optional[npt.NDArray] = None
+    X: Optional[npt.NDArray] = None
+    x0: Optional[npt.NDArray] = None
+    y0: Optional[npt.NDArray] = None
+    free_x: Optional[List[int]] = field(default_factory=list)
+    free_y: Optional[List[int]] = field(default_factory=list)
+    rol_x: Optional[List[int]] = field(default_factory=list)
+    rol_y: Optional[List[int]] = field(default_factory=list)
+    Citx: Optional[npt.NDArray] = None
+    City: Optional[npt.NDArray] = None
+    Cbtx: Optional[npt.NDArray] = None
+    Cbty: Optional[npt.NDArray] = None
+    xlimits: Optional[npt.NDArray] = None
+    ylimits: Optional[npt.NDArray] = None
+    qmin: Optional[npt.NDArray] = None
+    qmax: Optional[npt.NDArray] = None
+    k_i: Optional[Dict[Any, int]] = field(default_factory=dict)
+    uv_i: Optional[Dict[Any, int]] = field(default_factory=dict)
+    i_uv: Optional[Dict[int, Any]] = field(default_factory=dict)
+    ind: Optional[List[int]] = field(default_factory=list)
+    k: Optional[int] = None
+    dep: Optional[List[int]] = field(default_factory=list)
+    B: Optional[npt.NDArray] = None
+    variables: Optional[List[str]] = field(default_factory=list)
+    features: Optional[List[str]] = field(default_factory=list)
+    d: Optional[Any] = None
+    shape: Optional["Shape"] = None
+    thk: Optional[float] = None
 
 
 # =============================================================================

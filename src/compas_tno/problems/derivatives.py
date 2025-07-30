@@ -1,3 +1,6 @@
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence, Tuple
+import numpy.typing as npt
+
 from numpy import array
 from numpy import cross
 from numpy import divide
@@ -19,8 +22,16 @@ from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import weights_from_xyz
 from compas_tno.algorithms import xyz_from_q
 
+if TYPE_CHECKING:
+    from compas_tno.problems import Problem
 
-def d_fobj(fobj, x0, eps, *args):
+
+def d_fobj(
+    fobj: Callable[[npt.NDArray, Any], float],
+    x0: npt.NDArray,
+    eps: float,
+    *args: Any
+) -> npt.NDArray:
     """Gradient approximated by hand using finite differences.
 
     Parameters
@@ -49,7 +60,13 @@ def d_fobj(fobj, x0, eps, *args):
     return df0dx
 
 
-def compute_dQ(q, ind, dep, Edinv, Ei):
+def compute_dQ(
+    q: npt.NDArray,
+    ind: Sequence[int],
+    dep: Sequence[int],
+    Edinv: npt.NDArray,
+    Ei: npt.NDArray
+) -> Tuple[npt.NDArray, npt.NDArray]:
     """Sensitivity of (all) the force densities with regards to the independent force densities.
 
     Parameters
@@ -81,7 +98,16 @@ def compute_dQ(q, ind, dep, Edinv, Ei):
     return dQ, dQdep
 
 
-def deriv_weights_from_matrices(xyz, F, V0, V1, V2, thk=0.5, density=20.0, features=["fixed"]):
+def deriv_weights_from_matrices(
+    xyz: npt.NDArray,
+    F: npt.NDArray,
+    V0: npt.NDArray,
+    V1: npt.NDArray,
+    V2: npt.NDArray,
+    thk: float = 0.5,
+    density: float = 20.0,
+    features: Optional[List[str]] = None
+) -> npt.NDArray:
     """Derivatives of the tributary weights with respect to the position of the nodes based on the assembled sparse matrices linking the topology
 
     Parameters
@@ -148,7 +174,10 @@ def deriv_weights_from_matrices(xyz, F, V0, V1, V2, thk=0.5, density=20.0, featu
     return dpzdX
 
 
-def gradient_feasibility(variables, M):
+def gradient_feasibility(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the feasibility objective function, which returns a null vector.
 
     Parameters
@@ -166,7 +195,10 @@ def gradient_feasibility(variables, M):
     return zeros((len(variables), 1))
 
 
-def gradient_reduce_thk(variables, M):
+def gradient_reduce_thk(
+    variables: npt.NDArray,
+    M: Optional["Problem"] = None
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise the thickness.
 
     Parameters
@@ -186,7 +218,10 @@ def gradient_reduce_thk(variables, M):
     return grad
 
 
-def gradient_tight_crosssection(variables, M):
+def gradient_tight_crosssection(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to tight the cross section.
 
     Parameters
@@ -206,7 +241,10 @@ def gradient_tight_crosssection(variables, M):
     return grad
 
 
-def gradient_fmin(variables, M):
+def gradient_fmin(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise the thrust.
 
     Parameters
@@ -319,7 +357,10 @@ def gradient_fmin(variables, M):
     return array(gradient).flatten()
 
 
-def gradient_fmax(variables, M):
+def gradient_fmax(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to maximise the thrust.
 
     Parameters
@@ -338,7 +379,10 @@ def gradient_fmax(variables, M):
     return -1 * gradient_fmin(variables, M)
 
 
-def gradient_bestfit(variables, M):
+def gradient_bestfit(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise the vertical squared distance to the target.
 
     Parameters
@@ -402,7 +446,10 @@ def gradient_bestfit(variables, M):
     return gradient
 
 
-def gradient_horprojection(variables, M):
+def gradient_horprojection(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise the horizontal squared distance of the nodes on the form diagram to a given pattern.
 
     Parameters
@@ -475,7 +522,10 @@ def gradient_horprojection(variables, M):
     return gradient
 
 
-def gradient_complementary_energy(variables, M):
+def gradient_complementary_energy(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise the complementary energy.
 
     Parameters
@@ -568,7 +618,10 @@ def gradient_complementary_energy(variables, M):
     return -1 * array(gradient).flatten()
 
 
-def gradient_complementary_energy_nonlinear(variables, M):
+def gradient_complementary_energy_nonlinear(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise nonlinear complementary energy.
 
     Parameters
@@ -607,7 +660,10 @@ def gradient_complementary_energy_nonlinear(variables, M):
     return fgrad
 
 
-def gradient_loadpath(variables, M):
+def gradient_loadpath(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise the loadpath.
 
     Parameters
@@ -704,7 +760,10 @@ def gradient_loadpath(variables, M):
     return gradient
 
 
-def gradient_max_section(variables, M):
+def gradient_max_section(
+    variables: npt.NDArray,
+    M: "Problem"
+) -> npt.NDArray:
     """Sensitivity of the objective function to minimise additional thickness required to find a feasible thrust network.
 
     Parameters
