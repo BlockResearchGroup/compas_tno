@@ -19,20 +19,20 @@ arch = Shape.create_arch(H=H, L=L, b=b)
 
 form = FormDiagram.create_arch(H=H, L=L, discretisation=discretisation)
 
-# # ----------------------------------------
-# # 3. Create analysis for minimum thrust
-# # ----------------------------------------
-# analysis = Analysis.create_minthrust_analysis(form, arch)
-# analysis.optimiser.set_constraints(["funicular", "envelope", "reac_bounds"])
-# analysis.optimiser.set_starting_point("current")
-# analysis.apply_selfweight()
-# analysis.apply_envelope()
-# analysis.apply_reaction_bounds()
-# analysis.set_up_optimiser()
-# analysis.run()
+# ----------------------------------------
+# 3. Create analysis for minimum thrust
+# ----------------------------------------
+analysis = Analysis.create_minthrust_analysis(form, arch)
+analysis.optimiser.set_constraints(["funicular", "envelope", "reac_bounds"])
+analysis.optimiser.set_starting_point("current")
+analysis.apply_selfweight()
+analysis.apply_envelope()
+analysis.apply_reaction_bounds()
+analysis.set_up_optimiser()
+analysis.run()
 
-# viewer = TNOViewer(form, arch)
-# viewer.show()
+viewer = TNOViewer(form, arch)
+viewer.show()
 
 
 # # ----------------------------------------

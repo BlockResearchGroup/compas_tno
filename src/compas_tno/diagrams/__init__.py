@@ -15,6 +15,7 @@ from .diagram_rectangular import (
     create_fan_form,
     create_ortho_form,
     create_parametric_form,
+    create_delta_form,
 )
 
 from .force import ForceDiagram
@@ -35,4 +36,5 @@ __all__ = [
     "create_fan_form",
     "create_ortho_form",
     "create_parametric_form",
+    "create_delta_form",
 ]

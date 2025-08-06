@@ -3,7 +3,7 @@ from numpy import zeros
 from compas.colors import Color
 from compas.geometry import distance_point_point_xy
 from compas_tno.analysis import Analysis
-from compas_tno.diagrams import FormDiagram
+from compas_tno.diagrams.form import FormDiagram
 from compas_tno.shapes import Shape
 from compas_tno.utilities import form_add_lines_support
 
@@ -42,9 +42,11 @@ for key in form.vertices():
 
 supports = []
 for key in form.vertices_where({"is_fixed": True}):
-    x, y, z = form.vertex_coordinates(key)
-    if y < yc:
-        supports.append(key)
+    coords = form.vertex_coordinates(key)
+    if coords is not None:
+        x, y, z = coords
+        if y < yc:
+            supports.append(key)
 
 if load_pos != 0:
     print(loaded_node, supports)
@@ -53,7 +55,7 @@ if load_pos != 0:
 # visualization(None, form)
 
 viewer = Viewer()
-viewer.scene.add(form, name="Form", color=Color.black())
+viewer.scene.add(form, name="Form")
 viewer.show()
 
 # ------------------------------------------------------------------------
@@ -68,12 +70,15 @@ print("New Loaded Node:", loaded_node)
 # --------------------------------------------
 # 5. Maximum load problem and visualisation
 # --------------------------------------------
-analysis = Analysis.create_max_load_analysis(form, vault, 
+analysis = Analysis.create_max_load_analysis(form, 
+                                             vault, 
                                              load_direction=load_direction, 
                                              max_lambd=10000, 
-                                             printout=True)
+                                             printout=True,
+                                             starting_point="current")
 analysis.apply_selfweight()
 analysis.apply_envelope()
+
 analysis.set_up_optimiser()
 analysis.run()
 
