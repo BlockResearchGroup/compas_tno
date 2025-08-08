@@ -294,7 +294,8 @@ def call_cvxpy_ind(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = CVXProblem(objective, constraints)
-    prob.solve(solver="MOSEK", verbose=printout)
+    # prob.solve(solver="MOSEK", verbose=printout)
+    prob.solve(solver="CVXOPT", verbose=printout)  # Trying out CVXOPT that is a free solver
 
     # save output
     fopt = prob.value
