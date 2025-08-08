@@ -47,7 +47,7 @@ from .problems import (
 
 from .callbacks import callback_save_json, callback_create_json, save_geometry_at_iterations
 
-from .initialize import initialize_loadpath, initialize_tna, initialize_fdm
+from .startingpoint import startingpoint_loadpath, startingpoint_tna, startingpoint_fdm
 
 from .setup import (
     set_up_general_optimisation,
@@ -98,10 +98,10 @@ __all__ = [
     "callback_save_json",
     "callback_create_json",
     "save_geometry_at_iterations",
-    "initialize_loadpath",
-    "initialize_tna",
-    "initialize_fdm",
+    "startingpoint_loadpath",
+    "startingpoint_tna",
+    "startingpoint_fdm",
     "set_up_general_optimisation",
     "set_up_convex_optimisation",
-    "initialize_loadpath_proxy",
+    "startingpoint_loadpath_proxy",
 ]
