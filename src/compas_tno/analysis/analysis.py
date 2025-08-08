@@ -8,6 +8,7 @@ from numpy import array
 from scipy import interpolate
 
 from compas.data import Data
+from compas_dem.models import SurfaceModel
 from compas_tno.diagrams import FormDiagram
 from compas_tno.optimisers import Optimiser
 from compas_tno.problems import set_up_convex_optimisation
@@ -40,12 +41,12 @@ class Analysis(Data):
     form: FormDiagram
     shape: Shape
     optimiser: Optimiser
+    model: SurfaceModel
 
     def __init__(
         self,
-        form: FormDiagram,
+        model: SurfaceModel,
         optimiser: Optimiser,
-        shape: Optional[Shape] = None,
         settings: Optional[dict] = None,
         name: Optional[str] = None,
     ):
@@ -54,8 +55,7 @@ class Analysis(Data):
         super().__init__(name=name)
 
         self.settings = settings or {}
-        self.form = form
-        self.shape = shape
+        self.model = model
         self.optimiser = optimiser
 
     def __str__(self):
@@ -179,8 +179,7 @@ class Analysis(Data):
     @classmethod
     def create_minthrust_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        model: SurfaceModel,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -223,7 +222,7 @@ class Analysis(Data):
             print("Minimum thrust analysis created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(model, optimiser=optimiser)
 
     @classmethod
     def create_maxthrust_analysis(
@@ -534,7 +533,7 @@ class Analysis(Data):
 
     def apply_selfweight(self, normalize_loads=True):
         """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
-        self.form.apply_selfweight_from_shape(self.shape, normalize=normalize_loads)
+        self.model.apply_selfweight(normalize=normalize_loads)
 
     def apply_selfweight_from_pattern(self, pattern, plot=False):
         """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
@@ -554,34 +553,12 @@ class Analysis(Data):
     def apply_envelope(self):
         """Invoke method to apply ub and lb to the nodes based on the shape's intrados and extrados"""
 
-        self.form.apply_envelope_from_shape(self.shape)
+        self.model.apply_envelope()
 
     def apply_bounds_on_q(self, qmax=0.0, qmin=-10000.0):
         """Invoke method to apply bounds on the force densities of the pattern (qmax, qmin)"""
 
         self.form.apply_bounds_on_q(qmax=qmax, qmin=qmin)
-
-    def apply_envelope_with_damage(self):
-        """Apply ub and lb to the nodes based on the shape's intrados and extrados and in the intra/extra damaged"""
-        extrados_damage = array(self.shape.extrados_damage.vertices_attributes("xyz"))
-        intrados_damage = array(self.shape.intrados_damage.vertices_attributes("xyz"))
-
-        for key in self.form.vertices():
-            x, y, _ = self.form.vertex_coordinates(key)
-            ub_ = self.shape.get_ub(x, y)
-            lb_ = self.shape.get_lb(x, y)
-            lb_damage = float(interpolate.griddata(intrados_damage[:, :2], intrados_damage[:, 2], [x, y]))
-            ub_damage = float(interpolate.griddata(extrados_damage[:, :2], extrados_damage[:, 2], [x, y]))
-
-            if math.isnan(lb_damage) or math.isnan(lb_):
-                lb_ = -1 * self.shape.parameters["t"]
-            else:
-                lb_ = max(lb_, lb_damage)
-
-            ub_ = min(ub_, ub_damage)
-
-            self.form.vertex_attribute(key, "ub", value=ub_)
-            self.form.vertex_attribute(key, "lb", value=lb_)
 
     def apply_target(self):
         """Apply target to the nodes based on the shape's target surface"""

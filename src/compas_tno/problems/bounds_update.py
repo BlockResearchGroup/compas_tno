@@ -3,6 +3,9 @@ from typing import List, Tuple,TYPE_CHECKING
 if TYPE_CHECKING:
     from compas_tno.problems import Problem
 
+# TODO: This needs to be taken care by the SurfaceModel
+# Since the Model will be created from a template, the bounds will be updated based on the template
+# and the thickness will be updated based on the template
 
 from compas_tno.shapes import Shape
 from compas_tno.shapes import arch_b_update

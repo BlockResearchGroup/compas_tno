@@ -22,19 +22,33 @@ from compas_tno.shapes import pointed_arch_ub_lb_update
 from compas_tno.shapes import pointed_vault_middle_update
 from compas_tno.shapes import pointed_vault_ub_lb_update
 
-from .diagram_arch import create_arch_form_diagram
-from .diagram_arch import create_linear_form_diagram
-from .diagram_arch import create_linear_form_diagram_sp_ep
-from .diagram_circular import create_circular_radial_form
-from .diagram_circular import create_circular_radial_spaced_form
-from .diagram_circular import create_circular_spiral_form
-from .diagram_rectangular import create_cross_diagonal
-from .diagram_rectangular import create_cross_form
-from .diagram_rectangular import create_cross_with_diagonal
-from .diagram_rectangular import create_delta_form
-from .diagram_rectangular import create_fan_form
-from .diagram_rectangular import create_ortho_form
-from .diagram_rectangular import create_parametric_form
+# from compas_pattern.parametric import create_arch_form_diagram
+# from compas_pattern.parametric import create_linear_form_diagram
+# from compas_pattern.parametric import create_linear_form_diagram_sp_ep
+# from compas_pattern.parametric import create_circular_radial_form
+# from compas_pattern.parametric import create_circular_radial_spaced_form
+# from compas_pattern.parametric import create_circular_spiral_form
+# from compas_pattern.parametric import create_cross_diagonal
+# from compas_pattern.parametric import create_cross_form
+# from compas_pattern.parametric import create_cross_with_diagonal
+# from compas_pattern.parametric import create_delta_form
+# from compas_pattern.parametric import create_fan_form
+# from compas_pattern.parametric import create_ortho_form
+# from compas_pattern.parametric import create_parametric_form
+
+from compas_tno.diagrams import create_arch_form_diagram
+from compas_tno.diagrams import create_linear_form_diagram
+from compas_tno.diagrams import create_linear_form_diagram_sp_ep
+from compas_tno.diagrams import create_circular_radial_form
+from compas_tno.diagrams import create_circular_radial_spaced_form
+from compas_tno.diagrams import create_circular_spiral_form
+from compas_tno.diagrams import create_cross_diagonal
+from compas_tno.diagrams import create_cross_form
+from compas_tno.diagrams import create_cross_with_diagonal
+from compas_tno.diagrams import create_delta_form
+from compas_tno.diagrams import create_fan_form
+from compas_tno.diagrams import create_ortho_form
+from compas_tno.diagrams import create_parametric_form
 
 
 class FormDiagram(TNAFormDiagram):

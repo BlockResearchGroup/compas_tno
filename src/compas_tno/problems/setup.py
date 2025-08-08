@@ -18,8 +18,8 @@ from compas_tno.problems import callback_create_json
 from compas_tno.problems import callback_save_json
 from compas_tno.problems import constr_wrapper
 from compas_tno.problems import initialise_problem_general
-from compas_tno.problems import initialize_loadpath
-from compas_tno.problems import initialize_tna
+from compas_tno.problems import startingpoint_loadpath
+from compas_tno.problems import startingpoint_tna
 from compas_tno.problems import objective_selector
 from compas_tno.problems import sensitivities_wrapper
 from compas_tno.utilities import compute_edge_stiffness
@@ -45,10 +45,13 @@ def set_up_general_optimisation(analysis: "Analysis"):
 
     """
 
-    form = analysis.form
-    optimiser = analysis.optimiser
-    shape = analysis.shape
+    # =============================================================================
+    # Initialisation
+    # =============================================================================
 
+    form = analysis.model.formdiagram
+    optimiser = analysis.optimiser
+    
     printout = optimiser.settings.get("printout", True)
     plot = optimiser.settings.get("plot", False)
     axis_symmetry = optimiser.settings.get("axis_sym", None)
@@ -67,11 +70,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
 
     pattern_center = form.parameters.get("center", None)
 
-    if shape:
-        thk = shape.parameters.get("thk", None)
-        form.attributes["thk"] = thk  # for safety storing the thk. If optimisation is minthk, this will be overwritten
-    else:
-        thk = 0.50
+    thk = analysis.model.thickness
 
     objective = optimiser.settings["objective"]
     variables = optimiser.settings["variables"]
@@ -93,7 +92,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     problem.variables = variables
     problem.constraints = constraints
     problem.features = features
-    problem.shape = shape
+    # problem.shape = shape
     problem.thk = thk
 
     if "update-loads" in features:
@@ -105,30 +104,38 @@ def set_up_general_optimisation(analysis: "Analysis"):
     problem.V0 = V0
     problem.V1 = V1
     problem.V2 = V2
-    problem.ro = shape.ro
+    problem.rho = analysis.model.rho
+
+    # =============================================================================
+    # Starting point
+    # =============================================================================
 
     if starting_point == "current":
         pass
 
     elif starting_point == "sag":
         apply_sag(form, boundary_force=50.0)  # the issue here is that after the sag the problem.x0, problem.y0 are not updated
-        initialize_tna(form)
+        startingpoint_tna(form)
 
     elif starting_point == "loadpath":
         printout_loadpath = False  # this need to be a proper verbose level
-        initialize_loadpath(form, problem=problem, find_inds=find_inds, solver_convex=solver_convex, printout=printout_loadpath)
+        startingpoint_loadpath(form, problem=problem, find_inds=find_inds, solver_convex=solver_convex, printout=printout_loadpath)
 
     elif starting_point == "relax":
         equilibrium_fdm(form)
-        initialize_tna(form)
+        startingpoint_tna(form)
 
     elif starting_point == "tna" or starting_point == "TNA":
-        initialize_tna(form)
+        startingpoint_tna(form)
 
     else:
         print("Warning: define starting point")
 
     problem.q = array([form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
+
+    # =============================================================================
+    # Adaptation to symmetry and fixed form
+    # =============================================================================
 
     if "fixed" in features and "sym" in features:
         # print('\n-------- Initialisation with fixed and sym form --------')
@@ -162,7 +169,9 @@ def set_up_general_optimisation(analysis: "Analysis"):
         # print('\n-------- Initialisation with no-fixed and no-sym form --------')
         pass
 
-    # If objective is the complementary energy
+    # =============================================================================
+    # Objective
+    # =============================================================================
 
     if "Ecomp" in objective.split("-"):
         dXb = array(optimiser.settings["support_displacement"])
@@ -183,41 +192,45 @@ def set_up_general_optimisation(analysis: "Analysis"):
         elif Ecomp_method == "complete":
             raise NotImplementedError()
 
-    # Set specific constraints
+    # Select Objetive, Gradient, Costraints and Jacobian.
+
+    fobj, fgrad = objective_selector(objective)
+
+    # =============================================================================
+    # Constraints
+    # =============================================================================
 
     if "reac_bounds" in constraints:
         problem.b = set_b_constraint(form, printout)
     else:
         problem.b = None
 
-    # Select Objetive, Gradient, Costraints and Jacobian.
-
-    fobj, fgrad = objective_selector(objective)
-
     fconstr = constr_wrapper
     if fjac:
         fjac = sensitivities_wrapper
 
-    # Alternative for autodiff
-
-    if autodiff:
-        raise NotImplementedError("Autodifferentiation is currently not available")
-
-    # Select starting point (x0) and max/min for variables
+    # =============================================================================
+    # Starting point
+    # =============================================================================
 
     x0 = problem.q[problem.ind]
     bounds = [[qmin.item(), qmax.item()] for i, (qmin, qmax) in enumerate(zip(problem.qmin, problem.qmax)) if i in problem.ind]
 
-    qid = problem.q[problem.ind]
-    problem.q = q_from_variables(qid, problem.B, problem.d)
+    problem.q = q_from_variables(x0, problem.B, problem.d)
     problem.X[problem.free] = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
 
     error = sum((problem.E.dot(problem.q) - problem.ph) ** 2)
     if error > 0.001:
         print("Warning: Error equilibrium:", error)
 
-    # bounds = [[qmin, qmax]] * problem.k
+    if autodiff:
+        raise NotImplementedError("Autodifferentiation is currently not available")
 
+    # =============================================================================
+    # Variables
+    # =============================================================================
+
+    # If the supports can move in xy, add them as variables
     if "xyb" in variables:
         xyb0 = problem.X[problem.fixed, :2].flatten("F").reshape((-1, 1))
         x0 = append(x0, xyb0).reshape(-1, 1)
@@ -228,6 +241,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
             bounds_y.append([form.vertex_attribute(i_k[i], "ymin"), form.vertex_attribute(i_k[i], "ymax")])
         bounds = bounds + bounds_x + bounds_y
 
+    # If the supports can move in z, add it as a variable (x0) and add the bounds
     if "zb" in variables:
         zb0 = problem.X[problem.fixed, 2].flatten("F").reshape((-1, 1))
         x0 = append(x0, zb0).reshape(-1, 1)
@@ -236,12 +250,14 @@ def set_up_general_optimisation(analysis: "Analysis"):
             bounds_z.append([form.vertex_attribute(i_k[i], "lb"), form.vertex_attribute(i_k[i], "ub")])
         bounds = bounds + bounds_z
 
+    # If the thickness can change, add it as a variable (x0) and add the bounds
     if "t" in variables:
         min_thk = optimiser.settings.get("min_thk", 0.001)
         max_thk = optimiser.settings.get("max_thk", thk)
         x0 = append(x0, thk).reshape(-1, 1)
         bounds = bounds + [[min_thk, max_thk]]
 
+    # If the thickness can change, add it as a variable (x0) and add the bounds
     if "n" in variables:
         thk0_approx = thk  # shape.parameters['thk']
         print("Thickness approximate:", thk0_approx)
@@ -250,6 +266,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         bounds = bounds + [[min_limit, thk0_approx / 2]]
         # bounds = bounds + [[min_limit, thk0_approx/2]]
 
+    # If a variable to increase the 'z' of the extrados is considered
     if "tub" in variables:
         problem.tub = zeros((problem.n, 1))
         tubmax = form.vertices_attribute("tubmax")
@@ -258,6 +275,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         x0 = append(x0, problem.tub)
         bounds = bounds + list(zip(problem.tubmin, problem.tubmax))
 
+    # If a variable to decrease the 'z' of the intrados is considered
     if "tlb" in variables:
         problem.tlb = zeros((problem.n, 1))
         tlbmax = form.vertices_attribute("tlbmax")
@@ -266,6 +284,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         x0 = append(x0, problem.tlb)
         bounds = bounds + list(zip(problem.tlbmin, problem.tlbmax))
 
+    # If a variable to increase the 'z' of the reaction forces is considered
     if "tub_reac" in variables:
         tub_reac = []
         for key in form.vertices_where({"is_fixed": True}):
@@ -277,6 +296,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         x0 = append(x0, problem.tub_reac_min)
         bounds = bounds + list(zip(problem.tub_reac_min, problem.tub_reac))
 
+    # If a variable to increase horizontal load multiplier 'lambdh' is considered
     if "lambdh" in variables:
         lambd0 = 1.0
         direction = optimiser.settings.get("load_direction", None).reshape(-1, 1)
@@ -287,6 +307,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         x0 = append(x0, lambd0).reshape(-1, 1)
         bounds = bounds + [[min_lambd, max_lambd]]
 
+    # If a variable to increase vertical load multiplier 'lambdv' of the applied loads is considered
     if "lambdv" in variables:
         direction = array(optimiser.settings.get("load_direction", None)).reshape(-1, 1)
         max_lambd = optimiser.settings.get("max_lambd", 100.0)
@@ -297,6 +318,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
         x0 = append(x0, lambd0).reshape(-1, 1)
         bounds = bounds + [[min_lambd, max_lambd]]
 
+    # If a variable to displace the nodes horizontally is considered
     if "delta" in variables:
         dX = optimiser.settings["displ_map"]
         max_delta = optimiser.settings.get("max_delta", 1.0)
@@ -317,14 +339,6 @@ def set_up_general_optimisation(analysis: "Analysis"):
         optimiser.callback = callback_save_json
         callback_save_json(x0)  # save staring point to file
 
-    # if plot:
-    #     plotter = TNOPlotter(form)
-    #     plotter.draw_form_independents()
-    #     plotter.show()
-    #     if "sym" in features:
-    #         plotter = TNOPlotter(form)
-    #         plotter.draw_form_sym(print_sym=True)
-    #         plotter.show()
 
     if any([isnan(problem.ub[i]) for i in range(len(problem.ub))]) or any([isnan(problem.lb[i]) for i in range(len(problem.lb))]):
         print("Is Nan for the bounds. Optimisation can not proceed")
@@ -344,17 +358,18 @@ def set_up_general_optimisation(analysis: "Analysis"):
         form.vertex_attribute(key, "z", problem.X[i, 2])
 
     if plot:
-        from compas_tno.viewers import Viewer
+        from compas_tno.viewer import TNOViewer
 
-        view = Viewer(form)
+        view = TNOViewer(form)
         view.draw_thrust()
         view.show()
 
     if printout:
         print("-" * 20)
-        print("NPL (Non Linear Problem) Data:")
-        print("Number of force variables:", len(problem.ind))
-        print("Number of variables:", len(x0))
+        print("TNO v.2.0")
+        print("Non Linear Problem Data:")
+        print("Number of q variables:", len(problem.ind))
+        print("Number of total variables:", len(x0))
         print("Number of constraints:", len(g0))
         if "funicular" in problem.constraints:
             print("# constraints funicular:", 2 * len(problem.q))
@@ -365,17 +380,17 @@ def set_up_general_optimisation(analysis: "Analysis"):
         if "reac_bounds" in problem.constraints:
             print("# constraints reac_bounds:", 2 * len(problem.fixed))
         if fgrad:
-            print("Shape of gradient:", grad.shape)
+            print("Shape of Gradient:", grad.shape)
         if fjac:
-            print("Shape of jacobian:", jac.shape)
-        print("Init. Objective Value: {0}".format(f0))
-        print("Init. Constraints Extremes: {0:.3f} to {1:.3f}".format(max(g0), min(g0)))
+            print("Shape of Jacobian:", jac.shape)
+        print("Initial Objective Value: {0}".format(f0))
+        print("Initial Constraints Extremes: {0:.3f} to {1:.3f}".format(max(g0), min(g0)))
         violated = []
         for i in range(len(g0)):
             if g0[i] < 0:
                 violated.append(i)
         if violated:
-            print("Constraints Violated #:", violated)
+            print("# Constraints Violated:", violated)
 
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr
@@ -385,11 +400,10 @@ def set_up_general_optimisation(analysis: "Analysis"):
     optimiser.bounds = bounds
     optimiser.f0 = f0
     optimiser.g0 = g0
-
     optimiser.problem = problem
-
-    analysis.form = form
-    analysis.optimiser = optimiser
+    
+    # analysis.form = form  # No need I think, it's updated in place
+    # analysis.optimiser = optimiser
 
     return analysis
 
@@ -409,7 +423,7 @@ def set_up_convex_optimisation(analysis: "Analysis"):
 
     """
 
-    form = analysis.form
+    form = analysis.model.formdiagram
     optimiser = analysis.optimiser
     qmax = optimiser.settings["qmax"]
     qmin = optimiser.settings["qmin"]
@@ -439,9 +453,8 @@ def set_up_convex_optimisation(analysis: "Analysis"):
     problem.variables = variables
     problem.constraints = constraints
 
-    optimiser.problem = problem
-
-    analysis.form = form
-    analysis.optimiser = optimiser
+    # optimiser.problem = problem
+    # analysis.form = form
+    # analysis.optimiser = optimiser
 
     return analysis

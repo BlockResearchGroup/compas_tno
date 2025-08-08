@@ -90,7 +90,7 @@ def sensitivities_wrapper(
     nbxy = 0
     delta = 0.0
     thk = M.thk  # Introduce this because it might be necessary
-    t = M.shape.parameters["t"]
+    t = M.min_lb
     lambdh = 1.0
 
     qid = variables[:k].reshape(-1, 1)

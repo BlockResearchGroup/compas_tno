@@ -1,6 +1,6 @@
 import time
 import numpy.typing as npt
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Callable, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from compas_tno.shapes import Shape
@@ -144,6 +144,10 @@ class Problem:
         List with the index of the dependent edges
     B : array(m x k)
         Matrix transforming the force densities in the independent edges to all force densities
+    rho : float
+        Density of the material
+    constraints : list
+        List with the constraints of the problem
 
     """
 
@@ -193,10 +197,17 @@ class Problem:
     B: Optional[npt.NDArray] = None
     variables: Optional[List[str]] = field(default_factory=list)
     features: Optional[List[str]] = field(default_factory=list)
+    constraints: Optional[List[str]] = field(default_factory=list)
     d: Optional[Any] = None
-    shape: Optional["Shape"] = None
+    # shape: Optional["Shape"] = None
     thk: Optional[float] = None
+    rho: Optional[float] = None
+    min_lb: Optional[float] = 0.0
 
+    ub_lb_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
+    b_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
+    dub_dlb_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
+    db_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
 
 # =============================================================================
 # Constructors
@@ -210,7 +221,7 @@ def initialise_form(
     printout: bool = False,
     tol: Optional[float] = None,
 ) -> Problem:
-    """Initialise the problem for a Form-Diagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
+    """Initialise the problem for a FormDiagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
 
     Parameters
     ----------
@@ -421,11 +432,11 @@ def initialise_problem_general(form: FormDiagram) -> Problem:
 def adapt_problem_to_fixed_diagram(
     problem: Problem,
     form: FormDiagram,
-    method: str = "SVD",
+    method: str = "QR",
     printout: bool = False,
     tol: Optional[float] = None,
 ) -> None:
-    """Adapt the problem assuming that the form diagram is fixed in plan.
+    """Adapt the problem assuming that the form diagram is fixed in plan, by selecting the independent edges.
 
     Parameters
     ----------
@@ -434,7 +445,7 @@ def adapt_problem_to_fixed_diagram(
     form : :class:`~compas_tno.diagrams.FormDiagram`
         The form diagram to be analysed
     method : str, optional
-        Method to find independent edges, the default is 'SVD'. More options to come.
+        Method to find independent edges, the default is 'QR'.
     printout : bool, optional
         If prints should show in the screen, by default False
     tol : float, optional

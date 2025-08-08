@@ -451,4 +451,4 @@ def f_tight_crosssection(variables: npt.NDArray, problem: "Problem") -> float:
         The value of the objective function.
     """
 
-    return -1 * variables[-1]
+    return -1 * f_reduce_thk

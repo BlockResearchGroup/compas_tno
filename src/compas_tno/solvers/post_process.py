@@ -27,9 +27,9 @@ def post_process_general(analysis: "Analysis"):
         The Analysis object updated
     """
 
-    form: "FormDiagram" = analysis.form
+    form: "FormDiagram" = analysis.model.formdiagram
     optimiser: "Optimiser" = analysis.optimiser
-    shape: "Shape" = analysis.shape
+    # shape: "Shape" = analysis.shape
 
     problem: "Problem" = optimiser.problem
     summary = optimiser.settings.get("summary", False)
@@ -113,6 +113,7 @@ def post_process_general(analysis: "Analysis"):
     compute_reactions(form)
 
     if "t" in problem.variables:
+        # TODO: Now that only the model is passed, if the optimisation is minimum thickness, we need to update the model based on the template  
         if shape.parameters["type"] == "general":
             if thickness_type == "constant":
                 form.attributes["thk"] = thk
@@ -197,9 +198,9 @@ def post_process_general(analysis: "Analysis"):
     if "lambdh" in problem.variables:
         form.attributes["lambdh"] = lambdh  # can be improved. It currently takes fopt, but if loads at start are 0.1*SWT, the obj is lambd/0.1
 
-    analysis.form = form
-    analysis.optimiser = optimiser
-    analysis.shape = shape
+    # analysis.form = form
+    # analysis.optimiser = optimiser
+    # analysis.shape = shape
 
     if save_iterations:
         file_Xform, file_Xforce = save_geometry_at_iterations(form, optimiser, force=show_force_diagram)
@@ -208,6 +209,7 @@ def post_process_general(analysis: "Analysis"):
 
     if printout or summary:
         print("\n" + "-" * 50)
+        print("TNO v.2.0")
         print("Solution  :", message)
         try:
             print("q range : {0:.3f} : {1:.3f}".format(min(problem.q), max(problem.q)))
