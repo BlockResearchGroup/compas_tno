@@ -5,6 +5,12 @@
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/COMPAS.svg)](https://pypi.python.org/project/COMPAS)
 [![DOI](https://zenodo.org/badge/197799108.svg)](https://zenodo.org/badge/latestdoi/197799108)
 
+> **⚠️ IMPORTANT NOTE** ⚠️
+> 
+> As of Summer 2025 COMPAS TNO is being refactored to work with COMPAS 2.0 and better integrate with the COMPAS MASONRY environment. A Legacy version is available at secondary branches.
+> 
+> **⚠️ IMPORTANT NOTE** ⚠️
+
 **COMPAS TNO** is a Python package to find admissible thrust networks in masonry vaulted structures built in the [COMPAS](https://compas.dev/) framework.
 
 Based on [Ricardo Maia Avelino](https://ricardoavelino.github.io/)'s doctoral thesis at ETH Zurich, this Package enables finding multi-objective particular internal stress solutions in masonry vaults, as the ones presented below.
