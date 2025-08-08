@@ -18,9 +18,9 @@ Initialisation
 .. autosummary::
     :toctree: generated/
 
-    initialize_fdm
-    initialize_tna
-    initialize_loadpath
+    startingpoint_fdm
+    startingpoint_tna
+    startingpoint_loadpath
     initialise_form
     initialise_problem_general
     adapt_problem_to_fixed_diagram
@@ -43,8 +43,8 @@ Starting Points
 .. autosummary::
     :toctree: generated/
 
-    initialize_loadpath
-    initialize_tna
+    startingpoint_loadpath
+    startingpoint_tna
 
 Objectives
 ==========
@@ -108,7 +108,7 @@ Proxy
 .. autosummary::
     :toctree: generated/
 
-    initialize_loadpath_proxy
+    startingpoint_loadpath_proxy
     run_NLP_proxy
     run_NLP_proxy2
 

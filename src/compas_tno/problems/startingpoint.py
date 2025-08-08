@@ -7,7 +7,7 @@ from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
 from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
 
 
-def initialize_loadpath(form, problem=None, find_inds=False, solver_convex="CVXPY", printout=False):
+def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="CVXPY", printout=False):
     """Built-in function to optimise the loadpath considering diagram fixed projection.
     Note: This function will select the most appropriate solver (CVX or MOSEK)
 
@@ -43,8 +43,8 @@ def initialize_loadpath(form, problem=None, find_inds=False, solver_convex="CVXP
 
     return problem
 
-
-def initialize_tna(form, plot=False):
+# Use the appropiate functions at TNA here
+def startingpoint_tna(form, plot=False):
     """Initialize the equilibrium in a form diagram with applied loads using TNA interative solver procedure (form and force diagrams are parallel)
 
     Parameters
@@ -59,8 +59,8 @@ def initialize_tna(form, plot=False):
 
     compute_reactions(form)
 
-
-def initialize_fdm(form):
+# Use the appropiate functions at TNA here
+def startingpoint_fdm(form):
     """Initialize the equilibrium in a form diagram with applied loads using FDM approach for the q's stored in the form
 
     Parameters
