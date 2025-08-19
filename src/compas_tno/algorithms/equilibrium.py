@@ -46,7 +46,7 @@ def equilibrium_fdm(form: FormDiagram) -> FormDiagram:
     xyz = form.vertices_attributes(("x", "y", "z"))
     loads = form.vertices_attributes(("px", "py", "pz"))
     q = form.edges_attribute("q")
-    fixed = form.vertices_where({"is_fixed": True})
+    fixed = form.vertices_where({"": True})
     fixed = [k_i[k] for k in fixed]
     edges = [(k_i[u], k_i[v]) for u, v in form.edges()]
 
@@ -84,10 +84,8 @@ def vertical_equilibrium_fdm(form: FormDiagram, zmax: float = None) -> FormDiagr
 
     k_i = form.vertex_index()
     vcount = len(form.vertex)
-    anchors = list(form.vertices_where({"is_support": True}))
-    fixed = list(form.vertices_where({"is_fixed": True}))
-    fixed = set(anchors + fixed)
-    fixed = [k_i[key] for key in fixed]
+    supports = list(form.vertices_where({"is_support": True}))
+    fixed = [k_i[key] for key in supports]
     free = list(set(range(vcount)) - set(fixed))
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({"_is_edge": True})]
     xyz = array(form.vertices_attributes("xyz"), dtype=float64)
@@ -352,7 +350,7 @@ def compute_reactions(form: FormDiagram, plot: bool = False) -> None:
     # Vertices and edges
 
     n = form.number_of_vertices()
-    fixed = [k_i[key] for key in form.fixed()]
+    fixed = [k_i[key] for key in form.supports()]
     # rol = [k_i[key] for key in form.vertices_where({'is_roller': True})]
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where(_is_edge=True)]
 
@@ -385,7 +383,7 @@ def compute_reactions(form: FormDiagram, plot: bool = False) -> None:
     Ry = C.transpose().dot(V * q.ravel()) - py.ravel()
     Rz = C.transpose().dot(W * q.ravel()) - pz.ravel()
 
-    eq_node = {key: [round(Rx[k_i[key]], 1), round(Ry[k_i[key]], 1)] for key in form.vertices_where({"is_fixed": True})}
+    eq_node = {key: [round(Rx[k_i[key]], 1), round(Ry[k_i[key]], 1)] for key in form.vertices_where({"is_support": True})}
 
     for i in fixed:
         key = i_k[i]

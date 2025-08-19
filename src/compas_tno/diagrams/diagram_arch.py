@@ -67,8 +67,8 @@ def create_arch_form_diagram(
     form = cls.from_lines(lines)
     gkey_key = {TOL.geometric_key(form.vertex_coordinates(vertex), precision=6): vertex for vertex in form.vertices()}
 
-    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_fixed", True)
-    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_fixed", True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_support", True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_support", True)
 
     return form
 
@@ -115,8 +115,8 @@ def create_linear_form_diagram(
     form = cls.from_lines(lines)
     gkey_key = {TOL.geometric_key(form.vertex_coordinates(vertex), precision=6): vertex for vertex in form.vertices()}
 
-    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_fixed", True)
-    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_fixed", True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_support", True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_support", True)
 
     return form
 
@@ -171,7 +171,7 @@ def create_linear_form_diagram_sp_ep(
     form = cls.from_lines(lines)
     gkey_key = {TOL.geometric_key(form.vertex_coordinates(vertex), precision=6): vertex for vertex in form.vertices()}
 
-    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_fixed", True)
-    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_fixed", True)
+    form.vertex_attribute(gkey_key[gkey_fix[0]], "is_support", True)
+    form.vertex_attribute(gkey_key[gkey_fix[1]], "is_support", True)
 
     return form

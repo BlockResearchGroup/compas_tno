@@ -75,8 +75,7 @@ class Analysis(Data):
     @classmethod
     def create_minthk_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        model: SurfaceModel,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -88,10 +87,8 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : :class:`~compas_tno.diagrams.FormDiagram`
-            _description_
-        shape : :class:`~compas_tno.shapes.Shape`
-            The shape constraining the problem
+        model : :class:`~compas_dem.models.SurfaceModel`
+            The model to analyse
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -121,13 +118,12 @@ class Analysis(Data):
             print("Minimum thickness analysis created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(model, optimiser=optimiser)
 
     @classmethod
     def create_bestfit_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        model: SurfaceModel,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -139,10 +135,8 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : :class:`~compas_tno.diagrams.FormDiagram`
-            _description_
-        shape : :class:`~compas_tno.shapes.Shape`
-            The shape constraining the problem
+        model : :class:`~compas_dem.models.SurfaceModel`
+            The model to analyse
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -174,7 +168,7 @@ class Analysis(Data):
             print("Minimum thickness analysis created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(model, optimiser=optimiser)
 
     @classmethod
     def create_minthrust_analysis(
@@ -190,10 +184,8 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : :class:`~compas_tno.diagrams.FormDiagram`
-            _description_
-        shape : :class:`~compas_tno.shapes.Shape`
-            The shape constraining the problemf
+        model : :class:`~compas_dem.models.SurfaceModel`
+            The model to analyse
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -227,8 +219,7 @@ class Analysis(Data):
     @classmethod
     def create_maxthrust_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        model: SurfaceModel,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -239,10 +230,8 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : :class:`~compas_tno.diagrams.FormDiagram`
-            _description_
-        shape : :class:`~compas_tno.shapes.Shape`
-            The shape constraining the problemf
+        model : :class:`~compas_dem.models.SurfaceModel`
+            The model to analyse
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -271,7 +260,7 @@ class Analysis(Data):
             print("Maximium thrust analysis created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(model, optimiser=optimiser)
 
     @classmethod
     def create_max_load_analysis(
@@ -352,8 +341,7 @@ class Analysis(Data):
     @classmethod
     def create_compl_energy_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        model: SurfaceModel,
         printout: bool = False,
         solver: str = "IPOPT",
         plot: bool = False,
@@ -366,10 +354,8 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : :class:`~compas_tno.diagrams.FormDiagram`
-            _description_
-        shape : :class:`~compas_tno.shapes.Shape`
-            The shape constraining the problem
+        model : :class:`~compas_dem.models.SurfaceModel`
+            The model to analyse
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -404,13 +390,12 @@ class Analysis(Data):
             print("Complementary energy created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(model, optimiser=optimiser)
 
     @classmethod
     def create_quad_compl_energy_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        model: SurfaceModel,
         printout: bool = False,
         solver: str = "IPOPT",
         plot: bool = False,
@@ -423,10 +408,8 @@ class Analysis(Data):
 
         Parameters
         ----------
-        form : :class:`~compas_tno.diagrams.FormDiagram`
-            _description_
-        shape : :class:`~compas_tno.shapes.Shape`
-            The shape constraining the problemf
+        model : :class:`~compas_dem.models.SurfaceModel`
+            The model to analyse
         printout : bool, optional
             Whether or not prints appear in the creen, by default False
         plot : bool, optional
@@ -457,7 +440,7 @@ class Analysis(Data):
             print("Complementary energy analysis created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(model, optimiser=optimiser)
 
     @classmethod
     def create_lp_analysis(

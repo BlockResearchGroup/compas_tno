@@ -68,7 +68,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     solver_convex = optimiser.settings.get("solver_convex", "MATLAB")
     autodiff = optimiser.settings.get("autodiff", False)
 
-    pattern_center = form.parameters.get("center", None)
+    pattern_center = form.centroid()
 
     thk = analysis.model.thickness
 
@@ -78,12 +78,12 @@ def set_up_general_optimisation(analysis: "Analysis"):
 
     i_k = form.index_vertex()
 
-    qmin_applied = form.edges_attribute("qmin")
-    for qmin_applied_i in qmin_applied:
-        if qmin_applied_i is None:
-            print("Appied qmin / qmax:", qmin, qmax)
-            form.apply_bounds_on_q(qmin=qmin, qmax=qmax)
-            break
+    if qmin is not None:
+        for edge in form.edges_where({"_is_edge": True}):
+            form.edge_attribute(edge, "qmin", qmin)
+    if qmax is not None:
+        for edge in form.edges_where({"_is_edge": True}):
+            form.edge_attribute(edge, "qmax", qmax)
 
     problem = optimiser.problem
     if not problem:
@@ -287,7 +287,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     # If a variable to increase the 'z' of the reaction forces is considered
     if "tub_reac" in variables:
         tub_reac = []
-        for key in form.vertices_where({"is_fixed": True}):
+        for key in form.vertices_where({"is_support": True}):
             tub_reac.append(form.vertex_attribute(key, "tub_reacmax"))
         tub_reac = array(tub_reac)
         tub_reac = vstack([tub_reac[:, 0].reshape(-1, 1), tub_reac[:, 1].reshape(-1, 1)])

@@ -278,7 +278,7 @@ def initialise_problem_general(form: FormDiagram) -> Problem:
 
     n = form.number_of_vertices()
     m = len(list(form.edges_where({"_is_edge": True})))
-    fixed = [k_i[key] for key in form.fixed()]
+    fixed = [k_i[key] for key in form.supports()]
     nb = len(fixed)
     edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({"_is_edge": True})]
     free = list(set(range(n)) - set(fixed))
@@ -312,7 +312,7 @@ def initialise_problem_general(form: FormDiagram) -> Problem:
         px[i] = vertex.get("px", 0)
         py[i] = vertex.get("py", 0)
         pz[i] = vertex.get("pz", 0)
-        s[i] = vertex.get("target", 0)
+        s[i] = vertex.get("target", 0)  # used for bestfit
         if abs(s[i]) < 1e-6:
             s[i] = 0.0
         xlimits[i, 0] = vertex.get("xmin", None)
@@ -459,29 +459,36 @@ def adapt_problem_to_fixed_diagram(
 
     # Independent and dependent branches
 
-    if form.attributes["indset"]:
-        # check if it is a string and "restaure the points"
-        indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes["indset"]]
-        ind = []
+    ind_edges = form.edges_where({"_is_ind": True})
 
-        for edge in form.edges_where({"_is_edge": True}):
-            index = problem.uv_i[edge]
-            edgemid = Point(*(form.edge_midpoint(edge)[:2] + [0]))
-            for pt in indset:
-                if distance_point_point_xy(edgemid, pt) < tol_old_ind:
-                    ind.append(index)
-                    break
-            if index in ind:
-                indset.remove(pt)
-
-        if printout:
-            print("Loaded {} previous independents".format(len(form.attributes["indset"])))
-            print("Found {} independents in the new pattern".format(len(ind)))
-        if len(form.attributes["indset"]) != len(ind):
-            print("Did not match problem inds")
-            ind = find_independents(problem.E, method=method, tol=tol)
+    if len(list(ind_edges)) > 0:
+        ind = [problem.uv_i[edge] for edge in ind_edges]
     else:
         ind = find_independents(problem.E, method=method, tol=tol)
+
+    # if form.attributes["indset"]:
+    #     # check if it is a string and "restaure the points"
+    #     indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes["indset"]]
+    #     ind = []
+
+    #     for edge in form.edges_where({"_is_edge": True}):
+    #         index = problem.uv_i[edge]
+    #         edgemid = Point(*(form.edge_midpoint(edge)[:2] + [0]))
+    #         for pt in indset:
+    #             if distance_point_point_xy(edgemid, pt) < tol_old_ind:
+    #                 ind.append(index)
+    #                 break
+    #         if index in ind:
+    #             indset.remove(pt)
+
+    #     if printout:
+    #         print("Loaded {} previous independents".format(len(form.attributes["indset"])))
+    #         print("Found {} independents in the new pattern".format(len(ind)))
+    #     if len(form.attributes["indset"]) != len(ind):
+    #         print("Did not match problem inds")
+    #         ind = find_independents(problem.E, method=method, tol=tol)
+    # else:
+    #     ind = find_independents(problem.E, method=method, tol=tol)
 
     k = len(ind)
     dep = list(set(range(problem.m)) - set(ind))

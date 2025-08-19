@@ -95,7 +95,7 @@ def rectangular_smoothing_constraints(form, xy_span=[[0, 10], [0, 10]]):
             cons[key] = line_bottom
         elif y == y1:
             cons[key] = line_top
-    for key in form.vertices_where({"is_fixed": True}):
+    for key in form.vertices_where({"is_support": True}):
         cons[key] = form.vertex_coordinates(key)
     return cons
 
@@ -170,7 +170,7 @@ def rollers_on_openings(form, xy_span=[[0.0, 10.0], [0.0, 10.0]], max_f=5.0, con
     bndr = form.vertices_on_boundary()
 
     for key in bndr:
-        if form.vertex_attribute(key, "is_fixed") is False:
+        if form.vertex_attribute(key, "is_support") is False:
             x, y, _ = form.vertex_coordinates(key)
             if x == x1 and (constraint_directions in ["all", "x"]):
                 form.vertex_attribute(key, "rol_x", True)
@@ -252,9 +252,9 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
             xu, xv = form.vertex_coordinates(u)[0], form.vertex_coordinates(v)[0]
             if max(xu, xv) >= xmin and min(xu, xv) <= xmax:
                 possible_edges.append(tuple(sorted([k_i[u], k_i[v]])))
-                if form.vertex_attribute(u, "is_fixed"):
+                if form.vertex_attribute(u, "is_support"):
                     possible_edges.append(tuple(sorted([-k_i[u], k_i[u]])))
-                if form.vertex_attribute(v, "is_fixed"):
+                if form.vertex_attribute(v, "is_support"):
                     possible_edges.append(tuple(sorted([-k_i[v], k_i[v]])))
         joints[j] = [[xi, y, zi], [xe, y, ze], set(possible_edges)]
         print(joints[j])
@@ -270,14 +270,14 @@ def circular_joints(form, x0=None, xf=None, blocks=18, thk=0.5, t=0.0, tol=1e-3)
             zi = 0 - t
         else:
             zi = math.sqrt(zi2) - t
-        if form.vertex_attribute(key, "is_fixed"):
+        if form.vertex_attribute(key, "is_support"):
             form.vertex_attribute(key, "lb", value=None)
             form.vertex_attribute(key, "ub", value=None)
         else:
             form.vertex_attribute(key, "lb", value=zi)
             form.vertex_attribute(key, "ub", value=ze)
         # form.vertex_attribute(key,'z',value=ze)
-        if form.vertex_attribute(key, "is_fixed"):
+        if form.vertex_attribute(key, "is_support"):
             form.vertex_attribute(key, "b", value=[thk / 2, 0.0])
         if x == x0:
             form.attributes["tmax"] = ze
@@ -302,7 +302,7 @@ def set_b_constraint(form, printout=False):
 
     """
     b = []
-    for key in form.vertices_where({"is_fixed": True}):
+    for key in form.vertices_where({"is_support": True}):
         try:
             [b_] = form.vertex_attributes(key, "b")
             b.append(b_)

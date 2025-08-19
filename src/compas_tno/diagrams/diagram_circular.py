@@ -124,7 +124,7 @@ def create_circular_radial_form(
     [bnds] = form.vertices_on_boundaries()
 
     for key in bnds:
-        form.vertex_attribute(key, "is_fixed", True)
+        form.vertex_attribute(key, "is_support", True)
 
     for u, v in form.edges_on_boundary():
         form.edge_attribute((u, v), "_is_edge", False)
@@ -241,7 +241,7 @@ def create_circular_radial_spaced_form(
     [bnds] = form.vertices_on_boundaries()
 
     for key in bnds:
-        form.vertex_attribute(key, "is_fixed", True)
+        form.vertex_attribute(key, "is_support", True)
 
     form.delete_boundary_edges()
 
@@ -339,7 +339,7 @@ def create_circular_spiral_form(
 
     [bnds] = form.vertices_on_boundaries()
     for key in bnds:
-        form.vertex_attribute(key, "is_fixed", True)
+        form.vertex_attribute(key, "is_support", True)
 
     form.delete_boundary_edges()  # Check what happens if there is oculus
 

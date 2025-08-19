@@ -114,7 +114,7 @@ def call_and_output_CVXPY(form, problem, printout=False):
         form.edge_attribute(edge, "q", float(qi))
         form.edge_attribute(edge, "f", float(qi * li))
 
-    form.attributes["loadpath"] = form.loadpath()
+    # form.attributes["loadpath"] = form.loadpath()
     compute_reactions(form)
 
     summary = True

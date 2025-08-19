@@ -428,7 +428,7 @@ class FormDiagram(TNAFormDiagram):
         delta=0.5,
         fix="corners",
     ) -> "FormDiagram":
-        """Helper to construct a FormDiagram based on fan discretiastion with straight lines to the corners.
+        """Helper to construct a FormDiagram based on fan discretisation with straight lines to the corners.
 
         Parameters
         ----------
@@ -995,7 +995,7 @@ class FormDiagram(TNAFormDiagram):
         """Computes the total (horizontal) thrust"""
 
         thrust = 0
-        for key in self.vertices_where(is_fixed=True):
+        for key in self.vertices_where(is_support=True):
             rx = self.vertex_attribute(key, name="_rx")
             ry = self.vertex_attribute(key, name="_ry")
             r = math.sqrt(rx**2 + ry**2)
@@ -1049,7 +1049,7 @@ class FormDiagram(TNAFormDiagram):
     def number_of_supports(self) -> int:
         """Compute the number of supports."""
 
-        return len(list(self.vertices_where(is_fixed=True)))
+        return len(list(self.vertices_where(is_support=True)))
 
     def delete_boundary_edges(self, delete_corner_vertex: bool = True) -> None:
         """
@@ -1068,7 +1068,7 @@ class FormDiagram(TNAFormDiagram):
         """
 
         for u, v in self.edges_on_boundary():
-            if self.vertex_attribute(u, "is_fixed") and self.vertex_attribute(v, "is_fixed"):
+            if self.vertex_attribute(u, "is_support") and self.vertex_attribute(v, "is_support"):
                 self.edge_attribute((u, v), "_is_edge", False)
 
         if delete_corner_vertex:
@@ -1092,7 +1092,7 @@ class FormDiagram(TNAFormDiagram):
         """Set all node on the boundary of a pattern as supports."""
 
         for key in self.vertices_on_boundary():
-            self.vertex_attribute(key, "is_fixed", True)
+            self.vertex_attribute(key, "is_support", True)
 
     def set_boundary_rollers(self, max_rx=[0.0, 0.0], max_ry=[0.0, 0.0], total_rx=None, total_ry=None) -> None:
         """
@@ -1137,7 +1137,7 @@ class FormDiagram(TNAFormDiagram):
                 ny1 += 1
             max_ry = [total_ry[0] / ny0, total_ry[1] / ny1]
         for key in self.vertices_on_boundary():
-            if self.vertex_attribute(key, "is_fixed") is False:
+            if self.vertex_attribute(key, "is_support") is False:
                 x, y, _ = self.vertex_coordinates(key)
                 if x == xlimits[0]:
                     self.vertex_attribute(key, "rol_x", True)
@@ -1190,7 +1190,7 @@ class FormDiagram(TNAFormDiagram):
         """Compute the symmetric supports."""
 
         i_sym_max = 0
-        for key in self.vertices_where(is_fixed=True):
+        for key in self.vertices_where(is_support=True):
             try:
                 i_sym = self.vertex_attribute(key, "sym_key")
             except BaseException:
@@ -1264,7 +1264,7 @@ class FormDiagram(TNAFormDiagram):
         dual = Mesh()
         fkey_centroid = {fkey: self.face_centroid(fkey) for fkey in self.faces()}
         midpt_boundary = {edge: self.edge_midpoint(edge) for edge in self.edges()}
-        fixed = self.fixed()
+        fixed = self.supports()
         boundary = list(self.vertices_on_boundary())
         vertices = {}
         faces = {}
@@ -1332,8 +1332,8 @@ class FormDiagram(TNAFormDiagram):
 
         """
 
-        corners = list(self.vertices_where(is_fixed=True))
-        self.vertices_attributes(names=("is_anchor", "is_fixed"), values=(True, True), keys=corners)
+        corners = list(self.vertices_where(is_support=True))
+        self.vertices_attributes(names=("is_anchor", "is_support"), values=(True, True), keys=corners)
         self.update_boundaries()
 
     def restore_diagram_boundary(self, tol=1e-3) -> None:
@@ -1551,7 +1551,7 @@ class FormDiagram(TNAFormDiagram):
 
         if parameters["type"] == "dome" or parameters["type"] == "dome_polar":
             [x0, y0] = parameters["center"][:2]
-            for key in self.vertices_where({"is_fixed": True}):
+            for key in self.vertices_where({"is_support": True}):
                 x, y, _ = self.vertex_coordinates(key)
                 theta = math.atan2((y - y0), (x - x0))
                 x_ = thk / 2 * math.cos(theta)
@@ -1567,7 +1567,7 @@ class FormDiagram(TNAFormDiagram):
             zc = radius - H
             re = radius + thk / 2
             x = math.sqrt(re**2 - zc**2)
-            for key in self.vertices_where({"is_fixed": True}):
+            for key in self.vertices_where({"is_support": True}):
                 self.vertex_attribute(key, "b", [x - L / 2, 0.0])
                 if b_manual:
                     self.vertex_attribute(key, "b", [b_manual, 0.0])
@@ -1581,7 +1581,7 @@ class FormDiagram(TNAFormDiagram):
             r_proj_e = (radius + thk / 2) * math.sin(theta_f)
             r_proj_m = (radius) * math.sin(theta_f)
             delt = r_proj_e - r_proj_m
-            for key in self.vertices_where({"is_fixed": True}):
+            for key in self.vertices_where({"is_support": True}):
                 x, y, _ = self.vertex_coordinates(key)
                 theta = math.atan2((y - y0), (x - x0))
                 x_ = delt * math.cos(theta)
@@ -1591,7 +1591,7 @@ class FormDiagram(TNAFormDiagram):
         if parameters["type"] == "pavillionvault":
             x0, x1 = parameters["xy_span"][0]
             y0, y1 = parameters["xy_span"][1]
-            for key in self.vertices_where({"is_fixed": True}):
+            for key in self.vertices_where({"is_support": True}):
                 x, y, _ = self.vertex_coordinates(key)
                 if x == x0:
                     self.vertex_attribute(key, "b", [-thk / 2, 0])
@@ -1700,7 +1700,7 @@ class FormDiagram(TNAFormDiagram):
             pzt = 0
             for key in self.vertices():
                 self.vertex_attribute(key, "pz", value=1.0)
-                if self.vertex_attribute(key, "is_fixed") is True:
+                if self.vertex_attribute(key, "is_support") is True:
                     self.vertex_attribute(key, "pz", value=0.5)
                 pzt += self.vertex_attribute(key, "pz")
 

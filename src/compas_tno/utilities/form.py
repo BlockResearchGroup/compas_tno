@@ -104,7 +104,7 @@ def form_add_lines_support(form, loaded_node, supports):
     text[loaded_node] = loaded_node
 
     xp, yp, _ = form.vertex_coordinates(loaded_node)
-    fixed_coords = [form.vertex_coordinates(vertex) for vertex in form.vertices_where({"is_fixed": True})]
+    fixed_coords = [form.vertex_coordinates(vertex) for vertex in form.vertices_where({"is_support": True})]
     parameters = form.parameters
 
     lines = form.to_lines()
@@ -150,7 +150,7 @@ def form_add_lines_support(form, loaded_node, supports):
         for coord_fix in fixed_coords:
             dist = distance_point_point_xy(coord, coord_fix)
             if dist < 1e-3:
-                form.vertex_attribute(vertex, "is_fixed", True)
+                form.vertex_attribute(vertex, "is_support", True)
 
     form.parameters = parameters
 
@@ -403,7 +403,7 @@ def fix_mesh_corners(mesh, corners=[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0,
             dist = distance_point_point_xy(pt, corner)
             if dist < 1e-3:
                 corners_pt.append(key)
-                mesh.vertex_attribute(key, "is_fixed", True)
+                mesh.vertex_attribute(key, "is_support", True)
                 break
 
     return corners_pt
@@ -424,7 +424,7 @@ def fix_mesh_boundary(mesh):
     """
 
     for key in mesh.vertices_on_boundary():
-        mesh.vertex_attribute(key, "is_fixed", True)
+        mesh.vertex_attribute(key, "is_support", True)
 
     for u, v in mesh.edges_on_boundary():
         mesh.edge_attribute((u, v), "_is_edge", False)
@@ -446,7 +446,7 @@ def slide_diagram(form, delta=0.5, y0=0.0, y1=10.0, tappered=False):
     """
 
     yc = (y1 - y0) / 2
-    for vertex in form.vertices_where({"is_fixed": False}):
+    for vertex in form.vertices_where({"is_support": False}):
         x, y, _ = form.vertex_coordinates(vertex)
         dy = min(y - y0, y1 - y)
         if tappered:
@@ -488,7 +488,7 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
     yc = (y0 + y1) / 2
 
     for vertex in form.vertices():
-        if form.vertex_attribute(vertex, "is_fixed"):
+        if form.vertex_attribute(vertex, "is_support"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
 
@@ -567,7 +567,7 @@ def displacement_map_parabola(form, y0=0.0, y1=10.0):
     dX = zeros((n, 2))
 
     for i, vertex in enumerate(form.vertices()):
-        if form.vertex_attribute(vertex, "is_fixed"):
+        if form.vertex_attribute(vertex, "is_support"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
         dyi = 0.0
@@ -603,7 +603,7 @@ def displacement_map_4parabolas(form, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol=0.1)
     dX = zeros((n, 2))
 
     for i, vertex in enumerate(form.vertices()):
-        if form.vertex_attribute(vertex, "is_fixed"):
+        if form.vertex_attribute(vertex, "is_support"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
         dxi = 0.0
@@ -650,7 +650,7 @@ def displacement_map_paraboloid(form, xc=5.0, yc=5.0, radius=5.0):
     dX = zeros((n, 2))
 
     for i, vertex in enumerate(form.vertices()):
-        if form.vertex_attribute(vertex, "is_fixed"):
+        if form.vertex_attribute(vertex, "is_support"):
             continue
         x, y, _ = form.vertex_coordinates(vertex)
         dxi = k * (x - xc) ** 2 * 2 * (xc - x) / radius
@@ -748,7 +748,7 @@ def shuffle_diagram(form):
     tol = 1e-6
 
     lines = form.to_lines()
-    supports = [form.vertex_coordinates(key) for key in form.vertices_where({"is_fixed": True})]
+    supports = [form.vertex_coordinates(key) for key in form.vertices_where({"is_support": True})]
     no_edges = [form.edge_midpoint(*edge) for edge in form.edges_where({"_is_edge": False})]
 
     shuffle(lines)
@@ -759,7 +759,7 @@ def shuffle_diagram(form):
         for support in supports:
             dist = distance_point_point_xy(pt, support)
             if dist < tol:
-                form.vertex_attribute(key, "is_fixed", True)
+                form.vertex_attribute(key, "is_support", True)
                 break
 
     for edge in form.edges():
@@ -771,3 +771,13 @@ def shuffle_diagram(form):
                 break
 
     return form
+
+
+def rename_supports(form):
+    """Rename the supports of a form diagram
+    """
+
+    fixed = form.vertices_where({"is_fixed": True})
+    form.vertices_attribute(name="is_support", value=True, keys=fixed)
+
+    return

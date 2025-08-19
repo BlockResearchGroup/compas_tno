@@ -109,7 +109,7 @@ def post_process_general(analysis: "Analysis"):
         form.edge_attribute((u, v), "q", float(qi))
         form.edge_attribute((u, v), "f", float(qi * li))
 
-    form.attributes["loadpath"] = form.loadpath()
+    # form.attributes["loadpath"] = form.loadpath()
     compute_reactions(form)
 
     if "t" in problem.variables:
@@ -185,7 +185,7 @@ def post_process_general(analysis: "Analysis"):
             form.vertex_attribute(key, "lb", zub - tlb[i])
 
     if "tub_reac" in problem.variables:
-        for i, key in enumerate(form.vertices_where({"is_fixed": True})):
+        for i, key in enumerate(form.vertices_where({"is_support": True})):
             print(i, key, tub_reac)
             form.vertex_attribute(key, "tub_reac", [tub_reac[i], tub_reac[i + problem.nb]])
 

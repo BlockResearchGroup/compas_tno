@@ -31,7 +31,7 @@ def optimise_fdm(form, plot=True, surf=False):
 
     vertices = [k_i[key] for key in form.vertices_where({"_is_external": False})]
     edges = [[k_i[u], k_i[v]] for u, v in form.edges_where({"_is_edge": True, "_is_external": False})]
-    fixed = [k_i[key] for key in form.vertices_where({"_is_external": False, "is_fixed": True})]
+    fixed = [k_i[key] for key in form.vertices_where({"_is_external": False, "is_support": True})]
     free = list(set(vertices) - set(fixed))
 
     n = len(vertices)

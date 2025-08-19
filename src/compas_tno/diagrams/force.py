@@ -19,6 +19,7 @@ class ForceDiagram(TNAForceDiagram):
         self.update_default_vertex_attributes(
             {
                 "is_fixed": False,
+                "is_support": False,
                 "is_param": False,
             }
         )

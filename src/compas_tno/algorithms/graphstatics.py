@@ -54,7 +54,7 @@ def form_update_with_parallelisation(
 
     """
     # mark supports as 'is_anchor'
-    corners = list(form.vertices_where({"is_fixed": True}))
+    corners = list(form.vertices_where({"": True}))
     form.vertices_attribute("is_anchor", True, keys=corners)
 
     # update bounds adding a new face to the open edges along boundaries
@@ -114,7 +114,7 @@ def reciprocal_from_form(
 
     """
     # mark supports as 'is_anchor'
-    corners = list(form.vertices_where({"is_fixed": True}))
+    corners = list(form.vertices_where({"": True}))
     form.vertices_attribute("is_anchor", True, keys=corners)
 
     # update bounds adding a new face to the open edges along boundaries

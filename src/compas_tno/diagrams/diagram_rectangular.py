@@ -151,14 +151,14 @@ def create_cross_form(
     gkey_key = {TOL.geometric_key(form.vertex_point(vertex)): vertex for vertex in form.vertices()}
 
     if fix == "corners":
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_fixed", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_support", True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
 
         form = form.delete_boundary_edges()  # Check if this should be here, or explicit
 
@@ -273,14 +273,14 @@ def create_cross_diagonal(
     gkey_key = {TOL.geometric_key(form.vertex_point(vertex)): vertex for vertex in form.vertices()}
 
     if fix == "corners":
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_fixed", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_support", True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
 
         form.delete_boundary_edges()
 
@@ -381,14 +381,14 @@ def create_cross_with_diagonal(
     gkey_key = {TOL.geometric_key(form.vertex_point(vertex)): vertex for vertex in form.vertices()}
 
     if fix == "corners":
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_fixed", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_support", True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
         form = form.delete_boundary_edges()  # Check if this should be here, or explicit
 
     return form
@@ -505,14 +505,14 @@ def create_fan_form(
     gkey_key = {TOL.geometric_key(form.vertex_point(vertex)): vertex for vertex in form.vertices()}
 
     if fix == "corners":
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_fixed", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_support", True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
 
         form.delete_boundary_edges()
 
@@ -525,7 +525,7 @@ def create_fan_form(
 
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
 
         for edge in form.edges_on_boundary():
             form.edge_attribute(edge, "_is_edge", False)
@@ -594,14 +594,14 @@ def create_ortho_form(
     gkey_key = {TOL.geometric_key(form.vertex_point(vertex)): vertex for vertex in form.vertices()}
 
     if fix == "corners":
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_fixed", True)
-        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_fixed", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x0, y1, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y0, 0.0])], "is_support", True)
+        form.vertex_attribute(gkey_key[TOL.geometric_key([x1, y1, 0.0])], "is_support", True)
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
 
         for edge in form.edges_on_boundary():
             form.edge_attribute(edge, "_is_edge", False)
@@ -626,7 +626,7 @@ def create_ortho_form(
 
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
 
         for edge in form.edges_on_boundary():
             form.edge_attribute(edge, "_is_edge", False)
@@ -773,12 +773,12 @@ def create_parametric_form(
             for corner in corners:
                 dist = distance_point_point_xy(pt, corner)
                 if dist < 1e-3:
-                    form.vertex_attribute(key, "is_fixed", True)
+                    form.vertex_attribute(key, "is_support", True)
                     break
     else:
         [bnds] = form.vertices_on_boundaries()
         for key in bnds:
-            form.vertex_attribute(key, "is_fixed", True)
+            form.vertex_attribute(key, "is_support", True)
         form = form.delete_boundary_edges()  # Check if this should be here, or explicit
 
     return form

@@ -392,14 +392,14 @@ def build_symmetry_matrix_supports(form, printout=False):
     key_i_sup = {}
 
     i = 0
-    for key in form.vertices_where({"is_fixed": True}):
+    for key in form.vertices_where({"is_support": True}):
         key_i_sup[key] = i
         i += 1
 
     line = 0
     for id_sym in range(k_unique):
         i = 0
-        for key in form.vertices_where({"is_fixed": True}):
+        for key in form.vertices_where({"is_support": True}):
             if form.vertex_attribute(key, "sym_key") == id_sym:
                 index = key_i_sup[key]
                 if i == 0:
