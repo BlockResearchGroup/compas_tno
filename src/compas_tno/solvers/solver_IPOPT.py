@@ -423,7 +423,7 @@ def _nlp_options(nlp, optimiser: "Optimiser"):
     # nlp.add_option('compl_inf_tol', 0.1)   # Default 1e-4
 
     # nlp.add_option('acceptable_iter', 10)
-    # nlp.add_option('acceptable_tol', 1e-3)
+    # nlp.add_option('acceptable_tol', 1e-4)  # Default 1e-6
     # nlp.add_option('acceptable_constr_viol_tol', 1e-4)  # Default 1e-2
     # nlp.add_option('acceptable_dual_inf_tol', 10e10)  # Default 10e10
     # nlp.add_option('acceptable_compl_inf_tol', 1e-2)  # Default 1e-2

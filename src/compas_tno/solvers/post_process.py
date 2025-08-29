@@ -2,7 +2,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
+    from compas_tna.envelope import Envelope
     from compas_tno.optimisers import Optimiser
     from compas_tno.problems import Problem
 
@@ -11,6 +12,7 @@ from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import save_geometry_at_iterations
 from compas_tno.shapes import Shape
+from compas_tna.envelope import Envelope
 
 
 def post_process_general(analysis: "Analysis"):
@@ -27,8 +29,9 @@ def post_process_general(analysis: "Analysis"):
         The Analysis object updated
     """
 
-    form: "FormDiagram" = analysis.model.formdiagram
+    form: "FormDiagram" = analysis.formdiagram
     optimiser: "Optimiser" = analysis.optimiser
+    envelope: "Envelope" = analysis.envelope
     # shape: "Shape" = analysis.shape
 
     problem: "Problem" = optimiser.problem
@@ -113,49 +116,56 @@ def post_process_general(analysis: "Analysis"):
     compute_reactions(form)
 
     if "t" in problem.variables:
-        # TODO: Now that only the model is passed, if the optimisation is minimum thickness, we need to update the model based on the template  
-        if shape.parameters["type"] == "general":
-            if thickness_type == "constant":
-                form.attributes["thk"] = thk
-                shape.parameters["thk"] = thk
-                shape.intrados = shape.middle.offset_mesh(n=thk / 2, direction="down")
-                shape.extrados = shape.middle.offset_mesh(n=thk / 2, direction="up")
-                form.apply_envelope_from_shape(shape)
-
-            elif thickness_type == "variable":
-                t0 = shape.parameters["thk"]
-                thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
-                form.attributes["thk"] = thk
-                shape.parameters["thk"] = thk
-                if printout:
-                    print("Optimum Value corresponds to a thickness of:", thk)
-                shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
-                form.apply_envelope_from_shape(shape)
-
-            elif thickness_type == "intrados":
-                form.attributes["thk"] = thk
-                shape.parameters["thk"] = thk
-                shape.middle = shape.intrados.offset_mesh(n=thk / 2, direction="up")
-                shape.extrados = shape.intrados.offset_mesh(n=thk, direction="up")
-                form.apply_envelope_from_shape(shape)
+        if problem.envelope.callable_ub_lb:
+            problem.envelope.thickness = thk
+            problem.envelope.update()
+            problem.envelope.apply_bounds_to_formdiagram(form)
+            print("Envelope updated for new minimum thickness: {}".format(thk))
         else:
-            form.attributes["thk"] = thk
-            shape.parameters["thk"] = thk
-            shape = Shape.from_library(shape.parameters)
-            form.apply_envelope_from_shape(shape)  # Check if this is ok for adapted pattern
-            form.apply_bounds_reactions(shape)
+            pass
+        # # TODO: Now that only the model is passed, if the optimisation is minimum thickness, we need to update the model based on the template  
+        # if shape.parameters["type"] == "general":
+        #     if thickness_type == "constant":
+        #         form.attributes["thk"] = thk
+        #         shape.parameters["thk"] = thk
+        #         shape.intrados = shape.middle.offset_mesh(n=thk / 2, direction="down")
+        #         shape.extrados = shape.middle.offset_mesh(n=thk / 2, direction="up")
+        #         form.apply_envelope_from_shape(shape)
 
-            i = 0
-            for key in form.vertices():  # this resolve the problem due to the adapted pattern
-                form.vertex_attribute(key, "ub", float(problem.ub[i]))
-                form.vertex_attribute(key, "lb", float(problem.lb[i]))
-                i += 1
+        #     elif thickness_type == "variable":
+        #         t0 = shape.parameters["thk"]
+        #         thk = t0 * thk  # Consider that the thk for general shapes is a percentage of the thickness
+        #         form.attributes["thk"] = thk
+        #         shape.parameters["thk"] = thk
+        #         if printout:
+        #             print("Optimum Value corresponds to a thickness of:", thk)
+        #         shape.extrados, shape.intrados = shape.middle.offset_up_and_down(n=fopt)
+        #         form.apply_envelope_from_shape(shape)
 
-    if "update-envelope" in features:
-        form.attributes["thk"] = thk
-        shape.parameters["thk"] = thk
-        shape = Shape.from_library(shape.parameters)
-        form.apply_envelope_from_shape(shape)
+        #     elif thickness_type == "intrados":
+        #         form.attributes["thk"] = thk
+        #         shape.parameters["thk"] = thk
+        #         shape.middle = shape.intrados.offset_mesh(n=thk / 2, direction="up")
+        #         shape.extrados = shape.intrados.offset_mesh(n=thk, direction="up")
+        #         form.apply_envelope_from_shape(shape)
+        # else:
+        #     form.attributes["thk"] = thk
+        #     shape.parameters["thk"] = thk
+        #     shape = Shape.from_library(shape.parameters)
+        #     form.apply_envelope_from_shape(shape)  # Check if this is ok for adapted pattern
+        #     form.apply_bounds_reactions(shape)
+
+        #     i = 0
+        #     for key in form.vertices():  # this resolve the problem due to the adapted pattern
+        #         form.vertex_attribute(key, "ub", float(problem.ub[i]))
+        #         form.vertex_attribute(key, "lb", float(problem.lb[i]))
+        #         i += 1
+
+    # if "update-envelope" in features:
+    #     form.attributes["thk"] = thk
+    #     shape.parameters["thk"] = thk
+    #     shape = Shape.from_library(shape.parameters)
+    #     form.apply_envelope_from_shape(shape)
 
     # if 's' in problem.variables:
     #     s = -1 * fopt

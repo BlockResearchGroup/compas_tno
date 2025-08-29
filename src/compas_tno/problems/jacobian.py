@@ -290,7 +290,8 @@ def sensitivities_wrapper(
         if "update-envelope" in M.features:
             pass
         else:
-            dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)[:2]
+            # dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)[:2]
+            dzmaxdt, dzmindt = M.envelope.callable_dub_dlb(M.X[:, 0], M.X[:, 1], thk)[:2]
 
         dXdt = vstack([zeros((nlin_fun + nlin_limitxy, 1)), -dzmindt, +dzmaxdt, db_column])
         deriv = hstack([deriv, dXdt])

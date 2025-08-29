@@ -29,6 +29,7 @@ from compas_tno.algorithms import check_horizontal_loads
 # from compas_tno.algorithms import check_independents
 from compas_tno.algorithms import find_independents
 from compas_tno.diagrams import FormDiagram
+from compas_tna.envelope import Envelope
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
 from compas_tno.utilities import build_symmetry_transformation
@@ -203,6 +204,7 @@ class Problem:
     thk: Optional[float] = None
     rho: Optional[float] = None
     min_lb: Optional[float] = 0.0
+    envelope: Optional["Envelope"] = None
 
     ub_lb_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
     b_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel

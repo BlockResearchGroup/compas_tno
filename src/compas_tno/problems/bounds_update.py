@@ -7,6 +7,8 @@ if TYPE_CHECKING:
 # Since the Model will be created from a template, the bounds will be updated based on the template
 # and the thickness will be updated based on the template
 
+from compas_tna.envelope import Envelope
+
 from compas_tno.shapes import Shape
 from compas_tno.shapes import arch_b_update
 from compas_tno.shapes import arch_db
@@ -48,7 +50,7 @@ def ub_lb_update(
     y: npt.NDArray,
     thk: float,
     t: float,
-    shape: Shape,
+    envelope: Envelope,
     ub: npt.NDArray,
     lb: npt.NDArray,
     s: npt.NDArray,
@@ -66,8 +68,8 @@ def ub_lb_update(
         thickness to update the bounds to
     t : float
         thickness considered to the outer vertices
-    shape : Shape
-        Shape object to be updated
+    envelope : Envelope
+        Envelope object to be updated
     ub : array
         Current upper-bound limits
     lb : array
@@ -84,25 +86,9 @@ def ub_lb_update(
 
     """
 
-    if shape.parameters["type"] == "arch":
-        return arch_ub_lb_update(x, y, thk, t, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
-
-    if shape.parameters["type"] == "pointed_arch":
-        return pointed_arch_ub_lb_update(x, y, thk, t, hc=shape.parameters["hc"], L=shape.parameters["L"], x0=shape.parameters["x0"])
-
-    if shape.parameters["type"] == "dome":
-        return dome_ub_lb_update(x, y, thk, t, center=shape.parameters["center"], radius=shape.parameters["radius"])
-
-    if shape.parameters["type"] == "crossvault":
-        return crossvault_ub_lb_update(x, y, thk, t, xy_span=shape.parameters["xy_span"])
-
-    if shape.parameters["type"] == "pavillionvault":
-        return pavillionvault_ub_lb_update(x, y, thk, t, xy_span=shape.parameters["xy_span"])
-
-    if shape.parameters["type"] == "pointed_crossvault":
-        return pointed_vault_ub_lb_update(x, y, thk, t, xy_span=shape.parameters["xy_span"], hc=shape.parameters["hc"], he=shape.parameters["he"], hm=shape.parameters["hm"])
-
-    if shape.parameters["type"] == "general":
+    if envelope.callable_ub_lb:
+        return envelope.callable_ub_lb(x, y, thk)
+    else:
         if "t" in variables:
             thickness_type = shape.parameters["thickness_type"]
 
@@ -127,7 +113,7 @@ def dub_dlb_update(
     y: npt.NDArray,
     thk: float,
     t: float,
-    shape: Shape,
+    envelope: Envelope,
     ub: npt.NDArray,
     lb: npt.NDArray,
     s: npt.NDArray,
@@ -145,8 +131,8 @@ def dub_dlb_update(
         thickness to update the bounds to
     t : float
         thickness considered to the outer vertices
-    shape : Shape
-        Shape object to be updated
+    envelope : Envelope
+        Envelope object to be updated
     ub : array
         Current upper-bound limits
     lb : array
@@ -163,25 +149,28 @@ def dub_dlb_update(
 
     """
 
-    if shape.parameters["type"] == "arch":
-        return arch_dub_dlb(x, y, thk, t, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
+    # if shape.parameters["type"] == "arch":
+    #     return arch_dub_dlb(x, y, thk, t, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
 
-    if shape.parameters["type"] == "pointed_arch":
-        return pointed_arch_dub_dlb(x, y, thk, t, hc=shape.parameters["hc"], L=shape.parameters["L"], x0=shape.parameters["x0"])
+    # if shape.parameters["type"] == "pointed_arch":
+    #     return pointed_arch_dub_dlb(x, y, thk, t, hc=shape.parameters["hc"], L=shape.parameters["L"], x0=shape.parameters["x0"])
 
-    if shape.parameters["type"] == "dome":
-        return dome_dub_dlb(x, y, thk, t, center=shape.parameters["center"], radius=shape.parameters["radius"])
+    # if shape.parameters["type"] == "dome":
+    #     return dome_dub_dlb(x, y, thk, t, center=shape.parameters["center"], radius=shape.parameters["radius"])
 
-    if shape.parameters["type"] == "crossvault":
-        return crossvault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"])
+    # if shape.parameters["type"] == "crossvault":
+    #     return crossvault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"])
 
-    if shape.parameters["type"] == "pavillionvault":
-        return pavillionvault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"])
+    # if shape.parameters["type"] == "pavillionvault":
+    #     return pavillionvault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"])
 
-    if shape.parameters["type"] == "pointed_crossvault":
-        return pointed_vault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"], hc=shape.parameters["hc"], he=shape.parameters["he"], hm=shape.parameters["hm"])
+    # if shape.parameters["type"] == "pointed_crossvault":
+    #     return pointed_vault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"], hc=shape.parameters["hc"], he=shape.parameters["he"], hm=shape.parameters["hm"])
 
-    if shape.parameters["type"] == "general":
+
+    if envelope.callable_dub_dlb:
+        return envelope.callable_dub_dlb(x, y, thk)
+    else:
         if "t" in variables:
             thickness_type = shape.parameters["thickness_type"]
 
@@ -205,7 +194,7 @@ def b_update(
     y: npt.NDArray,
     thk: float,
     fixed: list,
-    shape: Shape,
+    envelope: Envelope,
     b: npt.NDArray,
     variables: list,
 ) -> list:
@@ -221,8 +210,8 @@ def b_update(
         thickness to update the bounds to
     fixed : list
         LIst with the indices of the fixed vertices
-    shape : Shape
-        Shape object to be updated
+    envelope : Envelope
+        Envelope object to be updated
     b : array
         Current ``b`` limits
     variables : list
@@ -234,24 +223,29 @@ def b_update(
         New ``b`` limits
     """
 
-    if shape.parameters["type"] == "arch":
-        return arch_b_update(x, y, thk, fixed, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
+    if envelope.callable_bound_react:
+        return envelope.callable_bound_react(x, y, thk, fixed)
+    else:
+        raise Exception
 
-    if shape.parameters["type"] == "dome":
-        return dome_b_update(x, y, thk, fixed, center=shape.parameters["center"], radius=shape.parameters["radius"])
+    # if shape.parameters["type"] == "arch":
+    #     return arch_b_update(x, y, thk, fixed, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
 
-    if shape.parameters["type"] == "pavillionvault":
-        return pavillionvault_b_update(x, y, thk, fixed, xy_span=shape.parameters["xy_span"])
+    # if shape.parameters["type"] == "dome":
+    #     return dome_b_update(x, y, thk, fixed, center=shape.parameters["center"], radius=shape.parameters["radius"])
 
-    if shape.parameters["type"] == "general":
-        if "n" in variables:
-            if shape.parameters["base_structure"]["type"] == "dome" or shape.parameters["base_structure"]["type"] == "dome_polar":
-                return dome_b_update_with_n(x, y, thk, fixed, b, center=shape.parameters["base_structure"]["center"])
+    # if shape.parameters["type"] == "pavillionvault":
+    #     return pavillionvault_b_update(x, y, thk, fixed, xy_span=shape.parameters["xy_span"])
 
-    raise Exception
+    # if shape.parameters["type"] == "general":
+    #     if "n" in variables:
+    #         if shape.parameters["base_structure"]["type"] == "dome" or shape.parameters["base_structure"]["type"] == "dome_polar":
+    #             return dome_b_update_with_n(x, y, thk, fixed, b, center=shape.parameters["base_structure"]["center"])
+
+    # raise Exception
 
 
-def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], shape: Shape, b: npt.NDArray, variables: List[str]):
+def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], envelope: Envelope, b: npt.NDArray, variables: List[str]):
     """Function to update the derrivatives of the limits of the extension of the reaction forces on the support vertices.
 
     Parameters
@@ -264,8 +258,8 @@ def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], shap
         thickness to update the bounds to
     fixed : list
         LIst with the indices of the fixed vertices
-    shape : Shape
-        Shape object to be updated
+    envelope : Envelope
+        Envelope object to be updated
     b : array
         Current ``b`` limits
     variables : list
@@ -277,18 +271,23 @@ def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], shap
         Sensitivities of the ``b`` limits in the point
     """
 
-    if shape.parameters["type"] == "arch":
-        return arch_db(x, y, thk, fixed, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
+    if envelope.callable_db:
+        return envelope.callable_db(x, y, thk, fixed)
+    else:
+        raise Exception
 
-    if shape.parameters["type"] == "dome":
-        return dome_db(x, y, thk, fixed, center=shape.parameters["center"], radius=shape.parameters["radius"])
+    # if shape.parameters["type"] == "arch":
+    #     return arch_db(x, y, thk, fixed, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
 
-    if shape.parameters["type"] == "pavillionvault":
-        return pavillionvault_db(x, y, thk, fixed, xy_span=shape.parameters["xy_span"])
+    # if shape.parameters["type"] == "dome":
+    #     return dome_db(x, y, thk, fixed, center=shape.parameters["center"], radius=shape.parameters["radius"])
 
-    if shape.parameters["type"] == "general":
-        if "n" in variables:
-            if shape.parameters["base_structure"]["type"] == "dome":
-                return dome_db_with_n(x, y, fixed, center=shape.parameters["base_structure"]["center"])
+    # if shape.parameters["type"] == "pavillionvault":
+    #     return pavillionvault_db(x, y, thk, fixed, xy_span=shape.parameters["xy_span"])
 
-    raise Exception
+    # if shape.parameters["type"] == "general":
+    #     if "n" in variables:
+    #         if shape.parameters["base_structure"]["type"] == "dome":
+    #             return dome_db_with_n(x, y, fixed, center=shape.parameters["base_structure"]["center"])
+
+    # raise Exception

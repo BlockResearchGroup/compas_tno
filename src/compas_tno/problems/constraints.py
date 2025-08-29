@@ -121,9 +121,10 @@ def constr_wrapper(variables : npt.NDArray, M: "Problem") -> npt.NDArray:
     if "envelope" in M.constraints:
         # constraints in z
         if "update-envelope" in M.features:
-            M.ub, M.lb = ub_lb_update(M.X[:, 0], M.X[:, 1], thk, min_lb, M.shape, None, None, M.s, M.variables)
+            M.ub, M.lb = M.envelope.callable_ub_lb(M.X[:, 0], M.X[:, 1], thk)
         elif "t" in M.variables or "n" in M.variables:
-            M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, min_lb, M.shape, M.ub0, M.lb0, M.s, M.variables)
+            # M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, min_lb, M.shape, M.ub0, M.lb0, M.s, M.variables)
+            M.ub, M.lb = M.envelope.callable_ub_lb(M.X[:, 0], M.X[:, 1], thk)
         else:
             pass
         zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)

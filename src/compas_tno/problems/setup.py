@@ -49,7 +49,8 @@ def set_up_general_optimisation(analysis: "Analysis"):
     # Initialisation
     # =============================================================================
 
-    form = analysis.model.formdiagram
+    form = analysis.formdiagram
+    envelope = analysis.envelope
     optimiser = analysis.optimiser
     
     printout = optimiser.settings.get("printout", True)
@@ -70,7 +71,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
 
     pattern_center = form.centroid()
 
-    thk = analysis.model.thickness
+    thk = analysis.envelope.thickness
 
     objective = optimiser.settings["objective"]
     variables = optimiser.settings["variables"]
@@ -92,7 +93,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     problem.variables = variables
     problem.constraints = constraints
     problem.features = features
-    # problem.shape = shape
+    problem.envelope = envelope
     problem.thk = thk
 
     if "update-loads" in features:
@@ -104,7 +105,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     problem.V0 = V0
     problem.V1 = V1
     problem.V2 = V2
-    problem.rho = analysis.model.rho
+    problem.rho = analysis.envelope.rho
 
     # =============================================================================
     # Starting point
@@ -423,7 +424,7 @@ def set_up_convex_optimisation(analysis: "Analysis"):
 
     """
 
-    form = analysis.model.formdiagram
+    form = analysis.formdiagram
     optimiser = analysis.optimiser
     qmax = optimiser.settings["qmax"]
     qmin = optimiser.settings["qmin"]

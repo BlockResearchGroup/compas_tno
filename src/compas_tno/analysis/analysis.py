@@ -9,11 +9,13 @@ from scipy import interpolate
 
 from compas.data import Data
 from compas_dem.models import SurfaceModel
-from compas_tno.diagrams import FormDiagram
+
+from compas_tna.envelope import Envelope
+from compas_tna.diagrams import FormDiagram
+
 from compas_tno.optimisers import Optimiser
 from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
-from compas_tno.shapes import Shape
 from compas_tno.solvers import run_optimisation_CVXPY
 from compas_tno.solvers import run_optimisation_ipopt
 from compas_tno.solvers import run_optimisation_MATLAB
@@ -38,14 +40,14 @@ class Analysis(Data):
 
     """
 
-    form: FormDiagram
-    shape: Shape
+    formdiagram: FormDiagram
+    envelope: Envelope
     optimiser: Optimiser
-    model: SurfaceModel
 
     def __init__(
         self,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         optimiser: Optimiser,
         settings: Optional[dict] = None,
         name: Optional[str] = None,
@@ -55,7 +57,8 @@ class Analysis(Data):
         super().__init__(name=name)
 
         self.settings = settings or {}
-        self.model = model
+        self.formdiagram = formdiagram
+        self.envelope = envelope
         self.optimiser = optimiser
 
     def __str__(self):
@@ -65,9 +68,9 @@ class Analysis(Data):
     @property
     def __data__(self) -> dict:
         data = {
-            "form": self.form,
+            "formdiagram": self.formdiagram,
+            "envelope": self.envelope,
             "optimiser": self.optimiser,
-            "shape": self.shape,
             "settings": self.settings,
         }
         return data
@@ -75,7 +78,8 @@ class Analysis(Data):
     @classmethod
     def create_minthk_analysis(
         cls,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -118,12 +122,13 @@ class Analysis(Data):
             print("Minimum thickness analysis created")
             print(optimiser)
 
-        return cls(model, optimiser=optimiser)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_bestfit_analysis(
         cls,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -168,12 +173,13 @@ class Analysis(Data):
             print("Minimum thickness analysis created")
             print(optimiser)
 
-        return cls(model, optimiser=optimiser)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_minthrust_analysis(
         cls,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -214,12 +220,13 @@ class Analysis(Data):
             print("Minimum thrust analysis created")
             print(optimiser)
 
-        return cls(model, optimiser=optimiser)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_maxthrust_analysis(
         cls,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -260,13 +267,13 @@ class Analysis(Data):
             print("Maximium thrust analysis created")
             print(optimiser)
 
-        return cls(model, optimiser=optimiser)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_max_load_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         plot: bool = False,
         horizontal: bool = False,
@@ -336,12 +343,13 @@ class Analysis(Data):
                 print("Max vertical load analysis created")
                 # print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_compl_energy_analysis(
         cls,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         solver: str = "IPOPT",
         plot: bool = False,
@@ -390,12 +398,13 @@ class Analysis(Data):
             print("Complementary energy created")
             print(optimiser)
 
-        return cls(model, optimiser=optimiser)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_quad_compl_energy_analysis(
         cls,
-        model: SurfaceModel,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         printout: bool = False,
         solver: str = "IPOPT",
         plot: bool = False,
@@ -440,13 +449,13 @@ class Analysis(Data):
             print("Complementary energy analysis created")
             print(optimiser)
 
-        return cls(model, optimiser=optimiser)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     @classmethod
     def create_lp_analysis(
         cls,
-        form: FormDiagram,
-        shape: Shape = None,
+        formdiagram: FormDiagram,
+        envelope: Envelope,
         solver: str = "CVXPY",
         printout: bool = False,
         plot: bool = False,
@@ -482,7 +491,7 @@ class Analysis(Data):
             print("Load path Analysis created")
             print(optimiser)
 
-        return cls(form, optimiser=optimiser, shape=shape)
+        return cls(formdiagram, envelope, optimiser=optimiser)
 
     # =============================================================================
     # Methods
@@ -515,42 +524,76 @@ class Analysis(Data):
         self.optimiser.clear_optimiser()
 
     def apply_selfweight(self, normalize_loads=True):
-        """Invoke method to apply selfweight to the nodes of the form diagram based on the shape"""
-        self.model.apply_selfweight(normalize=normalize_loads)
+        """Invoke method to apply selfweight to the nodes of the form diagram based on the envelope"""
+        self.envelope.apply_selfweight_to_formdiagram(self.formdiagram, normalize=normalize_loads)
 
-    def apply_selfweight_from_pattern(self, pattern, plot=False):
-        """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
+    # def apply_selfweight_from_pattern(self, pattern, plot=False):
+    #     """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
 
-        Warnings
-        --------
-        The base pattern has to coincide with nodes from the original form diagram.
+    #     Warnings
+    #     --------
+    #     The base pattern has to coincide with nodes from the original form diagram.
+
+    #     """
+    #     self.form.apply_selfweight_from_pattern(pattern, plot=plot)
+
+    def apply_hor_multiplier(self, multiplier=1.0, component="x"):
+        """Apply a multiplier on the selfweight to the nodes of the form diagram based on the envelope
+
+        Parameters
+        ----------
+        multiplier : float, optional
+            Value of the horizontal multiplier, by default ``1.0``.
+        component : str, optional
+            Direction to apply the loads, ``x`` or ``y``, by default ``x``.
+
+        Returns
+        -------
+        None
+            The FormDiagram is modified in place.
 
         """
-        self.form.apply_selfweight_from_pattern(pattern, plot=plot)
+        arg = "p" + component
 
-    def apply_hor_multiplier(self, multiplier, component):
-        """Apply a multiplier on the selfweight to the nodes of the form diagram based"""
-
-        self.form.apply_horizontal_multiplier(lambd=multiplier, direction=component)
+        for key in self.formdiagram.vertices():
+            pz = self.formdiagram.vertex_attribute(key, "pz")
+            self.formdiagram.vertex_attribute(key, arg, -1 * pz * multiplier)  # considers that swt (pz) is negative
 
     def apply_envelope(self):
-        """Invoke method to apply ub and lb to the nodes based on the shape's intrados and extrados"""
+        """Invoke method to apply ub and lb to the nodes based on the envelope's intrados and extrados"""
 
-        self.model.apply_envelope()
+        self.envelope.apply_bounds_to_formdiagram(self.formdiagram)
 
-    def apply_bounds_on_q(self, qmax=0.0, qmin=-10000.0):
-        """Invoke method to apply bounds on the force densities of the pattern (qmax, qmin)"""
+    def apply_bounds_on_q(self, qmin=-1e4, qmax=1e-8) -> None:
+        """Apply bounds on the magnitude of the edges'force densities.
 
-        self.form.apply_bounds_on_q(qmax=qmax, qmin=qmin)
+        Parameters
+        ----------
+        qmin : float, optional
+            The minimum allowed force density ``qmin``, by default -1e+4
+        qmax : float, optional
+            The maximum allowed force density ``qmax``, by default 1e-8
+
+        Returns
+        -------
+        None
+            The formdiagram is updated in place in the attributes.
+
+        """
+        if isinstance(qmin, list):
+            for i, edge in enumerate(self.formdiagram.edges_where({"_is_edge": True})):
+                self.formdiagram.edge_attribute(edge, "qmin", qmin[i])
+                self.formdiagram.edge_attribute(edge, "qmax", qmax[i])
+        else:
+            for i, edge in enumerate(self.formdiagram.edges_where({"_is_edge": True})):
+                self.formdiagram.edge_attribute(edge, "qmin", qmin)
+                self.formdiagram.edge_attribute(edge, "qmax", qmax)
 
     def apply_target(self):
         """Apply target to the nodes based on the shape's target surface"""
-        for key in self.form.vertices():
-            x, y, _ = self.form.vertex_coordinates(key)
-            self.form.vertex_attribute(key, "target", value=self.shape.get_middle(x, y))
 
-        # Go over nodes and find node = key and apply the pointed load pz += magnitude
-
+        self.envelope.apply_target_heights_to_formdiagram(self.formdiagram)
+        
     def apply_envelope_on_xy(self, c=0.5):
         """_summary_
 
@@ -568,7 +611,7 @@ class Analysis(Data):
 
     def apply_reaction_bounds(self, assume_shape=None):
         """Apply limit thk to be respected by the anchor points"""
-        self.form.apply_bounds_reactions(self.shape, assume_shape)
+        self.envelope.apply_reaction_bounds_to_formdiagram(self.formdiagram)
 
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
