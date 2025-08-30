@@ -49,6 +49,8 @@ def run_optimisation_scipy(analysis: "Analysis") -> "Analysis":
 
     start_time = time.time()
 
+    print(solver)
+
     if solver == "slsqp" or solver == "SLSQP":
         fopt: float
         xopt: np.ndarray
@@ -77,6 +79,7 @@ def run_optimisation_scipy(analysis: "Analysis") -> "Analysis":
         xopt = result["x"]
         sucess = result["success"]
         message = result["message"]
+
         if sucess is True:
             exitflag = 0
         else:
@@ -87,6 +90,7 @@ def run_optimisation_scipy(analysis: "Analysis") -> "Analysis":
         raise ValueError(f"Unknown solver: {solver}")
 
     elapsed_time: float = time.time() - start_time
+
     if printout:
         print("Solving Time: {0:.1f} sec".format(elapsed_time))
 
