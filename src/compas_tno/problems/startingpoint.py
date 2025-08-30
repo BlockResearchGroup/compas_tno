@@ -4,7 +4,6 @@ from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import equilibrium_fdm
 from compas_tno.algorithms import form_update_with_parallelisation
 from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
-from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
 
 
 def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="CVXPY", printout=False):
@@ -30,11 +29,7 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
         The class with the main matrices of the problem
     """
 
-    if solver_convex == "CVX" or solver_convex == "MATLAB":
-        if not importlib.util.find_spec("matlab"):
-            raise ValueError("MATLAB/CVX not configured. Try changing the <solver_convex> attribute.")
-        problem = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
-    elif solver_convex == "CVXPY" or solver_convex == "MOSEK":
+    if solver_convex == "CVXPY" or solver_convex == "MOSEK":
         if not importlib.util.find_spec("cvxpy"):
             raise ValueError("CVXPY/MOSEK not configured. Try changing the <solver_convex> attribute.")
         problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)

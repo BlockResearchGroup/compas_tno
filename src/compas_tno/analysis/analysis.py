@@ -18,8 +18,6 @@ from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
 from compas_tno.solvers import run_optimisation_CVXPY
 from compas_tno.solvers import run_optimisation_ipopt
-from compas_tno.solvers import run_optimisation_MATLAB
-from compas_tno.solvers import run_optimisation_MMA
 from compas_tno.solvers import run_optimisation_scipy
 
 
@@ -628,18 +626,12 @@ class Analysis(Data):
             raise ValueError("Please provide the name of the solver")
 
         if self.is_convex():
-            if solver == "MATLAB":
-                run_optimisation_MATLAB(self)
-            elif solver == "CVXPY":
+            if solver == "CVXPY":
                 run_optimisation_CVXPY(self)
             else:
                 raise NotImplementedError("Only <CVXPY> and <MATLAB> are suitable for this optimisation")
         else:
-            if solver.split("-") == "pyOpt":
-                self = run_optimisation_MMA(self)  # change to PyOpt
-            elif solver == "MMA":
-                self = run_optimisation_MMA(self)
-            elif solver == "IPOPT":
+            if solver == "IPOPT":
                 self = run_optimisation_ipopt(self)
             else:
                 self = run_optimisation_scipy(self)
