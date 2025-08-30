@@ -19,29 +19,46 @@ Based on [Ricardo Maia Avelino](https://ricardoavelino.github.io/)'s doctoral th
 
 ## Installation
 
-The recommended an editable install of **COMPAS TNO** with [Anaconda/conda](https://conda.io/docs/). Here we create an environment called `tno` and install it:
+Stable releases can be installed from PyPI.
 
+```bash
+pip install compas_tno
 ```
-conda create -n tno -c conda-forge python COMPAS triangle compas_view2
-conda activate tno
-git clone https://github.com/BlockResearchGroup/compas_tno.git
+
+To install the latest version for development, do:
+
+```bash
+git clone https://github.com/blockresearchgroup/compas_tno.git
 cd compas_tno
-pip install -e .
+pip install -e ".[dev]"
 ```
 
-## First Steps: Read the docs
+To install a version with support for IPOPT and Mosek
 
-A walkthrough the package is available in the documentation:
-* <https://blockresearchgroup.github.io/compas_tno/>
+```bash
+cd compas_tno
+conda env create -f environment.yml
+conda activate tno-dev
+```
 
-## Issue tracker
+To get started with `compas_tno` have a look at [the documentation](https://github.com/blockresearchgroup/compas_tno).
 
-If you find a bug, please help us solve it by [filing a report](https://github.com/BlockResearchGroup/compas_tno/issues).
+## Questions and Feedback
+
+For questions and feedback, have a look at the [COMPAS Forum](https://forum.compas-framework.org).
+
+## Issues
+
+If you run into problems, please file an issue on the [issue tracker](https://github.com/blockresearchgroup/compas_tno/issues). If we don't know it is broken, we can't fix it...
+
+## Contributing
+
+Guidelines for developers are under construction. However, we always accept contributions in the form of Pull Requests.
 
 ## Citing
 
-If you use **COMPAS TNO** for your research, cite one of our [papers](https://blockresearchgroup.github.io/compas_tno/latest/publications.html).
+If you use `compas_tno` for your research, cite one of our [papers](https://blockresearchgroup.github.io/compas_tno/latest/publications.html).
 
 ## License
 
-**COMPAS TNO** is [released under the MIT license](https://github.com/BlockResearchGroup/compas_tno/latest/license.html).
+`compas_tno` is licensed under the MIT License. See [LICENSE](https://github.com/blockresearchgroup/compas_tno/blob/main/LICENSE), for more information.
