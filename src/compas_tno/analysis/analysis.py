@@ -1,12 +1,8 @@
-import math
 from typing import Annotated
 from typing import Literal
 from typing import Optional
 
 import numpy.typing as npt
-from compas_dem.models import SurfaceModel
-from numpy import array
-from scipy import interpolate
 
 from compas.data import Data
 from compas_tna.diagrams import FormDiagram
@@ -14,11 +10,10 @@ from compas_tna.envelope import Envelope
 from compas_tno.optimisers import Optimiser
 from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
-from compas_tno.solvers import run_optimisation_CVXPY
-from compas_tno.solvers import run_optimisation_ipopt
-from compas_tno.solvers import run_optimisation_MATLAB
-from compas_tno.solvers import run_optimisation_MMA
-from compas_tno.solvers import run_optimisation_scipy
+from compas_tno.solvers import post_process_general
+from compas_tno.solvers import run_convex_optimisation
+from compas_tno.solvers import run_nlopt_ipopt
+from compas_tno.solvers import run_nlopt_scipy
 
 
 class Analysis(Data):
@@ -509,8 +504,6 @@ class Analysis(Data):
         else:
             return False
 
-        # return False
-
     def set_optimiser_options(self, **kwargs):
         """Set the additional options of the optimisation."""
         if kwargs:
@@ -524,16 +517,6 @@ class Analysis(Data):
     def apply_selfweight(self, normalize_loads=True):
         """Invoke method to apply selfweight to the nodes of the form diagram based on the envelope"""
         self.envelope.apply_selfweight_to_formdiagram(self.formdiagram, normalize=normalize_loads)
-
-    # def apply_selfweight_from_pattern(self, pattern, plot=False):
-    #     """Apply selfweight to the nodes considering a different Form Diagram to locate loads.
-
-    #     Warnings
-    #     --------
-    #     The base pattern has to coincide with nodes from the original form diagram.
-
-    #     """
-    #     self.form.apply_selfweight_from_pattern(pattern, plot=plot)
 
     def apply_hor_multiplier(self, multiplier=1.0, component="x"):
         """Apply a multiplier on the selfweight to the nodes of the form diagram based on the envelope
@@ -562,31 +545,6 @@ class Analysis(Data):
 
         self.envelope.apply_bounds_to_formdiagram(self.formdiagram)
 
-    def apply_bounds_on_q(self, qmin=-1e4, qmax=1e-8) -> None:
-        """Apply bounds on the magnitude of the edges'force densities.
-
-        Parameters
-        ----------
-        qmin : float, optional
-            The minimum allowed force density ``qmin``, by default -1e+4
-        qmax : float, optional
-            The maximum allowed force density ``qmax``, by default 1e-8
-
-        Returns
-        -------
-        None
-            The formdiagram is updated in place in the attributes.
-
-        """
-        if isinstance(qmin, list):
-            for i, edge in enumerate(self.formdiagram.edges_where({"_is_edge": True})):
-                self.formdiagram.edge_attribute(edge, "qmin", qmin[i])
-                self.formdiagram.edge_attribute(edge, "qmax", qmax[i])
-        else:
-            for i, edge in enumerate(self.formdiagram.edges_where({"_is_edge": True})):
-                self.formdiagram.edge_attribute(edge, "qmin", qmin)
-                self.formdiagram.edge_attribute(edge, "qmax", qmax)
-
     def apply_target(self):
         """Apply target to the nodes based on the shape's target surface"""
 
@@ -601,7 +559,14 @@ class Analysis(Data):
             Distance in (x, y) to constraint the nodes limiting the hor. movement, by default 0.5
 
         """
-        self.form.apply_envelope_on_xy(c=c)
+        form = self.formdiagram
+        for vertex in form.vertices():
+            x, y = form.vertex_attributes(vertex, names=["x", "y"])
+
+            form.vertex_attribute(vertex, name="xmin", value=x - c)
+            form.vertex_attribute(vertex, name="xmax", value=x + c)
+            form.vertex_attribute(vertex, name="ymin", value=y - c)
+            form.vertex_attribute(vertex, name="ymax", value=y + c)
 
     def apply_cracks(self, key, position):
         """Apply cracks on the nodes (key) and in the positions up / down"""
@@ -612,32 +577,29 @@ class Analysis(Data):
         self.envelope.apply_reaction_bounds_to_formdiagram(self.formdiagram)
 
     def set_up_optimiser(self):
-        """With the data from the elements of the problem compute the matrices for the optimisation"""
+        """With the data from the elements of the problem compute the matrices for the optimisation and the starting point"""
         if self.is_convex():
             set_up_convex_optimisation(self)
         else:
-            self = set_up_general_optimisation(self)
+            set_up_general_optimisation(self)
 
     def run(self):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
         solver = self.optimiser.settings.get("solver", "SLSQP")
 
+        print(solver, "solver xxx")
+
         if not isinstance(solver, str):
             raise ValueError("Please provide the name of the solver")
 
         if self.is_convex():
-            if solver == "MATLAB":
-                run_optimisation_MATLAB(self)
-            elif solver == "CVXPY":
-                run_optimisation_CVXPY(self)
-            else:
-                raise NotImplementedError("Only <CVXPY> and <MATLAB> are suitable for this optimisation")
+            run_convex_optimisation(self)
         else:
-            if solver.split("-") == "pyOpt":
-                self = run_optimisation_MMA(self)  # change to PyOpt
-            elif solver == "MMA":
-                self = run_optimisation_MMA(self)
-            elif solver == "IPOPT":
-                self = run_optimisation_ipopt(self)
+            if solver.upper() == "IPOPT":
+                self = run_nlopt_ipopt(self)
+            elif solver.upper() == "SLSQP":
+                self = run_nlopt_scipy(self)
             else:
-                self = run_optimisation_scipy(self)
+                raise ValueError(f"Solver {solver} not supported. Please provide the an option between IPOPT or SLSQP")
+
+        post_process_general(self)
