@@ -7,7 +7,7 @@ from typing import Union
 from compas.geometry import intersection_line_line_xy
 
 if TYPE_CHECKING:
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
 
 def create_circular_radial_form(

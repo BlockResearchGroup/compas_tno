@@ -97,7 +97,7 @@ def form_add_lines_support(form, loaded_node, supports):
         Key for the loaded node at the same position
     """
 
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
     text = {}
     new_lines = []
@@ -743,7 +743,7 @@ def shuffle_diagram(form):
         The shuffled diagram
     """
 
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
     tol = 1e-6
 
@@ -774,8 +774,7 @@ def shuffle_diagram(form):
 
 
 def rename_supports(form):
-    """Rename the supports of a form diagram
-    """
+    """Rename the supports of a form diagram"""
 
     fixed = form.vertices_where({"is_fixed": True})
     form.vertices_attribute(name="is_support", value=True, keys=fixed)

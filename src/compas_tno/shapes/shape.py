@@ -1,36 +1,29 @@
 import math  # noqa: I001
 from copy import deepcopy
-from typing import Optional
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from compas.data import Data
 from compas.datastructures import Mesh
-from compas.geometry import cross_vectors
-from compas.geometry import length_vector
-from compas.geometry import normalize_vector
-from compas.geometry import subtract_vectors
+from compas.geometry import cross_vectors, length_vector, normalize_vector, subtract_vectors
 
-from compas_tno.shapes import MeshDos
-
-from compas_tno.shapes import arch_shape
-from compas_tno.shapes import arch_shape_polar
-from compas_tno.shapes import cross_vault_highfields
-from compas_tno.shapes import domical_vault
-from compas_tno.shapes import parabolic_shell_highfields
-from compas_tno.shapes import pavillion_vault_highfields
-from compas_tno.shapes import pointed_arch_shape
-from compas_tno.shapes import pointed_vault_heightfields
-from compas_tno.shapes import set_dome_heighfield
-from compas_tno.shapes import set_dome_polar_coord
-from compas_tno.shapes import set_dome_with_spr
-
-from compas_tno.utilities import create_mesh_from_topology_and_basemesh
-from compas_tno.utilities import create_mesh_from_topology_and_pointcloud
-from compas_tno.utilities import mesh_from_pointcloud
-from compas_tno.utilities import interpolate_from_pointcloud
+from compas_tno.shapes import (
+    MeshDos,
+    arch_shape,
+    arch_shape_polar,
+    cross_vault_highfields,
+    domical_vault,
+    parabolic_shell_highfields,
+    pavillion_vault_highfields,
+    pointed_arch_shape,
+    pointed_vault_heightfields,
+    set_dome_heighfield,
+    set_dome_polar_coord,
+    set_dome_with_spr,
+)
+from compas_tno.utilities import create_mesh_from_topology_and_basemesh, create_mesh_from_topology_and_pointcloud, interpolate_from_pointcloud, mesh_from_pointcloud
 
 if TYPE_CHECKING:
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
 
 class Shape(Data):

@@ -14,7 +14,7 @@ from compas_tno.utilities import slide_pattern_inwards
 from compas_tno.utilities import split_intersection_lines
 
 if TYPE_CHECKING:
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
 
 def mirror_4x(line, line_hor, line_ver, lines):

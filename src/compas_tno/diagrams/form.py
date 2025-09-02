@@ -9,9 +9,22 @@ from numpy import zeros
 from compas.datastructures import Mesh
 from compas.geometry import bounding_box_xy
 from compas_tna.diagrams import FormDiagram as TNAFormDiagram
-from compas_tno.shapes import Shape
+from compas_tno.diagrams import create_arch_form_diagram
+from compas_tno.diagrams import create_circular_radial_form
+from compas_tno.diagrams import create_circular_radial_spaced_form
+from compas_tno.diagrams import create_circular_spiral_form
+from compas_tno.diagrams import create_cross_diagonal
+from compas_tno.diagrams import create_cross_form
+from compas_tno.diagrams import create_cross_with_diagonal
+from compas_tno.diagrams import create_delta_form
+from compas_tno.diagrams import create_fan_form
+from compas_tno.diagrams import create_linear_form_diagram
+from compas_tno.diagrams import create_linear_form_diagram_sp_ep
+from compas_tno.diagrams import create_ortho_form
+from compas_tno.diagrams import create_parametric_form
 
 # this needs to be internalised by the shape class
+from compas_tno.shapes import Shape
 from compas_tno.shapes import arch_ub_lb_update
 from compas_tno.shapes import crossvault_middle_update
 from compas_tno.shapes import crossvault_ub_lb_update
@@ -21,34 +34,6 @@ from compas_tno.shapes import pavillionvault_ub_lb_update
 from compas_tno.shapes import pointed_arch_ub_lb_update
 from compas_tno.shapes import pointed_vault_middle_update
 from compas_tno.shapes import pointed_vault_ub_lb_update
-
-# from compas_pattern.parametric import create_arch_form_diagram
-# from compas_pattern.parametric import create_linear_form_diagram
-# from compas_pattern.parametric import create_linear_form_diagram_sp_ep
-# from compas_pattern.parametric import create_circular_radial_form
-# from compas_pattern.parametric import create_circular_radial_spaced_form
-# from compas_pattern.parametric import create_circular_spiral_form
-# from compas_pattern.parametric import create_cross_diagonal
-# from compas_pattern.parametric import create_cross_form
-# from compas_pattern.parametric import create_cross_with_diagonal
-# from compas_pattern.parametric import create_delta_form
-# from compas_pattern.parametric import create_fan_form
-# from compas_pattern.parametric import create_ortho_form
-# from compas_pattern.parametric import create_parametric_form
-
-from compas_tno.diagrams import create_arch_form_diagram
-from compas_tno.diagrams import create_linear_form_diagram
-from compas_tno.diagrams import create_linear_form_diagram_sp_ep
-from compas_tno.diagrams import create_circular_radial_form
-from compas_tno.diagrams import create_circular_radial_spaced_form
-from compas_tno.diagrams import create_circular_spiral_form
-from compas_tno.diagrams import create_cross_diagonal
-from compas_tno.diagrams import create_cross_form
-from compas_tno.diagrams import create_cross_with_diagonal
-from compas_tno.diagrams import create_delta_form
-from compas_tno.diagrams import create_fan_form
-from compas_tno.diagrams import create_ortho_form
-from compas_tno.diagrams import create_parametric_form
 
 
 class FormDiagram(TNAFormDiagram):
@@ -1501,31 +1486,6 @@ class FormDiagram(TNAFormDiagram):
             self.vertex_attribute(vertex, name="xmax", value=x + c)
             self.vertex_attribute(vertex, name="ymin", value=y - c)
             self.vertex_attribute(vertex, name="ymax", value=y + c)
-
-    def apply_bounds_on_q(self, qmin=-1e4, qmax=1e-8) -> None:
-        """Apply bounds on the magnitude of the edges'force densities.
-
-        Parameters
-        ----------
-        qmin : float, optional
-            The minimum allowed force density ``qmin``, by default -1e+4
-        qmax : float, optional
-            The maximum allowed force density ``qmax``, by default 1e-8
-
-        Returns
-        -------
-        None
-            The formdiagram is updated in place in the attributes.
-
-        """
-        if isinstance(qmin, list):
-            for i, edge in enumerate(self.edges_where({"_is_edge": True})):
-                self.edge_attribute(edge, "qmin", qmin[i])
-                self.edge_attribute(edge, "qmax", qmax[i])
-        else:
-            for i, edge in enumerate(self.edges_where({"_is_edge": True})):
-                self.edge_attribute(edge, "qmin", qmin)
-                self.edge_attribute(edge, "qmax", qmax)
 
     def apply_bounds_reactions(self, shape: Shape, assume_shape=None):
         """Apply bounds on the magnitude of the allowed increase in thickness of the upper-bound (tub), lower-bound (tlb), and of the reaction vector (tub_reacmax).

@@ -15,7 +15,7 @@ from compas.geometry import subtract_vectors
 from compas.geometry import sum_vectors
 
 if TYPE_CHECKING:
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
 
 class MeshDos(Mesh):

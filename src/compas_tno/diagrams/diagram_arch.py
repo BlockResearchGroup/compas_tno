@@ -10,7 +10,7 @@ from compas.geometry import Point
 from compas.tolerance import TOL
 
 if TYPE_CHECKING:
-    from compas_tno.diagrams import FormDiagram
+    from compas_tna.diagrams import FormDiagram
 
 
 def create_arch_form_diagram(
