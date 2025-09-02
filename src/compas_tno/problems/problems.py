@@ -1,21 +1,10 @@
 import time
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
-
-import numpy.typing as npt
-
-if TYPE_CHECKING:
-    from compas_tno.shapes import Shape
 
 # from numpy import asarray
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -39,17 +28,12 @@ from compas_tna.diagrams import FormDiagram
 from compas_tna.envelope import Envelope
 
 # from compas_tno.algorithms import check_independents
-# from compas.utilities import reverse_geometric_key
 from compas_tno.algorithms import check_horizontal_loads
 from compas_tno.algorithms import find_independents
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
 from compas_tno.utilities import build_symmetry_transformation
 from compas_tno.utilities import find_sym_axis_in_rect_patterns
-
-
-def reverse_geometric_key(gkey):
-    raise NotImplementedError
 
 
 @dataclass
@@ -476,30 +460,6 @@ def adapt_problem_to_fixed_diagram(
         ind = [problem.uv_i[edge] for edge in ind_edges]
     else:
         ind = find_independents(problem.E, method=method, tol=tol)
-
-    # if form.attributes["indset"]:
-    #     # check if it is a string and "restaure the points"
-    #     indset = [a if not isinstance(a, str) else reverse_geometric_key(a) for a in form.attributes["indset"]]
-    #     ind = []
-
-    #     for edge in form.edges_where({"_is_edge": True}):
-    #         index = problem.uv_i[edge]
-    #         edgemid = Point(*(form.edge_midpoint(edge)[:2] + [0]))
-    #         for pt in indset:
-    #             if distance_point_point_xy(edgemid, pt) < tol_old_ind:
-    #                 ind.append(index)
-    #                 break
-    #         if index in ind:
-    #             indset.remove(pt)
-
-    #     if printout:
-    #         print("Loaded {} previous independents".format(len(form.attributes["indset"])))
-    #         print("Found {} independents in the new pattern".format(len(ind)))
-    #     if len(form.attributes["indset"]) != len(ind):
-    #         print("Did not match problem inds")
-    #         ind = find_independents(problem.E, method=method, tol=tol)
-    # else:
-    #     ind = find_independents(problem.E, method=method, tol=tol)
 
     k = len(ind)
     dep = list(set(range(problem.m)) - set(ind))

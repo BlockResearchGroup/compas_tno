@@ -1,51 +1,22 @@
-from typing import TYPE_CHECKING
 from typing import List
-from typing import Tuple
 
 import numpy.typing as npt
 
-if TYPE_CHECKING:
-    from compas_tno.problems import Problem
-
-# TODO: This needs to be taken care by the SurfaceModel
-# Since the Model will be created from a template, the bounds will be updated based on the template
-# and the thickness will be updated based on the template
-
 from compas_tna.envelope import Envelope
 
+# TODO: Add the case for the general MeshEnvelope
 # from compas_tno.shapes import general_b_update_with_n
 # from compas_tno.shapes import general_db_with_n
-from compas_tno.shapes import Shape
-from compas_tno.shapes import arch_b_update
-from compas_tno.shapes import arch_db
-from compas_tno.shapes import arch_dub_dlb
-from compas_tno.shapes import arch_ub_lb_update
-from compas_tno.shapes import crossvault_dub_dlb
-from compas_tno.shapes import crossvault_ub_lb_update
-from compas_tno.shapes import dome_b_update
-from compas_tno.shapes import dome_b_update_with_n
-from compas_tno.shapes import dome_db
-from compas_tno.shapes import dome_db_with_n
-from compas_tno.shapes import dome_dub_dlb
-from compas_tno.shapes import dome_ub_lb_update
-from compas_tno.shapes import general_db_with_t_intrados
-from compas_tno.shapes import general_db_with_t_middle_constant
-from compas_tno.shapes import general_db_with_t_middle_variable
-from compas_tno.shapes import general_dub_dlb_with_n
-from compas_tno.shapes import general_dub_dlb_with_s
-from compas_tno.shapes import general_ub_lb_update_with_n
-from compas_tno.shapes import general_ub_lb_update_with_s
-from compas_tno.shapes import general_ub_lb_update_with_t_intrados
-from compas_tno.shapes import general_ub_lb_update_with_t_middle_constant
-from compas_tno.shapes import general_ub_lb_update_with_t_middle_variable
-from compas_tno.shapes import pavillionvault_b_update
-from compas_tno.shapes import pavillionvault_db
-from compas_tno.shapes import pavillionvault_dub_dlb
-from compas_tno.shapes import pavillionvault_ub_lb_update
-from compas_tno.shapes import pointed_arch_dub_dlb
-from compas_tno.shapes import pointed_arch_ub_lb_update
-from compas_tno.shapes import pointed_vault_dub_dlb
-from compas_tno.shapes import pointed_vault_ub_lb_update
+# from compas_tno.shapes import general_db_with_t_intrados
+# from compas_tno.shapes import general_db_with_t_middle_constant
+# from compas_tno.shapes import general_db_with_t_middle_variable
+# from compas_tno.shapes import general_dub_dlb_with_n
+# from compas_tno.shapes import general_dub_dlb_with_s
+# from compas_tno.shapes import general_ub_lb_update_with_n
+# from compas_tno.shapes import general_ub_lb_update_with_s
+# from compas_tno.shapes import general_ub_lb_update_with_t_intrados
+# from compas_tno.shapes import general_ub_lb_update_with_t_middle_constant
+# from compas_tno.shapes import general_ub_lb_update_with_t_middle_variable
 
 
 def ub_lb_update(
@@ -92,23 +63,25 @@ def ub_lb_update(
     if envelope.is_parametric:
         return envelope.compute_bounds(x, y, thk)
     else:
-        if "t" in variables:
-            thickness_type = shape.parameters["thickness_type"]
+        raise NotImplementedError("Future implementation")
 
-            if thickness_type == "constant":
-                return general_ub_lb_update_with_t_middle_constant(thk, s, shape.middle, t)  # here open up something
-            if thickness_type == "variable":
-                return general_ub_lb_update_with_t_middle_variable(thk, s, shape.middle, t)  # here open up something
-            if thickness_type == "intrados":
-                return general_ub_lb_update_with_t_intrados(thk, lb, shape.intrados, t)  # here open up something
+    #     if "t" in variables:
+    #         thickness_type = envelope.thickness_type
 
-        elif "s" in variables:
-            return general_ub_lb_update_with_s(ub, lb, thk)  # thk is 's' in this equation
+    #         if thickness_type == "constant":
+    #             return general_ub_lb_update_with_t_middle_constant(thk, s, shape.middle, t)  # here open up something
+    #         if thickness_type == "variable":
+    #             return general_ub_lb_update_with_t_middle_variable(thk, s, shape.middle, t)  # here open up something
+    #         if thickness_type == "intrados":
+    #             return general_ub_lb_update_with_t_intrados(thk, lb, shape.intrados, t)  # here open up something
 
-        elif "n" in variables:
-            return general_ub_lb_update_with_n(ub, lb, thk, shape.intrados, shape.extrados, t)  # thk is 'n' in this equation
+    #     elif "s" in variables:
+    #         return general_ub_lb_update_with_s(ub, lb, thk)  # thk is 's' in this equation
 
-    raise Exception
+    #     elif "n" in variables:
+    #         return general_ub_lb_update_with_n(ub, lb, thk, shape.intrados, shape.extrados, t)  # thk is 'n' in this equation
+
+    # raise Exception
 
 
 def dub_dlb_update(
@@ -152,43 +125,27 @@ def dub_dlb_update(
 
     """
 
-    # if shape.parameters["type"] == "arch":
-    #     return arch_dub_dlb(x, y, thk, t, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
-
-    # if shape.parameters["type"] == "pointed_arch":
-    #     return pointed_arch_dub_dlb(x, y, thk, t, hc=shape.parameters["hc"], L=shape.parameters["L"], x0=shape.parameters["x0"])
-
-    # if shape.parameters["type"] == "dome":
-    #     return dome_dub_dlb(x, y, thk, t, center=shape.parameters["center"], radius=shape.parameters["radius"])
-
-    # if shape.parameters["type"] == "crossvault":
-    #     return crossvault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"])
-
-    # if shape.parameters["type"] == "pavillionvault":
-    #     return pavillionvault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"])
-
-    # if shape.parameters["type"] == "pointed_crossvault":
-    #     return pointed_vault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"], hc=shape.parameters["hc"], he=shape.parameters["he"], hm=shape.parameters["hm"])
-
     if envelope.is_parametric:
         return envelope.compute_bounds_derivatives(x, y, thk)
     else:
-        if "t" in variables:
-            thickness_type = shape.parameters["thickness_type"]
+        raise NotImplementedError("Future implementation")
 
-            if thickness_type == "constant":
-                return general_db_with_t_middle_constant(s, shape.middle)  # here open up something
-            if thickness_type == "variable":
-                return general_db_with_t_middle_variable(s, shape.middle)  # here open up something
-            if thickness_type == "intrados":
-                return general_db_with_t_intrados(lb, shape.intrados)  # here open up something
+        # TODO: Add the case for the general MeshEnvelope
 
-        elif "s" in variables:
-            return general_dub_dlb_with_s(ub, lb)  # thk is 's' in this equation
-        elif "n" in variables:
-            return general_dub_dlb_with_n(ub, lb, thk, shape.intrados, shape.extrados, t)  # thk is 'n' in this equation
+        # if "t" in variables:
+        #     thickness_type = shape.parameters["thickness_type"]
 
-    raise Exception
+        #     if thickness_type == "constant":
+        #         return general_db_with_t_middle_constant(s, shape.middle)  # here open up something
+        #     if thickness_type == "variable":
+        #         return general_db_with_t_middle_variable(s, shape.middle)  # here open up something
+        #     if thickness_type == "intrados":
+        #         return general_db_with_t_intrados(lb, shape.intrados)  # here open up something
+
+        # elif "s" in variables:
+        #     return general_dub_dlb_with_s(ub, lb)  # thk is 's' in this equation
+        # elif "n" in variables:
+        #     return general_dub_dlb_with_n(ub, lb, thk, shape.intrados, shape.extrados, t)  # thk is 'n' in this equation
 
 
 def b_update(
@@ -228,18 +185,9 @@ def b_update(
     if envelope.is_parametric:
         return envelope.compute_bound_react(x, y, thk, fixed)
     else:
-        raise Exception
+        raise NotImplementedError("Future implementation")
 
-    # if shape.parameters["type"] == "arch":
-    #     return arch_b_update(x, y, thk, fixed, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
-
-    # if shape.parameters["type"] == "dome":
-    #     return dome_b_update(x, y, thk, fixed, center=shape.parameters["center"], radius=shape.parameters["radius"])
-
-    # if shape.parameters["type"] == "pavillionvault":
-    #     return pavillionvault_b_update(x, y, thk, fixed, xy_span=shape.parameters["xy_span"])
-
-    # if shape.parameters["type"] == "general":
+    # TODO: Add the case for the general MeshEnvelope
     #     if "n" in variables:
     #         if shape.parameters["base_structure"]["type"] == "dome" or shape.parameters["base_structure"]["type"] == "dome_polar":
     #             return dome_b_update_with_n(x, y, thk, fixed, b, center=shape.parameters["base_structure"]["center"])
@@ -276,8 +224,9 @@ def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], enve
     if envelope.is_parametric:
         return envelope.compute_bound_react_derivatives(x, y, thk, fixed)
     else:
-        raise Exception
+        raise NotImplementedError("Future implementation")
 
+    # TODO: Add the case for the general MeshEnvelope
     # if shape.parameters["type"] == "arch":
     #     return arch_db(x, y, thk, fixed, H=shape.parameters["H"], L=shape.parameters["L"], x0=shape.parameters["x0"])
 
