@@ -3,9 +3,10 @@ import json
 from numpy import array
 
 import compas_tno
-from compas_tno.algorithms import reciprocal_from_form
+from compas_tna.diagrams import FormDiagram
+
+# from compas_tno.algorithms import reciprocal_from_form
 from compas_tno.algorithms import xyz_from_xopt
-from compas_tno.diagrams import FormDiagram
 from compas_tno.optimisers import Optimiser
 
 
@@ -92,7 +93,8 @@ def save_geometry_at_iterations(form: FormDiagram, optimiser: Optimiser, force=F
                 form.edge_attribute(edge, "q", problem.q.flatten()[k])
                 k += 1
 
-            force = reciprocal_from_form(form)
+            raise NotImplementedError("Force diagram not implemented for TNO yet")
+            # force = reciprocal_from_form(form)
             Xforce_i = force.vertices_attributes("xyz")
             Xforce[str(i)] = Xforce_i
 

@@ -13,6 +13,14 @@ if TYPE_CHECKING:
     from compas_tno.shapes import Shape
 
 # from numpy import asarray
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
+import numpy.typing as npt
 from numpy import array
 from numpy import hstack
 from numpy import identity
@@ -26,15 +34,14 @@ from scipy.sparse import diags
 from scipy.sparse import vstack as svstack
 
 from compas.geometry import Point
-from compas.geometry import distance_point_point_xy
 from compas.matrices import connectivity_matrix
+from compas_tna.diagrams import FormDiagram
 from compas_tna.envelope import Envelope
 
 # from compas_tno.algorithms import check_independents
 # from compas.utilities import reverse_geometric_key
 from compas_tno.algorithms import check_horizontal_loads
 from compas_tno.algorithms import find_independents
-from compas_tno.diagrams import FormDiagram
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
 from compas_tno.utilities import build_symmetry_transformation
@@ -43,16 +50,6 @@ from compas_tno.utilities import find_sym_axis_in_rect_patterns
 
 def reverse_geometric_key(gkey):
     raise NotImplementedError
-
-
-from dataclasses import dataclass
-from dataclasses import field
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-
-import numpy.typing as npt
 
 
 @dataclass

@@ -7,7 +7,6 @@ from numpy import diag
 from numpy import vstack
 from numpy import zeros
 
-from compas_tno.algorithms import apply_sag
 from compas_tno.algorithms import equilibrium_fdm
 from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
@@ -21,6 +20,7 @@ from compas_tno.problems import initialise_problem_general
 from compas_tno.problems import objective_selector
 from compas_tno.problems import sensitivities_wrapper
 from compas_tno.problems import startingpoint_loadpath
+from compas_tno.problems import startingpoint_sag
 from compas_tno.problems import startingpoint_tna
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_form_initial_lengths
@@ -66,7 +66,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     qmax = optimiser.settings.get("qmax", +1e-8)
     features = optimiser.settings.get("features", [])
     save_iterations = optimiser.settings.get("save_iterations", False)
-    solver_convex = optimiser.settings.get("solver_convex", "MATLAB")
+    solver_convex = optimiser.settings.get("solver_convex", "CLARABEL")
     autodiff = optimiser.settings.get("autodiff", False)
 
     pattern_center = form.centroid()
@@ -115,8 +115,8 @@ def set_up_general_optimisation(analysis: "Analysis"):
         pass
 
     elif starting_point == "sag":
-        apply_sag(form, boundary_force=50.0)  # the issue here is that after the sag the problem.x0, problem.y0 are not updated
-        startingpoint_tna(form)
+        boundary_force = 50.0
+        startingpoint_sag(form, boundary_force=boundary_force)
 
     elif starting_point == "loadpath":
         printout_loadpath = False  # this need to be a proper verbose level
@@ -447,7 +447,15 @@ def set_up_convex_optimisation(analysis: "Analysis"):
     else:
         print("Warning: Non-convex problem for the constraints: ", constraints, ". Considering only 'funicular' instead.")
 
-    form.apply_bounds_on_q(qmin=qmin, qmax=qmax)
+    # Apply bounds on the edges' force densities (apply_bounds_on_q)
+    if isinstance(qmin, list):
+        for i, edge in enumerate(form.edges_where({"_is_edge": True})):
+            form.edge_attribute(edge, "qmin", qmin[i])
+            form.edge_attribute(edge, "qmax", qmax[i])
+    else:
+        for i, edge in enumerate(form.edges_where({"_is_edge": True})):
+            form.edge_attribute(edge, "qmin", qmin)
+            form.edge_attribute(edge, "qmax", qmax)
 
     problem = initialise_problem_general(form)
     problem.variables = variables

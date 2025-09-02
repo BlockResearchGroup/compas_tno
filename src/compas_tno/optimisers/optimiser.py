@@ -36,13 +36,13 @@ class Optimiser(Data):
     --------
     The main settings and default values are shown below:
 
-    *  'library'           : ['Scipy', 'MATLAB', 'MMA', 'IPOPT', 'Scipy', ...]
-    *  'solver'            : ['SLSQP', 'IPOPT', 'MMA', ...],
+    *  'solver'            : ['SLSQP', 'IPOPT', ...],
     *  'objective'         : ['min', 'max', 't', 'loadpath', 'bestfit', ...],
     *  'constraints'       : ['funicular', 'envelope', 'reac_bounds', ...],
     *  'variables'         : ['q', 'zb', 'xyb', 't', ...],
     *  'features'          : ['fixed', 'sym', ...],
     *  'find_inds'         : True,
+    *  'solver_convex'     : ['CLARABEL', 'MOSEK', 'CVXPY', ...],
     *  'exitflag'          : 1,
     *  'printout'          : True,
     *  'starting_point'    : 'current',
@@ -80,7 +80,7 @@ class Optimiser(Data):
             "printout": False,
             "plot": False,
             "starting_point": "current",
-            "solver_convex": "CVXPY",
+            "solver_convex": "CLARABEL",
             "support_displacement": None,
             "gradient": True,
             "jacobian": True,
@@ -269,7 +269,7 @@ class Optimiser(Data):
     @classmethod
     def create_max_horload_optimiser(
         cls,
-        solver: str = "IPOPT",
+        solver: str = "SLSQP",
         max_iter: int = 500,
         printout: bool = False,
         plot: bool = False,
@@ -364,7 +364,7 @@ class Optimiser(Data):
     @classmethod
     def create_max_vertload_optimiser(
         cls,
-        solver: str = "IPOPT",
+        solver: str = "SLSQP",
         max_iter: int = 500,
         printout: bool = False,
         plot: bool = False,
@@ -416,7 +416,7 @@ class Optimiser(Data):
     @classmethod
     def create_lp_optimiser(
         cls,
-        solver: str = "MATLAB",
+        solver: str = "CLARABEL",
         printout: bool = False,
         plot: bool = False,
         max_iter: int = 500,
@@ -444,11 +444,11 @@ class Optimiser(Data):
         Raises
         ------
         ValueError
-            If solver is not one of: "MATLAB", "CVXPY".
+            If solver is not one of: "CLARABEL", "MOSEK", "CVXPY".
 
         """
-        if solver not in ["MATLAB", "CVXPY"]:
-            raise ValueError("For loadpath optimisation only MATLAB or CVXPY are possible solvers. See solvers page.")
+        if solver not in ["CLARABEL", "MOSEK", "CVXPY"]:
+            raise ValueError("For loadpath optimisation only CLARABEL, MOSEK, CVXPY are possible solvers. See solvers page.")
 
         optimiser = cls()
         optimiser.set_solver(solver)

@@ -2,14 +2,29 @@ import importlib.util
 
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import equilibrium_fdm
-from compas_tno.algorithms import form_update_with_parallelisation
-from compas_tno.solvers.solver_cvxpy import run_loadpath_from_form_CVXPY
-from compas_tno.solvers.solver_MATLAB import run_loadpath_from_form_MATLAB
+from compas_tno.solvers import run_loadpath_from_form_CVXPY
 
 
-def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="CVXPY", printout=False):
+def startingpoint_sag(form, boundary_force=50.0, **kwargs):
+    """Initialize the equilibrium in a form diagram with applied loads using sag approach
+
+    Parameters
+    ----------
+    form : :class:`~compas_tno.diagrams.FormDiagram`
+        The form diagram. Loads and support must already have been assigned
+    boundary_force : float, optional
+        Force density in the edges on the boundary.
+        The default value is ``50.0``.
+    """
+    form.edges_attribute("q", min(boundary_force, -1 * boundary_force), list(form.edges_on_boundary()))
+    startingpoint_fdm(form)
+    for key in form.vertices():
+        form.vertex_attribute(key, "z", 0.0)
+    return form
+
+
+def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="CLARABEL", printout=False, **kwargs):
     """Built-in function to optimise the loadpath considering diagram fixed projection.
-    Note: This function will select the most appropriate solver (CVX or MOSEK)
 
     Parameters
     ----------
@@ -20,7 +35,8 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
     find_inds : bool, optional
         If independents need to be found before the loadpath computation, by default False
     solver_convex : str, optional
-        Solver to compute the convex optimisation, by default CVXPY
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT".
+        Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         If prints about the optimisation data should appear in the screen, by default False
 
@@ -30,22 +46,18 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
         The class with the main matrices of the problem
     """
 
-    if solver_convex == "CVX" or solver_convex == "MATLAB":
-        if not importlib.util.find_spec("matlab"):
-            raise ValueError("MATLAB/CVX not configured. Try changing the <solver_convex> attribute.")
-        problem = run_loadpath_from_form_MATLAB(form, problem=problem, find_inds=find_inds, printout=printout)
-    elif solver_convex == "CVXPY" or solver_convex == "MOSEK":
-        if not importlib.util.find_spec("cvxpy"):
-            raise ValueError("CVXPY/MOSEK not configured. Try changing the <solver_convex> attribute.")
-        problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
-    else:
-        raise ValueError("Could not initilalise loadpath optimisation with {}. Try changing the <solver_convex> attribute.".format(solver_convex))
+    problem = run_loadpath_from_form_CVXPY(
+        form,
+        problem=problem,
+        find_inds=find_inds,
+        solver_convex=solver_convex,
+        printout=printout,
+    )
 
     return problem
 
 
-# Use the appropiate functions at TNA here
-def startingpoint_tna(form, plot=False):
+def startingpoint_tna(form, plot=False, **kwargs):
     """Initialize the equilibrium in a form diagram with applied loads using TNA interative solver procedure (form and force diagrams are parallel)
 
     Parameters
@@ -56,13 +68,15 @@ def startingpoint_tna(form, plot=False):
         Plots of the intermediare and final force diagrams to follow the process, by default False
     """
 
-    form_update_with_parallelisation(form, plot=plot)
+    # form_update_with_parallelisation(form, plot=plot)
 
-    compute_reactions(form)
+    # compute_reactions(form)
+
+    raise NotImplementedError("Starting point not implemented for TNA")
 
 
 # Use the appropiate functions at TNA here
-def startingpoint_fdm(form):
+def startingpoint_fdm(form, **kwargs):
     """Initialize the equilibrium in a form diagram with applied loads using FDM approach for the q's stored in the form
 
     Parameters
