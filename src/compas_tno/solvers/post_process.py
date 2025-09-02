@@ -1,18 +1,17 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from compas_tno.analysis import Analysis
     from compas_tna.diagrams import FormDiagram
     from compas_tna.envelope import Envelope
+    from compas_tno.analysis import Analysis
     from compas_tno.optimisers import Optimiser
     from compas_tno.problems import Problem
 
+from compas_tna.envelope import Envelope
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import save_geometry_at_iterations
-from compas_tno.shapes import Shape
-from compas_tna.envelope import Envelope
 
 
 def post_process_general(analysis: "Analysis"):
@@ -116,14 +115,14 @@ def post_process_general(analysis: "Analysis"):
     compute_reactions(form)
 
     if "t" in problem.variables:
-        if problem.envelope.callable_ub_lb:
+        if problem.envelope.is_parametric:
             problem.envelope.thickness = thk
-            problem.envelope.update()
+            problem.envelope.update_envelope()
             problem.envelope.apply_bounds_to_formdiagram(form)
             print("Envelope updated for new minimum thickness: {}".format(thk))
         else:
             pass
-        # # TODO: Now that only the model is passed, if the optimisation is minimum thickness, we need to update the model based on the template  
+        # # TODO: Now that only the model is passed, if the optimisation is minimum thickness, we need to update the model based on the template
         # if shape.parameters["type"] == "general":
         #     if thickness_type == "constant":
         #         form.attributes["thk"] = thk

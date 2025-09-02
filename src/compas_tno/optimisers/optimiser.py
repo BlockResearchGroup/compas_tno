@@ -315,7 +315,7 @@ class Optimiser(Data):
         optimiser.set_max_iterations(max_iter=max_iter)
         optimiser.set_gradient_options(gradient=derivatives, jacobian=derivatives)
         optimiser.set_starting_point(starting_point=starting_point)
-        optimiser.set_additional_options(max_lambd=max_lambd, load_direction=load_direction)
+        optimiser.set_optimiser_options(max_lambd=max_lambd, load_direction=load_direction)
         return optimiser
 
     @classmethod
@@ -410,7 +410,7 @@ class Optimiser(Data):
         optimiser.set_max_iterations(max_iter=max_iter)
         optimiser.set_gradient_options(gradient=derivatives, jacobian=derivatives)
         optimiser.set_starting_point(starting_point=starting_point)
-        optimiser.set_additional_options(max_lambd=max_lambd, load_direction=load_direction)
+        optimiser.set_optimiser_options(max_lambd=max_lambd, load_direction=load_direction)
         return optimiser
 
     @classmethod
@@ -507,7 +507,7 @@ class Optimiser(Data):
         optimiser.set_max_iterations(max_iter=max_iter)
         optimiser.set_gradient_options(gradient=True, jacobian=True)
         optimiser.set_starting_point(starting_point=starting_point)
-        optimiser.set_additional_options(support_displacement=support_displacement, Ecomp_method=Emethod)
+        optimiser.set_optimiser_options(support_displacement=support_displacement, Ecomp_method=Emethod)
         return optimiser
 
     @classmethod
@@ -556,7 +556,7 @@ class Optimiser(Data):
         optimiser.set_max_iterations(max_iter=max_iter)
         optimiser.set_gradient_options(gradient=True, jacobian=True)
         optimiser.set_starting_point(starting_point=starting_point)
-        optimiser.set_additional_options(support_displacement=support_displacement, Ecomp_method=Emethod)
+        optimiser.set_optimiser_options(support_displacement=support_displacement, Ecomp_method=Emethod)
         return optimiser
 
     # =============================================================================
@@ -769,7 +769,7 @@ class Optimiser(Data):
 
         self.settings["axis_sym"] = axis_sym
 
-    def set_additional_options(self, **kwargs):
+    def set_optimiser_options(self, **kwargs):
         """Set the additional options of the optimisation."""
 
         if kwargs:

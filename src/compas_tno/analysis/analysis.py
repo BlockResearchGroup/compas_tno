@@ -4,15 +4,13 @@ from typing import Literal
 from typing import Optional
 
 import numpy.typing as npt
+from compas_dem.models import SurfaceModel
 from numpy import array
 from scipy import interpolate
 
 from compas.data import Data
-from compas_dem.models import SurfaceModel
-
-from compas_tna.envelope import Envelope
 from compas_tna.diagrams import FormDiagram
-
+from compas_tna.envelope import Envelope
 from compas_tno.optimisers import Optimiser
 from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
@@ -32,9 +30,9 @@ class Analysis(Data):
     Examples
     --------
     >>> from compas_tno.analysis import Analysis
-    >>> from compas_tno.shapes import Shape
-    >>> from compas_tno.diagrams import FormDiagram
-    >>> arch = Shape.create_arch()
+    >>> from compas_tna.shapes import Envelope
+    >>> from compas_tna.diagrams import FormDiagram
+    >>> arch = Envelope.create_arch()
     >>> form = FormDiagram.create_arch()
     >>> analysis = Analysis.create_minthrust_analysis(form, arch)
 
@@ -593,7 +591,7 @@ class Analysis(Data):
         """Apply target to the nodes based on the shape's target surface"""
 
         self.envelope.apply_target_heights_to_formdiagram(self.formdiagram)
-        
+
     def apply_envelope_on_xy(self, c=0.5):
         """_summary_
 

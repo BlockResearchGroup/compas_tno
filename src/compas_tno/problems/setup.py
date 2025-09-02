@@ -18,10 +18,10 @@ from compas_tno.problems import callback_create_json
 from compas_tno.problems import callback_save_json
 from compas_tno.problems import constr_wrapper
 from compas_tno.problems import initialise_problem_general
-from compas_tno.problems import startingpoint_loadpath
-from compas_tno.problems import startingpoint_tna
 from compas_tno.problems import objective_selector
 from compas_tno.problems import sensitivities_wrapper
+from compas_tno.problems import startingpoint_loadpath
+from compas_tno.problems import startingpoint_tna
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_form_initial_lengths
 from compas_tno.utilities import set_b_constraint
@@ -52,7 +52,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     form = analysis.formdiagram
     envelope = analysis.envelope
     optimiser = analysis.optimiser
-    
+
     printout = optimiser.settings.get("printout", True)
     plot = optimiser.settings.get("plot", False)
     axis_symmetry = optimiser.settings.get("axis_sym", None)
@@ -340,7 +340,6 @@ def set_up_general_optimisation(analysis: "Analysis"):
         optimiser.callback = callback_save_json
         callback_save_json(x0)  # save staring point to file
 
-
     if any([isnan(problem.ub[i]) for i in range(len(problem.ub))]) or any([isnan(problem.lb[i]) for i in range(len(problem.lb))]):
         print("Is Nan for the bounds. Optimisation can not proceed")
         raise ValueError("Check bounds that constraint nodes")
@@ -402,7 +401,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     optimiser.f0 = f0
     optimiser.g0 = g0
     optimiser.problem = problem
-    
+
     # analysis.form = form  # No need I think, it's updated in place
     # analysis.optimiser = optimiser
 

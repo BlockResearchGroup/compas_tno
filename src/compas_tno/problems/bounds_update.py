@@ -1,5 +1,9 @@
+from typing import TYPE_CHECKING
+from typing import List
+from typing import Tuple
+
 import numpy.typing as npt
-from typing import List, Tuple,TYPE_CHECKING
+
 if TYPE_CHECKING:
     from compas_tno.problems import Problem
 
@@ -9,6 +13,8 @@ if TYPE_CHECKING:
 
 from compas_tna.envelope import Envelope
 
+# from compas_tno.shapes import general_b_update_with_n
+# from compas_tno.shapes import general_db_with_n
 from compas_tno.shapes import Shape
 from compas_tno.shapes import arch_b_update
 from compas_tno.shapes import arch_db
@@ -30,9 +36,6 @@ from compas_tno.shapes import general_dub_dlb_with_s
 from compas_tno.shapes import general_ub_lb_update_with_n
 from compas_tno.shapes import general_ub_lb_update_with_s
 from compas_tno.shapes import general_ub_lb_update_with_t_intrados
-
-# from compas_tno.shapes import general_b_update_with_n
-# from compas_tno.shapes import general_db_with_n
 from compas_tno.shapes import general_ub_lb_update_with_t_middle_constant
 from compas_tno.shapes import general_ub_lb_update_with_t_middle_variable
 from compas_tno.shapes import pavillionvault_b_update
@@ -86,8 +89,8 @@ def ub_lb_update(
 
     """
 
-    if envelope.callable_ub_lb:
-        return envelope.callable_ub_lb(x, y, thk)
+    if envelope.is_parametric:
+        return envelope.compute_bounds(x, y, thk)
     else:
         if "t" in variables:
             thickness_type = shape.parameters["thickness_type"]
@@ -167,9 +170,8 @@ def dub_dlb_update(
     # if shape.parameters["type"] == "pointed_crossvault":
     #     return pointed_vault_dub_dlb(x, y, thk, t, xy_span=shape.parameters["xy_span"], hc=shape.parameters["hc"], he=shape.parameters["he"], hm=shape.parameters["hm"])
 
-
-    if envelope.callable_dub_dlb:
-        return envelope.callable_dub_dlb(x, y, thk)
+    if envelope.is_parametric:
+        return envelope.compute_bounds_derivatives(x, y, thk)
     else:
         if "t" in variables:
             thickness_type = shape.parameters["thickness_type"]
@@ -223,8 +225,8 @@ def b_update(
         New ``b`` limits
     """
 
-    if envelope.callable_bound_react:
-        return envelope.callable_bound_react(x, y, thk, fixed)
+    if envelope.is_parametric:
+        return envelope.compute_bound_react(x, y, thk, fixed)
     else:
         raise Exception
 
@@ -271,8 +273,8 @@ def db_update(x: npt.NDArray, y: npt.NDArray, thk: float, fixed: List[int], enve
         Sensitivities of the ``b`` limits in the point
     """
 
-    if envelope.callable_db:
-        return envelope.callable_db(x, y, thk, fixed)
+    if envelope.is_parametric:
+        return envelope.compute_bound_react_derivatives(x, y, thk, fixed)
     else:
         raise Exception
 

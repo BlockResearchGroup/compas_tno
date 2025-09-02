@@ -21,14 +21,15 @@ from compas_tno.viewer import TNOViewer
 spr_angle = 30.0
 L = 10.0
 thk = 0.50
-xy_span = [[0, L], [0, L]]
-vault = Shape.create_crossvault(xy_span=xy_span, thk=thk, spr_angle=30)
+x_span = (0, L)
+y_span = (0, L)
+vault = Shape.create_crossvault(x_span=x_span, y_span=y_span, thk=thk, spr_angle=30)
 
 # ------------------------------------------------------------------------
 # 2. Form diagram geometric definition with additional line to supports
 # ------------------------------------------------------------------------
 discretisation = 8
-form = FormDiagram.create_cross_form(xy_span=xy_span, discretisation=discretisation)
+form = FormDiagram.create_cross_form(x_span=x_span, y_span=y_span, discretisation=discretisation)
 
 load_pos = 2
 xc = yc = L / 2

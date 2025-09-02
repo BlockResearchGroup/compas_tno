@@ -1,13 +1,19 @@
 import time
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+
 import numpy.typing as npt
-from typing import Any, Dict, List, Optional, Callable, Union, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from compas_tno.shapes import Shape
 
-from numpy import array
-
 # from numpy import asarray
+from numpy import array
 from numpy import hstack
 from numpy import identity
 from numpy import vstack
@@ -22,14 +28,13 @@ from scipy.sparse import vstack as svstack
 from compas.geometry import Point
 from compas.geometry import distance_point_point_xy
 from compas.matrices import connectivity_matrix
-
-# from compas.utilities import reverse_geometric_key
-from compas_tno.algorithms import check_horizontal_loads
+from compas_tna.envelope import Envelope
 
 # from compas_tno.algorithms import check_independents
+# from compas.utilities import reverse_geometric_key
+from compas_tno.algorithms import check_horizontal_loads
 from compas_tno.algorithms import find_independents
 from compas_tno.diagrams import FormDiagram
-from compas_tna.envelope import Envelope
 from compas_tno.utilities import apply_radial_symmetry
 from compas_tno.utilities import apply_symmetry_from_axis
 from compas_tno.utilities import build_symmetry_transformation
@@ -40,9 +45,15 @@ def reverse_geometric_key(gkey):
     raise NotImplementedError
 
 
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from dataclasses import field
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+
 import numpy.typing as npt
+
 
 @dataclass
 class Problem:
@@ -206,10 +217,11 @@ class Problem:
     min_lb: Optional[float] = 0.0
     envelope: Optional["Envelope"] = None
 
-    ub_lb_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
-    b_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
-    dub_dlb_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
-    db_update: Optional[Callable] = None # TODO: This needs to be taken care by the SurfaceModel
+    ub_lb_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
+    b_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
+    dub_dlb_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
+    db_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
+
 
 # =============================================================================
 # Constructors

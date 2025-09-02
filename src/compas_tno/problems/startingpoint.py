@@ -43,6 +43,7 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
 
     return problem
 
+
 # Use the appropiate functions at TNA here
 def startingpoint_tna(form, plot=False):
     """Initialize the equilibrium in a form diagram with applied loads using TNA interative solver procedure (form and force diagrams are parallel)
@@ -58,6 +59,7 @@ def startingpoint_tna(form, plot=False):
     form_update_with_parallelisation(form, plot=plot)
 
     compute_reactions(form)
+
 
 # Use the appropiate functions at TNA here
 def startingpoint_fdm(form):

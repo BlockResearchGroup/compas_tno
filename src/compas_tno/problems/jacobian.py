@@ -1,4 +1,7 @@
-from typing import Callable, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Callable
+
 import numpy as np
 
 if TYPE_CHECKING:
@@ -17,12 +20,7 @@ from compas_tno.problems.bounds_update import db_update
 from compas_tno.problems.bounds_update import dub_dlb_update
 
 
-def d_fconstr(
-    fconstr: Callable[[np.ndarray, Any], np.ndarray],
-    x0: np.ndarray,
-    eps: float,
-    *args: Any
-) -> np.ndarray:
+def d_fconstr(fconstr: Callable[[np.ndarray, Any], np.ndarray], x0: np.ndarray, eps: float, *args: Any) -> np.ndarray:
     """Jacobian matrix approximated using finite differences.
 
     Parameters
@@ -52,10 +50,7 @@ def d_fconstr(
     return dfdx
 
 
-def sensitivities_wrapper(
-    variables: np.ndarray,
-    M: "Problem"
-) -> np.ndarray:
+def sensitivities_wrapper(variables: np.ndarray, M: "Problem") -> np.ndarray:
     """Jacobian matrix computed analytically based on the constraints and variables assigned.
 
     Parameters
@@ -291,7 +286,7 @@ def sensitivities_wrapper(
             pass
         else:
             # dzmaxdt, dzmindt = dub_dlb_update(M.x0, M.y0, thk, t, M.shape, M.ub0, M.lb0, M.s, M.variables)[:2]
-            dzmaxdt, dzmindt = M.envelope.callable_dub_dlb(M.X[:, 0], M.X[:, 1], thk)[:2]
+            dzmaxdt, dzmindt = M.envelope.compute_bounds_derivatives(M.X[:, 0], M.X[:, 1], thk)[:2]
 
         dXdt = vstack([zeros((nlin_fun + nlin_limitxy, 1)), -dzmindt, +dzmaxdt, db_column])
         deriv = hstack([deriv, dXdt])

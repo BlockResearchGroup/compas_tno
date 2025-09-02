@@ -10,14 +10,15 @@ from compas_tno.viewer import TNOViewer
 spr_angle = 30.0
 L = 10.0
 thk = 0.20
-xy_span = [[0, L], [0, L]]
-vault = Shape.create_crossvault(xy_span=xy_span, thk=thk, spr_angle=30)
+x_span = (0, L)
+y_span = (0, L)
+vault = Shape.create_crossvault(x_span=x_span, y_span=y_span, thk=thk, spr_angle=30)
 
 # ----------------------------------------
 # 2. Form diagram geometric definition
 # ----------------------------------------
 discretisation = 14
-form = FormDiagram.create_cross_form(xy_span=xy_span, discretisation=discretisation)
+form = FormDiagram.create_cross_form(x_span=x_span, y_span=y_span, discretisation=discretisation)
 
 # --------------------------------------------
 # 3. Minimum thurst solution and visualisation

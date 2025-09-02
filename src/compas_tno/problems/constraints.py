@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 import numpy.typing as npt
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ from compas_tno.problems.bounds_update import b_update
 from compas_tno.problems.bounds_update import ub_lb_update
 
 
-def constr_wrapper(variables : npt.NDArray, M: "Problem") -> npt.NDArray:
+def constr_wrapper(variables: npt.NDArray, M: "Problem") -> npt.NDArray:
     """Wrapper of the constraints assigned.
 
     Parameters
@@ -47,8 +48,8 @@ def constr_wrapper(variables : npt.NDArray, M: "Problem") -> npt.NDArray:
     qid = variables[:k].reshape(-1, 1)
     lambdh = 1.0
     delta = 0.0
-    thk : float = M.thk # type: ignore
-    min_lb : float = M.min_lb # type: ignore
+    thk: float = M.thk  # type: ignore
+    min_lb: float = M.min_lb  # type: ignore
 
     if "xyb" in M.variables:
         xyb = variables[check : check + 2 * nb]
@@ -121,10 +122,10 @@ def constr_wrapper(variables : npt.NDArray, M: "Problem") -> npt.NDArray:
     if "envelope" in M.constraints:
         # constraints in z
         if "update-envelope" in M.features:
-            M.ub, M.lb = M.envelope.callable_ub_lb(M.X[:, 0], M.X[:, 1], thk)
+            M.ub, M.lb = M.envelope.compute_bounds(M.X[:, 0], M.X[:, 1], thk)
         elif "t" in M.variables or "n" in M.variables:
             # M.ub, M.lb = ub_lb_update(M.x0, M.y0, thk, min_lb, M.shape, M.ub0, M.lb0, M.s, M.variables)
-            M.ub, M.lb = M.envelope.callable_ub_lb(M.X[:, 0], M.X[:, 1], thk)
+            M.ub, M.lb = M.envelope.compute_bounds(M.X[:, 0], M.X[:, 1], thk)
         else:
             pass
         zmin = (M.X[:, 2] - M.lb.flatten()).reshape(-1, 1)
@@ -153,7 +154,7 @@ def constr_wrapper(variables : npt.NDArray, M: "Problem") -> npt.NDArray:
             Rx = Rx + abs(tub_reac[:nb])
             Ry = Ry + abs(tub_reac[nb:])
 
-        constraints : npt.NDArray = vstack([constraints, Rx, Ry])
+        constraints: npt.NDArray = vstack([constraints, Rx, Ry])
 
     if "displ_map" in M.constraints:
         if delta:
