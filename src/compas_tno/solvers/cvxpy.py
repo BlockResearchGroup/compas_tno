@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from compas_tno.problems import Problem as TNOProblem
 
 
-def run_optimisation_CVXPY(analysis: "Analysis") -> "TNOProblem":
+def run_convex_optimisation(analysis: "Analysis") -> "TNOProblem":
     """Run convex optimisation problem with CVXPY after going through the optimisation set up.
 
     Parameters
@@ -30,15 +30,16 @@ def run_optimisation_CVXPY(analysis: "Analysis") -> "TNOProblem":
     problem = analysis.optimiser.problem
     find_inds = analysis.optimiser.settings.get("find_inds", False)
     printout = analysis.optimiser.settings.get("printout", False)
+    solver_convex = analysis.optimiser.settings.get("solver_convex", "CLARABEL")
 
-    problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, printout=printout)
+    problem = run_loadpath_from_form_CVXPY(form, problem=problem, find_inds=find_inds, solver_convex=solver_convex, printout=printout)
 
     return problem
 
 
-def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=False):
+def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, solver_convex="CLARABEL", printout=False):
     """Run convex optimisation problem with CVXPY directly from the Form Diagram
-    OBS: Requires installation of CVXPY and MOSEK
+    OBS: Requires installation of CVXPY
 
     Parameters
     ----------
@@ -48,6 +49,9 @@ def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=F
         The problem with matrices of interest, by default None
     find_inds : bool, optional
         Whether or not independents must be computed before the analysis, by default False
+    solver_convex : str, optional
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
 
@@ -63,12 +67,12 @@ def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, printout=F
     if find_inds:
         adapt_problem_to_fixed_diagram(problem, form)
 
-    problem = call_and_output_CVXPY(form, problem, printout=printout)
+    problem = call_and_output_CVXPY(form, problem, solver_convex=solver_convex, printout=printout)
 
     return problem
 
 
-def call_and_output_CVXPY(form, problem, printout=False):
+def call_and_output_CVXPY(form, problem, solver_convex="CLARABEL", printout=False):
     """Call and output the loadpath optimisation with CVXPY
 
     Parameters
@@ -76,7 +80,10 @@ def call_and_output_CVXPY(form, problem, printout=False):
     form : ::class:: FormDiagram
         The form Diagram of the analysis
     problem : ::class:: Problem
-        The Problem with relevant matrices and vectors`
+        The Problem with relevant matrices and vectors
+    solver_convex : str, optional
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
 
@@ -88,10 +95,10 @@ def call_and_output_CVXPY(form, problem, printout=False):
 
     if len(problem.ind) < problem.m:
         print("Calling LP-Optimisation via CVXPY with independents")
-        fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy_ind(problem, printout=printout)
+        fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy_ind(problem, solver_convex=solver_convex, printout=printout)
     else:
         print("Calling LP-Optimisation via CVXPY with NO independents")
-        fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy(problem, printout=printout)
+        fopt, qopt, exitflag, niter, status, sol_time = call_cvxpy(problem, solver_convex=solver_convex, printout=printout)
 
     problem.q = qopt
     Xfinal = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
@@ -141,13 +148,16 @@ def call_and_output_CVXPY(form, problem, printout=False):
     return problem
 
 
-def call_cvxpy(problem, printout=False):
+def call_cvxpy(problem, solver_convex="CLARABEL", printout=False):
     """Call and output the loadpath optimisation with CVXPY
 
     Parameters
     ----------
     problem : ::class:: Problem
         The Problem with relevant matrices and vectors`
+    solver_convex : str, optional
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
 
@@ -184,30 +194,7 @@ def call_cvxpy(problem, printout=False):
     y = problem.y0
     m = problem.m
 
-    # # If need to store the matrices/vectors in
-    # dict_parameters = {}
-    # dict_parameters['q'] = q.tolist()
-    # dict_parameters['qmin'] = qmin.tolist()
-    # dict_parameters['qmax'] = qmax.tolist()
-    # dict_parameters['E'] = E.tolist()
-    # dict_parameters['C'] = C.todense().tolist()
-    # dict_parameters['Ci'] = Ci.todense().tolist()
-    # dict_parameters['Cit'] = Cit.todense().tolist()
-    # dict_parameters['Cb'] = Cb.todense().tolist()
-    # dict_parameters['pz'] = pz.tolist()
-    # dict_parameters['free'] = free
-    # dict_parameters['fixed'] = fixed
-    # dict_parameters['x'] = x.tolist()
-    # dict_parameters['y'] = y.tolist()
-    # dict_parameters['m'] = m
-
-    # import json
-
-    # with open('/Users/mricardo/compas_dev/compas_tno/data/data.json', 'w') as outfile:
-    #     json.dump(dict_parameters, outfile)
-
     q = cp.Variable(m)
-    # fobj = matrix_frac(pz[free], Cit@cp.diag(q)@Ci) + x.T@C.T@diag(q)@Cb@x[fixed] + y.T@C.T@diag(q)@Cb@y[fixed]  # for q positive
     fobj = matrix_frac(pz[free], -Cit @ cp.diag(q) @ Ci) - x.T @ C.T @ diag(q) @ Cb @ x[fixed] - y.T @ C.T @ diag(q) @ Cb @ y[fixed]  # for q negative
     objective = Minimize(fobj)
 
@@ -218,8 +205,7 @@ def call_cvxpy(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = CVXProblem(objective, constraints)
-    prob.solve(solver="MOSEK", verbose=printout)
-    # prob.solve(solver='MOSEK', verbose=True)
+    prob.solve(solver=solver_convex, verbose=printout)
 
     # save output
     fopt = prob.value
@@ -236,13 +222,16 @@ def call_cvxpy(problem, printout=False):
     return fopt, qopt, exitflag, niter, status, sol_time
 
 
-def call_cvxpy_ind(problem, printout=False):
+def call_cvxpy_ind(problem, solver_convex="CLARABEL", printout=False):
     """Call and output the loadpath optimisation with CVXPY using independents
 
     Parameters
     ----------
     problem : ::class:: Problem
-        The Problem with relevant matrices and vectors`
+        The Problem with relevant matrices and vectors
+    solver_convex : str, optional
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
 
@@ -294,8 +283,7 @@ def call_cvxpy_ind(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = CVXProblem(objective, constraints)
-    # prob.solve(solver="MOSEK", verbose=printout)
-    prob.solve(solver="CVXOPT", verbose=printout)  # Trying out CVXOPT that is a free solver
+    prob.solve(solver=solver_convex, verbose=printout)  # open source solver, try MOSEK if CLARABEL fails
 
     # save output
     fopt = prob.value
