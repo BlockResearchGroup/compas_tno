@@ -10,6 +10,5 @@ dependencies:
   - cvxpy
   - cyipopt
   - mosek
-  - pytorch
   - pip:
       - -e .
