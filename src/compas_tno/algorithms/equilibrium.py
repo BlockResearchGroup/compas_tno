@@ -22,7 +22,7 @@ from compas.geometry import cross_vectors
 from compas.geometry import length_vector
 from compas.geometry import subtract_vectors
 from compas.matrices import connectivity_matrix
-from compas_tno.diagrams import FormDiagram
+from compas_tna.diagrams import FormDiagram
 
 
 def equilibrium_fdm(form: FormDiagram) -> FormDiagram:

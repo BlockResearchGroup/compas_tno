@@ -21,8 +21,6 @@ from .independents import (
     check_independents,
     check_horizontal_loads,
 )
-from .smoothing import constrained_smoothing, apply_sag
-from .graphstatics import form_update_with_parallelisation, force_update_from_form, reciprocal_from_form
 
 
 __all__ = [
@@ -45,9 +43,4 @@ __all__ = [
     "inds_incl_excl",
     "check_independents",
     "check_horizontal_loads",
-    "constrained_smoothing",
-    "apply_sag",
-    "form_update_with_parallelisation",
-    "force_update_from_form",
-    "reciprocal_from_form",
 ]
