@@ -202,7 +202,9 @@ def set_up_general_optimisation(analysis: "Analysis"):
     # =============================================================================
 
     if "reac_bounds" in constraints:
-        problem.b = set_b_constraint(form, printout)
+        # double check if reac_bounds have been applied
+        fixed = form.vertices_where({"is_support": True})
+        problem.b = array(form.vertices_attribute("b", keys=fixed))
     else:
         problem.b = None
 

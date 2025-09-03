@@ -1,8 +1,11 @@
+import math
+
 from compas_viewer.config import Config
 from compas_viewer.viewer import Viewer
-from compas.geometry import Cylinder, Point
+
 from compas.colors import Color
-import math
+from compas.geometry import Cylinder
+from compas.geometry import Point
 
 
 class TNOViewer:

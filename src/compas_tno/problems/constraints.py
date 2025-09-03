@@ -15,7 +15,6 @@ from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import weights_from_xyz
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems.bounds_update import b_update
-from compas_tno.problems.bounds_update import ub_lb_update
 
 
 def constr_wrapper(variables: npt.NDArray, M: "Problem") -> npt.NDArray:

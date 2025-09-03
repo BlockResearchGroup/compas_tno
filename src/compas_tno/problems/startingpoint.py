@@ -1,5 +1,3 @@
-import importlib.util
-
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import equilibrium_fdm
 from compas_tno.solvers import run_loadpath_from_form_CVXPY

@@ -1,7 +1,6 @@
 name: tno-dev
 channels:
   - conda-forge
-  - mosek
 dependencies:
   - python >=3.9
   - pip >=19.0
@@ -9,6 +8,5 @@ dependencies:
   - compas_occ >=1.3
   - cvxpy
   - cyipopt
-  - mosek
   - pip:
       - -e .
