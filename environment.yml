@@ -4,9 +4,9 @@ channels:
 dependencies:
   - python >=3.9
   - pip >=19.0
-  - compas >=2.13
-  - compas_occ >=1.3
-  - cvxpy
+  - compas
+  - compas_occ
   - cyipopt
   - pip:
-      - -e .
+      - -r requirements-dev.txt
+      - -r requirements.txt
