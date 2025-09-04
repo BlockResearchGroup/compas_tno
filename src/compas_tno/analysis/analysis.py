@@ -587,8 +587,6 @@ class Analysis(Data):
         """With the data from the elements of the problem compute the matrices for the optimisation"""
         solver = self.optimiser.settings.get("solver", "SLSQP")
 
-        print(solver, "solver xxx")
-
         if not isinstance(solver, str):
             raise ValueError("Please provide the name of the solver")
 

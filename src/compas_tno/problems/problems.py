@@ -289,7 +289,7 @@ def initialise_problem_general(form: FormDiagram) -> Problem:
     x = zeros((n, 1))
     y = zeros((n, 1))
     z = zeros((n, 1))
-    s = zeros((n, 1))
+    s = zeros((n, 1))  # target height
     px = zeros((n, 1))
     py = zeros((n, 1))
     pz = zeros((n, 1))
@@ -306,7 +306,7 @@ def initialise_problem_general(form: FormDiagram) -> Problem:
         z[i] = vertex.get("z")
         px[i] = vertex.get("px", 0)
         py[i] = vertex.get("py", 0)
-        pz[i] = vertex.get("pz", 0)
+        pz[i] = vertex.get("pz", 0) # + pz_fill + pz_ext
         s[i] = vertex.get("target", 0)  # used for bestfit
         if abs(s[i]) < 1e-6:
             s[i] = 0.0
