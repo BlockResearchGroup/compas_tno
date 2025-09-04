@@ -1,7 +1,12 @@
 import time
 from typing import TYPE_CHECKING
 
-import cyipopt
+try:
+    import cyipopt
+
+    HAS_IPOPT = True
+except ImportError:
+    HAS_IPOPT = False
 
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
@@ -104,6 +109,9 @@ def run_nlopt_ipopt(analysis: "Analysis"):
         Analysis object optimised.
 
     """
+
+    if not HAS_IPOPT:
+        raise ImportError("IPOPT is not installed. Please install it using `pip install cyipopt`")
 
     optimiser = analysis.optimiser
 

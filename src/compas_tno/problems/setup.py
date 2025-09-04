@@ -24,7 +24,6 @@ from compas_tno.problems import startingpoint_sag
 from compas_tno.problems import startingpoint_tna
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_form_initial_lengths
-from compas_tno.utilities import set_b_constraint
 
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
@@ -358,13 +357,6 @@ def set_up_general_optimisation(analysis: "Analysis"):
         form.vertex_attribute(key, "x", problem.X[i, 0])
         form.vertex_attribute(key, "y", problem.X[i, 1])
         form.vertex_attribute(key, "z", problem.X[i, 2])
-
-    if plot:
-        from compas_tno.viewer import TNOViewer
-
-        view = TNOViewer(form)
-        view.draw_thrust()
-        view.show()
 
     if printout:
         print("-" * 20)
