@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING
 
 try:
     import cyipopt
+
     HAS_IPOPT = True
-except:
+except ImportError:
     HAS_IPOPT = False
 
 if TYPE_CHECKING:

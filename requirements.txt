@@ -2,3 +2,4 @@ compas
 compas_ags
 compas_tna
 matplotlib
+cvxpy
