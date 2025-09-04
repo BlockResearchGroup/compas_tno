@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 from numpy import zeros
 
 from compas.geometry import closest_point_on_line_xy
@@ -287,10 +286,12 @@ def build_symmetry_matrix(form, printout=False):
                     Asym[line, index] = -1
                     line += 1
                 i += 1
+
     if printout:
-        plt.matshow(Asym)
-        plt.colorbar()
-        plt.show()
+        raise NotImplementedError
+        # plt.matshow(Asym)
+        # plt.colorbar()
+        # plt.show()
 
     return Asym
 
@@ -326,9 +327,10 @@ def build_symmetry_transformation(form, printout=False):
         Esym[:, id_sym] = Ei.flatten()
 
     if printout:
-        plt.matshow(Esym)
-        plt.colorbar()
-        plt.show()
+        raise NotImplementedError
+        # plt.matshow(Esym)
+        # plt.colorbar()
+        # plt.show()
 
     return Esym
 
@@ -363,9 +365,10 @@ def build_vertex_symmetry_transformation(form, printout=False):
         Evsym[:, id_sym] = Ei.flatten()
 
     if printout:
-        plt.matshow(Evsym)
-        plt.colorbar()
-        plt.show()
+        raise NotImplementedError
+        # plt.matshow(Evsym)
+        # plt.colorbar()
+        # plt.show()
 
     return Evsym
 
@@ -410,8 +413,9 @@ def build_symmetry_matrix_supports(form, printout=False):
                     line += 1
                 i += 1
     if printout:
-        plt.matshow(Asym)
-        plt.colorbar()
-        plt.show()
+        raise NotImplementedError
+        # plt.matshow(Asym)
+        # plt.colorbar()
+        # plt.show()
 
     return Asym
