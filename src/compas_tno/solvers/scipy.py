@@ -58,7 +58,7 @@ def run_nlopt_scipy(analysis: "Analysis") -> "Analysis":
     niter: int
     message: str
     fopt, xopt, exitflag, niter, message = _slsqp(fobj, x0, bounds, slsqp_grad_flatten(fgrad) if fgrad else None, fjac, printout, fconstr, args, max_iter, callback)
-    
+
     elapsed_time: float = time.time() - start_time
     if printout:
         print("Solving Time: {0:.1f} sec".format(elapsed_time))
@@ -70,8 +70,6 @@ def run_nlopt_scipy(analysis: "Analysis") -> "Analysis":
     optimiser.xopt = xopt
     optimiser.niter = niter
     optimiser.message = message
-
-    post_process_general(analysis)
 
     return analysis
 
