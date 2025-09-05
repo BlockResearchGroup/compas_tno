@@ -182,7 +182,7 @@ def q_from_variables(
         Force densities on all edges.
 
     Notes
-    ---------
+    -----
     Check `Block and Lachauer, 2014 <http://dx.doi.org/10.1016/j.mechrescom.2013.11.010>`_ for more details
 
     """

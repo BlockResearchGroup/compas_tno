@@ -10,7 +10,7 @@ from compas_tna.envelope import Envelope
 from compas_tno.optimisers import Optimiser
 from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
-from compas_tno.solvers import post_process_general
+from compas_tno.solvers import post_process_nlopt
 from compas_tno.solvers import run_convex_optimisation
 from compas_tno.solvers import run_nlopt_ipopt
 from compas_tno.solvers import run_nlopt_scipy
@@ -600,4 +600,4 @@ class Analysis(Data):
             else:
                 raise ValueError(f"Solver {solver} not supported. Please provide the an option between IPOPT or SLSQP")
 
-        post_process_general(self)
+            post_process_nlopt(self)

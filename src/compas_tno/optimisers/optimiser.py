@@ -28,12 +28,12 @@ class Optimiser(Data):
         The number of iterations.
     exitflag : int
         Whether or not the optimisation problem was solved successfully.
-        Value ``0``represents a solved problem.
+        Value ``0`` represents a solved problem.
     log : str
         Log of the optimisation, available for some solves.
 
-    Settings
-    --------
+    Attributes
+    ----------
     The main settings and default values are shown below:
 
     *  'solver'            : ['SLSQP', 'IPOPT', ...],

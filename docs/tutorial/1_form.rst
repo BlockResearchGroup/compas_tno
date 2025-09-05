@@ -4,21 +4,20 @@
 FormDiagram
 ********************************************************************************
 
-.. currentmodule:: compas_tno.diagrams
+.. currentmodule:: compas_tna.diagrams
 
-.. currentmodule:: compas_tno.diagrams.FormDiagram
+.. currentmodule:: compas_tna.diagrams.FormDiagram
 
 .. highlight:: python
 
-This tutorial provides a quick tour of the generation of :mod:`FormDiagram <compas_tno.diagrams.FormDiagram>`.
+This tutorial provides a quick tour of the generation of :mod:`FormDiagram <compas_tna.diagrams.FormDiagram>` from the parent package :mod:`compas_tna <compas_tna.diagrams>`.
 
-The FormDiagram can be created through a series of methods, such as:
+The `FormDiagram` class can be created through purelly geometrical methods, such as:
 
-* :mod:`from_library <compas_tno.diagrams.FormDiagram.from_library>`: which creates a series of parametric form diagrams that fit common rectangular and circular footprints.
-* :mod:`from_lines <compas_tno.diagrams.FormDiagram.from_lines>`: create the form diagram from lines provided by the user.
-* :mod:`from_mesh <compas_tno.diagrams.FormDiagram.from_mesh>`: create the form diagram from meshes provided by the user, enabling the combination with different meshing strategies, or to draw the diagram freely.
+* :mod:`from_lines <compas_tna.diagrams.FormDiagram.from_lines>`: create the form diagram from lines provided by the user.
+* :mod:`from_mesh <compas_tna.diagrams.FormDiagram.from_mesh>`: create the form diagram from meshes provided by the user, enabling the combination with different meshing strategies, or to draw the diagram freely.
 
-The TNO library of diagrams is based on commom layouts which will be described herein.
+Also, a library of parametric diagrams is based on common layouts which will be described herein.
 
 Diagrams Library
 --------------------
@@ -27,89 +26,52 @@ Diagrams Library
     :figclass: figure
     :class: figure-img img-fluid
 
-The figure above lists four parametric diagrams that can be created with TNO based on parameters.
+The figure above lists four parametric diagrams that can be created with the `FormDiagram` class based on parameters.
 
-a) **radial diagram**: polar diagram defined by two discretisation parameters being the number of meridians :math:`n_\mathrm{M}` and the number of circular parallels, or hoops :math:`n_\mathrm{P}`. The location is defined by the central point position :math:`\mathbf{X}_\mathrm{c}` and the size by the radius :math:`R`. Oculus openings can be considered with the parameter :math:`R_\mathrm{o}`. This diagram can be used to analyse problems on domes. The code to generate this diagram considering :math:`(n_\mathrm{P}, n_\mathrm{M})=(12, 16)`, :math:`\mathbf{X}_\mathrm{c}=(5,5)`, :math:`R=5.0` and :math:`R_\mathrm{o}=0.75` diagram can be written in two forms:
+a) **radial diagram**: polar diagram defined by two discretisation parameters being the number of parallels or radial members :math:`n_\mathrm{P}` and the number of circular hoops :math:`n_\mathrm{H}`. The location is defined by the central point position :math:`\mathbf{X}_\mathrm{c}` and the size by the radius :math:`R`. Oculus openings can be considered with the parameter :math:`R_\mathrm{o}`. This diagram can be used to analyse problems on domes. The code to generate this diagram is below:
 
 Long form:
 
 .. code-block:: Python
 
-    from compas_tno.diagrams import FormDiagram
-    data = {
-        'type': 'radial_fd',
-        'center': [5.0, 5.0],
-        'radius': 5.0,
-        'discretisation': [12, 16],
-        'r_oculus': 0.75
-    }
-    form = FormDiagram.from_library(data)
+    from compas_tna.diagrams import FormDiagram
+    formdiagram = FormDiagram.create_circular_radial(center=(5.0, 5.0),
+                                                     radius=5.0,
+                                                     n_hoops=12,
+                                                     n_parallels=16,
+                                                     r_oculus=0.75)
 
-Simple form:
+Options are also provided to automatically add diagonals to the diagram with different 
+options controlled by the parameter `diagonal_type`. This parameter, controls how diagonals are placed in the quads Options are ["split", "straight", "right", "left"]. Default is "split", when the X diagonals will be split at their intersection. If "straight", both quad diagonals are added as straight lines. If "right", the diagonals will point to the right (x positive) of the diagram. If "left", the diagonals will point to the left (x negative) of the diagram.
 
-.. code-block:: Python
-
-    from compas_tno.diagrams import FormDiagram
-    form = FormDiagram.create_circular_radial_form(center=[5.0, 5.0],
-                                                   radius=5.0,
-                                                   discretisation=[12, 16],
-                                                   r_oculus=0.75)
-
-b) **orthogonal diagram**: the orthogonal diagram is defined through two discretisation parameters (:math:`n_\mathrm{x}, n_\mathrm{y}`), and the start and end dimensions of two opposite corners :math:`[[x_\mathrm{0}, x_\mathrm{f}], [y_\mathrm{0}, y_\mathrm{f}]]`. This diagram is suitable for performing analysis of continuously supported vaults, such as pavillion vaults. The square orthogonal diagram is presented in the Figure above can be generated by the following code:
+b) **orthogonal diagram**: the orthogonal diagram is defined through two discretisation parameters :math:`n_\mathrm{x}, n_\mathrm{y}`, and the start and end dimensions in x and y directions :math:`x_\mathrm{span} = (x_\mathrm{0}, x_\mathrm{f})` and :math:`y_\mathrm{span} = (y_\mathrm{0}, y_\mathrm{f})`. This diagram is suitable for performing analysis of continuously supported vaults, such as pavillion vaults. The square orthogonal diagram is presented in the Figure above can be generated by the following code:
 
 .. code-block:: Python
 
-    from compas_tno.diagrams import FormDiagram
-    form = FormDiagram.create_ortho_form(xy_span=[[0.0, 10.0], [0.0, 10.0]],
-                                         discretisation=[14, 14],
+    from compas_tna.diagrams import FormDiagram
+    form = FormDiagram.create_ortho(x_span=(0.0, 10.0),
+                                         y_span=(0.0, 10.0),
+                                         nx=14,
+                                         ny=14,
                                          fix='all')
 
 c) **cross diagram**: the cross diagram corresponds to the orthogonal diagram added with the main diagonals, defined through identical parameters as in the orthogonal case. This diagram is used in the :ref:`cross vault <example-cross-1>` example. The cross diagram with :math:`n_\mathrm{s}=14` can be constructed with:
 
 .. code-block:: Python
 
-    from compas_tno.diagrams import FormDiagram
-    form = FormDiagram.create_cross_form(xy_span=[[0.0, 10.0], [0.0, 10.0]],
-                                         discretisation=14)
+    from compas_tna.diagrams import FormDiagram
+    form = FormDiagram.create_cross(x_span=(0.0, 10.0),
+                                         y_span=(0.0, 10.0),
+                                         n=14)
 
-d) **fan diagram**: unlike the orthogonal arrangement, the parallel segments arriving at the diagonals are directed to the corners. The parameters are identical to the ones necessary to construct the cross diagram. This diagram is used in the alternative :ref:`cross vault <example-cross-2>` example. The cross diagram with :math:`n_\mathrm{s}=14` can be constructed with:
-
-.. code-block:: Python
-
-    from compas_tno.diagrams import FormDiagram
-    form = FormDiagram.create_fan_form(xy_span=[[0.0, 10.0], [0.0, 10.0]],
-                                       discretisation=14)
-
-To further explore the library of parametric diagrams, check the :mod:`FormDiagram <compas_tno.diagrams.FormDiagram>` full documentation.
-
-Modifying diagrams
---------------------
-
-Pragmatic geometric modifications can also be applied to patterns in TNO, increasing the diversity of patterns used to study masonry problems. Some of these transformations are presented illustrated below:
-
-.. figure:: ../_images/diagram_mod.png
-    :figclass: figure
-    :class: figure-img img-fluid
-
-a) **scale and shear**: scaling and shear can be applied from the COMPAS framework, see :mod:`compas.geometry.Scale <compas.geometry.Scale>` and :mod:`compas.geometry.Shear <compas.geometry.Shear>`.
-
-b) **sag**: curving the unsupported bounds inwards can be done by applying sag to the pattern using the method :mod:`slide_pattern_inwards <compas_tno.utilities.slide_pattern_inwards>`.
-
-c) **slide**: sliding the nodes horizontally is necessary for applying horizontal forces in patterns with unsupported boundaries, a helper method :mod:`slide_diagram <compas_tno.utilities.slide_diagram>` has been added to ease this process.
-
-d) **adding members**: members can be added using helper functions such as adding lines to supports with method :mod:`form_add_lines_support <compas_tno.utilities.form_add_lines_support>`.
-
-TNO Plotter
--------------
-
-For 2D visualisation, the :mod:`TNO Plotter <compas_tno.plotters.TNOPlotter>` can be used. This matplotlib based visualisation enable to draw the form diagrams and configure their thickness, color, etc. To visualise the cross form diagram from this :ref:`example <example-cross-1>`, the code is:
+d) **fan diagram**: unlike the orthogonal arrangement, the parallel segments arriving at the diagonals are directed to the corners. The fan receives two discretisation parameters :math:`n_\mathrm{f}` and :math:`n_\mathrm{h}` representing the number of fans and the number of hoops respectively. The span parameters are identical to the ones necessary to construct the cross diagram. This diagram is used in the alternative :ref:`cross vault <example-cross-2>` example. 
 
 .. code-block:: Python
 
-    from compas_tno.diagrams import FormDiagram
-    from compas_tno.plotters import TNOPlotter
-    form = FormDiagram.create_cross_form(xy_span=[[0.0, 10.0], [0.0, 10.0]], discretisation=14)
-    plot = Plotter(form)
-    plot.draw_form()
-    plot.draw_supports()
-    plot.show()
+    from compas_tna.diagrams import FormDiagram
+    form = FormDiagram.create_fan(x_span=(0.0, 10.0),
+                                         y_span=(0.0, 10.0),
+                                         n_fans=14,
+                                         n_hoops=14)
+
+To further explore the library of parametric diagrams, check the :mod:`FormDiagram <compas_tna.diagrams.FormDiagram>` full documentation.

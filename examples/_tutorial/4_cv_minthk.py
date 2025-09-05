@@ -23,11 +23,15 @@ vault = CrossVaultEnvelope(x_span=x_span, y_span=y_span, thickness=thk)
 n = 14
 form = FormDiagram.create_cross(x_span=x_span, y_span=y_span, n=n)
 
-analysis = Analysis.create_lp_analysis(form, vault, solver="CVXPY", printout=True)
+# --------------------------------------------
+# 3. Minimum thurst solution and visualisation
+# --------------------------------------------
+analysis = Analysis.create_minthk_analysis(form, vault, solver="SLSQP", printout=True)
 analysis.apply_selfweight()
+analysis.apply_envelope()
 analysis.set_up_optimiser()
 analysis.run()
 
-viewer = MasonryViewer(formdiagram=form)
+viewer = MasonryViewer(formdiagram=form, envelope=vault)
 viewer.setup()
 viewer.show()

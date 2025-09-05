@@ -26,7 +26,7 @@ def run_convex_optimisation(analysis: "Analysis") -> "TNOProblem":
 
     """
 
-    form = analysis.form
+    form = analysis.formdiagram
     problem = analysis.optimiser.problem
     find_inds = analysis.optimiser.settings.get("find_inds", False)
     printout = analysis.optimiser.settings.get("printout", False)

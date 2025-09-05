@@ -1,40 +1,42 @@
-from numpy import zeros
+# ----------------------------------------
+# Note: EXAMPLE NEEDS THE INSTALLATION OF THE COMPAS MASONRY VIEWER
+# ----------------------------------------
+
+import numpy as np
+from compas_masonry.viewers import MasonryViewer
 
 from compas.colors import Color
+from compas.geometry import Point
+from compas.geometry import Vector
 from compas.geometry import distance_point_point_xy
+from compas_tna.diagrams import FormDiagram
+from compas_tna.envelope import CrossVaultEnvelope
 from compas_tno.analysis import Analysis
-from compas_tno.diagrams.form import FormDiagram
-from compas_tno.shapes import Shape
 from compas_tno.utilities import form_add_lines_support
-
-from compas_viewer import Viewer
-import math
-from compas.colors import Color
-from compas.geometry import Cylinder
-
-from compas_tno.viewer import TNOViewer
-
 
 # ----------------------------------------
 # 1. Shape geometric definition
 # ----------------------------------------
-spr_angle = 30.0
 L = 10.0
 thk = 0.50
 x_span = (0, L)
 y_span = (0, L)
-vault = Shape.create_crossvault(x_span=x_span, y_span=y_span, thk=thk, spr_angle=30)
+vault = CrossVaultEnvelope(x_span=x_span, y_span=y_span, thickness=thk)
+
+# ----------------------------------------
+# 2. Form diagram geometric definition
+# ----------------------------------------
+n = 14
+form = FormDiagram.create_cross(x_span=x_span, y_span=y_span, n=n)
 
 # ------------------------------------------------------------------------
-# 2. Form diagram geometric definition with additional line to supports
+# 3. Apply Load
 # ------------------------------------------------------------------------
-discretisation = 8
-form = FormDiagram.create_cross_form(x_span=x_span, y_span=y_span, discretisation=discretisation)
 
-load_pos = 2
+load_pos = 4
 xc = yc = L / 2
 yp = 2.5
-yp = yc - load_pos / (discretisation / 2) * yc
+yp = yc - load_pos / (n / 2) * yc
 for key in form.vertices():
     pt = form.vertex_coordinates(key)
     if distance_point_point_xy(pt, [xc, yp, 0.0]) < 1e-3:
@@ -42,7 +44,7 @@ for key in form.vertices():
         break
 
 supports = []
-for key in form.vertices_where({"is_fixed": True}):
+for key in form.vertices_where({"is_support": True}):
     coords = form.vertex_coordinates(key)
     if coords is not None:
         x, y, z = coords
@@ -53,34 +55,28 @@ if load_pos != 0:
     print(loaded_node, supports)
     form, loaded_node = form_add_lines_support(form, loaded_node=loaded_node, supports=supports)
 
-# visualization(None, form)
-
-viewer = Viewer()
-viewer.scene.add(form, name="Form")
-viewer.show()
-
-# ------------------------------------------------------------------------
-# 4. Define applied load case
-# ------------------------------------------------------------------------
-
 n = form.number_of_vertices()
-load_direction = zeros((n, 1))
+load_direction = np.zeros((n, 1))
 load_direction[loaded_node] = -1.0
-print("New Loaded Node:", loaded_node)
+print("Loaded Node:", loaded_node)
 
 # --------------------------------------------
-# 5. Maximum load problem and visualisation
+# 4. Maximum load problem and visualisation
 # --------------------------------------------
-analysis = Analysis.create_max_load_analysis(form, 
-                                             vault, 
-                                             load_direction=load_direction, 
-                                             max_lambd=10000, 
-                                             printout=True,
-                                             starting_point="current")
+analysis = Analysis.create_max_load_analysis(form, vault, load_direction=load_direction, max_lambd=10000, printout=True,)
 analysis.apply_selfweight()
 analysis.apply_envelope()
 
 analysis.set_up_optimiser()
 analysis.run()
 
-TNOViewer(form, vault).show()
+viewer = MasonryViewer(formdiagram=form, envelope=vault)
+viewer.setup()
+
+# Add load vector to the viewer
+x, y, z = form.vertex_coordinates(loaded_node)
+load_vector = Vector(0.0, 0.0, -1.0)
+anchor_point = Point(x, y, z + 1.0)
+viewer.scene.add(load_vector, anchor=anchor_point, name=f"Load Applied_{analysis.optimiser.fopt}", linecolor=Color.black(), linewidth=4.0)
+
+viewer.show()

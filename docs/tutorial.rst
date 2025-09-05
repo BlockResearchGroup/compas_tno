@@ -16,7 +16,7 @@ The Datastructure of the package interprets the assessment problem with four dis
 
 The :ref:`FormDiagram <form>` element deals with the topology and geometry of the connected graph representing the projection of the path of the forces within the structure.
 
-The :ref:`Shape <shape>` element deals with the geometrical data acquired from the existing structure's upper and lower surfaces (extrados and intrados).
+The :ref:`Envelope <envelope>` element deals with the geometrical data acquired from the existing structure's upper and lower surfaces (extrados and intrados).
 
 The :ref:`Optimiser <optimiser>` element deals with the parameters for the optimisation, such as the definition of the solver, the objective function and the constraints to be applied.
 
@@ -33,6 +33,6 @@ Steps of the tutorial
 
     tutorial/0_workflow
     tutorial/1_form
-    tutorial/2_shape
+    tutorial/2_envelope
     tutorial/3_optimiser
     tutorial/4_analysis

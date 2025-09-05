@@ -427,8 +427,8 @@ def f_reduce_thk(variables: npt.NDArray, problem: "Problem") -> float:
     f : float
         The value of the objective function.
 
-    Note
-    ----
+    Notes
+    -----
         Please respect the order of the variables.
     """
 
@@ -451,4 +451,4 @@ def f_tight_crosssection(variables: npt.NDArray, problem: "Problem") -> float:
         The value of the objective function.
     """
 
-    return -1 * f_reduce_thk
+    return -1 * f_reduce_thk(variables, problem)

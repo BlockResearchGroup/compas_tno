@@ -12,8 +12,8 @@ This tutorial provides a quick tour of the generation of :mod:`Analysis <compas_
 
 The :mod:`Analysis <compas_tno.analysis.Analysis>` object stores the main objects of the analysis which are:
 
-* ``Analysis.form``: the :mod:`FormDiagram <compas_tno.diagrams.FormDiagram>` of the analysis,
-* ``Analysis.shape``: the :mod:`Shape <compas_tno.shapes.Shape>` of the analysis,
+* ``Analysis.form``: the :mod:`FormDiagram <compas_tna.diagrams.FormDiagram>` of the analysis,
+* ``Analysis.envelope``: the :mod:`Envelope <compas_tna.envelope.Envelope>` of the analysis,
 * ``Analysis.optimiser``: the :mod:`Optimiser <compas_tno.optimisers.Optimiser>` of the analysis,
 
 Creating an Analysis object
@@ -58,22 +58,26 @@ The code below creates a minimum thrust analysis in a shallow crossvault and usi
 
 .. code-block:: Python
 
-    from compas_tno.shapes import Shape
-    from compas_tno.diagrams import FormDiagram
-    from compas_tno.viewers import Viewer
+    from compas_tna.envelope import CrossVaultEnvelope
+    from compas_tna.diagrams import FormDiagram
+    from compas_masonry.viewers import MasonryViewer
     from compas_tno.analysis import Analysis
 
-    vault = Shape.create_crossvault(thk=0.5, spr_angle=30)
+    envelope = CrossVaultEnvelope(x_span=(0.0, 10.0),
+                                 y_span=(0.0, 10.0),
+                                 thickness=0.5,
+                                 n=100)
     form = FormDiagram.create_cross_form(discretisation=10)
 
-    analysis = Analysis.create_minthrust_analysis(form, vault)
+    analysis = Analysis.create_minthrust_analysis(form, envelope)
     analysis.apply_selfweight()
     analysis.apply_envelope()
     analysis.set_up_optimiser()
     analysis.run()
 
-    view = Viewer(form)
-    view.show_solution()
+    view = MasonryViewer(formdiagram=form, envelope=envelope)
+    view.setup()
+    view.show()
 
 
 Disclaimer about the solution

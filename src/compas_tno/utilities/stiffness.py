@@ -57,11 +57,11 @@ def compute_edge_stiffness(form, lengths=None, area=0.125, E=20e6):
     k : array (m x 1)
         The stiffness of each edge.
 
-    Note
-    -------
+    Notes
+    -----
     The stiffness is based on a the formula below:
 
-    $k = \frac{EA}{l_\mathrm{i}}$
+    $k = \frac{EA}{l_{\mathrm{i}}}$
 
     """
 

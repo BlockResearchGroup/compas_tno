@@ -1,28 +1,27 @@
-import math
+# ----------------------------------------
+# Note: EXAMPLE NEEDS THE INSTALLATION OF THE COMPAS MASONRY VIEWER
+# ----------------------------------------
 
-from compas_viewer import Viewer
+from compas_masonry.viewers import MasonryViewer
 
-from compas.colors import Color
-from compas.geometry import Cylinder
+from compas_tna.diagrams import FormDiagram
+from compas_tna.envelope import CrossVaultEnvelope
 from compas_tno.analysis import Analysis
-from compas_tno.diagrams import FormDiagram
-from compas_tno.shapes import Shape
-from compas_tno.viewer import TNOViewer
 
 # ----------------------------------------
 # 1. Shape geometric definition
 # ----------------------------------------
-spr_angle = 30.0
 L = 10.0
 thk = 0.50
-xy_span = [[0, L], [0, L]]
-vault = Shape.create_crossvault(xy_span=xy_span, thk=thk, spr_angle=30)
+x_span = (0, L)
+y_span = (0, L)
+vault = CrossVaultEnvelope(x_span=x_span, y_span=y_span, thickness=thk)
 
 # ----------------------------------------
 # 2. Form diagram geometric definition
 # ----------------------------------------
-discretisation = 14
-form = FormDiagram.create_fan_form(xy_span=xy_span, discretisation=discretisation)
+n = 14
+form = FormDiagram.create_fan(x_span=x_span, y_span=y_span, n_fans=n, n_hoops=n)
 
 # --------------------------------------------
 # 3. Minimum thurst solution and visualisation
@@ -33,7 +32,9 @@ analysis.apply_envelope()
 analysis.set_up_optimiser()
 analysis.run()
 
-TNOViewer(form, vault).show()
+viewer = MasonryViewer(formdiagram=form, envelope=vault)
+viewer.setup()
+viewer.show()
 
 # --------------------------------------------
 # 4. Maximum thurst solution and visualisation
@@ -44,4 +45,6 @@ analysis.apply_envelope()
 analysis.set_up_optimiser()
 analysis.run()
 
-TNOViewer(form, vault).show()
+viewer = MasonryViewer(formdiagram=form, envelope=vault)
+viewer.setup()
+viewer.show()

@@ -384,7 +384,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
             if g0[i] < 0:
                 violated.append(i)
         if violated:
-            print("# Constraints Violated:", violated)
+            print("# Constraints Violated at Start:", len(violated))
 
     optimiser.fobj = fobj
     optimiser.fconstr = fconstr
@@ -454,8 +454,11 @@ def set_up_convex_optimisation(analysis: "Analysis"):
     problem = initialise_problem_general(form)
     problem.variables = variables
     problem.constraints = constraints
+    # problem.thk = None
 
-    # optimiser.problem = problem
+    # analysis.optimiser.fconstr = None
+
+    optimiser.problem = problem
     # analysis.form = form
     # analysis.optimiser = optimiser
 

@@ -10,7 +10,7 @@ Scipy
 .. autosummary::
     :toctree: generated/
 
-    run_optimisation_scipy
+    run_nlopt_scipy
 
 IPOPT
 ========
@@ -18,19 +18,7 @@ IPOPT
 .. autosummary::
     :toctree: generated/
 
-    run_optimisation_ipopt
-    Wrapper_ipopt
-    Wrapper_ipopt_autodiff
-
-MATLAB
-========
-
-.. autosummary::
-    :toctree: generated/
-
-    run_optimisation_MATLAB
-    run_loadpath_from_form_MATLAB
-    call_and_output_CVX_MATLAB
+    run_nlopt_ipopt
 
 CVXPY
 ========
@@ -38,26 +26,9 @@ CVXPY
 .. autosummary::
     :toctree: generated/
 
-    run_optimisation_CVXPY
-    run_loadpath_from_form_CVXPY
     call_and_output_CVXPY
-
-PyOpt
-========
-
-.. autosummary::
-    :toctree: generated/
-
-    run_optimisation_pyOpt
-
-MMA
-========
-
-.. autosummary::
-    :toctree: generated/
-
-    run_optimisation_MMA
-    mma_numpy
+    run_loadpath_from_form_CVXPY
+    run_convex_optimisation
 
 Post Processing
 ===============
@@ -65,5 +36,5 @@ Post Processing
 .. autosummary::
     :toctree: generated/
 
-    post_process_general
+    post_process_nlopt
 

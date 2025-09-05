@@ -105,7 +105,6 @@ def form_add_lines_support(form, loaded_node, supports):
 
     xp, yp, _ = form.vertex_coordinates(loaded_node)
     fixed_coords = [form.vertex_coordinates(vertex) for vertex in form.vertices_where({"is_support": True})]
-    parameters = form.parameters
 
     lines = form.to_lines()
     support_lines = []
@@ -151,8 +150,6 @@ def form_add_lines_support(form, loaded_node, supports):
             dist = distance_point_point_xy(coord, coord_fix)
             if dist < 1e-3:
                 form.vertex_attribute(vertex, "is_support", True)
-
-    form.parameters = parameters
 
     return form, new_loaded_node
 
@@ -464,6 +461,20 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
 
     Parameters
     ----------
+    form : FormDiagram
+        The form diagram to modify.
+    delta : float, optional
+        The displacement parameter, by default 0.1.
+    y0 : float, optional
+        Lower y boundary, by default 0.0.
+    y1 : float, optional
+        Upper y boundary, by default 10.0.
+    x0 : float, optional
+        Lower x boundary, by default 0.0.
+    x1 : float, optional
+        Upper x boundary, by default 10.0.
+    tol : float, optional
+        Tolerance for calculations, by default 0.01.
 
     Returns
     -------
@@ -475,7 +486,7 @@ def slide_pattern_inwards(form, delta=0.1, y0=0.0, y1=10.0, x0=0.0, x1=10.0, tol
         A MeshDos for the middle of the shape
 
     Notes
-    ----------------------
+    -----
     Position of the quadrants is as in the schema below:
 
         Q3

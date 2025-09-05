@@ -10,4 +10,4 @@ The current example finds minimum thrust for a cross vailt arch based a fan Form
     :figclass: figure
     :class: figure-img img-fluid
 
-.. literalinclude:: ../../examples/_tutorial/3_crossvault_fan.py
+.. literalinclude:: ../../examples/_tutorial/2_crossvault_fan.py

@@ -12,11 +12,11 @@ Symmetry
 
     apply_radial_symmetry
     apply_symmetry_from_axis
-    find_sym_axis_in_rect_patterns
     build_symmetry_matrix
+    build_symmetry_matrix_supports
     build_symmetry_transformation
     build_vertex_symmetry_transformation
-    build_symmetry_matrix_supports
+    find_sym_axis_in_rect_patterns
 
 Constraints
 ====================
@@ -24,43 +24,14 @@ Constraints
 .. autosummary::
     :toctree: generated/
 
+    assign_cracks
     check_envelope_constraints
     distance_target
     rectangular_smoothing_constraints
-    assign_cracks
     rollers_on_openings
     set_b_constraint
     set_rollers_constraint
 
-Loads
-====================
-
-.. autosummary::
-    :toctree: generated/
-
-    apply_selfweight_from_shape
-    apply_selfweight_from_pattern
-    apply_horizontal_multiplier
-    apply_fill_load
-    apply_selfweight_from_shape_proxy
-    apply_selfweight_from_thrust
-
-
-Envelopes
-=========
-
-.. autosummary::
-    :toctree: generated/
-
-    apply_envelope_from_shape
-    apply_envelope_on_xy
-    apply_envelope_on_xy_from_base
-    apply_bounds_on_q
-    project_mesh_to_middle
-    modify_shapedata_with_spr_angle
-    apply_envelope_from_shape_proxy
-    apply_bounds_tub_tlb
-    apply_bounds_reactions
 
 Interpolation
 ====================
@@ -68,17 +39,10 @@ Interpolation
 .. autosummary::
     :toctree: generated/
 
-    interpolate_from_pointcloud
-    get_shape_ub
-    get_shape_ub_pattern
-    get_shape_ub_fill
-    get_shape_lb
-    get_shape_lb_pattern
-    get_shape_middle
-    delaunay_mesh_from_points
-    mesh_from_pointcloud
-    create_mesh_from_topology_and_pointcloud
     create_mesh_from_topology_and_basemesh
+    create_mesh_from_topology_and_pointcloud
+    interpolate_from_pointcloud
+    mesh_from_pointcloud
 
 Stiffness
 ====================
@@ -86,18 +50,10 @@ Stiffness
 .. autosummary::
     :toctree: generated/
 
-    compute_form_initial_lengths
-    compute_edge_stiffness
     compute_average_edge_stiffness
+    compute_edge_stiffness
+    compute_form_initial_lengths
 
-Blocks
-======
-
-.. autosummary::
-    :toctree: generated/
-
-    blocks_from_dual
-    extended_dual
 
 Form Modifications
 ====================
@@ -105,36 +61,20 @@ Form Modifications
 .. autosummary::
     :toctree: generated/
 
-    split_intersection_lines
-    form_add_lines_support
-    form_parabolic_slide
-    move_pattern_to_origin
-    fix_mesh_corners
-    fix_mesh_boundary
-    slide_diagram
-    mesh_remove_two_valent_nodes
-    slide_pattern_inwards
-    displacement_map_paraboloid
     displacement_map_4parabolas
     displacement_map_parabola
+    displacement_map_paraboloid
+    fix_mesh_boundary
+    fix_mesh_corners
+    form_add_lines_support
+    form_parabolic_slide
+    mesh_remove_two_valent_nodes
     move_pattern_inwards
     move_pattern_outwards
+    move_pattern_to_origin
     shuffle_diagram
-
-Data Analysis
-====================
-
-.. autosummary::
-    :toctree: generated/
-
-    diagram_of_thrust
-    diagram_of_multiple_thrust
-    diagram_of_thrust_load_mult
-    surface_GSF_load_mult
-    save_csv_row
-    open_csv_row
-    interpolate_min_thk
-    filter_min_thk
-    lookup_folder
-    save_pointcloud
+    slide_diagram
+    slide_pattern_inwards
+    split_intersection_lines
+    store_inds
 

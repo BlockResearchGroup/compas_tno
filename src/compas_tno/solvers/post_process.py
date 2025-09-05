@@ -12,7 +12,7 @@ from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import save_geometry_at_iterations
 
 
-def post_process_general(analysis: "Analysis"):
+def post_process_nlopt(analysis: "Analysis"):
     """Post processing of the optimisation.
 
     Parameters

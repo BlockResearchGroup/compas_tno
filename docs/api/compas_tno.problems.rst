@@ -18,15 +18,24 @@ Initialisation
 .. autosummary::
     :toctree: generated/
 
-    startingpoint_fdm
-    startingpoint_tna
-    startingpoint_loadpath
     initialise_form
     initialise_problem_general
     adapt_problem_to_fixed_diagram
     adapt_problem_to_sym_diagram
     adapt_problem_to_sym_and_fixed_diagram
     apply_sym_to_form
+
+
+Starting Points
+===============
+
+.. autosummary::
+    :toctree: generated/
+
+    startingpoint_sag
+    startingpoint_loadpath
+    startingpoint_tna
+    startingpoint_fdm
 
 Set up
 ======
@@ -36,15 +45,6 @@ Set up
 
     set_up_general_optimisation
     set_up_convex_optimisation
-
-Starting Points
-===============
-
-.. autosummary::
-    :toctree: generated/
-
-    startingpoint_loadpath
-    startingpoint_tna
 
 Objectives
 ==========
@@ -64,6 +64,28 @@ Objectives
     f_constant
     f_reduce_thk
     f_tight_crosssection
+
+
+Derivatives
+============
+
+.. autosummary::
+    :toctree: generated/
+
+    d_fobj
+    compute_dQ
+    gradient_feasibility
+    gradient_reduce_thk
+    gradient_tight_crosssection
+    gradient_fmin
+    gradient_fmax
+    gradient_bestfit
+    gradient_horprojection
+    gradient_complementary_energy
+    gradient_complementary_energy_nonlinear
+    gradient_loadpath
+    gradient_max_section
+
 
 Constraints
 ===========
@@ -102,15 +124,17 @@ Jacobian
     d_fconstr
     sensitivities_wrapper
 
-Proxy
-=====
+
+Bounds Update
+=============
 
 .. autosummary::
     :toctree: generated/
 
-    startingpoint_loadpath_proxy
-    run_NLP_proxy
-    run_NLP_proxy2
+    ub_lb_update
+    dub_dlb_update
+    b_update
+    db_update
 
 Callbacks
 =========

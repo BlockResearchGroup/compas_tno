@@ -141,10 +141,6 @@ The solver name and library should be passed as ``optimiser.settings['solver']``
       - Nonlinear solver SLSQP from library SciPy is used
     * - ``IPOPT``
       - Nonlinear solver IPOPT is used
-    * - ``PyOpt-multiple``
-      - One of multiple nonlinear solvers available in PyOpt is used, (e.g., SLSQP, Diff. Evolutional, etc)
-    * - ``MMA``
-      - Method of moving assymptotes (MMA) is used
 
 Starting Point
 ==============

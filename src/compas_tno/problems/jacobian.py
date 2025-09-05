@@ -164,7 +164,7 @@ def sensitivities_wrapper(variables: np.ndarray, M: "Problem") -> np.ndarray:
     dzdqi = zeros((n, k))
     db_column = zeros((nlin_reacbounds, 1))
 
-    # ------------ Adding rows to the jacobian matrix based on constraints activated ------------
+    # Adding rows to the jacobian matrix based on constraints activated
 
     if "funicular" in M.constraints:
         deriv = vstack([deriv, dqdqi, -dqdqi])
@@ -263,8 +263,8 @@ def sensitivities_wrapper(variables: np.ndarray, M: "Problem") -> np.ndarray:
 
         nlin_displ_map = 2 * dhdq.shape[0]
 
-    # ------------ Adding columns to the jacobian matrix based on variables activated activated ------------
-    # ------------ Note: length of the column to be defined through the "marking parameters" ---------------
+    # Adding columns to the jacobian matrix based on variables activated
+    # Note: length of the column to be defined through the "marking parameters"
 
     if nbxy or nbz:  # add a column to the derivatives to count the variables zb or xyb
         Anull = zeros((n, nb))
