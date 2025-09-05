@@ -306,7 +306,7 @@ def initialise_problem_general(form: FormDiagram) -> Problem:
         z[i] = vertex.get("z")
         px[i] = vertex.get("px", 0)
         py[i] = vertex.get("py", 0)
-        pz[i] = vertex.get("pz", 0) # + pz_fill + pz_ext
+        pz[i] = vertex.get("pz", 0)  # + pz_fill + pz_ext
         s[i] = vertex.get("target", 0)  # used for bestfit
         if abs(s[i]) < 1e-6:
             s[i] = 0.0
@@ -448,8 +448,6 @@ def adapt_problem_to_fixed_diagram(
 
     """
     ind = []
-    tol_old_ind = 1e-3
-
     start_time = time.time()
 
     # Independent and dependent branches

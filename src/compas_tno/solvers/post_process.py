@@ -2,12 +2,10 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from compas_tna.diagrams import FormDiagram
-    from compas_tna.envelope import Envelope
     from compas_tno.analysis import Analysis
     from compas_tno.optimisers import Optimiser
     from compas_tno.problems import Problem
 
-from compas_tna.envelope import Envelope
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import q_from_variables
 from compas_tno.algorithms import xyz_from_q
@@ -30,14 +28,13 @@ def post_process_general(analysis: "Analysis"):
 
     form: "FormDiagram" = analysis.formdiagram
     optimiser: "Optimiser" = analysis.optimiser
-    envelope: "Envelope" = analysis.envelope
-    # shape: "Shape" = analysis.shape
+    # envelope: "Envelope" = analysis.envelope
 
     problem: "Problem" = optimiser.problem
     summary = optimiser.settings.get("summary", False)
     printout = optimiser.settings.get("printout", True)
-    thickness_type = optimiser.settings.get("thickness_type", "constant")
-    features = optimiser.settings.get("features", [])
+    # thickness_type = optimiser.settings.get("thickness_type", "constant")
+    # features = optimiser.settings.get("features", [])
     save_iterations = optimiser.settings.get("save_iterations", False)
     show_force_diagram = optimiser.settings.get("save_force_diagram", True)
 
@@ -177,9 +174,10 @@ def post_process_general(analysis: "Analysis"):
     if "n" in problem.variables:
         print("Value of N:", n)
         n = -1 * fopt
-        shape.intrados = shape.intrados.offset_mesh(n=n, direction="up")
-        shape.extrados = shape.extrados.offset_mesh(n=n, direction="down")
-        form.apply_envelope_from_shape(shape)
+        pass
+        # shape.intrados = shape.intrados.offset_mesh(n=n, direction="up")
+        # shape.extrados = shape.extrados.offset_mesh(n=n, direction="down")
+        # form.apply_envelope_from_shape(shape)
 
     if "tub" in problem.variables:
         for i, key in enumerate(form.vertices()):

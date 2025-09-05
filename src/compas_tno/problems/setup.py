@@ -53,7 +53,6 @@ def set_up_general_optimisation(analysis: "Analysis"):
     optimiser = analysis.optimiser
 
     printout = optimiser.settings.get("printout", True)
-    plot = optimiser.settings.get("plot", False)
     axis_symmetry = optimiser.settings.get("axis_sym", None)
     sym_loads = optimiser.settings.get("sym_loads", False)
     fjac = optimiser.settings.get("jacobian", False)

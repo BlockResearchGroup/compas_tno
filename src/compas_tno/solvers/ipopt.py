@@ -114,12 +114,7 @@ def run_nlopt_ipopt(analysis: "Analysis"):
         raise ImportError("IPOPT is not installed. Please install it using `pip install cyipopt`")
 
     optimiser = analysis.optimiser
-
-    constraints = optimiser.settings["constraints"]
-    objective = optimiser.settings["objective"]
     printout = optimiser.settings.get("printout", False)
-    gradients = optimiser.settings.get("gradient", False)
-    variables = optimiser.settings["variables"]
     callback = optimiser.callback
 
     bounds = optimiser.bounds

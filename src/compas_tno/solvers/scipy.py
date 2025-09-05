@@ -9,8 +9,6 @@ from typing import Tuple
 import numpy as np
 from scipy.optimize import fmin_slsqp
 
-from .post_process import post_process_general
-
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
     from compas_tno.optimisers import Optimiser

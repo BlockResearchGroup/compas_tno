@@ -9,10 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+* Separated routines for `starting_point`.
+
 ### Changed
+
+* Updated `Analysis` object and optimization routines to work with the new infrastructure.
 
 ### Removed
 
+* Removed modules `.diagrams`, `.shape`. TNO is meant to operate with `compas_tna` classes. 
+* Removed module`.viewer`. New viewer is in `compas_masonnry`.
+* Removed `MATLAB` convex optimization to simplify installation
+* Removed unused solvers such as `MMA` and `PyOpt`. New focus is on `slsqp` and `ipopt`.
+* Made `ipopt` optional to simplify base installation.
 
 ## [0.2.2] 2023-09-03
 

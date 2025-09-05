@@ -48,7 +48,6 @@ def constr_wrapper(variables: npt.NDArray, M: "Problem") -> npt.NDArray:
     lambdh = 1.0
     delta = 0.0
     thk: float = M.thk  # type: ignore
-    min_lb: float = M.min_lb  # type: ignore
 
     if "xyb" in M.variables:
         xyb = variables[check : check + 2 * nb]

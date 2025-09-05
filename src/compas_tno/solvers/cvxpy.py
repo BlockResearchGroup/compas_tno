@@ -50,7 +50,7 @@ def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, solver_con
     find_inds : bool, optional
         Whether or not independents must be computed before the analysis, by default False
     solver_convex : str, optional
-        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT".
         Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
@@ -82,7 +82,7 @@ def call_and_output_CVXPY(form, problem, solver_convex="CLARABEL", printout=Fals
     problem : ::class:: Problem
         The Problem with relevant matrices and vectors
     solver_convex : str, optional
-        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT".
         Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
@@ -156,7 +156,7 @@ def call_cvxpy(problem, solver_convex="CLARABEL", printout=False):
     problem : ::class:: Problem
         The Problem with relevant matrices and vectors`
     solver_convex : str, optional
-        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT".
         Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
@@ -230,7 +230,7 @@ def call_cvxpy_ind(problem, solver_convex="CLARABEL", printout=False):
     problem : ::class:: Problem
         The Problem with relevant matrices and vectors
     solver_convex : str, optional
-        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT". 
+        Solver to use, by default CLARABEL. Options are "CLARABEL", "MOSEK" or "CVXOPT".
         Note: "MOSEK" and "CVXOPT" are not available in the default installation of TNO.
     printout : bool, optional
         Whether or not print results, by default False
