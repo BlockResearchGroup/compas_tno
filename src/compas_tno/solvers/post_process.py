@@ -1,10 +1,11 @@
 from typing import TYPE_CHECKING
+from typing import Optional
 
 if TYPE_CHECKING:
     from compas_tna.diagrams import FormDiagram
     from compas_tno.analysis import Analysis
-    from compas_tno.optimisers import Optimiser
     from compas_tno.problems import Problem
+    from compas_tno.solvers.solver import SolverResult
 
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import q_from_variables
@@ -12,40 +13,59 @@ from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import save_geometry_at_iterations
 
 
-def post_process_nlopt(analysis: "Analysis"):
-    """Post processing of the optimisation.
+def apply_solution_to_form(
+    form: "FormDiagram",
+    problem: "Problem",
+    result: "SolverResult",
+    settings: Optional[dict] = None,
+) -> "Problem":
+    """Apply optimization result to form diagram and problem.
+
+    This is the clean, decoupled version of post-processing that uses
+    the SolverResult directly without depending on Analysis or Optimiser.
 
     Parameters
     ----------
-    analysis : Analysis
-        The Analysis object
+    form : FormDiagram
+        The form diagram to update.
+    problem : Problem
+        The problem structure with matrices and functions.
+    result : SolverResult
+        The optimization result from solver.
+    settings : dict, optional
+        Settings for post-processing:
+        - 'printout' : bool - Print summary (default: True)
+        - 'summary' : bool - Print detailed summary (default: False)
+        - 'save_iterations' : bool - Save iteration data (default: False)
+        - 'save_force_diagram' : bool - Save force diagram (default: True)
 
     Returns
     -------
-    analysis : Analysis
-        The Analysis object updated
+    Problem
+        The updated problem with optimal solution applied.
+
+    Examples
+    --------
+    >>> result = solver.solve(problem)
+    >>> problem = apply_solution_to_form(form, problem, result)
+    >>> # form and problem are now updated with optimal solution
+
     """
+    settings = settings or {}
+    printout = settings.get("printout", True)
+    summary = settings.get("summary", False)
 
-    form: "FormDiagram" = analysis.formdiagram
-    optimiser: "Optimiser" = analysis.optimiser
-    # envelope: "Envelope" = analysis.envelope
+    # Extract results from SolverResult
+    xopt = result.xopt
+    fopt = result.fopt
+    message = result.message
 
-    problem: "Problem" = optimiser.problem
-    summary = optimiser.settings.get("summary", False)
-    printout = optimiser.settings.get("printout", True)
-    # thickness_type = optimiser.settings.get("thickness_type", "constant")
-    # features = optimiser.settings.get("features", [])
-    save_iterations = optimiser.settings.get("save_iterations", False)
-    show_force_diagram = optimiser.settings.get("save_force_diagram", True)
-
-    fconstr = optimiser.fconstr
-    xopt = optimiser.xopt
-    fopt = optimiser.fopt
-    message = optimiser.message
+    # Get constraint function from problem
+    fconstr = problem.fconstr
     thk = problem.thk
-
     i_uv = form.index_uv()
 
+    # Extract variables from optimal solution
     check = problem.k
     qid = xopt[: problem.k].reshape(-1, 1)
 
@@ -79,44 +99,45 @@ def post_process_nlopt(analysis: "Analysis"):
         tub_reac = xopt[check : check + 2 * problem.nb]
         check = check + 2 * problem.nb
 
+    # Update problem with optimal force densities
     problem.q = q_from_variables(qid, problem.B, problem.d)
 
-    # ADD 'lambdv' to post-process
+    # Compute final constraint values
+    if fconstr:
+        g_final = fconstr(xopt, problem)
+    else:
+        g_final = None
 
-    # if 's' in variables:
-    #     s = xopt[-1]
-
-    g_final = fconstr(xopt, problem)
+    # Update geometry
     problem.X[problem.free] = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
 
-    # if printout:
-    #     print('post-processing min, max z:', min(problem.X[:, 2].flatten()), max(problem.X[:, 2].flatten()))
-
-    i = 0
-    for key in form.vertices():
+    # Update form diagram vertices
+    for i, key in enumerate(form.vertices()):
         form.vertex_attribute(key, "x", problem.X[i, 0])
         form.vertex_attribute(key, "y", problem.X[i, 1])
         form.vertex_attribute(key, "z", problem.X[i, 2])
         form.vertex_attribute(key, "px", problem.P[i, 0])
         form.vertex_attribute(key, "py", problem.P[i, 1])
         form.vertex_attribute(key, "pz", problem.P[i, 2])
-        i = i + 1
 
+    # Update form diagram edges
     for c, qi in enumerate(list(problem.q.ravel())):
         u, v = i_uv[c]
         li = form.edge_length((u, v))
         form.edge_attribute((u, v), "q", float(qi))
         form.edge_attribute((u, v), "f", float(qi * li))
 
-    # form.attributes["loadpath"] = form.loadpath()
+    # Compute reactions
     compute_reactions(form)
 
+    # Handle thickness updates
     if "t" in problem.variables:
         if problem.envelope.is_parametric:
             problem.envelope.thickness = thk
             problem.envelope.update_envelope()
             problem.envelope.apply_bounds_to_formdiagram(form)
-            print("Envelope updated for new minimum thickness: {}".format(thk))
+            if printout:
+                print(f"Envelope updated for new minimum thickness: {thk}")
         else:
             pass
         # # TODO: Now that only the model is passed, if the optimisation is minimum thickness, we need to update the model based on the template
@@ -171,13 +192,10 @@ def post_process_nlopt(analysis: "Analysis"):
     #         form.vertex_attribute(key, 'ub', ub - s * (ub - lb))
     #         form.vertex_attribute(key, 'lb', lb + s * (ub - lb))
 
+    # Handle variable-specific updates
     if "n" in problem.variables:
-        print("Value of N:", n)
-        n = -1 * fopt
-        pass
-        # shape.intrados = shape.intrados.offset_mesh(n=n, direction="up")
-        # shape.extrados = shape.extrados.offset_mesh(n=n, direction="down")
-        # form.apply_envelope_from_shape(shape)
+        if printout:
+            print(f"Value of N: {n}")
 
     if "tub" in problem.variables:
         for i, key in enumerate(form.vertices()):
@@ -187,13 +205,12 @@ def post_process_nlopt(analysis: "Analysis"):
 
     if "tlb" in problem.variables:
         for i, key in enumerate(form.vertices()):
-            zub = form.vertex_attribute(key, "lb")
+            zlb = form.vertex_attribute(key, "lb")
             form.vertex_attribute(key, "tlb", tlb[i])
-            form.vertex_attribute(key, "lb", zub - tlb[i])
+            form.vertex_attribute(key, "lb", zlb - tlb[i])
 
     if "tub_reac" in problem.variables:
         for i, key in enumerate(form.vertices_where({"is_support": True})):
-            print(i, key, tub_reac)
             form.vertex_attribute(key, "tub_reac", [tub_reac[i], tub_reac[i + problem.nb]])
 
     if "lambdv" in problem.variables:
@@ -203,28 +220,84 @@ def post_process_nlopt(analysis: "Analysis"):
             form.vertex_attribute(key, "pzext", float(p_added))
 
     if "lambdh" in problem.variables:
-        form.attributes["lambdh"] = lambdh  # can be improved. It currently takes fopt, but if loads at start are 0.1*SWT, the obj is lambd/0.1
+        form.attributes["lambdh"] = lambdh
 
-    # analysis.form = form
-    # analysis.optimiser = optimiser
-    # analysis.shape = shape
-
-    if save_iterations:
-        file_Xform, file_Xforce = save_geometry_at_iterations(form, optimiser, force=show_force_diagram)
-        analysis.optimiser.Xform = file_Xform
-        analysis.optimiser.Xforce = file_Xforce
-
+    # Print summary
     if printout or summary:
         print("\n" + "-" * 50)
         print("TNO v.2.0")
-        print("Solution  :", message)
+        print(f"Solution  : {message}")
+        print(f"Status    : {'SUCCESS' if result.success else 'FAILED'}")
         try:
-            print("q range : {0:.3f} : {1:.3f}".format(min(problem.q), max(problem.q)))
+            print(f"q range   : {min(problem.q):.3f} : {max(problem.q):.3f}")
         except BaseException:
-            print("q range : {0:.3f} : {1:.3f}".format(min(problem.q.flatten()), max(problem.q.flatten())))
-        print("zb range  : {0:.3f} : {1:.3f}".format(min(problem.X[problem.fixed, [2]]), max(problem.X[problem.fixed, [2]])))
-        print("constr    : {0:.3f} : {1:.3f}".format(min(g_final), max(g_final)))
-        print("fopt      : {0:.3f}".format(fopt))
+            print(f"q range   : {min(problem.q.flatten()):.3f} : {max(problem.q.flatten()):.3f}")
+        print(f"zb range  : {min(problem.X[problem.fixed, [2]]):.3f} : {max(problem.X[problem.fixed, [2]]):.3f}")
+        if g_final is not None:
+            print(f"constr    : {min(g_final):.3f} : {max(g_final):.3f}")
+        print(f"fopt      : {fopt:.3f}")
+        if result.niter is not None:
+            print(f"iterations: {result.niter}")
+        print(f"time      : {result.time:.3f} sec")
         print("-" * 50 + "\n")
+
+    return problem
+
+
+def post_process_nlopt(analysis: "Analysis"):
+    """Post processing of the optimisation.
+
+    This function is kept for backward compatibility with the Analysis workflow.
+    It wraps the new apply_solution_to_form() function.
+
+    Parameters
+    ----------
+    analysis : Analysis
+        The Analysis object
+
+    Returns
+    -------
+    analysis : Analysis
+        The Analysis object updated
+
+    Notes
+    -----
+    For new code, prefer using::
+
+        result = solver.solve(problem)
+        problem = apply_solution_to_form(form, problem, result, settings)
+
+    """
+    from compas_tno.solvers.solver import SolverResult
+
+    form = analysis.formdiagram
+    optimiser = analysis.optimiser
+    problem = optimiser.problem
+
+    # Create SolverResult from optimiser data
+    result = SolverResult(
+        xopt=optimiser.xopt,
+        fopt=optimiser.fopt,
+        success=(optimiser.exitflag == 0),
+        message=optimiser.message,
+        niter=optimiser.niter,
+        time=optimiser.time,
+        exitflag=optimiser.exitflag,
+    )
+
+    # Call the new clean function
+    problem = apply_solution_to_form(
+        form=form,
+        problem=problem,
+        result=result,
+        settings=optimiser.settings,
+    )
+
+    # Handle save_iterations (needs optimiser for legacy reasons)
+    if optimiser.settings.get("save_iterations", False):
+        show_force_diagram = optimiser.settings.get("save_force_diagram", True)
+        file_Xform, file_Xforce = save_geometry_at_iterations(form, optimiser, force=show_force_diagram)
+        analysis.optimiser.Xform = file_Xform
+        analysis.optimiser.Xforce = file_Xforce
 
     return analysis

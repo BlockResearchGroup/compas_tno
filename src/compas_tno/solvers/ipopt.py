@@ -1,5 +1,14 @@
 import time
 from typing import TYPE_CHECKING
+from typing import Callable
+from typing import List
+from typing import Optional
+from typing import Tuple
+
+import numpy.typing as npt
+
+from compas_tno.solvers.solver import NonlinearSolver
+from compas_tno.solvers.solver import SolverResult
 
 try:
     import cyipopt
@@ -11,6 +20,7 @@ except ImportError:
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
     from compas_tno.optimisers import Optimiser
+    from compas_tno.problems import Problem
 
 
 class Wrapper_ipopt:
@@ -95,84 +105,227 @@ class Wrapper_ipopt:
         return self.fjac(x, *self.args).flatten()
 
 
-def run_nlopt_ipopt(analysis: "Analysis"):
-    """Run nonlinear optimisation problem with IPOPT
+class IPOPTSolver(NonlinearSolver):
+    """IPOPT solver for nonlinear optimization problems.
+
+    This solver uses the Interior Point OPTimizer (IPOPT) for solving
+    large-scale nonlinear programming problems.
 
     Parameters
     ----------
-    obj : analysis
+    settings : dict, optional
+        Solver settings. Common options:
+        - 'printout' : bool - Print solver output (default: False)
+        - 'max_iter' : int - Maximum iterations (default: 3000)
+        - 'derivative_test' : bool - Test derivatives (default: False)
+        - 'nlp_scaling_method' : str - Scaling method (default: None)
+
+    Examples
+    --------
+    Minimal usage - everything from problem:
+
+    >>> problem.fobj = my_objective
+    >>> problem.fconstr = my_constraints
+    >>> problem.fgrad = my_gradient
+    >>> problem.fjac = my_jacobian
+    >>> problem.x0 = initial_guess
+    >>> problem.bounds = variable_bounds
+    >>> solver = IPOPTSolver(settings={"printout": True})
+    >>> result = solver.solve(problem)  # All data from problem!
+
+    Override specific functions:
+
+    >>> result = solver.solve(problem, objective=custom_obj)  # Custom objective only
+
+    """
+
+    def __init__(self, settings: Optional[dict] = None):
+        """Initialize IPOPT solver."""
+        if not HAS_IPOPT:
+            raise ImportError("IPOPT is not installed. Install with: pip install cyipopt")
+        super().__init__(settings)
+
+    def _solve_nlp(
+        self,
+        problem: "Problem",
+        objective: Callable,
+        constraints: Optional[Callable],
+        gradient: Optional[Callable],
+        jacobian: Optional[Callable],
+        x0: npt.NDArray,
+        bounds: List[Tuple[float, float]],
+        callback: Optional[Callable],
+        **kwargs,
+    ) -> SolverResult:
+        """Solve using IPOPT.
+
+        Parameters
+        ----------
+        problem : Problem
+            The problem structure.
+        objective : callable
+            Objective function f(x, problem) -> float.
+        constraints : callable, optional
+            Constraint function g(x, problem) -> array.
+        gradient : callable, optional
+            Gradient function grad_f(x, problem) -> array.
+        jacobian : callable, optional
+            Jacobian function jac_g(x, problem) -> array.
+        x0 : array
+            Starting point.
+        bounds : list of tuples
+            Variable bounds.
+        callback : callable, optional
+            Callback function.
+        **kwargs
+            Additional options.
+
+        Returns
+        -------
+        SolverResult
+            The optimization result.
+
+        """
+        printout = self.settings.get("printout", False)
+        args = [problem]
+
+        # Prepare bounds
+        lower = [lw for lw, _ in bounds]
+        upper = [up for _, up in bounds]
+
+        # Create wrapper for IPOPT
+        problem_obj = Wrapper_ipopt()
+        problem_obj.fobj = objective
+        problem_obj.fconstr = constraints
+        problem_obj.fjac = jacobian
+        problem_obj.args = args
+        problem_obj.fgrad = gradient
+        problem_obj.bounds = bounds
+        problem_obj.callback = callback
+        problem_obj.x0 = x0
+
+        # Compute initial constraints
+        if constraints:
+            g0 = constraints(x0, *args)
+            cu = [10e10] * len(g0)
+            cl = [0.0] * len(g0)
+            m = len(g0)
+        else:
+            cu = []
+            cl = []
+            m = 0
+
+        # Create IPOPT problem
+        nlp = cyipopt.Problem(n=len(x0), m=m, problem_obj=problem_obj, lb=lower, ub=upper, cl=cl, cu=cu)
+
+        # Set options
+        nlp = self._set_options(nlp)
+
+        # Solve
+        start_time = time.time()
+        xopt, info = nlp.solve(x0.flatten())
+        elapsed_time = time.time() - start_time
+
+        # Extract results
+        f_opt = info["obj_val"]
+        exit_flag = info["status"]
+
+        # IPOPT: status=0 or 1 is success
+        if exit_flag == 1 or exit_flag == 0:
+            success = True
+            exit_flag = 0
+            message = "Solved successfully with IPOPT"
+        else:
+            success = False
+            exit_flag = 1
+            message = "Error: Did not find convergence (IPOPT)"
+
+        if printout:
+            print(str(info["status_msg"]))
+            print(f"Solving Time: {elapsed_time:.1f} sec")
+
+        return SolverResult(
+            xopt=xopt.reshape(-1, 1),
+            fopt=float(f_opt),
+            success=success,
+            message=message,
+            niter=None,  # IPOPT doesn't easily expose iteration count
+            time=elapsed_time,
+            exitflag=exit_flag,
+        )
+
+    def _set_options(self, nlp) -> cyipopt.Problem:
+        """Set IPOPT solver options.
+
+        Parameters
+        ----------
+        nlp : cyipopt.Problem
+            The IPOPT problem object.
+
+        Returns
+        -------
+        cyipopt.Problem
+            The problem with options set.
+
+        """
+        if not self.settings.get("printout", False):
+            nlp.add_option("print_level", 0)
+
+        if self.settings.get("derivative_test", False):
+            nlp.add_option("derivative_test", "first-order")
+
+        if self.settings.get("max_iter"):
+            nlp.add_option("max_iter", self.settings["max_iter"])
+
+        scaling = self.settings.get("nlp_scaling_method")
+        if scaling:
+            if self.settings.get("printout"):
+                print(f"Applied solver scaling: {scaling}")
+            nlp.add_option("nlp_scaling_method", scaling)
+
+        return nlp
+
+
+def run_nlopt_ipopt(analysis: "Analysis"):
+    """Run nonlinear optimisation problem with IPOPT.
+
+    This function is kept for backward compatibility. New code should use IPOPTSolver class.
+
+    Parameters
+    ----------
+    analysis : Analysis
         Analysis object with information about optimiser, form and shape.
 
     Returns
     -------
-    analysis
+    analysis : Analysis
         Analysis object optimised.
 
+    Notes
+    -----
+    This function wraps the new IPOPTSolver class for backward compatibility.
+    For new code, prefer using::
+
+        solver = IPOPTSolver(settings=optimiser.settings)
+        result = solver.solve(problem, objective=fobj, constraints=fconstr, ...)
+
     """
-
-    if not HAS_IPOPT:
-        raise ImportError("IPOPT is not installed. Please install it using `pip install cyipopt`")
-
     optimiser = analysis.optimiser
-    printout = optimiser.settings.get("printout", False)
-    callback = optimiser.callback
+    problem = optimiser.problem
 
-    bounds = optimiser.bounds
-    x0 = optimiser.x0
-    g0 = optimiser.g0
-    args = [optimiser.problem]
+    # Create solver using optimiser settings
+    solver = IPOPTSolver(settings=optimiser.settings)
 
-    lower = [lw[0] for lw in bounds]
-    upper = [up[1] for up in bounds]
+    # Solve using the new class - functions and variables come from problem
+    result = solver.solve(problem)
 
-    problem_obj = Wrapper_ipopt()
-    problem_obj.fobj = optimiser.fobj
-    problem_obj.fconstr = optimiser.fconstr
-    problem_obj.fjac = optimiser.fjac
-    problem_obj.args = args
-    problem_obj.fgrad = optimiser.fgrad
-    problem_obj.bounds = bounds
-    problem_obj.callback = callback
-    problem_obj.x0 = x0
-
-    if printout:
-        g0 = optimiser.fconstr(x0, *args)
-
-    cu = [10e10] * len(g0)
-    cl = [0.0] * len(g0)
-
-    nlp = cyipopt.Problem(n=len(x0), m=len(g0), problem_obj=problem_obj, lb=lower, ub=upper, cl=cl, cu=cu)
-
-    # Set Options and Time
-    nlp = _nlp_options(nlp, optimiser)
-    start_time = time.time()
-
-    # Solve
-    xopt, info = nlp.solve(x0)
-    fopt = info["obj_val"]
-    exitflag = info["status"]
-    if exitflag == 1 or exitflag == 0:  # IPOPT consider solved = 1. Solved in tolerances 0 -> TNO solved = 0
-        exitflag = 0
-        msg = "Solved successfully with IPOPT"
-    else:
-        exitflag = 1
-        msg = "Error: Did not find convergence (IPOPT)"
-    if printout:
-        print(str(info["status_msg"]))
-
-    elapsed_time = time.time() - start_time
-
-    if printout:
-        print("Solving Time: {0:.1f} sec".format(elapsed_time))
-
-    optimiser.exitflag = exitflag
-    optimiser.time = elapsed_time
-    optimiser.fopt = fopt
-    optimiser.xopt = xopt
-    optimiser.niter = None  # Did not find a way to display number of iterations
-    # optimiser.message = str(info['status_msg'])
-    optimiser.message = msg  # temporary, should be equal to the line above
-    optimiser.nlp = nlp
+    # Store results in optimiser
+    optimiser.exitflag = result.exitflag
+    optimiser.time = result.time
+    optimiser.fopt = result.fopt
+    optimiser.xopt = result.xopt
+    optimiser.niter = result.niter
+    optimiser.message = result.message
 
     return analysis
 
@@ -224,7 +377,7 @@ def _nlp_options(nlp, optimiser: "Optimiser"):
         nlp.add_option("max_iter", optimiser.settings["max_iter"])
 
     if scaling:
-        print("Applied sollver scaling:", scaling)
+        print("Applied solver scaling:", scaling)
         nlp.add_option("nlp_scaling_method", scaling)
 
     return nlp
