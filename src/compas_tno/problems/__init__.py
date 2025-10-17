@@ -37,11 +37,9 @@ from .objectives import (
 
 from .problems import (
     Problem,
-    initialise_form,
-    initialise_problem_general,
-    adapt_problem_to_fixed_diagram,
-    adapt_problem_to_sym_diagram,
-    adapt_problem_to_sym_and_fixed_diagram,
+    FixedProblem,
+    SymmetricProblem,
+    FixedSymmetricProblem,
     apply_sym_to_form,
 )
 
@@ -89,11 +87,9 @@ __all__ = [
     "f_reduce_thk",
     "f_tight_crosssection",
     "Problem",
-    "initialise_form",
-    "initialise_problem_general",
-    "adapt_problem_to_fixed_diagram",
-    "adapt_problem_to_sym_diagram",
-    "adapt_problem_to_sym_and_fixed_diagram",
+    "FixedProblem",
+    "SymmetricProblem",
+    "FixedSymmetricProblem",
     "apply_sym_to_form",
     "callback_save_json",
     "callback_create_json",

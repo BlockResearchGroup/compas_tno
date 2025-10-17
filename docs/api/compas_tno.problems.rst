@@ -18,13 +18,11 @@ Initialisation
 .. autosummary::
     :toctree: generated/
 
-    initialise_form
-    initialise_problem_general
-    adapt_problem_to_fixed_diagram
-    adapt_problem_to_sym_diagram
-    adapt_problem_to_sym_and_fixed_diagram
+    Problem
+    FixedProblem
+    SymmetricProblem
+    FixedSymmetricProblem
     apply_sym_to_form
-
 
 Starting Points
 ===============

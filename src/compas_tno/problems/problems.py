@@ -202,451 +202,549 @@ class Problem:
     b_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
     dub_dlb_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
     db_update: Optional[Callable] = None  # TODO: This needs to be taken care by the SurfaceModel
+    Pmatrix: Optional[npt.NDArray] = None
+
+    # Additional attributes for fixed problems
+    Edinv: Optional[npt.NDArray] = None
+    Ed: Optional[npt.NDArray] = None
+    Ei: Optional[npt.NDArray] = None
+    d0: Optional[npt.NDArray] = None
+    time_inds: Optional[float] = None
+
+    # Optimization functions (callables)
+    fobj: Optional[Callable] = None
+    fgrad: Optional[Callable] = None
+    fconstr: Optional[Callable] = None
+    fjac: Optional[Callable] = None
+
+    # Optimization variables and initial values
+    x0: Optional[npt.NDArray] = None
+    bounds: Optional[List] = None
+    f0: Optional[float] = None
+    g0: Optional[npt.NDArray] = None
+
+    @classmethod
+    def from_formdiagram(cls, form: FormDiagram) -> "Problem":
+        """Create a Problem from a FormDiagram.
+
+        This is the primary constructor for creating a Problem instance. It initializes
+        all matrices and vectors needed for the optimization from the form diagram.
+
+        Parameters
+        ----------
+        form : :class:`~compas_tna.diagrams.FormDiagram`
+            The FormDiagram containing the network geometry, loads, and constraints.
+
+        Returns
+        -------
+        :class:`Problem`
+            A fully initialized Problem instance with all necessary matrices.
+
+        Examples
+        --------
+        >>> problem = Problem.from_formdiagram(form)
+        >>> problem.m  # number of edges
+        >>> problem.n  # number of vertices
+
+        """
+        # Mapping
+        k_i = form.vertex_index()
+        uv_i = form.uv_index()
+        i_uv = form.index_uv()
+
+        # Vertices and edges
+        n = form.number_of_vertices()
+        m = len(list(form.edges_where({"_is_edge": True})))
+        fixed = [k_i[key] for key in form.supports()]
+        nb = len(fixed)
+        edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({"_is_edge": True})]
+        free = list(set(range(n)) - set(fixed))
+        ni = len(free)
+
+        q = array([form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
+        qmax = array([form.edge_attribute((u, v), "qmax") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
+        qmin = array([form.edge_attribute((u, v), "qmin") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
+
+        # Co-ordinates, loads and constraints
+        xyz = zeros((n, 3))
+        x = zeros((n, 1))
+        y = zeros((n, 1))
+        z = zeros((n, 1))
+        s = zeros((n, 1))  # target height
+        px = zeros((n, 1))
+        py = zeros((n, 1))
+        pz = zeros((n, 1))
+        lb = zeros((n, 1))
+        ub = zeros((n, 1))
+        xlimits = zeros((n, 2))
+        ylimits = zeros((n, 2))
+
+        for key, vertex in form.vertex.items():
+            i = k_i[key]
+            xyz[i, :] = form.vertex_coordinates(key)
+            x[i] = vertex.get("x")
+            y[i] = vertex.get("y")
+            z[i] = vertex.get("z")
+            px[i] = vertex.get("px", 0)
+            py[i] = vertex.get("py", 0)
+            pz[i] = vertex.get("pz", 0)
+            s[i] = vertex.get("target", 0)  # used for bestfit
+            if abs(s[i]) < 1e-6:
+                s[i] = 0.0
+            xlimits[i, 0] = vertex.get("xmin", None)
+            xlimits[i, 1] = vertex.get("xmax", None)
+            ylimits[i, 0] = vertex.get("ymin", None)
+            ylimits[i, 1] = vertex.get("ymax", None)
+            lb[i] = vertex.get("lb", None)
+            ub[i] = vertex.get("ub", None)
+
+        # Partial supports (rollers)
+        rol_x = []
+        rol_y = []
+
+        for key in form.vertices_where({"rol_x": True}):
+            rol_x.append(k_i[key])
+        for key in form.vertices_where({"rol_y": True}):
+            rol_y.append(k_i[key])
+
+        free_x = list(set(free) - set(rol_x))
+        free_y = list(set(free) - set(rol_y))
+
+        # C and E matrices
+        C = connectivity_matrix(edges, "csr")
+        Ci = C[:, free]
+        Cb = C[:, fixed]
+        Cbtx = C[:, rol_x].transpose()
+        Cbty = C[:, rol_y].transpose()
+        Ct = C.transpose()
+        Cit = Ci.transpose()
+        Citx = Ct[free_x, :]
+        City = Ct[free_y, :]
+        uvw = C.dot(xyz)
+        U = diags(uvw[:, 0].flatten())
+        V = diags(uvw[:, 1].flatten())
+        E = svstack((Citx.dot(U), City.dot(V))).toarray()
+
+        # Settings of a free to move problem 'all q are variable'
+        ind = list(range(m))
+        dep = []
+        k = m
+        B = identity(m)
+        d = zeros((m, 1))
+
+        # Permutation matrix to fixed and free keys
+        # with this matrix z = [Pmatrix]z will have the first ni nodes as free
+        # and the last nb nodes as fixed
+        Pfree = zeros((n, ni))
+        Pfixed = zeros((n, nb))
+        Pfree[free, :] = identity(ni)
+        Pfixed[fixed, :] = identity(nb)
+        Pmatrix = hstack([Pfree, Pfixed])
+
+        # Create Problem instance
+        return cls(
+            q=q,
+            m=m,
+            n=n,
+            ni=ni,
+            nb=nb,
+            E=E,
+            C=C,
+            Ct=Ct,
+            Ci=Ci,
+            Cit=Cit,
+            Cb=Cb,
+            U=U,
+            V=V,
+            P=hstack([px, py, pz]),
+            free=free,
+            fixed=fixed,
+            ph=vstack([px[free_x], py[free_y]]),
+            lb=lb,
+            ub=ub,
+            lb0=lb,
+            ub0=ub,
+            s=s,
+            X=hstack([x, y, z]),
+            x0=x,
+            y0=y,
+            free_x=free_x,
+            free_y=free_y,
+            rol_x=rol_x,
+            rol_y=rol_y,
+            Citx=Citx,
+            City=City,
+            Cbtx=Cbtx,
+            Cbty=Cbty,
+            xlimits=xlimits,
+            ylimits=ylimits,
+            qmin=qmin,
+            qmax=qmax,
+            k_i=k_i,
+            uv_i=uv_i,
+            i_uv=i_uv,
+            ind=ind,
+            k=k,
+            dep=dep,
+            B=B,
+            d=d,
+            Pmatrix=Pmatrix,
+        )
+
+    def _to_specialized(self, specialized_class, **updates):
+        """Convert this Problem to a specialized subclass.
+
+        This helper method creates a new instance of a specialized Problem class
+        by copying all attributes from this base Problem and updating specific fields.
+
+        Parameters
+        ----------
+        specialized_class : type
+            The specialized class (FixedProblem, SymmetricProblem, etc.)
+        **updates
+            Fields to add/override for the specialized problem.
+
+        Returns
+        -------
+        Problem subclass
+            New instance of the specialized class with all base attributes plus updates.
+
+        Examples
+        --------
+        >>> base = Problem.from_formdiagram(form)
+        >>> fixed = base._to_specialized(FixedProblem, ind=ind, dep=dep, B=B, d=d)
+
+        """
+        from dataclasses import asdict
+
+        # Get all fields from this problem instance
+        data = asdict(self)
+
+        # Update with specialized fields
+        data.update(updates)
+
+        # Create new instance of specialized class
+        return specialized_class(**data)
 
 
 # =============================================================================
-# Constructors
+# Specialized Problem Classes
 # =============================================================================
 
 
-def initialise_form(
-    form: FormDiagram,
-    find_inds: bool = True,
-    method: str = "SVD",
-    printout: bool = False,
-    tol: Optional[float] = None,
-) -> Problem:
-    """Initialise the problem for a FormDiagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.
+@dataclass
+class FixedProblem(Problem):
+    """Problem with fixed diagram where independent edges are computed.
 
-    Parameters
-    ----------
-    form : :class:`~compas_tno.diagrams.FormDiagram`
-        The FormDiagram
-    find_inds : bool, optional
-        Whether or not independents should be found (fixed diagram), by default True
-    method : str, optional
-        Method to find independent edges, the default is 'SVD'. More options to come.
-    printout : bool, optional
-        Whether or not prints should appear on the screen, by default False
-    tool : float, optional
-        Tolerance od independents, by default None
+    This specialized problem class represents a structural analysis problem where
+    the form diagram is fixed in plan, requiring the computation of independent
+    edges for the force density method.
 
-    Returns
-    -------
-    :class:`Problem`
-        The object with all the matrices essential to the analysis.
-
-    Notes
-    -----
-    The FormDiagram is updated in place. Check ``initialise_problem_general`` for more info.
+    The class inherits all attributes from Problem and automatically computes
+    the independent edges and associated matrices during initialization.
 
     """
-    problem = initialise_problem_general(form)
 
-    if find_inds:
-        adapt_problem_to_fixed_diagram(problem, form, method=method, printout=printout, tol=tol)
+    @classmethod
+    def from_formdiagram(
+        cls,
+        form: FormDiagram,
+        method: str = "QR",
+        printout: bool = False,
+        tol: Optional[float] = None,
+    ) -> "FixedProblem":
+        """Create a FixedProblem from a FormDiagram with independent edges computed.
 
-    return problem
+        Parameters
+        ----------
+        form : :class:`~compas_tna.diagrams.FormDiagram`
+            The FormDiagram containing the network geometry, loads, and constraints.
+        method : str, optional
+            Method to find independent edges, by default 'QR'.
+            Options: 'QR', 'SVD', etc.
+        printout : bool, optional
+            Whether to print progress information, by default False.
+        tol : float, optional
+            Tolerance for the singular values when finding independents, by default None.
 
+        Returns
+        -------
+        :class:`FixedProblem`
+            A fully initialized FixedProblem with independent edges computed.
 
-def initialise_problem_general(form: FormDiagram) -> Problem:
-    """Initialise the problem for a given Form-Diagram building the main matrices used in the subsequent analysis.
+        Examples
+        --------
+        >>> form = FormDiagram.create_cross(x_span=(0, 10), y_span=(0, 10), n=5)
+        >>> problem = FixedProblem.from_formdiagram(form, method="QR")
+        >>> problem.k  # number of independent edges (< m)
 
-    Parameters
-    ----------
-    form : :class:`~compas_tno.diagrams.FormDiagram`
-        The FormDiagram.
+        """
+        # Create base problem
+        base_problem = Problem.from_formdiagram(form)
 
-    Returns
-    -------
-    :class:`Problem`
+        # Find independent edges
+        ind = []
+        start_time = time.time()
 
-    """
+        ind_edges = form.edges_where({"_is_ind": True})
 
-    # Mapping
-
-    k_i = form.vertex_index()
-    uv_i = form.uv_index()
-    i_uv = form.index_uv()
-
-    # Vertices and edges
-
-    n = form.number_of_vertices()
-    m = len(list(form.edges_where({"_is_edge": True})))
-    fixed = [k_i[key] for key in form.supports()]
-    nb = len(fixed)
-    edges = [(k_i[u], k_i[v]) for u, v in form.edges_where({"_is_edge": True})]
-    free = list(set(range(n)) - set(fixed))
-    ni = len(free)
-
-    q = array([form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)  # review need of 'is_edge': True
-    qmax = array([form.edge_attribute((u, v), "qmax") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
-    qmin = array([form.edge_attribute((u, v), "qmin") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
-
-    # Co-ordinates, loads and constraints
-
-    xyz = zeros((n, 3))
-    x = zeros((n, 1))
-    y = zeros((n, 1))
-    z = zeros((n, 1))
-    s = zeros((n, 1))  # target height
-    px = zeros((n, 1))
-    py = zeros((n, 1))
-    pz = zeros((n, 1))
-    lb = zeros((n, 1))
-    ub = zeros((n, 1))
-    xlimits = zeros((n, 2))
-    ylimits = zeros((n, 2))
-
-    for key, vertex in form.vertex.items():
-        i = k_i[key]
-        xyz[i, :] = form.vertex_coordinates(key)
-        x[i] = vertex.get("x")
-        y[i] = vertex.get("y")
-        z[i] = vertex.get("z")
-        px[i] = vertex.get("px", 0)
-        py[i] = vertex.get("py", 0)
-        pz[i] = vertex.get("pz", 0)  # + pz_fill + pz_ext
-        s[i] = vertex.get("target", 0)  # used for bestfit
-        if abs(s[i]) < 1e-6:
-            s[i] = 0.0
-        xlimits[i, 0] = vertex.get("xmin", None)
-        xlimits[i, 1] = vertex.get("xmax", None)
-        ylimits[i, 0] = vertex.get("ymin", None)
-        ylimits[i, 1] = vertex.get("ymax", None)
-        lb[i] = vertex.get("lb", None)
-        ub[i] = vertex.get("ub", None)
-
-    # Partial supports, or rollers.
-
-    rol_x = []
-    rol_y = []
-
-    for key in form.vertices_where({"rol_x": True}):
-        rol_x.append(k_i[key])
-    for key in form.vertices_where({"rol_y": True}):
-        rol_y.append(k_i[key])
-
-    free_x = list(set(free) - set(rol_x))
-    free_y = list(set(free) - set(rol_y))
-
-    # C and E matrices
-
-    C = connectivity_matrix(edges, "csr")
-    Ci = C[:, free]
-    Cb = C[:, fixed]
-    Cbtx = C[:, rol_x].transpose()
-    Cbty = C[:, rol_y].transpose()
-    Ct = C.transpose()
-    Cit = Ci.transpose()
-    Citx = Ct[free_x, :]
-    City = Ct[free_y, :]
-    uvw = C.dot(xyz)
-    U = diags(uvw[:, 0].flatten())
-    V = diags(uvw[:, 1].flatten())
-    E = svstack((Citx.dot(U), City.dot(V))).toarray()
-
-    # Settings of a free to move problem 'all q are variable'
-
-    ind = list(range(m))
-    dep = []
-    k = m
-    B = identity(m)
-    d = zeros((m, 1))
-
-    # Permutation matrix to fixed and free keys
-    # with this matrix z = [Pmatrix]z will have the first ni nodes as free
-    # and the last nb nodes as fixed
-
-    Pfree = zeros((n, ni))
-    Pfixed = zeros((n, nb))
-    Pfree[free, :] = identity(ni)
-    Pfixed[fixed, :] = identity(nb)
-    Pmatrix = hstack([Pfree, Pfixed])
-
-    # Create Class and build matrices
-
-    problem = Problem()
-
-    problem.q = q
-    problem.m = m
-    problem.n = n
-    problem.ni = ni
-    problem.nb = nb
-    problem.E = E
-    problem.C = C
-    problem.Ct = Ct
-    problem.Ci = Ci
-    problem.Cit = Cit
-    problem.Cb = Cb
-    problem.U = U
-    problem.V = V
-    problem.P = hstack([px, py, pz])
-    problem.free = free
-    problem.fixed = fixed
-    problem.ph = vstack([px[free_x], py[free_y]])
-    problem.lb = lb
-    problem.ub = ub
-    problem.lb0 = lb
-    problem.ub0 = ub
-    problem.s = s
-    problem.X = hstack([x, y, z])
-    problem.x0 = x
-    problem.y0 = y
-    problem.free_x = free_x
-    problem.free_y = free_y
-    problem.rol_x = rol_x
-    problem.rol_y = rol_y
-    problem.Citx = Citx
-    problem.City = City
-    problem.Cbtx = Cbtx
-    problem.Cbty = Cbty
-    problem.xlimits = xlimits
-    problem.ylimits = ylimits
-    problem.qmin = qmin
-    problem.qmax = qmax
-    problem.k_i = k_i
-    problem.uv_i = uv_i
-    problem.i_uv = i_uv
-    problem.ind = ind
-    problem.k = k
-    problem.dep = dep
-    problem.B = B
-    problem.d = d
-    problem.Pmatrix = Pmatrix
-    # problem.Bfixed = Bfixed
-
-    return problem
-
-
-# =============================================================================
-# Adaptors
-# =============================================================================
-
-
-def adapt_problem_to_fixed_diagram(
-    problem: Problem,
-    form: FormDiagram,
-    method: str = "QR",
-    printout: bool = False,
-    tol: Optional[float] = None,
-) -> None:
-    """Adapt the problem assuming that the form diagram is fixed in plan, by selecting the independent edges.
-
-    Parameters
-    ----------
-    problem : :class:`~compas_tno.problems.Problem`
-        Matrices of the problem
-    form : :class:`~compas_tno.diagrams.FormDiagram`
-        The form diagram to be analysed
-    method : str, optional
-        Method to find independent edges, the default is 'QR'.
-    printout : bool, optional
-        If prints should show in the screen, by default False
-    tol : float, optional
-        Tolerance of the singular values, by default None
-
-    """
-    ind = []
-    start_time = time.time()
-
-    # Independent and dependent branches
-
-    ind_edges = form.edges_where({"_is_ind": True})
-
-    if len(list(ind_edges)) > 0:
-        ind = [problem.uv_i[edge] for edge in ind_edges]
-    else:
-        ind = find_independents(problem.E, method=method, tol=tol)
-
-    k = len(ind)
-    dep = list(set(range(problem.m)) - set(ind))
-
-    elapsed_time = time.time() - start_time
-
-    if printout:
-        print("Reduced problem to {0} force variables with ind. edges".format(k))
-        print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
-
-    points = []
-    for edge in form.edges_where({"_is_edge": True}):
-        if problem.uv_i[edge] in ind:
-            form.edge_attribute(edge, "is_ind", True)
-            points.append(Point(*(form.edge_midpoint(edge)[:2] + [0])))
+        if len(list(ind_edges)) > 0:
+            ind = [base_problem.uv_i[edge] for edge in ind_edges]
         else:
-            form.edge_attribute(edge, "is_ind", False)
-    form.attributes["indset"] = points
+            ind = find_independents(base_problem.E, method=method, tol=tol)
 
-    rcond = 1e-17
-    if tol:
-        rcond = tol
-    Ed = problem.E[:, dep]
-    Edinv = -csr_matrix(pinv(problem.E[:, dep], rcond=rcond))
-    Ei = csr_matrix(problem.E[:, ind])
-    B = zeros((problem.m, k))
-    B[dep] = Edinv.dot(Ei).toarray()
-    B[ind] = identity(k)
+        k = len(ind)
+        dep = list(set(range(base_problem.m)) - set(ind))
 
-    d = zeros((problem.m, 1))
-    d[dep] = -Edinv.dot(problem.ph)  # q = Bqi + d | d = Ed(-1)*ph
+        elapsed_time = time.time() - start_time
 
-    if any(problem.ph):
-        check_hor = check_horizontal_loads(problem.E, problem.ph)
-        if check_hor:
-            print("Horizontal Loads can be taken!")
-        else:
-            print("Horizontal Loads are not suitable for this FD!")
+        if printout:
+            print("Reduced problem to {0} force variables with ind. edges".format(k))
+            print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
 
-    problem.ind = ind
-    problem.k = k
-    problem.dep = dep
-    problem.B = B
-    problem.Edinv = Edinv
-    problem.Ed = Ed
-    problem.Ei = Ei
-    problem.d = d
-    problem.d0 = d
-    problem.time_inds = elapsed_time
+        # Update form diagram with independent edge information
+        points = []
+        for edge in form.edges_where({"_is_edge": True}):
+            if base_problem.uv_i[edge] in ind:
+                form.edge_attribute(edge, "is_ind", True)
+                points.append(Point(*(form.edge_midpoint(edge)[:2] + [0])))
+            else:
+                form.edge_attribute(edge, "is_ind", False)
+        form.attributes["indset"] = points
+
+        # Compute matrices for fixed problem
+        rcond = 1e-17
+        if tol:
+            rcond = tol
+        Ed = base_problem.E[:, dep]
+        Edinv = -csr_matrix(pinv(base_problem.E[:, dep], rcond=rcond))
+        Ei = csr_matrix(base_problem.E[:, ind])
+        B = zeros((base_problem.m, k))
+        B[dep] = Edinv.dot(Ei).toarray()
+        B[ind] = identity(k)
+
+        d = zeros((base_problem.m, 1))
+        d[dep] = -Edinv.dot(base_problem.ph)  # q = Bqi + d | d = Ed(-1)*ph
+
+        if any(base_problem.ph):
+            check_hor = check_horizontal_loads(base_problem.E, base_problem.ph)
+            if check_hor:
+                if printout:
+                    print("Horizontal Loads can be taken!")
+            else:
+                print("Warning: Horizontal Loads are not suitable for this FD!")
+
+        # Create FixedProblem from base with updated attributes
+        return base_problem._to_specialized(
+            cls,
+            ind=ind,
+            k=k,
+            dep=dep,
+            B=B,
+            d=d,
+            d0=d,
+            Edinv=Edinv,
+            Ed=Ed,
+            Ei=Ei,
+            time_inds=elapsed_time,
+        )
 
 
-def adapt_problem_to_sym_diagram(
-    problem: Problem,
-    form: FormDiagram,
-    list_axis_symmetry=None,
-    center=None,
-    correct_loads=True,
-    printout=False,
-) -> None:
-    """Adapt the problem assuming that the form diagram is symmetric.
+@dataclass
+class SymmetricProblem(Problem):
+    """Problem with symmetry constraints applied.
 
-    Parameters
-    ----------
-    problem : :class:`~compas_tno.problems.Problem`
-        The problem with matrices for calculation
-    form : :class:`~compas_tno.diagrams.FormDiagram`
-        The form diagram to analyse
-    list_axis_symmetry : [list], optional
-        List of the axis of symmetry to consider, by default None
-    center : [list], optional
-        The center of the pattern if it's a circula pattern, by default None
-    correct_loads : bool, optional
-        If update should be done in the applied loads regarding the symmetry, by default True
-    printout : bool, optional
-        If prints should show in the screen, by default False
+    This specialized problem class represents a structural analysis problem where
+    the form diagram has symmetry, allowing reduction of variables by exploiting
+    symmetric patterns.
+
+    """
+
+    @classmethod
+    def from_formdiagram(
+        cls,
+        form: FormDiagram,
+        list_axis_symmetry: Optional[list] = None,
+        center=None,
+        correct_loads: bool = True,
+        printout: bool = False,
+    ) -> "SymmetricProblem":
+        """Create a SymmetricProblem from a FormDiagram with symmetry constraints.
+
+        Parameters
+        ----------
+        form : :class:`~compas_tna.diagrams.FormDiagram`
+            The FormDiagram containing the network geometry, loads, and constraints.
+        list_axis_symmetry : list, optional
+            List of the axis of symmetry to consider, by default None.
+            If None, symmetry is inferred from the diagram type.
+        center : list, optional
+            The center of the pattern if it's a circular pattern, by default None.
+        correct_loads : bool, optional
+            Whether to update applied loads regarding the symmetry, by default True.
+        printout : bool, optional
+            Whether to print progress information, by default False.
+
+        Returns
+        -------
+        :class:`SymmetricProblem`
+            A fully initialized SymmetricProblem with symmetry applied.
+
+        Examples
+        --------
+        >>> form = FormDiagram.create_circular_radial(...)
+        >>> problem = SymmetricProblem.from_formdiagram(form)
+        >>> problem.k  # number of independent edges (reduced by symmetry)
+
+        """
+        # Create base problem
+        base_problem = Problem.from_formdiagram(form)
+
+        start_time = time.time()
+
+        # Apply symmetry to form
+        apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
+
+        # Build symmetry transformation
+        Esym = build_symmetry_transformation(form, printout=False)
+        mapsym = form.build_symmetry_map()
+        ind = sorted(list(mapsym.values()))
+
+        k = len(ind)
+        dep = list(set(range(base_problem.m)) - set(ind))
+
+        elapsed_time = time.time() - start_time
+
+        if printout:
+            print("Reduced problem to {0} force variables by SYM".format(k))
+            print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
+
+        # Mark independent edges on form
+        for u, v in form.edges_where({"_is_edge": True}):
+            form.edge_attribute((u, v), "is_ind", True if base_problem.uv_i[(u, v)] in ind else False)
+
+        B = Esym
+
+        # Create SymmetricProblem from base with updated attributes
+        return base_problem._to_specialized(
+            cls,
+            ind=ind,
+            k=k,
+            dep=dep,
+            B=B,
+        )
+
+
+@dataclass
+class FixedSymmetricProblem(Problem):
+    """Problem with both fixed diagram and symmetry constraints.
+
+    This specialized problem class combines the features of FixedProblem and
+    SymmetricProblem, applying both independent edge computation and symmetry
+    reduction.
 
     """
 
-    start_time = time.time()
+    @classmethod
+    def from_formdiagram(
+        cls,
+        form: FormDiagram,
+        method: str = "QR",
+        list_axis_symmetry: Optional[list] = None,
+        center=None,
+        correct_loads: bool = True,
+        printout: bool = False,
+        tol: Optional[float] = None,
+    ) -> "FixedSymmetricProblem":
+        """Create a FixedSymmetricProblem from a FormDiagram.
 
-    apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
+        Parameters
+        ----------
+        form : :class:`~compas_tna.diagrams.FormDiagram`
+            The FormDiagram containing the network geometry, loads, and constraints.
+        method : str, optional
+            Method to find independent edges, by default 'QR'.
+        list_axis_symmetry : list, optional
+            List of the axis of symmetry to consider, by default None.
+        center : list, optional
+            The center of the pattern if it's a circular pattern, by default None.
+        correct_loads : bool, optional
+            Whether to update applied loads regarding the symmetry, by default True.
+        printout : bool, optional
+            Whether to print progress information, by default False.
+        tol : float, optional
+            Tolerance for the singular values, by default None.
 
-    Esym = build_symmetry_transformation(form, printout=False)
-    mapsym = form.build_symmetry_map()
-    ind = sorted(list(mapsym.values()))
+        Returns
+        -------
+        :class:`FixedSymmetricProblem`
+            A fully initialized problem with both adaptations applied.
 
-    k = len(ind)
-    dep = list(set(range(problem.m)) - set(ind))
+        Examples
+        --------
+        >>> form = FormDiagram.create_circular_radial(...)
+        >>> problem = FixedSymmetricProblem.from_formdiagram(form, method="QR")
+        >>> problem.k  # number of independent edges (reduced by both)
 
-    elapsed_time = time.time() - start_time
+        """
+        # First, create FixedProblem (this handles independent edge computation)
+        fixed_problem = FixedProblem.from_formdiagram(form, method=method, printout=False, tol=tol)
 
-    if printout:
-        print("Reduced problem to {0} force variables by SYM".format(k))
-        print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
+        start_time = time.time()
 
-    for u, v in form.edges_where({"_is_edge": True}):
-        form.edge_attribute((u, v), "is_ind", True if problem.uv_i[(u, v)] in ind else False)
+        # Then, apply symmetry reduction on top of fixed problem
+        apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
 
-    B = Esym
+        i_uv = fixed_problem.i_uv
+        uv_i = fixed_problem.uv_i
+        unique_sym = []
+        ind_reduc = []
 
-    problem.ind = ind
-    problem.k = k
-    problem.dep = dep
-    problem.B = B
+        for index in fixed_problem.ind:
+            u, v = i_uv[index]
+            index_sym = form.edge_attribute((u, v), "sym_key")
+            if index_sym not in unique_sym:
+                unique_sym.append(index_sym)
+                ind_reduc.append(index)
 
-    return
+        k_sym = len(ind_reduc)
+        Bsym = zeros((fixed_problem.k, k_sym))
 
+        j = 0
+        for key in unique_sym:
+            edges_sym = [uv_i[(u, v)] for u, v in form.edges_where({"sym_key": key})]
+            col = zeros((fixed_problem.k, 1))
+            for i, ind_i in enumerate(fixed_problem.ind):
+                if ind_i in edges_sym:
+                    col[i] = 1.0
+            Bsym[:, [j]] = col
+            j += 1
 
-def adapt_problem_to_sym_and_fixed_diagram(
-    problem: Problem,
-    form: FormDiagram,
-    method: str = "SVD",
-    list_axis_symmetry: Optional[list] = None,
-    center=None,
-    correct_loads: bool = True,
-    printout: bool = False,
-    tol: Optional[float] = None,
-) -> None:
-    """Adapt the problem assuming that the form diagram is symmetric and fixed in plane.
+        # Combine fixed and symmetry transformations
+        B_combined = fixed_problem.B.dot(Bsym)
+        ind_final = ind_reduc
+        k_final = k_sym
+        dep_final = list(set(range(fixed_problem.m)) - set(ind_final))
 
-    Parameters
-    ----------
-    problem : :class:`~compas_tno.problems.Problem`
-        The problem with matrices for calculation
-    form : :class:`~compas_tno.diagrams.FormDiagram`
-        The form diagram to analyse
-    method : str, optional
-        Method to find independent edges, the default is 'SVD'. More options to come.
-    list_axis_symmetry : [list], optional
-        List of the axis of symmetry to consider, by default None
-    center : [list], optional
-        The center of the pattern if it's a circula pattern, by default None
-    correct_loads : bool, optional
-        If update should be done in the applied loads regarding the symmetry, by default True
-    printout : bool, optional
-        If prints should show in the screen, by default False
+        elapsed_time = time.time() - start_time
 
-    """
-    start_time = time.time()
+        if printout:
+            print("Reduced problem to {0} force variables".format(k_final))
+            print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
 
-    adapt_problem_to_fixed_diagram(problem, form, method=method, printout=printout, tol=tol)
+        # Mark final independent edges
+        for u, v in form.edges_where({"_is_edge": True}):
+            form.edge_attribute((u, v), "is_ind", True if fixed_problem.uv_i[(u, v)] in ind_final else False)
 
-    apply_sym_to_form(form, list_axis_symmetry, center, correct_loads)
-
-    ind = problem.ind
-    k = problem.k
-    i_uv = problem.i_uv
-    uv_i = problem.uv_i
-    unique_sym = []
-    ind_reduc = []
-
-    for index in ind:
-        u, v = i_uv[index]
-        index_sym = form.edge_attribute((u, v), "sym_key")
-        if index_sym not in unique_sym:
-            unique_sym.append(index_sym)
-            ind_reduc.append(index)
-
-    k_sym = len(ind_reduc)
-    Bsym = zeros((k, k_sym))
-
-    j = 0
-    for key in unique_sym:
-        edges_sym = [uv_i[(u, v)] for u, v in form.edges_where({"sym_key": key})]
-        col = zeros((k, 1))
-        for i, ind_i in enumerate(ind):
-            if ind_i in edges_sym:
-                col[i] = 1.0
-        Bsym[:, [j]] = col
-        j += 1
-
-    B = problem.B.dot(Bsym)
-    ind = ind_reduc
-    k = k_sym
-    dep = list(set(range(problem.m)) - set(ind))
-
-    elapsed_time = time.time() - start_time
-
-    if printout:
-        print("Reduced problem to {0} force variables".format(k))
-        print("Elapsed Time: {0:.1f} sec".format(elapsed_time))
-
-    for u, v in form.edges_where({"_is_edge": True}):
-        form.edge_attribute((u, v), "is_ind", True if problem.uv_i[(u, v)] in ind else False)
-
-    problem.ind = ind
-    problem.k = k
-    problem.dep = dep
-    problem.B = B
+        # Create FixedSymmetricProblem from FixedProblem with symmetry updates
+        return fixed_problem._to_specialized(
+            cls,
+            ind=ind_final,
+            k=k_final,
+            dep=dep_final,
+            B=B_combined,
+            time_inds=fixed_problem.time_inds + elapsed_time,
+        )
 
 
 # =============================================================================
@@ -661,7 +759,7 @@ def apply_sym_to_form(form: FormDiagram, list_axis_symmetry=None, center=None, c
     ----------
     problem : :class:`~compas_tno.problems.Problem`
         The problem with matrices for calculation
-    form : :class:`~compas_tno.diagrams.FormDiagram`
+    form : :class:`~compas_tna.diagrams.FormDiagram`
         The form diagram to analyse
     list_axis_symmetry : [list], optional
         List of the axis of symmetry to consider, by default None
