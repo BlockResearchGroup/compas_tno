@@ -5,7 +5,7 @@ if TYPE_CHECKING:
     from compas_tna.diagrams import FormDiagram
     from compas_tno.analysis import Analysis
     from compas_tno.problems import Problem
-    from compas_tno.solvers.solver import SolverResult
+    from compas_tno.solvers.result import SolverResult
 
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import q_from_variables
@@ -268,22 +268,12 @@ def post_process_nlopt(analysis: "Analysis"):
         problem = apply_solution_to_form(form, problem, result, settings)
 
     """
-    from compas_tno.solvers.solver import SolverResult
-
     form = analysis.formdiagram
     optimiser = analysis.optimiser
     problem = optimiser.problem
 
-    # Create SolverResult from optimiser data
-    result = SolverResult(
-        xopt=optimiser.xopt,
-        fopt=optimiser.fopt,
-        success=(optimiser.exitflag == 0),
-        message=optimiser.message,
-        niter=optimiser.niter,
-        time=optimiser.time,
-        exitflag=optimiser.exitflag,
-    )
+    # Get SolverResult from analysis
+    result = analysis.result
 
     # Call the new clean function
     problem = apply_solution_to_form(

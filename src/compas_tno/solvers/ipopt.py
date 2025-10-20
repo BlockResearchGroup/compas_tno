@@ -7,8 +7,8 @@ from typing import Tuple
 
 import numpy.typing as npt
 
+from compas_tno.solvers.result import SolverResult
 from compas_tno.solvers.solver import NonlinearSolver
-from compas_tno.solvers.solver import SolverResult
 
 try:
     import cyipopt
@@ -298,8 +298,8 @@ def run_nlopt_ipopt(analysis: "Analysis"):
 
     Returns
     -------
-    analysis : Analysis
-        Analysis object optimised.
+    result : Result
+        The Result object with the key solution information.
 
     Notes
     -----
@@ -319,15 +319,15 @@ def run_nlopt_ipopt(analysis: "Analysis"):
     # Solve using the new class - functions and variables come from problem
     result = solver.solve(problem)
 
-    # Store results in optimiser
-    optimiser.exitflag = result.exitflag
-    optimiser.time = result.time
-    optimiser.fopt = result.fopt
-    optimiser.xopt = result.xopt
-    optimiser.niter = result.niter
-    optimiser.message = result.message
+    # # Store results in optimiser
+    # optimiser.exitflag = result.exitflag
+    # optimiser.time = result.time
+    # optimiser.fopt = result.fopt
+    # optimiser.xopt = result.xopt
+    # optimiser.niter = result.niter
+    # optimiser.message = result.message
 
-    return analysis
+    return result
 
 
 def _nlp_options(nlp, optimiser: "Optimiser"):

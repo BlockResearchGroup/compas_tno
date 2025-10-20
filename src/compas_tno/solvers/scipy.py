@@ -10,8 +10,8 @@ import numpy as np
 import numpy.typing as npt
 from scipy.optimize import fmin_slsqp
 
+from compas_tno.solvers.result import SolverResult
 from compas_tno.solvers.solver import NonlinearSolver
-from compas_tno.solvers.solver import SolverResult
 
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
@@ -195,7 +195,7 @@ class ScipySolver(NonlinearSolver):
         return _fgrad_flatten
 
 
-def run_nlopt_scipy(analysis: "Analysis") -> "Analysis":
+def run_nlopt_scipy(analysis: "Analysis") -> SolverResult:
     """Run nonlinear optimisation problem with SciPy.
 
     This function is kept for backward compatibility. New code should use ScipySolver class.
@@ -207,8 +207,8 @@ def run_nlopt_scipy(analysis: "Analysis") -> "Analysis":
 
     Returns
     -------
-    analysis : Analysis
-        Analysis object optimised.
+    result : SolverResult
+        The SolverResult object with the key solution information.
 
     Notes
     -----
@@ -219,6 +219,7 @@ def run_nlopt_scipy(analysis: "Analysis") -> "Analysis":
         result = solver.solve(problem, objective=fobj, constraints=fconstr, ...)
 
     """
+
     optimiser = analysis.optimiser
     problem = optimiser.problem
 
@@ -228,12 +229,12 @@ def run_nlopt_scipy(analysis: "Analysis") -> "Analysis":
     # Solve using the new class - functions and variables come from problem
     result = solver.solve(problem)
 
-    # Store results in optimiser
-    optimiser.exitflag = result.exitflag
-    optimiser.time = result.time
-    optimiser.fopt = result.fopt
-    optimiser.xopt = result.xopt
-    optimiser.niter = result.niter
-    optimiser.message = result.message
+    # # Store results in optimiser
+    # optimiser.exitflag = result.exitflag
+    # optimiser.time = result.time
+    # optimiser.fopt = result.fopt
+    # optimiser.xopt = result.xopt
+    # optimiser.niter = result.niter
+    # optimiser.message = result.message
 
-    return analysis
+    return result

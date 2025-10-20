@@ -11,8 +11,8 @@ from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import xyz_from_q
 from compas_tno.problems import FixedProblem
 from compas_tno.problems import Problem as TNOProblem
+from compas_tno.solvers.result import SolverResult
 from compas_tno.solvers.solver import ConvexSolver
-from compas_tno.solvers.solver import SolverResult
 
 if TYPE_CHECKING:
     from compas_tno.analysis import Analysis
@@ -226,8 +226,8 @@ def run_convex_optimisation(analysis: "Analysis") -> "TNOProblem":
 
     Returns
     -------
-    problem : Problem
-        The problem with optimal solution applied.
+    result : SolverResult
+        The SolverResult object with the key solution information.
 
     Notes
     -----
@@ -266,15 +266,15 @@ def run_convex_optimisation(analysis: "Analysis") -> "TNOProblem":
 
     compute_reactions(form)
 
-    # Store results in optimiser
-    optimiser.fopt = result.fopt
-    optimiser.xopt = result.xopt
-    optimiser.exitflag = result.exitflag
-    optimiser.niter = result.niter
-    optimiser.time = result.time
-    optimiser.message = result.message
+    # # Store results in optimiser
+    # optimiser.fopt = result.fopt
+    # optimiser.xopt = result.xopt
+    # optimiser.exitflag = result.exitflag
+    # optimiser.niter = result.niter
+    # optimiser.time = result.time
+    # optimiser.message = result.message
 
-    return problem
+    return result
 
 
 def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, solver_convex="CLARABEL", printout=False):
@@ -340,7 +340,7 @@ def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, solver_con
 
     compute_reactions(form)
 
-    return problem
+    return result
 
 
 def call_and_output_CVXPY(form, problem, solver_convex="CLARABEL", printout=False):
@@ -361,8 +361,8 @@ def call_and_output_CVXPY(form, problem, solver_convex="CLARABEL", printout=Fals
 
     Returns
     -------
-    problem : Problem
-        Problem with optimal solution applied.
+    result : SolverResult
+        The SolverResult object with the key solution information.
 
     Notes
     -----
@@ -390,7 +390,7 @@ def call_and_output_CVXPY(form, problem, solver_convex="CLARABEL", printout=Fals
 
     compute_reactions(form)
 
-    return problem
+    return result
 
 
 def call_cvxpy(problem, solver_convex="CLARABEL", printout=False):

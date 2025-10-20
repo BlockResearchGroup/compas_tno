@@ -8,8 +8,10 @@ from compas.data import Data
 from compas_tna.diagrams import FormDiagram
 from compas_tna.envelope import Envelope
 from compas_tno.optimisers import Optimiser
+from compas_tno.problems import set_up_base_problem
 from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
+from compas_tno.solvers import SolverResult
 from compas_tno.solvers import post_process_nlopt
 from compas_tno.solvers import run_convex_optimisation
 from compas_tno.solvers import run_nlopt_ipopt
@@ -36,6 +38,9 @@ class Analysis(Data):
     formdiagram: FormDiagram
     envelope: Envelope
     optimiser: Optimiser
+    result: SolverResult
+    settings: dict
+    name: str
 
     def __init__(
         self,
@@ -44,6 +49,7 @@ class Analysis(Data):
         optimiser: Optimiser,
         settings: Optional[dict] = None,
         name: Optional[str] = None,
+        result: Optional[SolverResult] = None,
     ):
         name = name or "Analysis"
 
@@ -53,6 +59,7 @@ class Analysis(Data):
         self.formdiagram = formdiagram
         self.envelope = envelope
         self.optimiser = optimiser
+        self.result = result  # SolverResult from optimization
 
     def __str__(self):
         tpl = "<Analysis with parameters: {} >".format(self.data)
@@ -576,28 +583,258 @@ class Analysis(Data):
         """Apply limit thk to be respected by the anchor points"""
         self.envelope.apply_reaction_bounds_to_formdiagram(self.formdiagram)
 
+    # =========================================================================
+    # New Workflow Methods
+    # =========================================================================
+
+    def create_base_problem(self):
+        """Create the base problem structure (lightweight, no solving).
+
+        This method creates the fundamental problem structure from the form diagram
+        and envelope, storing it in `optimiser.problem`. No optimization is performed.
+
+        The base problem includes:
+        - Basic equilibrium matrices (C, Ci, Cit)
+        - Connectivity information
+        - Load vectors
+        - Bounds from envelope
+
+        Notes
+        -----
+        This is the first step in the new workflow:
+        1. create_base_problem()
+        2. compute_starting_point()
+        3. setup_optimization()
+        4. solve()
+
+        Examples
+        --------
+        >>> analysis = Analysis(form, envelope, optimiser)
+        >>> analysis.create_base_problem()
+        >>> print(f"Created problem with {len(analysis.optimiser.problem.edges)} edges")
+
+        """
+        set_up_base_problem(self)
+        return self
+
+    def compute_starting_point(self):
+        """Compute and apply starting point to the form diagram.
+
+        This method applies the starting point strategy specified in optimiser settings
+        to initialize the form diagram. Strategies include:
+        - "loadpath": Solve convex loadpath optimization
+        - "tna": Use Thrust Network Analysis
+        - "fdm": Use Force Density Method
+        - "sag": Use sag approach
+        - "current": Use current form state
+
+        The computed starting point updates the form diagram's vertex z-coordinates
+        and edge force densities (q).
+
+        Notes
+        -----
+        This is the second step in the new workflow. It requires that
+        `create_base_problem()` has been called first (for "loadpath" strategy).
+
+        Examples
+        --------
+        >>> analysis.create_base_problem()
+        >>> analysis.compute_starting_point()
+        >>> print(f"Z range: {analysis.formdiagram.z_range()}")
+
+        """
+        # Local imports to avoid circular dependency
+        from compas_tno.algorithms import equilibrium_fdm
+        from compas_tno.solvers.startingpoint import startingpoint_loadpath
+        from compas_tno.solvers.startingpoint import startingpoint_sag
+        from compas_tno.solvers.startingpoint import startingpoint_tna
+
+        form = self.formdiagram
+        optimiser = self.optimiser
+        problem = optimiser.problem
+        settings = optimiser.settings
+        starting_point = settings.get("starting_point", "current")
+        boundary_force = settings.get("boundary_force", 50.0)
+        printout = settings.get("printout_loadpath", True)
+        find_inds = settings.get("find_inds", False)
+        solver_convex = settings.get("solver_convex", "CLARABEL")
+
+        if starting_point == "current":
+            pass
+        elif starting_point == "sag":
+            startingpoint_sag(form, boundary_force=boundary_force)
+        elif starting_point == "loadpath":
+            startingpoint_loadpath(form, problem=problem, find_inds=find_inds, solver_convex=solver_convex, printout=printout)
+        elif starting_point == "relax":
+            equilibrium_fdm(form)
+            startingpoint_tna(form)
+        elif starting_point == "tna" or starting_point == "TNA":
+            startingpoint_tna(form)
+        else:
+            print("Warning: define starting point")
+
+        # Update problem.q from form after starting point is applied
+        from numpy import array
+
+        problem.q = array([form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
+
+        return self
+
+    def setup_optimization(self):
+        """Setup the full nonlinear optimization problem with all features.
+
+        This method creates the complete optimization problem including:
+        - All selected variables (q, zb, xyb, etc.)
+        - All constraints (funicular, envelope, reactions, etc.)
+        - Objective function and gradients
+        - Jacobian matrices
+
+        The problem is stored in `self.optimiser.problem` and includes all
+        callable functions (fobj, fgrad, fconstr, fjac) ready for the solver.
+
+        Notes
+        -----
+        This is the third step in the new workflow. It requires that:
+        - Form diagram has been initialized with a starting point
+        - Optimiser settings specify the features, variables, and constraints
+
+        For convex problems, this method does nothing (base problem is sufficient).
+
+        Examples
+        --------
+        >>> analysis.create_base_problem()
+        >>> analysis.compute_starting_point()
+        >>> analysis.setup_optimization()
+        >>> print(f"Variables: {analysis.optimiser.problem.variables}")
+        >>> print(f"Constraints: {analysis.optimiser.problem.constraints}")
+
+        """
+        if self.is_convex():
+            # Convex problems don't need full optimization setup
+            return self
+
+        # Setup full nonlinear optimization problem
+        set_up_general_optimisation(self)
+        return self
+
+    def solve(self, solver: Optional[str] = None, post_process: bool = True):
+        """Solve the optimization problem and optionally post-process results.
+
+        Parameters
+        ----------
+        solver : str, optional
+            Solver to use ("IPOPT" or "SLSQP"). If None, uses the solver
+            specified in optimiser settings. Default is None.
+        post_process : bool, optional
+            Whether to apply the solution to the form diagram after solving.
+            Default is True.
+
+        Returns
+        -------
+        SolverResult
+            The optimization result containing xopt, fopt, success status, etc.
+
+        Notes
+        -----
+        This is the fourth and final step in the new workflow. It requires that:
+        - `setup_optimization()` has been called (for nonlinear)
+        - OR `create_base_problem()` has been called (for convex)
+        - Problem is fully configured in optimiser.problem
+
+        The result is stored in `self.result`.
+
+        Examples
+        --------
+        >>> analysis.create_base_problem()
+        >>> analysis.compute_starting_point()
+        >>> analysis.setup_optimization()
+        >>> result = analysis.solve(solver="IPOPT")
+        >>> print(f"Optimal objective: {result.fopt}")
+
+        """
+        # Determine solver
+        if solver is None:
+            solver = self.optimiser.settings.get("solver", "SLSQP")
+
+        if not isinstance(solver, str):
+            raise ValueError("Please provide the name of the solver")
+
+        # Solve based on problem type
+        if self.is_convex():
+            result = run_convex_optimisation(self)
+            self.result = result
+        else:
+            # Nonlinear optimization
+            if solver.upper() == "IPOPT":
+                result = run_nlopt_ipopt(self)
+            elif solver.upper() == "SLSQP":
+                result = run_nlopt_scipy(self)
+            else:
+                raise ValueError(f"Solver {solver} not supported. Please provide the an option between IPOPT or SLSQP")
+
+            # Store the SolverResult in analysis
+            self.result = result
+
+        # Post-process if requested
+        if post_process:
+            post_process_nlopt(self)
+
+        return self.result if hasattr(self, "result") and self.result else self
+
+    # =========================================================================
+    # Legacy Workflow Method
+    # =========================================================================
+
     def set_up_optimiser(self):
         """With the data from the elements of the problem compute the matrices for the optimisation and the starting point"""
-        if self.is_convex():
-            set_up_convex_optimisation(self)
-        else:
-            set_up_general_optimisation(self)
+        # if self.is_convex():
+        #     set_up_convex_optimisation(self)
+        # else:
+        #     set_up_general_optimisation(self)
+
+        self.create_base_problem()
+        self.compute_starting_point()
+        self.setup_optimization()
 
     def run(self):
-        """With the data from the elements of the problem compute the matrices for the optimisation"""
+        """Run the complete optimization workflow (legacy convenience method).
+
+        This method executes the full optimization workflow in one call:
+        1. Sets up the problem (convex or nonlinear)
+        2. Runs the optimization
+        3. Post-processes the results
+
+        Notes
+        -----
+        This is a convenience method that maintains backward compatibility.
+        For more control over the workflow, use the new methods:
+        - create_base_problem()
+        - compute_starting_point()
+        - setup_optimization()
+        - solve()
+
+        In a future version, this method will be refactored to call those
+        methods internally instead of duplicating logic.
+
+        """
         solver = self.optimiser.settings.get("solver", "SLSQP")
 
         if not isinstance(solver, str):
             raise ValueError("Please provide the name of the solver")
 
         if self.is_convex():
-            run_convex_optimisation(self)
+            result = run_convex_optimisation(self)
+            self.result = result
+            post_process_nlopt(self)
         else:
             if solver.upper() == "IPOPT":
-                self = run_nlopt_ipopt(self)
+                result = run_nlopt_ipopt(self)
             elif solver.upper() == "SLSQP":
-                self = run_nlopt_scipy(self)
+                result = run_nlopt_scipy(self)
             else:
                 raise ValueError(f"Solver {solver} not supported. Please provide the an option between IPOPT or SLSQP")
+
+            # Store the SolverResult in analysis
+            self.result = result
 
             post_process_nlopt(self)

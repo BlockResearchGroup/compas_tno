@@ -13,38 +13,7 @@ import numpy.typing as npt
 
 if TYPE_CHECKING:
     from compas_tno.problems import Problem
-
-
-@dataclass
-class SolverResult:
-    """Result from an optimization solver.
-
-    Attributes
-    ----------
-    xopt : array
-        Optimal solution vector.
-    fopt : float
-        Optimal objective function value.
-    success : bool
-        Whether the solver succeeded.
-    message : str
-        Status message from the solver.
-    niter : int
-        Number of iterations.
-    time : float
-        Time taken to solve (seconds).
-    exitflag : int
-        Exit flag (0 = success, non-zero = failure/warning).
-
-    """
-
-    xopt: npt.NDArray
-    fopt: float
-    success: bool
-    message: str
-    niter: Optional[int] = None
-    time: float = 0.0
-    exitflag: int = 0
+    from compas_tno.solvers.result import SolverResult
 
 
 class Solver(ABC):
@@ -79,7 +48,7 @@ class Solver(ABC):
         self.settings = settings or {}
 
     @abstractmethod
-    def solve(self, problem: "Problem", objective: Optional[Callable] = None, constraints: Optional[Callable] = None, **kwargs) -> SolverResult:
+    def solve(self, problem: "Problem", objective: Optional[Callable] = None, constraints: Optional[Callable] = None, **kwargs) -> "SolverResult":
         """Solve the optimization problem.
 
         Parameters
@@ -123,7 +92,7 @@ class NonlinearSolver(Solver):
         bounds: Optional[List[Tuple[float, float]]] = None,
         callback: Optional[Callable] = None,
         **kwargs,
-    ) -> SolverResult:
+    ) -> "SolverResult":
         """Solve a nonlinear optimization problem.
 
         Parameters
@@ -183,7 +152,7 @@ class NonlinearSolver(Solver):
         bounds: List[Tuple[float, float]],
         callback: Optional[Callable],
         **kwargs,
-    ) -> SolverResult:
+    ) -> "SolverResult":
         """Solver-specific NLP implementation.
 
         This method must be implemented by concrete solver classes.
@@ -248,7 +217,7 @@ class ConvexSolver(Solver):
 
     """
 
-    def solve(self, problem: "Problem", **kwargs) -> SolverResult:
+    def solve(self, problem: "Problem", **kwargs) -> "SolverResult":
         """Solve a convex optimization problem.
 
         Parameters
@@ -267,6 +236,6 @@ class ConvexSolver(Solver):
         return self._solve_convex(problem, **kwargs)
 
     @abstractmethod
-    def _solve_convex(self, problem: "Problem", **kwargs) -> SolverResult:
+    def _solve_convex(self, problem: "Problem", **kwargs) -> "SolverResult":
         """Solver-specific convex implementation."""
         pass

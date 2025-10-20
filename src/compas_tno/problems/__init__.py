@@ -1,57 +1,38 @@
-from .bounds_update import ub_lb_update, dub_dlb_update, b_update, db_update
-
+from .bounds_update import b_update, db_update, dub_dlb_update, ub_lb_update
+from .callbacks import callback_create_json, callback_save_json, save_geometry_at_iterations
 from .constraints import constr_wrapper
-
 from .derivatives import (
-    d_fobj,
     compute_dQ,
-    gradient_feasibility,
-    gradient_reduce_thk,
-    gradient_tight_crosssection,
-    gradient_fmin,
-    gradient_fmax,
+    d_fobj,
     gradient_bestfit,
-    gradient_horprojection,
     gradient_complementary_energy,
     gradient_complementary_energy_nonlinear,
+    gradient_feasibility,
+    gradient_fmax,
+    gradient_fmin,
+    gradient_horprojection,
     gradient_loadpath,
     gradient_max_section,
+    gradient_reduce_thk,
+    gradient_tight_crosssection,
 )
-
 from .jacobian import d_fconstr, sensitivities_wrapper
-
 from .objectives import (
-    objective_selector,
-    f_min_thrust,
-    f_max_thrust,
     f_bestfit,
-    f_horprojection,
-    f_loadpath_general,
     f_complementary_energy,
     f_complementary_energy_nonlinear,
-    f_max_section,
     f_constant,
+    f_horprojection,
+    f_loadpath_general,
+    f_max_section,
+    f_max_thrust,
+    f_min_thrust,
     f_reduce_thk,
     f_tight_crosssection,
+    objective_selector,
 )
-
-from .problems import (
-    Problem,
-    FixedProblem,
-    SymmetricProblem,
-    FixedSymmetricProblem,
-    apply_sym_to_form,
-)
-
-from .callbacks import callback_save_json, callback_create_json, save_geometry_at_iterations
-
-from .startingpoint import startingpoint_loadpath, startingpoint_tna, startingpoint_fdm, startingpoint_sag
-
-from .setup import (
-    set_up_general_optimisation,
-    set_up_convex_optimisation,
-)
-
+from .problems import FixedProblem, FixedSymmetricProblem, Problem, SymmetricProblem, apply_sym_to_form
+from .setup import set_up_base_problem, set_up_convex_optimisation, set_up_general_optimisation
 
 __all__ = [
     "ub_lb_update",
@@ -94,11 +75,7 @@ __all__ = [
     "callback_save_json",
     "callback_create_json",
     "save_geometry_at_iterations",
-    "startingpoint_loadpath",
-    "startingpoint_tna",
-    "startingpoint_fdm",
-    "startingpoint_sag",
+    "set_up_base_problem",
     "set_up_general_optimisation",
     "set_up_convex_optimisation",
-    "startingpoint_loadpath_proxy",
 ]

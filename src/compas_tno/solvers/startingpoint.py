@@ -1,6 +1,5 @@
 from compas_tno.algorithms import compute_reactions
 from compas_tno.algorithms import equilibrium_fdm
-from compas_tno.solvers import run_loadpath_from_form_CVXPY
 
 
 def startingpoint_sag(form, boundary_force=50.0, **kwargs):
@@ -18,7 +17,6 @@ def startingpoint_sag(form, boundary_force=50.0, **kwargs):
     startingpoint_fdm(form)
     for key in form.vertices():
         form.vertex_attribute(key, "z", 0.0)
-    return form
 
 
 def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="CLARABEL", printout=False, **kwargs):
@@ -40,11 +38,12 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
 
     Returns
     -------
-    problem : Problem
-        The class with the main matrices of the problem
+    None
     """
+    # Local import to avoid circular dependency
+    from compas_tno.solvers import run_loadpath_from_form_CVXPY
 
-    problem = run_loadpath_from_form_CVXPY(
+    result = run_loadpath_from_form_CVXPY(
         form,
         problem=problem,
         find_inds=find_inds,
@@ -52,7 +51,6 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
         printout=printout,
     )
 
-    return problem
 
 
 def startingpoint_tna(form, plot=False, **kwargs):

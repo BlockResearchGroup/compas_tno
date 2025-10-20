@@ -449,6 +449,7 @@ class FixedProblem(Problem):
     def from_formdiagram(
         cls,
         form: FormDiagram,
+        base_problem : Problem = None,
         method: str = "QR",
         printout: bool = False,
         tol: Optional[float] = None,
@@ -479,8 +480,8 @@ class FixedProblem(Problem):
         >>> problem.k  # number of independent edges (< m)
 
         """
-        # Create base problem
-        base_problem = Problem.from_formdiagram(form)
+        if not base_problem:
+            base_problem = Problem.from_formdiagram(form)
 
         # Find independent edges
         ind = []
@@ -564,6 +565,7 @@ class SymmetricProblem(Problem):
     def from_formdiagram(
         cls,
         form: FormDiagram,
+        base_problem : Problem = None,
         list_axis_symmetry: Optional[list] = None,
         center=None,
         correct_loads: bool = True,
@@ -597,8 +599,8 @@ class SymmetricProblem(Problem):
         >>> problem.k  # number of independent edges (reduced by symmetry)
 
         """
-        # Create base problem
-        base_problem = Problem.from_formdiagram(form)
+        if not base_problem:
+            base_problem = Problem.from_formdiagram(form)
 
         start_time = time.time()
 
@@ -649,6 +651,7 @@ class FixedSymmetricProblem(Problem):
     def from_formdiagram(
         cls,
         form: FormDiagram,
+        base_problem : Problem = None,
         method: str = "QR",
         list_axis_symmetry: Optional[list] = None,
         center=None,
@@ -688,7 +691,7 @@ class FixedSymmetricProblem(Problem):
 
         """
         # First, create FixedProblem (this handles independent edge computation)
-        fixed_problem = FixedProblem.from_formdiagram(form, method=method, printout=False, tol=tol)
+        fixed_problem = FixedProblem.from_formdiagram(form, base_problem=base_problem, method=method, printout=False, tol=tol)
 
         start_time = time.time()
 

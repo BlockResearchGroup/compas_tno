@@ -19,9 +19,6 @@ from compas_tno.problems import callback_save_json
 from compas_tno.problems import constr_wrapper
 from compas_tno.problems import objective_selector
 from compas_tno.problems import sensitivities_wrapper
-from compas_tno.problems import startingpoint_loadpath
-from compas_tno.problems import startingpoint_sag
-from compas_tno.problems import startingpoint_tna
 from compas_tno.utilities import compute_edge_stiffness
 from compas_tno.utilities import compute_form_initial_lengths
 
@@ -44,8 +41,8 @@ def _apply_bounds_to_edges(form, qmin, qmax):
             form.edge_attribute(edge, "qmax", qmax)
 
 
-def _create_problem_from_features(form, features, settings, printout):
-    """Create appropriate Problem class based on features."""
+def _adapt_problem_to_features(form, problem, features, settings, printout):
+    """Adapt the problem to the features."""
     method_ind = settings.get("method_ind", "QR")
     axis_symmetry = settings.get("axis_sym", None)
     sym_loads = settings.get("sym_loads", False)
@@ -55,6 +52,7 @@ def _create_problem_from_features(form, features, settings, printout):
     if "fixed" in features and "sym" in features:
         return FixedSymmetricProblem.from_formdiagram(
             form,
+            base_problem=problem,
             method=method_ind,
             list_axis_symmetry=axis_symmetry,
             center=pattern_center,
@@ -65,6 +63,7 @@ def _create_problem_from_features(form, features, settings, printout):
     elif "sym" in features:
         return SymmetricProblem.from_formdiagram(
             form,
+            base_problem=problem,
             list_axis_symmetry=axis_symmetry,
             center=pattern_center,
             correct_loads=sym_loads,
@@ -73,12 +72,13 @@ def _create_problem_from_features(form, features, settings, printout):
     elif "fixed" in features:
         return FixedProblem.from_formdiagram(
             form,
+            base_problem=problem,
             method=method_ind,
             printout=printout,
             tol=tol_inds,
         )
     else:
-        return Problem.from_formdiagram(form)
+        return problem
 
 
 def _setup_problem_metadata(problem, envelope, form, variables, constraints, features, thk):
@@ -103,6 +103,11 @@ def _setup_problem_metadata(problem, envelope, form, variables, constraints, fea
 
 def _apply_starting_point(form, problem, starting_point, settings):
     """Apply starting point strategy to form diagram."""
+    # Local imports to avoid circular dependency
+    from compas_tno.solvers.startingpoint import startingpoint_loadpath
+    from compas_tno.solvers.startingpoint import startingpoint_sag
+    from compas_tno.solvers.startingpoint import startingpoint_tna
+
     if starting_point == "current":
         pass
     elif starting_point == "sag":
@@ -266,6 +271,7 @@ def _build_variable_vector(problem, form, variables, settings, i_k, thk):
 
     return x0, bounds
 
+
 def _compute_initial_values(problem, fobj, fconstr, fgrad, fjac, x0):
     """Compute initial objective and constraint values and validate bounds."""
     f0 = fobj(x0, problem)
@@ -352,10 +358,10 @@ def set_up_general_optimisation(analysis: "Analysis"):
     envelope = analysis.envelope
     optimiser = analysis.optimiser
     settings = optimiser.settings
+    problem = optimiser.problem
 
     # Extract key settings
     printout = settings.get("printout", True)
-    starting_point = settings.get("starting_point", "current")
     features = settings.get("features", [])
     save_iterations = settings.get("save_iterations", False)
     autodiff = settings.get("autodiff", False)
@@ -373,15 +379,17 @@ def set_up_general_optimisation(analysis: "Analysis"):
     _apply_bounds_to_edges(form, qmin, qmax)
 
     # 2. Create or get problem instance
-    problem = optimiser.problem
     if not problem:
-        problem = _create_problem_from_features(form, features, settings, printout)
+        problem = Problem.from_formdiagram(form)
+    
+    problem = _adapt_problem_to_features(form, problem, features, settings, printout)
 
     # 3. Setup problem metadata
     _setup_problem_metadata(problem, envelope, form, variables, constraints, features, thk)
 
-    # 4. Apply starting point strategy
-    _apply_starting_point(form, problem, starting_point, settings)
+    # 4. Starting point should already be applied before calling this function
+    # Update problem.q from current form state
+    problem.q = array([form.edge_attribute((u, v), "q") for u, v in form.edges_where({"_is_edge": True})]).reshape(-1, 1)
 
     # 5. Setup objective-specific parameters
     _setup_objective_specific_params(problem, objective, settings, form)
@@ -419,17 +427,14 @@ def set_up_general_optimisation(analysis: "Analysis"):
         optimiser.callback = callback_save_json
         callback_save_json(x0)
 
-    # 14. Compute initial values
+    # 13. Compute initial values
     f0, g0, grad, jac = _compute_initial_values(problem, fobj, fconstr, fgrad, fjac, x0)
 
-    # # 15. Update form diagram coordinates
-    # _update_form_coordinates(form, problem)
-
-    # 16. Print diagnostics
+    # 14. Print diagnostics
     if printout:
         _print_diagnostics(problem, x0, g0, fgrad, fjac, grad, jac, f0)
 
-    # 17. Store functions and variables in problem
+    # 15. Store functions and variables in problem
     problem.fobj = fobj
     problem.fconstr = fconstr
     problem.fgrad = fgrad
@@ -439,14 +444,18 @@ def set_up_general_optimisation(analysis: "Analysis"):
     problem.f0 = f0
     problem.g0 = g0
 
-    # 18. Store problem reference in optimiser
+    # 16. Store problem reference in optimiser
     optimiser.problem = problem
 
     return analysis
 
 
-def set_up_convex_optimisation(analysis: "Analysis"):
-    """Set up a convex optimisation problem.
+def set_up_base_problem(analysis: "Analysis"):
+    """Set up the base problem structure (lightweight, no optimization).
+
+    This creates the fundamental problem structure from the form diagram,
+    including equilibrium matrices, connectivity, and bounds. No starting
+    point computation or optimization is performed.
 
     Parameters
     ----------
@@ -456,42 +465,33 @@ def set_up_convex_optimisation(analysis: "Analysis"):
     Returns
     -------
     analysis : :class:`~compas_tno.analysis.Analysis`
-        Analysis object set up for optimise.
+        Analysis object with base problem created in optimiser.problem.
 
     """
 
     form = analysis.formdiagram
     optimiser = analysis.optimiser
-    qmax = optimiser.settings["qmax"]
-    qmin = optimiser.settings["qmin"]
+    qmax = optimiser.settings.get("qmax", 1e-8)
+    qmin = optimiser.settings.get("qmin", -1e4)
 
-    objective = optimiser.settings["objective"]
-    variables = optimiser.settings["variables"]
-    constraints = optimiser.settings["constraints"]
-
-    # Select Objective
-
-    if objective not in ["loadpath", "feasibility"]:
-        print("Warning: Non-convex problem for the objective: ", objective, ". Try changing the objective to 'loadpath' or 'fesibility'.")
-
-    if variables == ["q"]:
-        pass
-    else:
-        print("Warning: Non-convex problem for the variables: ", variables, ". Considering only 'q' instead and assuming coplanar supports (zb=0).")
-
-    if constraints == ["funicular"]:
-        pass
-    else:
-        print("Warning: Non-convex problem for the constraints: ", constraints, ". Considering only 'funicular' instead.")
+    variables = optimiser.settings.get("variables", ["q"])
+    constraints = optimiser.settings.get("constraints", ["funicular"])
 
     # 1. Apply force density bounds to edges
     _apply_bounds_to_edges(form, qmin, qmax)
 
-    # Create base Problem instance (convex optimization doesn't use fixed/sym features)
+    # 2. Create base Problem instance (no features for base problem)
     problem = Problem.from_formdiagram(form)
     problem.variables = variables
     problem.constraints = constraints
 
+    # 3. Store in optimiser
     optimiser.problem = problem
 
     return analysis
+
+
+# Legacy alias for backward compatibility
+def set_up_convex_optimisation(analysis: "Analysis"):
+    """Legacy alias for set_up_base_problem. Use set_up_base_problem instead."""
+    return set_up_base_problem(analysis)
