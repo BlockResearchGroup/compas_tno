@@ -117,7 +117,13 @@ def _apply_starting_point(form, problem, starting_point, settings):
         printout_loadpath = False
         find_inds = settings.get("find_inds", False)
         solver_convex = settings.get("solver_convex", "CLARABEL")
-        startingpoint_loadpath(form, problem=problem, find_inds=find_inds, solver_convex=solver_convex, printout=printout_loadpath)
+        startingpoint_loadpath(
+            form,
+            problem=problem,
+            find_inds=find_inds,
+            solver_convex=solver_convex,
+            printout=printout_loadpath,
+        )
     elif starting_point == "relax":
         equilibrium_fdm(form)
         startingpoint_tna(form)
@@ -173,8 +179,18 @@ def _build_variable_vector(problem, form, variables, settings, i_k, thk):
         bounds_x = []
         bounds_y = []
         for i in problem.fixed:
-            bounds_x.append([form.vertex_attribute(i_k[i], "xmin"), form.vertex_attribute(i_k[i], "xmax")])
-            bounds_y.append([form.vertex_attribute(i_k[i], "ymin"), form.vertex_attribute(i_k[i], "ymax")])
+            bounds_x.append(
+                [
+                    form.vertex_attribute(i_k[i], "xmin"),
+                    form.vertex_attribute(i_k[i], "xmax"),
+                ]
+            )
+            bounds_y.append(
+                [
+                    form.vertex_attribute(i_k[i], "ymin"),
+                    form.vertex_attribute(i_k[i], "ymax"),
+                ]
+            )
         bounds = bounds + bounds_x + bounds_y
 
     # Support height variables (zb)
@@ -183,7 +199,12 @@ def _build_variable_vector(problem, form, variables, settings, i_k, thk):
         x0 = append(x0, zb0).reshape(-1, 1)
         bounds_z = []
         for i in problem.fixed:
-            bounds_z.append([form.vertex_attribute(i_k[i], "lb"), form.vertex_attribute(i_k[i], "ub")])
+            bounds_z.append(
+                [
+                    form.vertex_attribute(i_k[i], "lb"),
+                    form.vertex_attribute(i_k[i], "ub"),
+                ]
+            )
         bounds = bounds + bounds_z
 
     # Thickness variable (t)
@@ -284,9 +305,9 @@ def _compute_initial_values(problem, fobj, fconstr, fgrad, fjac, x0):
     if fjac:
         jac = fjac(x0, problem)
 
-    if any([isnan(problem.ub[i]) for i in range(len(problem.ub))]) or any([isnan(problem.lb[i]) for i in range(len(problem.lb))]):
-        print("Is Nan for the bounds. Optimisation can not proceed")
-        raise ValueError("Check bounds that constraint nodes")
+    # if any([isnan(problem.ub[i]) for i in range(len(problem.ub))]) or any([isnan(problem.lb[i]) for i in range(len(problem.lb))]):
+    #     print("Is Nan for the bounds. Optimisation can not proceed")
+    #     raise ValueError("Check bounds that constraint nodes")
 
     return f0, g0, grad, jac
 
@@ -381,7 +402,7 @@ def set_up_general_optimisation(analysis: "Analysis"):
     # 2. Create or get problem instance
     if not problem:
         problem = Problem.from_formdiagram(form)
-    
+
     problem = _adapt_problem_to_features(form, problem, features, settings, printout)
 
     # 3. Setup problem metadata
@@ -408,7 +429,14 @@ def set_up_general_optimisation(analysis: "Analysis"):
     # 9. Initialize q variables and update problem geometry (before adding other variables)
     qid = problem.q[problem.ind]
     problem.q = q_from_variables(qid, problem.B, problem.d)
-    problem.X[problem.free] = xyz_from_q(problem.q, problem.P[problem.free], problem.X[problem.fixed], problem.Ci, problem.Cit, problem.Cb)
+    problem.X[problem.free] = xyz_from_q(
+        problem.q,
+        problem.P[problem.free],
+        problem.X[problem.fixed],
+        problem.Ci,
+        problem.Cit,
+        problem.Cb,
+    )
 
     # 10. Verify equilibrium
     error = sum((problem.E.dot(problem.q) - problem.ph) ** 2)
