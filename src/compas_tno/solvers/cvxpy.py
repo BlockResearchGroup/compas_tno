@@ -78,6 +78,8 @@ class CVXPYSolver(ConvexSolver):
         solver_convex = kwargs.get("solver_convex", self.settings.get("solver_convex", "CLARABEL"))
         printout = kwargs.get("printout", self.settings.get("printout", False))
 
+        # solver_convex="MOSEK"
+
         # Determine which formulation to use based on independents
         if len(problem.ind) < problem.m:
             if printout:
@@ -265,14 +267,6 @@ def run_convex_optimisation(analysis: "Analysis") -> "TNOProblem":
         form.edge_attribute(edge, "f", float(qi * li))
 
     compute_reactions(form)
-
-    # # Store results in optimiser
-    # optimiser.fopt = result.fopt
-    # optimiser.xopt = result.xopt
-    # optimiser.exitflag = result.exitflag
-    # optimiser.niter = result.niter
-    # optimiser.time = result.time
-    # optimiser.message = result.message
 
     return result
 

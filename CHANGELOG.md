@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Updated `NonlinearSolver` base class to use stored `problem.x0` and `problem.bounds` when available.
 * Updated `post_process_nlopt()` to use `apply_solution_to_form()` internally with `SolverResult` object.
 * Updated tests to use new clean API exclusively.
+* **Architectural improvement**: Results now stored in `analysis.result` as `SolverResult` object instead of scattered across `optimiser` attributes.
+* Moved `startingpoint` module from `problems/` to `solvers/` to avoid circular imports and improve logical organization.
 
 ### Removed
 

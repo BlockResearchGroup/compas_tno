@@ -254,7 +254,7 @@ class IPOPTSolver(NonlinearSolver):
             exitflag=exit_flag,
         )
 
-    def _set_options(self, nlp) -> cyipopt.Problem:
+    def _set_options(self, nlp) -> "cyipopt.Problem":
         """Set IPOPT solver options.
 
         Parameters

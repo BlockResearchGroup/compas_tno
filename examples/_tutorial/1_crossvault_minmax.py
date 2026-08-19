@@ -2,7 +2,7 @@
 # Note: EXAMPLE NEEDS THE INSTALLATION OF THE COMPAS MASONRY VIEWER
 # ----------------------------------------
 
-from compas_masonry.viewers import MasonryViewer
+# from compas_masonry.viewers import MasonryViewer
 
 from compas_tna.diagrams import FormDiagram
 from compas_tna.envelope import CrossVaultEnvelope
