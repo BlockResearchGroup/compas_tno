@@ -583,12 +583,6 @@ document.write(`
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/generated/compas_tno.problems.adapt_problem_to_fixed_diagram.html#compas_tno.problems.adapt_problem_to_fixed_diagram">adapt_problem_to_fixed_diagram() (in module compas_tno.problems)</a>
-</li>
-      <li><a href="api/generated/compas_tno.problems.adapt_problem_to_sym_and_fixed_diagram.html#compas_tno.problems.adapt_problem_to_sym_and_fixed_diagram">adapt_problem_to_sym_and_fixed_diagram() (in module compas_tno.problems)</a>
-</li>
-      <li><a href="api/generated/compas_tno.problems.adapt_problem_to_sym_diagram.html#compas_tno.problems.adapt_problem_to_sym_diagram">adapt_problem_to_sym_diagram() (in module compas_tno.problems)</a>
-</li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.html#compas_tno.analysis.Analysis">Analysis (class in compas_tno.analysis)</a>
 </li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.apply_cracks.html#compas_tno.analysis.Analysis.apply_cracks">apply_cracks() (compas_tno.analysis.Analysis method)</a>
@@ -597,12 +591,12 @@ document.write(`
 </li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.apply_envelope_on_xy.html#compas_tno.analysis.Analysis.apply_envelope_on_xy">apply_envelope_on_xy() (compas_tno.analysis.Analysis method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/generated/compas_tno.analysis.Analysis.apply_hor_multiplier.html#compas_tno.analysis.Analysis.apply_hor_multiplier">apply_hor_multiplier() (compas_tno.analysis.Analysis method)</a>
 </li>
       <li><a href="api/generated/compas_tno.utilities.apply_radial_symmetry.html#compas_tno.utilities.apply_radial_symmetry">apply_radial_symmetry() (in module compas_tno.utilities)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/generated/compas_tno.analysis.Analysis.apply_reaction_bounds.html#compas_tno.analysis.Analysis.apply_reaction_bounds">apply_reaction_bounds() (compas_tno.analysis.Analysis method)</a>
 </li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.apply_selfweight.html#compas_tno.analysis.Analysis.apply_selfweight">apply_selfweight() (compas_tno.analysis.Analysis method)</a>
@@ -665,6 +659,8 @@ document.write(`
 </li>
       <li><a href="api/generated/compas_tno.algorithms.compute_reactions.html#compas_tno.algorithms.compute_reactions">compute_reactions() (in module compas_tno.algorithms)</a>
 </li>
+      <li><a href="api/generated/compas_tno.analysis.Analysis.compute_starting_point.html#compas_tno.analysis.Analysis.compute_starting_point">compute_starting_point() (compas_tno.analysis.Analysis method)</a>
+</li>
       <li><a href="api/generated/compas_tno.problems.constr_wrapper.html#compas_tno.problems.constr_wrapper">constr_wrapper() (in module compas_tno.problems)</a>
 </li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.copy.html#compas_tno.analysis.Analysis.copy">copy() (compas_tno.analysis.Analysis method)</a>
@@ -673,10 +669,12 @@ document.write(`
         <li><a href="api/generated/compas_tno.optimisers.Optimiser.copy.html#compas_tno.optimisers.Optimiser.copy">(compas_tno.optimisers.Optimiser method)</a>
 </li>
       </ul></li>
-      <li><a href="api/generated/compas_tno.analysis.Analysis.create_bestfit_analysis.html#compas_tno.analysis.Analysis.create_bestfit_analysis">create_bestfit_analysis() (compas_tno.analysis.Analysis class method)</a>
+      <li><a href="api/generated/compas_tno.analysis.Analysis.create_base_problem.html#compas_tno.analysis.Analysis.create_base_problem">create_base_problem() (compas_tno.analysis.Analysis method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/compas_tno.analysis.Analysis.create_bestfit_analysis.html#compas_tno.analysis.Analysis.create_bestfit_analysis">create_bestfit_analysis() (compas_tno.analysis.Analysis class method)</a>
+</li>
       <li><a href="api/generated/compas_tno.optimisers.Optimiser.create_bestfit_optimiser.html#compas_tno.optimisers.Optimiser.create_bestfit_optimiser">create_bestfit_optimiser() (compas_tno.optimisers.Optimiser class method)</a>
 </li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.create_compl_energy_analysis.html#compas_tno.analysis.Analysis.create_compl_energy_analysis">create_compl_energy_analysis() (compas_tno.analysis.Analysis class method)</a>
@@ -779,24 +777,38 @@ document.write(`
 </li>
       <li><a href="api/generated/compas_tno.algorithms.find_independents.html#compas_tno.algorithms.find_independents">find_independents() (in module compas_tno.algorithms)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/generated/compas_tno.algorithms.find_independents_backward.html#compas_tno.algorithms.find_independents_backward">find_independents_backward() (in module compas_tno.algorithms)</a>
 </li>
       <li><a href="api/generated/compas_tno.algorithms.find_independents_forward.html#compas_tno.algorithms.find_independents_forward">find_independents_forward() (in module compas_tno.algorithms)</a>
 </li>
       <li><a href="api/generated/compas_tno.algorithms.find_independents_QR.html#compas_tno.algorithms.find_independents_QR">find_independents_QR() (in module compas_tno.algorithms)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="api/generated/compas_tno.utilities.find_sym_axis_in_rect_patterns.html#compas_tno.utilities.find_sym_axis_in_rect_patterns">find_sym_axis_in_rect_patterns() (in module compas_tno.utilities)</a>
 </li>
       <li><a href="api/generated/compas_tno.utilities.fix_mesh_boundary.html#compas_tno.utilities.fix_mesh_boundary">fix_mesh_boundary() (in module compas_tno.utilities)</a>
 </li>
       <li><a href="api/generated/compas_tno.utilities.fix_mesh_corners.html#compas_tno.utilities.fix_mesh_corners">fix_mesh_corners() (in module compas_tno.utilities)</a>
 </li>
+      <li><a href="api/generated/compas_tno.problems.FixedProblem.html#compas_tno.problems.FixedProblem">FixedProblem (class in compas_tno.problems)</a>
+</li>
+      <li><a href="api/generated/compas_tno.problems.FixedSymmetricProblem.html#compas_tno.problems.FixedSymmetricProblem">FixedSymmetricProblem (class in compas_tno.problems)</a>
+</li>
       <li><a href="api/generated/compas_tno.utilities.form_add_lines_support.html#compas_tno.utilities.form_add_lines_support">form_add_lines_support() (in module compas_tno.utilities)</a>
 </li>
       <li><a href="api/generated/compas_tno.utilities.form_parabolic_slide.html#compas_tno.utilities.form_parabolic_slide">form_parabolic_slide() (in module compas_tno.utilities)</a>
 </li>
+      <li><a href="api/generated/compas_tno.problems.FixedProblem.from_formdiagram.html#compas_tno.problems.FixedProblem.from_formdiagram">from_formdiagram() (compas_tno.problems.FixedProblem class method)</a>
+
+      <ul>
+        <li><a href="api/generated/compas_tno.problems.FixedSymmetricProblem.from_formdiagram.html#compas_tno.problems.FixedSymmetricProblem.from_formdiagram">(compas_tno.problems.FixedSymmetricProblem class method)</a>
+</li>
+        <li><a href="api/generated/compas_tno.problems.Problem.from_formdiagram.html#compas_tno.problems.Problem.from_formdiagram">(compas_tno.problems.Problem class method)</a>
+</li>
+        <li><a href="api/generated/compas_tno.problems.SymmetricProblem.from_formdiagram.html#compas_tno.problems.SymmetricProblem.from_formdiagram">(compas_tno.problems.SymmetricProblem class method)</a>
+</li>
+      </ul></li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.from_json.html#compas_tno.analysis.Analysis.from_json">from_json() (compas_tno.analysis.Analysis class method)</a>
 
       <ul>
@@ -849,13 +861,9 @@ document.write(`
 </li>
       <li><a href="api/generated/compas_tno.algorithms.independents_include.html#compas_tno.algorithms.independents_include">independents_include() (in module compas_tno.algorithms)</a>
 </li>
-      <li><a href="api/generated/compas_tno.algorithms.inds_incl_excl.html#compas_tno.algorithms.inds_incl_excl">inds_incl_excl() (in module compas_tno.algorithms)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api/generated/compas_tno.problems.initialise_form.html#compas_tno.problems.initialise_form">initialise_form() (in module compas_tno.problems)</a>
-</li>
-      <li><a href="api/generated/compas_tno.problems.initialise_problem_general.html#compas_tno.problems.initialise_problem_general">initialise_problem_general() (in module compas_tno.problems)</a>
+      <li><a href="api/generated/compas_tno.algorithms.inds_incl_excl.html#compas_tno.algorithms.inds_incl_excl">inds_incl_excl() (in module compas_tno.algorithms)</a>
 </li>
       <li><a href="api/generated/compas_tno.utilities.interpolate_from_pointcloud.html#compas_tno.utilities.interpolate_from_pointcloud">interpolate_from_pointcloud() (in module compas_tno.utilities)</a>
 </li>
@@ -973,10 +981,10 @@ document.write(`
 </li>
       <li><a href="api/generated/compas_tno.optimisers.Optimiser.set_solver.html#compas_tno.optimisers.Optimiser.set_solver">set_solver() (compas_tno.optimisers.Optimiser method)</a>
 </li>
-      <li><a href="api/generated/compas_tno.optimisers.Optimiser.set_starting_point.html#compas_tno.optimisers.Optimiser.set_starting_point">set_starting_point() (compas_tno.optimisers.Optimiser method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api/generated/compas_tno.optimisers.Optimiser.set_starting_point.html#compas_tno.optimisers.Optimiser.set_starting_point">set_starting_point() (compas_tno.optimisers.Optimiser method)</a>
+</li>
       <li><a href="api/generated/compas_tno.problems.set_up_convex_optimisation.html#compas_tno.problems.set_up_convex_optimisation">set_up_convex_optimisation() (in module compas_tno.problems)</a>
 </li>
       <li><a href="api/generated/compas_tno.problems.set_up_general_optimisation.html#compas_tno.problems.set_up_general_optimisation">set_up_general_optimisation() (in module compas_tno.problems)</a>
@@ -984,6 +992,8 @@ document.write(`
       <li><a href="api/generated/compas_tno.analysis.Analysis.set_up_optimiser.html#compas_tno.analysis.Analysis.set_up_optimiser">set_up_optimiser() (compas_tno.analysis.Analysis method)</a>
 </li>
       <li><a href="api/generated/compas_tno.optimisers.Optimiser.set_variables.html#compas_tno.optimisers.Optimiser.set_variables">set_variables() (compas_tno.optimisers.Optimiser method)</a>
+</li>
+      <li><a href="api/generated/compas_tno.analysis.Analysis.setup_optimization.html#compas_tno.analysis.Analysis.setup_optimization">setup_optimization() (compas_tno.analysis.Analysis method)</a>
 </li>
       <li><a href="api/generated/compas_tno.analysis.Analysis.sha256.html#compas_tno.analysis.Analysis.sha256">sha256() (compas_tno.analysis.Analysis method)</a>
 
@@ -997,17 +1007,13 @@ document.write(`
 </li>
       <li><a href="api/generated/compas_tno.utilities.slide_pattern_inwards.html#compas_tno.utilities.slide_pattern_inwards">slide_pattern_inwards() (in module compas_tno.utilities)</a>
 </li>
+      <li><a href="api/generated/compas_tno.analysis.Analysis.solve.html#compas_tno.analysis.Analysis.solve">solve() (compas_tno.analysis.Analysis method)</a>
+</li>
       <li><a href="api/generated/compas_tno.utilities.split_intersection_lines.html#compas_tno.utilities.split_intersection_lines">split_intersection_lines() (in module compas_tno.utilities)</a>
 </li>
-      <li><a href="api/generated/compas_tno.problems.startingpoint_fdm.html#compas_tno.problems.startingpoint_fdm">startingpoint_fdm() (in module compas_tno.problems)</a>
-</li>
-      <li><a href="api/generated/compas_tno.problems.startingpoint_loadpath.html#compas_tno.problems.startingpoint_loadpath">startingpoint_loadpath() (in module compas_tno.problems)</a>
-</li>
-      <li><a href="api/generated/compas_tno.problems.startingpoint_sag.html#compas_tno.problems.startingpoint_sag">startingpoint_sag() (in module compas_tno.problems)</a>
-</li>
-      <li><a href="api/generated/compas_tno.problems.startingpoint_tna.html#compas_tno.problems.startingpoint_tna">startingpoint_tna() (in module compas_tno.problems)</a>
-</li>
       <li><a href="api/generated/compas_tno.utilities.store_inds.html#compas_tno.utilities.store_inds">store_inds() (in module compas_tno.utilities)</a>
+</li>
+      <li><a href="api/generated/compas_tno.problems.SymmetricProblem.html#compas_tno.problems.SymmetricProblem">SymmetricProblem (class in compas_tno.problems)</a>
 </li>
   </ul></td>
 </tr></table>

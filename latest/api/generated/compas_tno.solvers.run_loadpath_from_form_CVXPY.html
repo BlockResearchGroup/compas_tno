@@ -604,8 +604,8 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="compas_tno.solvers.run_loadpath_from_form_CVXPY">
 <span class="sig-prename descclassname"><span class="pre">compas_tno.solvers.</span></span><span class="sig-name descname"><span class="pre">run_loadpath_from_form_CVXPY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">find_inds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CLARABEL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Run convex optimisation problem with CVXPY directly from the Form Diagram
-OBS: Requires installation of CVXPY</p>
+<dd><p>Run convex optimisation problem with CVXPY directly from the Form Diagram.</p>
+<p>This function is kept for backward compatibility. New code should use CVXPYSolver class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -615,8 +615,7 @@ OBS: Requires installation of CVXPY</p>
 </dd>
 <dt><strong>find_inds</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether or not independents must be computed before the analysis, by default False</p>
 </dd>
-<dt><strong>solver_convex</strong><span class="classifier">str, optional</span></dt><dd><p>Solver to use, by default CLARABEL. Options are “CLARABEL”, “MOSEK” or “CVXOPT”.
-Note: “MOSEK” and “CVXOPT” are not available in the default installation of TNO.</p>
+<dt><strong>solver_convex</strong><span class="classifier">str, optional</span></dt><dd><p>Solver to use, by default CLARABEL. Options are “CLARABEL”, “MOSEK” or “CVXOPT”.</p>
 </dd>
 <dt><strong>printout</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether or not print results, by default False</p>
 </dd>
@@ -624,11 +623,21 @@ Note: “MOSEK” and “CVXOPT” are not available in the default installation
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt><strong>obj</strong><span class="classifier">analysis</span></dt><dd><p>Analysis object optimised.</p>
+<dt><strong>problem</strong><span class="classifier">Problem</span></dt><dd><p>Problem with optimal solution applied.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>For new code, prefer using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">compas_tno.problems</span><span class="w"> </span><span class="kn">import</span> <span class="n">FixedProblem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">compas_tno.solvers</span><span class="w"> </span><span class="kn">import</span> <span class="n">CVXPYSolver</span>
+
+<span class="n">problem</span> <span class="o">=</span> <span class="n">FixedProblem</span><span class="o">.</span><span class="n">from_formdiagram</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">"QR"</span><span class="p">)</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">CVXPYSolver</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s2">"solver_convex"</span><span class="p">:</span> <span class="s2">"CLARABEL"</span><span class="p">})</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

@@ -605,6 +605,8 @@ document.write(`
 <dt class="sig sig-object py" id="compas_tno.solvers.post_process_nlopt">
 <span class="sig-prename descclassname"><span class="pre">compas_tno.solvers.</span></span><span class="sig-name descname"><span class="pre">post_process_nlopt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analysis</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Post processing of the optimisation.</p>
+<p>This function is kept for backward compatibility with the Analysis workflow.
+It wraps the new apply_solution_to_form() function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -619,6 +621,12 @@ document.write(`
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>For new code, prefer using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
+<span class="n">problem</span> <span class="o">=</span> <span class="n">apply_solution_to_form</span><span class="p">(</span><span class="n">form</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

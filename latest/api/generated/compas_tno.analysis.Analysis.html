@@ -644,6 +644,12 @@ and the <a class="reference internal" href="compas_tno.optimisers.Optimiser.html
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.clear_previous_results.html#compas_tno.analysis.Analysis.clear_previous_results" title="compas_tno.analysis.Analysis.clear_previous_results"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear_previous_results</span></code></a></p></td>
 <td><p>Clear Previous results stored in the Analysis object.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.compute_starting_point.html#compas_tno.analysis.Analysis.compute_starting_point" title="compas_tno.analysis.Analysis.compute_starting_point"><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_starting_point</span></code></a></p></td>
+<td><p>Compute and apply starting point to the form diagram.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.create_base_problem.html#compas_tno.analysis.Analysis.create_base_problem" title="compas_tno.analysis.Analysis.create_base_problem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_base_problem</span></code></a></p></td>
+<td><p>Create the base problem structure (lightweight, no solving).</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.create_bestfit_analysis.html#compas_tno.analysis.Analysis.create_bestfit_analysis" title="compas_tno.analysis.Analysis.create_bestfit_analysis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_bestfit_analysis</span></code></a></p></td>
 <td><p>Create a bestfit analysis from the elements of the problem (form and shape)</p></td>
 </tr>
@@ -672,13 +678,19 @@ and the <a class="reference internal" href="compas_tno.optimisers.Optimiser.html
 <td><p>Check if the analysis problem is convex.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.run.html#compas_tno.analysis.Analysis.run" title="compas_tno.analysis.Analysis.run"><code class="xref py py-obj docutils literal notranslate"><span class="pre">run</span></code></a></p></td>
-<td><p>With the data from the elements of the problem compute the matrices for the optimisation</p></td>
+<td><p>Run the complete optimization workflow (legacy convenience method).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.set_optimiser_options.html#compas_tno.analysis.Analysis.set_optimiser_options" title="compas_tno.analysis.Analysis.set_optimiser_options"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_optimiser_options</span></code></a></p></td>
 <td><p>Set the additional options of the optimisation.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.set_up_optimiser.html#compas_tno.analysis.Analysis.set_up_optimiser" title="compas_tno.analysis.Analysis.set_up_optimiser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_up_optimiser</span></code></a></p></td>
 <td><p>With the data from the elements of the problem compute the matrices for the optimisation and the starting point</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.setup_optimization.html#compas_tno.analysis.Analysis.setup_optimization" title="compas_tno.analysis.Analysis.setup_optimization"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_optimization</span></code></a></p></td>
+<td><p>Setup the full nonlinear optimization problem with all features.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="compas_tno.analysis.Analysis.solve.html#compas_tno.analysis.Analysis.solve" title="compas_tno.analysis.Analysis.solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve</span></code></a></p></td>
+<td><p>Solve the optimization problem and optionally post-process results.</p></td>
 </tr>
 </tbody>
 </table>

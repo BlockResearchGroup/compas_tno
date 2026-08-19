@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
     <link rel="icon" href="../../_static/compas.ico" type="image/x-icon">
-    <title>Analysis.set_up_optimiser &#8212; COMPAS TNO</title>
+    <title>SymmetricProblem.from_formdiagram &#8212; COMPAS TNO</title>
   
   
   
@@ -52,15 +52,15 @@
     <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/design-tabs.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.analysis.Analysis.set_up_optimiser';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.problems.SymmetricProblem.from_formdiagram';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/blockresearchgroup/compas_tno/gh-pages/versions.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Analysis.setup_optimization" href="compas_tno.analysis.Analysis.setup_optimization.html" />
-    <link rel="prev" title="Analysis.set_optimiser_options" href="compas_tno.analysis.Analysis.set_optimiser_options.html" />
+    <link rel="next" title="FixedSymmetricProblem" href="compas_tno.problems.FixedSymmetricProblem.html" />
+    <link rel="prev" title="SymmetricProblem" href="compas_tno.problems.SymmetricProblem.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -517,9 +517,9 @@ document.write(`
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../api.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../compas_tno.html">compas_tno</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.algorithms.html">compas_tno.algorithms</a></li>
-<li class="toctree-l3 current active"><a class="reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../compas_tno.problems.html">compas_tno.problems</a></li>
+<li class="toctree-l3 current active"><a class="reference internal" href="../compas_tno.problems.html">compas_tno.problems</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.solvers.html">compas_tno.solvers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
@@ -580,9 +580,9 @@ document.write(`
     <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
     
     
-    <li class="breadcrumb-item"><a href="compas_tno.analysis.Analysis.html" class="nav-link">Analysis</a></li>
+    <li class="breadcrumb-item"><a href="compas_tno.problems.SymmetricProblem.html" class="nav-link">SymmetricProblem</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">Analysis.set_up_optimiser</li>
+    <li class="breadcrumb-item active" aria-current="page">SymmetricProblem.from_formdiagram</li>
   </ul>
 </nav>
 </div>
@@ -599,12 +599,41 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="analysis-set-up-optimiser">
-<h1>Analysis.set_up_optimiser</h1>
+  <section id="symmetricproblem-from-formdiagram">
+<h1>SymmetricProblem.from_formdiagram</h1>
 <dl class="py method">
-<dt class="sig sig-object py" id="compas_tno.analysis.Analysis.set_up_optimiser">
-<span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">set_up_optimiser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>With the data from the elements of the problem compute the matrices for the optimisation and the starting point</p>
+<dt class="sig sig-object py" id="compas_tno.problems.SymmetricProblem.from_formdiagram">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">SymmetricProblem.</span></span><span class="sig-name descname"><span class="pre">from_formdiagram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_problem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_axis_symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correct_loads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Create a SymmetricProblem from a FormDiagram with symmetry constraints.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl>
+<dt><strong>form</strong><span class="classifier"><code class="xref py py-class docutils literal notranslate"><span class="pre">FormDiagram</span></code></span></dt><dd><p>The FormDiagram containing the network geometry, loads, and constraints.</p>
+</dd>
+<dt><strong>list_axis_symmetry</strong><span class="classifier">list, optional</span></dt><dd><p>List of the axis of symmetry to consider, by default None.
+If None, symmetry is inferred from the diagram type.</p>
+</dd>
+<dt><strong>center</strong><span class="classifier">list, optional</span></dt><dd><p>The center of the pattern if it’s a circular pattern, by default None.</p>
+</dd>
+<dt><strong>correct_loads</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to update applied loads regarding the symmetry, by default True.</p>
+</dd>
+<dt><strong>printout</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to print progress information, by default False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><a class="reference internal" href="compas_tno.problems.SymmetricProblem.html#compas_tno.problems.SymmetricProblem" title="compas_tno.problems.SymmetricProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">SymmetricProblem</span></code></a></dt><dd><p>A fully initialized SymmetricProblem with symmetry applied.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">form</span> <span class="o">=</span> <span class="n">FormDiagram</span><span class="o">.</span><span class="n">create_circular_radial</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">problem</span> <span class="o">=</span> <span class="n">SymmetricProblem</span><span class="o">.</span><span class="n">from_formdiagram</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">problem</span><span class="o">.</span><span class="n">k</span>  <span class="c1"># number of independent edges (reduced by symmetry)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -630,7 +659,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.analysis.Analysis.set_up_optimiser"><code class="docutils literal notranslate"><span class="pre">Analysis.set_up_optimiser()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.problems.SymmetricProblem.from_formdiagram"><code class="docutils literal notranslate"><span class="pre">SymmetricProblem.from_formdiagram()</span></code></a></li>
 </ul>
   </nav></div>
 

@@ -604,16 +604,16 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="compas_tno.solvers.call_and_output_CVXPY">
 <span class="sig-prename descclassname"><span class="pre">compas_tno.solvers.</span></span><span class="sig-name descname"><span class="pre">call_and_output_CVXPY</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">problem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_convex</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CLARABEL'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">printout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Call and output the loadpath optimisation with CVXPY</p>
+<dd><p>Call and output the loadpath optimisation with CVXPY.</p>
+<p>This function is kept for backward compatibility. New code should use CVXPYSolver class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
-<dt><strong>form</strong><span class="classifier">::class:: FormDiagram</span></dt><dd><p>The form Diagram of the analysis</p>
+<dt><strong>form</strong><span class="classifier">FormDiagram</span></dt><dd><p>The form Diagram of the analysis</p>
 </dd>
-<dt><strong>problem</strong><span class="classifier">::class:: Problem</span></dt><dd><p>The Problem with relevant matrices and vectors</p>
+<dt><strong>problem</strong><span class="classifier">Problem</span></dt><dd><p>The Problem with relevant matrices and vectors</p>
 </dd>
-<dt><strong>solver_convex</strong><span class="classifier">str, optional</span></dt><dd><p>Solver to use, by default CLARABEL. Options are “CLARABEL”, “MOSEK” or “CVXOPT”.
-Note: “MOSEK” and “CVXOPT” are not available in the default installation of TNO.</p>
+<dt><strong>solver_convex</strong><span class="classifier">str, optional</span></dt><dd><p>Solver to use, by default CLARABEL. Options are “CLARABEL”, “MOSEK” or “CVXOPT”.</p>
 </dd>
 <dt><strong>printout</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether or not print results, by default False</p>
 </dd>
@@ -621,11 +621,13 @@ Note: “MOSEK” and “CVXOPT” are not available in the default installation
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
-<dt>output: dict</dt><dd><p>Dictionary with results.</p>
+<dt><strong>result</strong><span class="classifier">SolverResult</span></dt><dd><p>The SolverResult object with the key solution information.</p>
 </dd>
 </dl>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>This is a legacy function. For new code, use CVXPYSolver class directly.</p>
 </dd></dl>
 
 </section>

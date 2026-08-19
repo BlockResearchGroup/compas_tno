@@ -610,22 +610,19 @@ document.write(`
 <h2>Initialisation</h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.initialise_form.html" title="compas_tno.problems.initialise_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialise_form</span></code></a>(form[, find_inds, method, ...])</p></td>
-<td><p>Initialise the problem for a FormDiagram and return the FormDiagram with independent edges assigned and the matrices relevant to the equilibrium problem.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.Problem.html" title="compas_tno.problems.Problem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Problem</span></code></a></p></td>
+<td><p>The <code class="docutils literal notranslate"><span class="pre">Problem</span></code> class stores the matrices used in the optimisation.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.initialise_problem_general.html" title="compas_tno.problems.initialise_problem_general"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initialise_problem_general</span></code></a>(form)</p></td>
-<td><p>Initialise the problem for a given Form-Diagram building the main matrices used in the subsequent analysis.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.FixedProblem.html" title="compas_tno.problems.FixedProblem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FixedProblem</span></code></a></p></td>
+<td><p>Problem with fixed diagram where independent edges are computed.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.adapt_problem_to_fixed_diagram.html" title="compas_tno.problems.adapt_problem_to_fixed_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adapt_problem_to_fixed_diagram</span></code></a>(problem, form)</p></td>
-<td><p>Adapt the problem assuming that the form diagram is fixed in plan, by selecting the independent edges.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.SymmetricProblem.html" title="compas_tno.problems.SymmetricProblem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SymmetricProblem</span></code></a></p></td>
+<td><p>Problem with symmetry constraints applied.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.adapt_problem_to_sym_diagram.html" title="compas_tno.problems.adapt_problem_to_sym_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adapt_problem_to_sym_diagram</span></code></a>(problem, form)</p></td>
-<td><p>Adapt the problem assuming that the form diagram is symmetric.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.FixedSymmetricProblem.html" title="compas_tno.problems.FixedSymmetricProblem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FixedSymmetricProblem</span></code></a></p></td>
+<td><p>Problem with both fixed diagram and symmetry constraints.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.adapt_problem_to_sym_and_fixed_diagram.html" title="compas_tno.problems.adapt_problem_to_sym_and_fixed_diagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">adapt_problem_to_sym_and_fixed_diagram</span></code></a>(...)</p></td>
-<td><p>Adapt the problem assuming that the form diagram is symmetric and fixed in plane.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.apply_sym_to_form.html" title="compas_tno.problems.apply_sym_to_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_sym_to_form</span></code></a>(form[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.apply_sym_to_form.html" title="compas_tno.problems.apply_sym_to_form"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_sym_to_form</span></code></a>(form[, ...])</p></td>
 <td><p>Apply symmetry to the form diagram.</p></td>
 </tr>
 </tbody>
@@ -635,18 +632,6 @@ document.write(`
 <h2>Starting Points</h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.startingpoint_sag.html" title="compas_tno.problems.startingpoint_sag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">startingpoint_sag</span></code></a>(form[, boundary_force])</p></td>
-<td><p>Initialize the equilibrium in a form diagram with applied loads using sag approach</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.startingpoint_loadpath.html" title="compas_tno.problems.startingpoint_loadpath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">startingpoint_loadpath</span></code></a>(form[, problem, ...])</p></td>
-<td><p>Built-in function to optimise the loadpath considering diagram fixed projection.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/compas_tno.problems.startingpoint_tna.html" title="compas_tno.problems.startingpoint_tna"><code class="xref py py-obj docutils literal notranslate"><span class="pre">startingpoint_tna</span></code></a>(form[, plot])</p></td>
-<td><p>Initialize the equilibrium in a form diagram with applied loads using TNA interative solver procedure (form and force diagrams are parallel)</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.startingpoint_fdm.html" title="compas_tno.problems.startingpoint_fdm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">startingpoint_fdm</span></code></a>(form, **kwargs)</p></td>
-<td><p>Initialize the equilibrium in a form diagram with applied loads using FDM approach for the q's stored in the form</p></td>
-</tr>
 </tbody>
 </table>
 </section>
@@ -658,7 +643,7 @@ document.write(`
 <td><p>Set up a nonlinear optimisation problem.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/compas_tno.problems.set_up_convex_optimisation.html" title="compas_tno.problems.set_up_convex_optimisation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_up_convex_optimisation</span></code></a>(analysis)</p></td>
-<td><p>Set up a convex optimisation problem.</p></td>
+<td><p>Legacy alias for set_up_base_problem.</p></td>
 </tr>
 </tbody>
 </table>

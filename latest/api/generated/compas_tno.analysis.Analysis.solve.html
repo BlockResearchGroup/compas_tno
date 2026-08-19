@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
     <link rel="icon" href="../../_static/compas.ico" type="image/x-icon">
-    <title>Analysis.set_up_optimiser &#8212; COMPAS TNO</title>
+    <title>Analysis.solve &#8212; COMPAS TNO</title>
   
   
   
@@ -52,15 +52,15 @@
     <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/design-tabs.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.analysis.Analysis.set_up_optimiser';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.analysis.Analysis.solve';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/blockresearchgroup/compas_tno/gh-pages/versions.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Analysis.setup_optimization" href="compas_tno.analysis.Analysis.setup_optimization.html" />
-    <link rel="prev" title="Analysis.set_optimiser_options" href="compas_tno.analysis.Analysis.set_optimiser_options.html" />
+    <link rel="next" title="Analysis.ToString" href="compas_tno.analysis.Analysis.ToString.html" />
+    <link rel="prev" title="Analysis.setup_optimization" href="compas_tno.analysis.Analysis.setup_optimization.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -582,7 +582,7 @@ document.write(`
     
     <li class="breadcrumb-item"><a href="compas_tno.analysis.Analysis.html" class="nav-link">Analysis</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">Analysis.set_up_optimiser</li>
+    <li class="breadcrumb-item active" aria-current="page">Analysis.solve</li>
   </ul>
 </nav>
 </div>
@@ -599,12 +599,44 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="analysis-set-up-optimiser">
-<h1>Analysis.set_up_optimiser</h1>
+  <section id="analysis-solve">
+<h1>Analysis.solve</h1>
 <dl class="py method">
-<dt class="sig sig-object py" id="compas_tno.analysis.Analysis.set_up_optimiser">
-<span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">set_up_optimiser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>With the data from the elements of the problem compute the matrices for the optimisation and the starting point</p>
+<dt class="sig sig-object py" id="compas_tno.analysis.Analysis.solve">
+<span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_process</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Solve the optimization problem and optionally post-process results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>solver</strong><span class="classifier">str, optional</span></dt><dd><p>Solver to use (“IPOPT” or “SLSQP”). If None, uses the solver
+specified in optimiser settings. Default is None.</p>
+</dd>
+<dt><strong>post_process</strong><span class="classifier">bool, optional</span></dt><dd><p>Whether to apply the solution to the form diagram after solving.
+Default is True.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>SolverResult</dt><dd><p>The optimization result containing xopt, fopt, success status, etc.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This is the fourth and final step in the new workflow. It requires that:
+- <cite>setup_optimization()</cite> has been called (for nonlinear)
+- OR <cite>create_base_problem()</cite> has been called (for convex)
+- Problem is fully configured in optimiser.problem</p>
+<p>The result is stored in <cite>self.result</cite>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">analysis</span><span class="o">.</span><span class="n">create_base_problem</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">analysis</span><span class="o">.</span><span class="n">compute_starting_point</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">analysis</span><span class="o">.</span><span class="n">setup_optimization</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">analysis</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s2">"IPOPT"</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Optimal objective: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">fopt</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -630,7 +662,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.analysis.Analysis.set_up_optimiser"><code class="docutils literal notranslate"><span class="pre">Analysis.set_up_optimiser()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.analysis.Analysis.solve"><code class="docutils literal notranslate"><span class="pre">Analysis.solve()</span></code></a></li>
 </ul>
   </nav></div>
 

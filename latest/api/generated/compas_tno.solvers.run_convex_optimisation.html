@@ -604,7 +604,8 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="compas_tno.solvers.run_convex_optimisation">
 <span class="sig-prename descclassname"><span class="pre">compas_tno.solvers.</span></span><span class="sig-name descname"><span class="pre">run_convex_optimisation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analysis</span></span></em><span class="sig-paren">)</span></dt>
-<dd><p>Run convex optimisation problem with CVXPY after going through the optimisation set up.</p>
+<dd><p>Run convex optimisation problem with CVXPY.</p>
+<p>This function is kept for backward compatibility. New code should use CVXPYSolver class.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
@@ -612,7 +613,20 @@ document.write(`
 </dd>
 </dl>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>result</strong><span class="classifier">SolverResult</span></dt><dd><p>The SolverResult object with the key solution information.</p>
+</dd>
 </dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function wraps the new CVXPYSolver class for backward compatibility.
+For new code, prefer using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">solver</span> <span class="o">=</span> <span class="n">CVXPYSolver</span><span class="p">(</span><span class="n">settings</span><span class="o">=</span><span class="p">{</span><span class="s2">"solver_convex"</span><span class="p">:</span> <span class="s2">"CLARABEL"</span><span class="p">,</span> <span class="s2">"printout"</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

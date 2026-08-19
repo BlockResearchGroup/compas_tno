@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
     <link rel="icon" href="../../_static/compas.ico" type="image/x-icon">
-    <title>Analysis.set_up_optimiser &#8212; COMPAS TNO</title>
+    <title>Analysis.compute_starting_point &#8212; COMPAS TNO</title>
   
   
   
@@ -52,15 +52,15 @@
     <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/design-tabs.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.analysis.Analysis.set_up_optimiser';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.analysis.Analysis.compute_starting_point';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/blockresearchgroup/compas_tno/gh-pages/versions.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Analysis.setup_optimization" href="compas_tno.analysis.Analysis.setup_optimization.html" />
-    <link rel="prev" title="Analysis.set_optimiser_options" href="compas_tno.analysis.Analysis.set_optimiser_options.html" />
+    <link rel="next" title="Analysis.create_base_problem" href="compas_tno.analysis.Analysis.create_base_problem.html" />
+    <link rel="prev" title="Analysis.clear_previous_results" href="compas_tno.analysis.Analysis.clear_previous_results.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -582,7 +582,7 @@ document.write(`
     
     <li class="breadcrumb-item"><a href="compas_tno.analysis.Analysis.html" class="nav-link">Analysis</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">Analysis.set_up_optimiser</li>
+    <li class="breadcrumb-item active" aria-current="page">Analysis.compute_starting_point</li>
   </ul>
 </nav>
 </div>
@@ -599,12 +599,30 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="analysis-set-up-optimiser">
-<h1>Analysis.set_up_optimiser</h1>
+  <section id="analysis-compute-starting-point">
+<h1>Analysis.compute_starting_point</h1>
 <dl class="py method">
-<dt class="sig sig-object py" id="compas_tno.analysis.Analysis.set_up_optimiser">
-<span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">set_up_optimiser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>With the data from the elements of the problem compute the matrices for the optimisation and the starting point</p>
+<dt class="sig sig-object py" id="compas_tno.analysis.Analysis.compute_starting_point">
+<span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">compute_starting_point</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd><p>Compute and apply starting point to the form diagram.</p>
+<p>This method applies the starting point strategy specified in optimiser settings
+to initialize the form diagram. Strategies include:
+- “loadpath”: Solve convex loadpath optimization
+- “tna”: Use Thrust Network Analysis
+- “fdm”: Use Force Density Method
+- “sag”: Use sag approach
+- “current”: Use current form state</p>
+<p>The computed starting point updates the form diagram’s vertex z-coordinates
+and edge force densities (q).</p>
+<p class="rubric">Notes</p>
+<p>This is the second step in the new workflow. It requires that
+<cite>create_base_problem()</cite> has been called first (for “loadpath” strategy).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">analysis</span><span class="o">.</span><span class="n">create_base_problem</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">analysis</span><span class="o">.</span><span class="n">compute_starting_point</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Z range: </span><span class="si">{</span><span class="n">analysis</span><span class="o">.</span><span class="n">formdiagram</span><span class="o">.</span><span class="n">z_range</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
@@ -630,7 +648,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.analysis.Analysis.set_up_optimiser"><code class="docutils literal notranslate"><span class="pre">Analysis.set_up_optimiser()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.analysis.Analysis.compute_starting_point"><code class="docutils literal notranslate"><span class="pre">Analysis.compute_starting_point()</span></code></a></li>
 </ul>
   </nav></div>
 

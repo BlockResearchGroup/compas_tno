@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
     <link rel="icon" href="../../_static/compas.ico" type="image/x-icon">
-    <title>Analysis.set_up_optimiser &#8212; COMPAS TNO</title>
+    <title>SymmetricProblem &#8212; COMPAS TNO</title>
   
   
   
@@ -52,15 +52,15 @@
     <script src="../../_static/togglebutton.js"></script>
     <script src="../../_static/design-tabs.js"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.analysis.Analysis.set_up_optimiser';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/compas_tno.problems.SymmetricProblem';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://raw.githubusercontent.com/blockresearchgroup/compas_tno/gh-pages/versions.json';
         DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'latest';
         </script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Analysis.setup_optimization" href="compas_tno.analysis.Analysis.setup_optimization.html" />
-    <link rel="prev" title="Analysis.set_optimiser_options" href="compas_tno.analysis.Analysis.set_optimiser_options.html" />
+    <link rel="next" title="SymmetricProblem.from_formdiagram" href="compas_tno.problems.SymmetricProblem.from_formdiagram.html" />
+    <link rel="prev" title="FixedProblem.from_formdiagram" href="compas_tno.problems.FixedProblem.from_formdiagram.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -517,9 +517,9 @@ document.write(`
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../../api.html">API Reference</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../compas_tno.html">compas_tno</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.algorithms.html">compas_tno.algorithms</a></li>
-<li class="toctree-l3 current active"><a class="reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../compas_tno.analysis.html">compas_tno.analysis</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.optimisers.html">compas_tno.optimisers</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../compas_tno.problems.html">compas_tno.problems</a></li>
+<li class="toctree-l3 current active"><a class="reference internal" href="../compas_tno.problems.html">compas_tno.problems</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.solvers.html">compas_tno.solvers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../compas_tno.utilities.html">compas_tno.utilities</a></li>
 </ul>
@@ -580,9 +580,9 @@ document.write(`
     <li class="breadcrumb-item"><i class="fa-solid fa-ellipsis"></i></li>
     
     
-    <li class="breadcrumb-item"><a href="compas_tno.analysis.Analysis.html" class="nav-link">Analysis</a></li>
+    <li class="breadcrumb-item"><a href="../compas_tno.problems.html" class="nav-link">compas_tno.problems</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page">Analysis.set_up_optimiser</li>
+    <li class="breadcrumb-item active" aria-current="page">SymmetricProblem</li>
   </ul>
 </nav>
 </div>
@@ -599,12 +599,24 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article" role="main">
                   
-  <section id="analysis-set-up-optimiser">
-<h1>Analysis.set_up_optimiser</h1>
-<dl class="py method">
-<dt class="sig sig-object py" id="compas_tno.analysis.Analysis.set_up_optimiser">
-<span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">set_up_optimiser</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>With the data from the elements of the problem compute the matrices for the optimisation and the starting point</p>
+  <section id="symmetricproblem">
+<h1>SymmetricProblem</h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="compas_tno.problems.SymmetricProblem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">compas_tno.problems.</span></span><span class="sig-name descname"><span class="pre">SymmetricProblem</span></span></dt>
+<dd><p>Bases: <a class="reference internal" href="compas_tno.problems.Problem.html#compas_tno.problems.Problem" title="compas_tno.problems.problems.Problem"><code class="xref py py-class docutils literal notranslate"><span class="pre">Problem</span></code></a></p>
+<p>Problem with symmetry constraints applied.</p>
+<p>This specialized problem class represents a structural analysis problem where
+the form diagram has symmetry, allowing reduction of variables by exploiting
+symmetric patterns.</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="compas_tno.problems.SymmetricProblem.from_formdiagram.html#compas_tno.problems.SymmetricProblem.from_formdiagram" title="compas_tno.problems.SymmetricProblem.from_formdiagram"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_formdiagram</span></code></a></p></td>
+<td><p>Create a SymmetricProblem from a FormDiagram with symmetry constraints.</p></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </section>
@@ -630,7 +642,7 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.analysis.Analysis.set_up_optimiser"><code class="docutils literal notranslate"><span class="pre">Analysis.set_up_optimiser()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#compas_tno.problems.SymmetricProblem"><code class="docutils literal notranslate"><span class="pre">SymmetricProblem</span></code></a></li>
 </ul>
   </nav></div>
 

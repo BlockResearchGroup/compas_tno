@@ -604,7 +604,20 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="compas_tno.analysis.Analysis.run">
 <span class="sig-prename descclassname"><span class="pre">Analysis.</span></span><span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>With the data from the elements of the problem compute the matrices for the optimisation</p>
+<dd><p>Run the complete optimization workflow (legacy convenience method).</p>
+<p>This method executes the full optimization workflow in one call:
+1. Sets up the problem (convex or nonlinear)
+2. Runs the optimization
+3. Post-processes the results</p>
+<p class="rubric">Notes</p>
+<p>This is a convenience method that maintains backward compatibility.
+For more control over the workflow, use the new methods:
+- create_base_problem()
+- compute_starting_point()
+- setup_optimization()
+- solve()</p>
+<p>In a future version, this method will be refactored to call those
+methods internally instead of duplicating logic.</p>
 </dd></dl>
 
 </section>
