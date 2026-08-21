@@ -264,7 +264,7 @@ def run_convex_optimisation(analysis: "Analysis") -> "TNOProblem":
         edge = i_uv[c]
         li = form.edge_length(edge)
         form.edge_attribute(edge, "q", float(qi))
-        form.edge_attribute(edge, "f", float(qi * li))
+        form.edge_attribute(edge, "_f", float(qi * li))
 
     compute_reactions(form)
 
@@ -330,7 +330,7 @@ def run_loadpath_from_form_CVXPY(form, problem=None, find_inds=False, solver_con
         edge = i_uv[c]
         li = form.edge_length(edge)
         form.edge_attribute(edge, "q", float(qi))
-        form.edge_attribute(edge, "f", float(qi * li))
+        form.edge_attribute(edge, "_f", float(qi * li))
 
     compute_reactions(form)
 
@@ -380,7 +380,7 @@ def call_and_output_CVXPY(form, problem, solver_convex="CLARABEL", printout=Fals
         edge = i_uv[c]
         li = form.edge_length(edge)
         form.edge_attribute(edge, "q", float(qi))
-        form.edge_attribute(edge, "f", float(qi * li))
+        form.edge_attribute(edge, "_f", float(qi * li))
 
     compute_reactions(form)
 

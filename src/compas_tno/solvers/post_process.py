@@ -125,7 +125,7 @@ def apply_solution_to_form(
         u, v = i_uv[c]
         li = form.edge_length((u, v))
         form.edge_attribute((u, v), "q", float(qi))
-        form.edge_attribute((u, v), "f", float(qi * li))
+        form.edge_attribute((u, v), "_f", float(qi * li))
 
     # Compute reactions
     compute_reactions(form)
