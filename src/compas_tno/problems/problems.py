@@ -449,7 +449,7 @@ class FixedProblem(Problem):
     def from_formdiagram(
         cls,
         form: FormDiagram,
-        base_problem : Problem = None,
+        base_problem: Problem = None,
         method: str = "QR",
         printout: bool = False,
         tol: Optional[float] = None,
@@ -565,7 +565,7 @@ class SymmetricProblem(Problem):
     def from_formdiagram(
         cls,
         form: FormDiagram,
-        base_problem : Problem = None,
+        base_problem: Problem = None,
         list_axis_symmetry: Optional[list] = None,
         center=None,
         correct_loads: bool = True,
@@ -651,7 +651,7 @@ class FixedSymmetricProblem(Problem):
     def from_formdiagram(
         cls,
         form: FormDiagram,
-        base_problem : Problem = None,
+        base_problem: Problem = None,
         method: str = "QR",
         list_axis_symmetry: Optional[list] = None,
         center=None,
