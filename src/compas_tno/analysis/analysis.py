@@ -9,7 +9,6 @@ from compas_tna.diagrams import FormDiagram
 from compas_tna.envelope import Envelope
 from compas_tno.optimisers import Optimiser
 from compas_tno.problems import set_up_base_problem
-from compas_tno.problems import set_up_convex_optimisation
 from compas_tno.problems import set_up_general_optimisation
 from compas_tno.solvers import SolverResult
 from compas_tno.solvers import post_process_nlopt

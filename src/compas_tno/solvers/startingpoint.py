@@ -43,7 +43,7 @@ def startingpoint_loadpath(form, problem=None, find_inds=False, solver_convex="C
     # Local import to avoid circular dependency
     from compas_tno.solvers import run_loadpath_from_form_CVXPY
 
-    result = run_loadpath_from_form_CVXPY(
+    run_loadpath_from_form_CVXPY(
         form,
         problem=problem,
         find_inds=find_inds,

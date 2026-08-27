@@ -1,4 +1,3 @@
-from math import isnan
 from typing import TYPE_CHECKING
 
 from numpy import append
